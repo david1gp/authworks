@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Apparaten en toepassingen
 admin.common.confirmTitle,Deze actie bevestigen
 admin.common.permission,U hebt geen toestemming om deze beheergegevens te bekijken.
+admin.configuration.brandingDescription,"Lichte en donkere kleuren, logo en juridische links met een live preview."
+admin.configuration.brandingFormDescription,"Kleuren, logo- en pictogram-URL's, standaardthema en juridische links."
+admin.configuration.brandingFormTitle,Merkkleuren en bestanden
+admin.configuration.brandingTitle,Huisstijl
+admin.configuration.claim,Domein claimen
+admin.configuration.colorInvalid,"Voer een hexadecimale kleur in, zoals #2563eb."
+admin.configuration.copied,Gekopieerd naar het klembord.
+admin.configuration.copy,Kopiëren
+admin.configuration.created,Aangemaakt
+admin.configuration.dangerDescription,Deactiveren blokkeert aanmelding onmiddellijk; verwijderen is definitief.
+admin.configuration.dangerTitle,Gevarenzone
+admin.configuration.deactivate,Organisatie deactiveren
+admin.configuration.description,"Organisatie-instellingen, aanmelding en geverifieerde domeinen."
+admin.configuration.dialogDescription,Claim een domein zodat mensen deze organisatie via hun e-mailadres kunnen ontdekken.
+admin.configuration.dialogTitle,Een domein claimen
+admin.configuration.dirty,Je hebt niet-opgeslagen wijzigingen.
+admin.configuration.discard,Verwerpen
+admin.configuration.domainName,Domein
+admin.configuration.domainsDescription,Geverifieerde domeinen en organisatieontdekking.
+admin.configuration.domainsTitle,Domeinen
+admin.configuration.fontDescription,Optioneel weblettertype en een aangepaste URL van een lettertypestijlblad.
+admin.configuration.fontFamily,Lettertypefamilie
+admin.configuration.fontFamilyPlaceholder,"Inter, Verdana, sans-serif"
+admin.configuration.fontTitle,Typografie
+admin.configuration.fontUrl,URL van lettertypestijlblad
+admin.configuration.generalDescription,"Organisatienaam, status en gevarenzone."
+admin.configuration.generalTitle,Algemeen
+admin.configuration.identifier,Organisatie-ID
+admin.configuration.legalDescription,Getoond onder de aanmeldkaart.
+admin.configuration.legalTitle,Juridische links
+admin.configuration.loginDescription,Kies welke aanmeldmethoden mensen mogen gebruiken.
+admin.configuration.loginTitle,Aanmeldingsbeleid
+admin.configuration.metaDescription,Secundaire ID's voor ondersteuning en foutopsporing.
+admin.configuration.metaTitle,Organisatiedetails
+admin.configuration.nameDescription,"Getoond bij aanmelding, uitnodigingen en in het beheer."
+admin.configuration.nameTitle,Organisatienaam
+admin.configuration.previewDark,Donker
+admin.configuration.previewDescription,Weergegeven op basis van de huidige formulierwaarden.
+admin.configuration.previewEmail,naam@voorbeeld.nl
+admin.configuration.previewLight,Licht
+admin.configuration.previewTitle,Voorbeeld van aanmelding
+admin.configuration.primaryDomain,Primair domein
+admin.configuration.privacyUrl,URL van privacybeleid
+admin.configuration.reactivate,Organisatie opnieuw activeren
+admin.configuration.readOnly,Alleen organisatie-eigenaren kunnen deze instellingen wijzigen.
+admin.configuration.remove,Organisatie verwijderen
+admin.configuration.removeConfirm,Het domein {domain} verwijderen? De organisatieontdekking ervoor stopt onmiddellijk.
+admin.configuration.removeTitle,Domein verwijderen
+admin.configuration.signInDescription,Formulieren voor organisatieaanmelding en beveiligingsbeleid.
+admin.configuration.signInTitle,Aanmelding en beveiliging
+admin.configuration.statusActive,Actief
+admin.configuration.statusDescription,Inactieve organisaties blokkeren aanmelding; verwijderde organisaties blijven alleen-lezen.
+admin.configuration.statusInactive,Inactief
+admin.configuration.statusRemoved,Verwijderd
+admin.configuration.statusTitle,Staat
+admin.configuration.termsUrl,URL van servicevoorwaarden
+admin.configuration.themeDark,Donker thema
+admin.configuration.themeLight,Licht thema
+admin.configuration.title,Configuratie
+admin.configuration.typeName,Typ de organisatienaam om te bevestigen
+admin.configuration.typeNameInvalid,De getypte naam komt niet overeen met de organisatienaam.
+admin.configuration.watermark,Het Authworks-watermerk verbergen
 admin.events.actor,Actor
 admin.events.aggregate,Aggregaat
 admin.events.count,{count} gebeurtenissen
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Verwijderd
 admin.projects.access.description,De rollen die deze beheerder op dit moment effectief in het project heeft.
 admin.projects.access.empty,Er zijn geen projectrollen effectief in de huidige organisatiecontext.
 admin.projects.access.grantedOrganization,Toegekend via organisatie
+admin.projects.access.organizationDescription,Organisaties met toegang tot dit project en de rollen die ze krijgen.
+admin.projects.access.organizationTitle,Organisatietoegang
 admin.projects.access.permissionDescription,Vaste rollen en hun rechten worden door Authworks bepaald en kunnen niet worden bewerkt.
 admin.projects.access.permissionTitle,Vaste rollen en rechten
 admin.projects.access.roleKeys,Effectieve projectrollen
+admin.projects.access.selectRoles,Rollen kiezen
 admin.projects.access.title,Effectieve toegang
 admin.projects.applications.create,Applicatie toevoegen
 admin.projects.applications.description,Applicaties die zich authenticeren bij dit project.
@@ -719,11 +784,32 @@ admin.projects.applications.name,Applicatienaam
 admin.projects.applications.removeConfirm,Deze toepassing verwijderen? Dit kan niet ongedaan worden gemaakt.
 admin.projects.applications.title,Applicaties
 admin.projects.applications.type,Applicatietype
+admin.projects.assignments.create,Gebruiker toewijzen
+admin.projects.assignments.description,Wijs de rollen van dit project rechtstreeks toe aan een gebruiker van de actieve organisatie.
+admin.projects.assignments.empty,Er is nog geen gebruiker rechtstreeks aan dit project toegewezen.
+admin.projects.assignments.invalid,Voer een gebruiker in en kies ten minste één rol.
+admin.projects.assignments.removeConfirm,Deze gebruikerstoewijzing verwijderen? De gebruiker verliest deze projectrollen.
+admin.projects.assignments.title,Rechtstreekse gebruikerstoewijzingen
+admin.projects.assignments.user,Gebruiker
 admin.projects.deleteConfirm,"Dit project verwijderen? Toepassingen, rollen en grants worden ermee verwijderd."
 admin.projects.deleteConfirmAccept,Project verwijderen
 admin.projects.deleteConfirmTitle,Dit project verwijderen
+admin.projects.detail.authorizationHelp,Autorisatie vereist: gebruikers hebben ten minste één rol van dit project nodig om zich bij de toepassingen aan te melden.
+admin.projects.detail.backToProjects,Terug naar projecten
 admin.projects.detail.created,Aangemaakt
 admin.projects.detail.organization,Organisatie
+admin.projects.detail.owned,Eigen
+admin.projects.detail.projectAccessHelp,Projecttoegang vereist: gebruikers moeten toegang tot het project krijgen (via hun organisatie of een rechtstreekse toewijzing).
+admin.projects.detail.readOnly,Gedeelde projecten zijn alleen-lezen. Alleen de eigenaarorganisatie beheert dit project.
+admin.projects.detail.remove,Project verwijderen
+admin.projects.detail.removeTypeLabel,Projectnaam
+admin.projects.detail.removeTypeMismatch,De projectnaam komt niet overeen.
+admin.projects.detail.removeTypePrompt,Voer de projectnaam in om te bevestigen.
+admin.projects.detail.rename,Hernoemen
+admin.projects.detail.renameDescription,Wijzig de projectnaam die in het hele beheer wordt getoond.
+admin.projects.detail.renameInvalid,Voer een projectnaam in.
+admin.projects.detail.renameTitle,Project hernoemen
+admin.projects.detail.shared,Gedeeld
 admin.projects.detail.updated,Laatst bijgewerkt
 admin.projects.detailTitle,Projectdetails
 admin.projects.grants.create,Organisatietoegang verlenen
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Dit project verwijderen?
 admin.projects.lifecycle.removeConfirmAccept,Project intrekken
 admin.projects.lifecycle.removeConfirmTitle,Dit project intrekken
+admin.projects.list.applications,Applicaties
 admin.projects.list.create,Project aanmaken
 admin.projects.list.description,"Projecten groeperen de applicaties, rollen en toekenningen van een organisatie."
 admin.projects.list.empty,Er bestaan nog geen projecten in dit realm.
+admin.projects.list.emptyDetail,"Maak een project aan om applicaties, rollen en toekenningen te groeperen."
 admin.projects.list.invalid,Voer een projectnaam in en kies een organisatie.
 admin.projects.list.name,Projectnaam
+admin.projects.list.roles,Rollen
 admin.projects.list.search,Projecten zoeken
+admin.projects.list.subtitle,Eigen en gedeelde projecten van de actieve organisatie.
 admin.projects.list.title,Projecten
 admin.projects.missingId,Er moet een project zijn geselecteerd voor deze bestemming.
+admin.projects.overview.authorizationTitle,Autorisatie vereist
+admin.projects.overview.projectAccessTitle,Projecttoegang vereist
+admin.projects.overview.settingsDescription,Beheer de projectnaam en hoe toegang wordt afgedwongen.
+admin.projects.overview.settingsTitle,Projectinstellingen
+admin.projects.overview.title,Projectoverzicht
 admin.projects.roles.create,Rol aanmaken
 admin.projects.roles.deleteConfirm,Deze projectrol verwijderen? Grants die ernaar verwijzen verliezen de rol.
 admin.projects.roles.description,De rollen die dit project aan organisaties en hun leden kan toewijzen.
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Het uitschakelen van dit realm stopt aanmelden voor a
 admin.realm.disabled,Het realm is uitgeschakeld.
 admin.realm.domains,Domeinen
 admin.realm.domainsHint,Scheid domeinen met komma's. Het eerste domein is het primaire domein.
+admin.realm.edit,Bewerken
+admin.realm.editDescription,"Wijzig de realmnaam, de status en de domeinen die naar dit realm verwijzen."
+admin.realm.editTitle,Realm bewerken
 admin.realm.enabled,Het realm is ingeschakeld.
+admin.realm.explore.administratorsDescription,Realmbeheerdersstatus verlenen of intrekken.
+admin.realm.explore.auditEventsDescription,Bekijk de stroom beveiligingsgebeurtenissen van dit realm.
+admin.realm.explore.oidcClientsDescription,Bekijk de OIDC-clients die in dit realm zijn geregistreerd.
+admin.realm.explore.organizationsDescription,Blader door de organisaties in dit realm.
+admin.realm.explore.sessionsDescription,Bekijk de actieve sessies van dit realm.
+admin.realm.exploreTitle,Verkennen
 admin.realm.identifier,Realm-identificatie
+admin.realm.identityTitle,Identiteit
 admin.realm.invalid,Voer een realm-naam en ten minste één domein in.
 admin.realm.name,Realm-naam
 admin.realm.permissionDenied,U hebt geen toestemming om dit realm te wijzigen.
+admin.realm.primary,Primair
 admin.realm.primaryDomain,Primair domein
 admin.realm.saved,De realm-instellingen zijn opgeslagen.
 admin.realm.status,Status
 admin.realm.statusActive,Actief
 admin.realm.statusDisabled,Uitgeschakeld
+admin.realmAdministrators.add,Beheerder toevoegen
+admin.realmAdministrators.addDialogDescription,Zoek realmgebruikers en verleen daarna de realmbeheerdersstatus. Toekenningen gelden voor elke organisatie in dit realm.
+admin.realmAdministrators.addDialogTitle,Realmbeheerder toevoegen
+admin.realmAdministrators.added,{name} is nu een realmbeheerder.
+admin.realmAdministrators.alreadyAdmin,Al beheerder
+admin.realmAdministrators.confirmRemoveAccept,Beheerder verwijderen
+admin.realmAdministrators.confirmRemoveMessage,{name} als realmbeheerder verwijderen? Deze persoon verliest toegang tot alle organisatie-instellingen in dit realm.
+admin.realmAdministrators.confirmRemoveTitle,Deze beheerder verwijderen
+admin.realmAdministrators.count,{count} beheerders
+admin.realmAdministrators.countOne,1 beheerder
+admin.realmAdministrators.description,"Realmbeheerders kunnen elke organisatie, realminstellingen, OIDC en het auditlogboek beheren."
+admin.realmAdministrators.emptyDescription,Er bestaan nog geen realmbeheerders. Verleen het eerste beheerderschap om dit realm te beheren.
+admin.realmAdministrators.emptySearchDescription,Geen enkele realmgebruiker komt met deze zoekopdracht overeen.
+admin.realmAdministrators.emptyTitle,Geen beheerders
+admin.realmAdministrators.grant,Beheerderschap verlenen
+admin.realmAdministrators.invitePlaceholder,Personen zoeken op naam of e-mail
+admin.realmAdministrators.lastAdminHint,De laatste beheerder kan niet worden verwijderd.
+admin.realmAdministrators.remove,Verwijderen
+admin.realmAdministrators.removed,{name} is geen realmbeheerder meer.
+admin.realmAdministrators.revokeFailed,Deze beheerder kon niet worden verwijderd.
+admin.realmAdministrators.search,Beheerders zoeken
+admin.realmAdministrators.systemAdded,Systeem
+admin.realmAdministrators.tableAdded,Toegevoegd
+admin.realmAdministrators.tableAddedBy,Toegevoegd door
+admin.realmAdministrators.tableUser,Beheerder
+admin.realmAdministrators.title,Realmbeheerders
+admin.roles.delete,Verwijderen
+admin.roles.description,Twee soorten rollen: organisatierollen bepalen wat mensen in dit beheer mogen doen; projectrollen zijn wat je applicaties in tokens zien.
+admin.roles.dialog.displayName,Weergavenaam
+admin.roles.dialog.editDescription,Wijzig hoe deze rol wordt weergegeven; de sleutel blijft ongewijzigd.
+admin.roles.dialog.editTitle,Projectrol bewerken
+admin.roles.dialog.group,Groep
+admin.roles.dialog.invalid,Voer een weergavenaam en een rolsleutel in.
+admin.roles.dialog.key,Rolsleutel
+admin.roles.dialog.keyHint,"Kleine letters, cijfers en streepjes, zoals gebruikt in tokens."
+admin.roles.dialog.missingRole,De geselecteerde rol is niet meer beschikbaar.
+admin.roles.dialog.newDescription,Voeg een rolsleutel toe die applicaties in tokens ontvangen.
+admin.roles.dialog.newTitle,Nieuwe projectrol
+admin.roles.dialog.noProject,Kies een project voor de nieuwe rol.
+admin.roles.dialog.project,Projectnaam
+admin.roles.edit,Bewerken
+admin.roles.empty.createProjects,Maak eerst een project aan
+admin.roles.empty.description,Definieer de rollen die je applicaties in tokens zien zodra er een project bestaat.
+admin.roles.empty.title,Nog geen projecten
+admin.roles.groupFallback,Zonder groep
+admin.roles.memberCount,{count} leden
+admin.roles.memberCountOne,1 lid
+admin.roles.orgRole.admin.bullet1,"Beheert personen, met uitzondering van eigenaren"
+admin.roles.orgRole.admin.bullet2,"Beheert rollen, projecten en serviceaccounts"
+admin.roles.orgRole.admin.bullet3,"Kan huisstijl, aanmeldingsbeleid of domeinen niet wijzigen"
+admin.roles.orgRole.admin.description,Beheert dagelijks personen en projecten.
+admin.roles.orgRole.guest.bullet1,"Minimale toegang, bijvoorbeeld bij een uitnodiging voor een project"
+admin.roles.orgRole.guest.bullet2,"Kan geen personen, rollen of projecten beheren"
+admin.roles.orgRole.guest.description,Beperkte toegang voor gasten en partners.
+admin.roles.orgRole.member.bullet1,Kan zich aanmelden en de organisatie bekijken
+admin.roles.orgRole.member.bullet2,Gebruikt projecten die met de organisatie zijn gedeeld
+admin.roles.orgRole.member.bullet3,"Kan geen personen, rollen of projecten beheren"
+admin.roles.orgRole.member.description,Standaardtoegang voor organisatieleden.
+admin.roles.orgRole.owner.bullet1,Alles wat beheerders kunnen doen
+admin.roles.orgRole.owner.bullet2,"Wijzigt huisstijl, aanmeldingsbeleid en domeinen"
+admin.roles.orgRole.owner.bullet3,Beheert eigenaren en verwijdering van de organisatie
+admin.roles.orgRole.owner.description,Volledige controle over de organisatie en dit beheer.
+admin.roles.organizationRoles.description,Wie wat mag doen in dit beheer.
+admin.roles.organizationRoles.title,Organisatierollen
+admin.roles.projects.deleteConfirm,Deze projectrol verwijderen? Toekenningen die ernaar verwijzen verliezen de rol.
+admin.roles.projects.deleteConfirmAccept,Rol verwijderen
+admin.roles.projects.deleteConfirmTitle,Deze rol verwijderen
+admin.roles.projects.newRole,Nieuwe rol
+admin.roles.projects.owned,Eigen
+admin.roles.projects.shared,Gedeeld
+admin.roles.projects.title,Projectrollen
+admin.roles.rolesEmpty,Dit project definieert nog geen rollen.
+admin.roles.title,Rollen
 admin.session.expired,Uw beheerderssessie is verlopen
 admin.signIn.activeTitle,Beheerderssessie actief
 admin.signIn.credential,Bootstrap-beheerdersreferentie
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Afgemeld
 admin.signIn.subject,Onderwerp
 admin.signIn.subjectType,Onderwerptype
 admin.signIn.title,Beheerdersaanmelding
+admin.userProfile.accessTab,Rollen en toegang
+admin.userProfile.assignRoles,Projectrollen toewijzen
+admin.userProfile.assignRolesDialogTitle,Projectrollen toewijzen
+admin.userProfile.assignRolesEmpty,Geen projectrollen gevonden.
+admin.userProfile.assignRolesProject,Projectnaam
+admin.userProfile.assignRolesRoles,Rollen
+admin.userProfile.assignRolesSave,Toewijzingen opslaan
+admin.userProfile.assignRolesSearch,Projecten zoeken
+admin.userProfile.assignRolesSelected,{count} rollen geselecteerd
+admin.userProfile.assignRolesStepProject,Kies een project
+admin.userProfile.authDescription,Veilige aanmeldingsmetagegevens. Geheimen en privésleutels worden nooit getoond.
+admin.userProfile.authTitle,Authenticatiemethoden
+admin.userProfile.backToUsers,Terug naar gebruikers
+admin.userProfile.contactTitle,Contactgegevens
+admin.userProfile.deactivate,Gebruiker deactiveren
+admin.userProfile.deactivateConfirm,{userName} deactiveren? De gebruiker kan zich niet meer aanmelden.
+admin.userProfile.deactivated,{userName} is gedeactiveerd.
+admin.userProfile.deleteConfirm,{userName} definitief verwijderen? Dit kan niet ongedaan worden gemaakt.
+admin.userProfile.deleteConfirmMismatch,De getypte naam komt niet overeen.
+admin.userProfile.deleteConfirmTitle,Deze gebruiker verwijderen
+admin.userProfile.deleteConfirmType,Typ {userName} om te bevestigen.
+admin.userProfile.deleted,{userName} is verwijderd.
+admin.userProfile.editProfile,Profiel bewerken
+admin.userProfile.editProfileTitle,Profiel bewerken
+admin.userProfile.email,E-mailadres
+admin.userProfile.emailUnverified,Niet geverifieerd
+admin.userProfile.emailVerified,Geverifieerd
+admin.userProfile.impersonate,Imiteer gebruiker
+admin.userProfile.lastSignIn,Laatste aanmelding
+admin.userProfile.makeRealmAdmin,Realmbeheerder maken
+admin.userProfile.makeRealmAdminConfirm,{userName} realmbeheerdersrechten verlenen?
+admin.userProfile.makeRealmAdminDone,{userName} is nu een realmbeheerder.
+admin.userProfile.memberSince,Lid sinds
+admin.userProfile.membershipAdd,Aan organisatie toevoegen
+admin.userProfile.membershipAdded,{userName} is aan de organisatie toegevoegd.
+admin.userProfile.membershipEmpty,Deze gebruiker is geen lid van een organisatie.
+admin.userProfile.membershipOrganization,Organisatie
+admin.userProfile.membershipsTitle,Organisatielidmaatschappen
+admin.userProfile.missingId,Deze gebruiker kon niet uit het adres worden afgeleid.
+admin.userProfile.never,Nooit
+admin.userProfile.notMember,Deze gebruiker is geen lid van de actieve organisatie.
+admin.userProfile.organizationRoleChanged,De organisatierol is bijgewerkt.
+admin.userProfile.organizationRoleDescription,Kies de hoofdrol voor de actieve organisatie.
+admin.userProfile.organizationRoleTitle,Organisatierol
+admin.userProfile.overviewTab,Overzicht
+admin.userProfile.passwordConfirm,Bevestig het nieuwe wachtwoord
+admin.userProfile.passwordMismatch,De wachtwoorden komen niet overeen.
+admin.userProfile.passwordNew,Nieuw wachtwoord
+admin.userProfile.passwordSaved,Het wachtwoord is ingesteld.
+admin.userProfile.passwordTooShort,Voer een wachtwoord van ten minste 8 tekens in.
+admin.userProfile.phone,Telefoonnummer
+admin.userProfile.preferredLanguage,Voorkeurstaal
+admin.userProfile.profileSaved,Het gebruikersprofiel is opgeslagen.
+admin.userProfile.profileTitle,Profiel
+admin.userProfile.projectRolesEmpty,Er zijn geen projectrollen toegewezen.
+admin.userProfile.projectRolesRemove,Verwijderen
+admin.userProfile.projectRolesRemoveConfirm,De toewijzing {projectName} verwijderen?
+admin.userProfile.projectRolesRemoved,De projecttoewijzing is verwijderd.
+admin.userProfile.projectRolesSaved,De projecttoewijzingen zijn opgeslagen.
+admin.userProfile.projectRolesTitle,Projectrollen
+admin.userProfile.reactivate,Gebruiker opnieuw activeren
+admin.userProfile.reactivateConfirm,{userName} opnieuw activeren? De gebruiker kan zich weer aanmelden.
+admin.userProfile.reactivated,{userName} is opnieuw geactiveerd.
+admin.userProfile.realmAdminBadge,Realmbeheerder
+admin.userProfile.removeRealmAdmin,Realmbeheerder verwijderen
+admin.userProfile.removeRealmAdminConfirm,Realmbeheerdersrechten van {userName} verwijderen?
+admin.userProfile.removeRealmAdminDone,{userName} is geen realmbeheerder meer.
+admin.userProfile.revokeAll,Alles intrekken
+admin.userProfile.revokeAllConfirm,Alle sessies van {userName} intrekken? De gebruiker wordt overal afgemeld.
+admin.userProfile.revokeAllDone,Alle sessies zijn ingetrokken.
+admin.userProfile.securityTab,Beveiliging
+admin.userProfile.sessionsDescription,Bekijk actieve sessies en trek toegang van een apparaat in.
+admin.userProfile.sessionsEmpty,Deze gebruiker heeft geen actieve sessies.
+admin.userProfile.sessionsRevoke,Intrekken
+admin.userProfile.sessionsRevokeConfirm,Deze sessie onmiddellijk intrekken? Het apparaat wordt direct afgemeld.
+admin.userProfile.sessionsRevoked,De sessie is ingetrokken.
+admin.userProfile.sessionsTitle,Sessies en apparaten
+admin.userProfile.setPassword,Wachtwoord instellen
+admin.userProfile.setPasswordDescription,Vervang het aanmeldwachtwoord en hef een eventuele vergrendeling op.
+admin.userProfile.setPasswordTitle,Een nieuw wachtwoord instellen
+admin.userProfile.unlock,Gebruiker deblokkeren
+admin.userProfile.unlockConfirm,{userName} deblokkeren? De gebruiker kan zich weer aanmelden.
+admin.userProfile.unlocked,{userName} is gedeblokkeerd.
+admin.userProfile.username,Gebruikersnaam
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} is aangemaakt.
 admin.users.createdAt,Aangemaakt
 admin.users.deleteWarning,Het verwijderen van deze gebruiker trekt onmiddellijk hun sessies en toegang in.
 admin.users.detailTitle,Gebruikersdetail
+admin.users.directoryClearFilters,Filters wissen
+admin.users.directoryCreated,Aangemaakt
+admin.users.directoryEmptySearch,Geen personen komen met deze zoekopdracht overeen.
+admin.users.directoryEmptySearchDetail,"Probeer een andere naam, e-mailadres of wis het rollenfilter."
+admin.users.directoryInvite,Gebruiker uitnodigen
+admin.users.directoryInviteDescription,Stuur een organisatie-uitnodiging per e-mail. De link wordt één keer getoond.
+admin.users.directoryInviteEmail,E-mailadres
+admin.users.directoryInviteRole,Uitnodigingsrol
+admin.users.directoryInviteSubmit,Uitnodiging verzenden
+admin.users.directoryLastSignIn,Laatste aanmelding
+admin.users.directoryNever,Nooit
+admin.users.directoryNoPeople,Nog geen personen in deze organisatie.
+admin.users.directoryNoPeopleDetail,Nodig de eerste persoon uit om deze organisatie op weg te helpen.
+admin.users.directoryOpen,Openen
+admin.users.directoryOpenProfile,Het profiel van {name} openen
+admin.users.directoryOrganizations,Organisaties
+admin.users.directoryRole,Rol
+admin.users.directoryRoleAdmin,Beheerder
+admin.users.directoryRoleAll,Alle rollen
+admin.users.directoryRoleGuest,Gast
+admin.users.directoryRoleMember,Lid
+admin.users.directoryRoleOwner,Eigenaar
+admin.users.directoryScopeAll,Alle organisaties
+admin.users.directoryScopeOrganization,Deze organisatie
+admin.users.directorySearchPlaceholder,"Filteren op naam, gebruikersnaam of e-mail"
+admin.users.directoryServiceAccountCreate,Serviceaccount aanmaken
+admin.users.directoryServiceAccountDescription,Machine-identiteiten voor automatisering. Het clientgeheim wordt één keer getoond.
+admin.users.directoryServiceAccountEmpty,Nog geen serviceaccounts in deze organisatie.
+admin.users.directoryServiceAccountEmptyDetail,Maak het eerste serviceaccount aan voor integraties en automatisering.
+admin.users.directoryServiceAccountName,Weergavenaam
+admin.users.directoryServiceAccountScopes,Scope
+admin.users.directoryServiceAccountScopesHint,Scheid scopes met spaties of komma's.
+admin.users.directoryServiceAccountSecretCopied,Het geheim is naar het klembord gekopieerd.
+admin.users.directoryServiceAccountSecretCopy,Geheim kopiëren
+admin.users.directoryServiceAccountSecretTitle,Clientgeheim
+admin.users.directoryServiceAccountSecretWarning,Dit geheim wordt één keer getoond. Bewaar het nu op een veilige plek.
+admin.users.directoryServiceAccountStatus,Accountstatus
+admin.users.directoryServiceAccountUserName,Gebruikersnaam
+admin.users.directoryServiceAccountUserNameHint,Gebruikt als client-ID bij het uitwisselen van clientreferenties.
+admin.users.directoryStatus,Gebruikersstatus
+admin.users.directorySubtitle,{count} personen
+admin.users.directoryTabInvitations,Openstaande uitnodigingen
+admin.users.directoryTabPeople,Personen
+admin.users.directoryTabServiceAccounts,Serviceaccounts
+admin.users.directoryUser,Gebruiker
+admin.users.directoryUserInvited,Uitgenodigd
+admin.users.directoryUserName,Gebruikersnaam
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Gebruikers-ID
 admin.users.invalid,Voer een geldig e-mailadres en gebruikersnaam in.
+admin.users.inviteEmailInvalid,Voer een geldig e-mailadres in.
+admin.users.inviteRevokeConfirm,De uitnodiging voor {email} intrekken? De uitnodigingslink werkt onmiddellijk niet meer.
+admin.users.inviteRevoked,De uitnodiging is ingetrokken.
+admin.users.inviteRolesInvalid,Kies ten minste één rol voor de uitnodiging.
+admin.users.inviteSent,De uitnodiging is aangemaakt.
+admin.users.inviteTokenCopied,De uitnodigingslink is naar het klembord gekopieerd.
+admin.users.inviteTokenCopy,Link kopiëren
+admin.users.inviteTokenDismiss,Ik heb deze link bewaard
+admin.users.inviteTokenOnce,Deze uitnodigingslink wordt één keer getoond. Deel hem met de genodigde persoon.
+admin.users.inviteTokenTitle,Uitnodigingslink
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Actief
 admin.users.lifecycle.deleted,Verwijderd
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Initieel
 admin.users.lifecycle.locked,Vergrendeld
 admin.users.lifecycle.suspended,Opgeschort
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,Het serviceaccount is aangemaakt.
+admin.users.serviceAccountInvalid,Voer een weergavenaam en een gebruikersnaam voor het serviceaccount in.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Status
 admin.users.title,Gebruikers
+admin.users.unverifiedEmail,Niet-geverifieerd e-mailadres
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Veilige identiteitsdiensten

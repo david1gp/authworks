@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Cihazlar ve uygulamalar
 admin.common.confirmTitle,Bu işlemi onaylayın
 admin.common.permission,Bu yönetim verilerini görüntüleme izniniz yok.
+admin.configuration.brandingDescription,"Canlı önizlemeli açık ve koyu renkler, logo ve yasal bağlantılar."
+admin.configuration.brandingFormDescription,"Renkler, logo ve simge URL'leri, varsayılan tema ve yasal bağlantılar."
+admin.configuration.brandingFormTitle,Marka renkleri ve öğeleri
+admin.configuration.brandingTitle,Marka
+admin.configuration.claim,Alan adı talep et
+admin.configuration.colorInvalid,#2563eb gibi bir onaltılık renk girin.
+admin.configuration.copied,Panoya kopyalandı.
+admin.configuration.copy,Kopyala
+admin.configuration.created,Oluşturulma
+admin.configuration.dangerDescription,Devre dışı bırakma oturum açmayı anında engeller; kaldırma kalıcıdır.
+admin.configuration.dangerTitle,Tehlikeli bölge
+admin.configuration.deactivate,Kuruluşu devre dışı bırak
+admin.configuration.description,"Kuruluş ayarları, oturum açma ve doğrulanmış etki alanları."
+admin.configuration.dialogDescription,Kişilerin bu kuruluşu e-posta adreslerinden bulabilmesi için bir alan adı talep edin.
+admin.configuration.dialogTitle,Alan adı talep et
+admin.configuration.dirty,Kaydedilmemiş değişiklikleriniz var.
+admin.configuration.discard,Vazgeç
+admin.configuration.domainName,Alan adı
+admin.configuration.domainsDescription,Doğrulanmış etki alanları ve kuruluş keşfi.
+admin.configuration.domainsTitle,Etki alanları
+admin.configuration.fontDescription,İsteğe bağlı web yazı tipi ve özel yazı tipi stil sayfası URL'si.
+admin.configuration.fontFamily,Yazı tipi ailesi
+admin.configuration.fontFamilyPlaceholder,"Inter, system-ui, Tahoma, sans-serif"
+admin.configuration.fontTitle,Tipografi
+admin.configuration.fontUrl,Yazı tipi stil sayfası URL'si
+admin.configuration.generalDescription,"Kuruluş adı, durumu ve tehlikeli bölge."
+admin.configuration.generalTitle,Genel
+admin.configuration.identifier,Kuruluş ID'si
+admin.configuration.legalDescription,Oturum açma kartının altında gösterilir.
+admin.configuration.legalTitle,Yasal bağlantılar
+admin.configuration.loginDescription,Kişilerin hangi oturum açma yöntemlerini kullanabileceğini seçin.
+admin.configuration.loginTitle,Oturum açma politikası
+admin.configuration.metaDescription,Destek ve hata ayıklama için ikincil tanımlayıcılar.
+admin.configuration.metaTitle,Kuruluş ayrıntıları
+admin.configuration.nameDescription,"Oturum açma, davetler ve yönetim ekranlarında gösterilir."
+admin.configuration.nameTitle,Kuruluş adı
+admin.configuration.previewDark,Koyu
+admin.configuration.previewDescription,Geçerli form değerlerinden oluşturulur.
+admin.configuration.previewEmail,ad@ornek.com
+admin.configuration.previewLight,Açık
+admin.configuration.previewTitle,Oturum açma önizlemesi
+admin.configuration.primaryDomain,Birincil etki alanı
+admin.configuration.privacyUrl,Gizlilik politikası URL'si
+admin.configuration.reactivate,Kuruluşu yeniden etkinleştir
+admin.configuration.readOnly,Bu ayarları yalnızca kuruluş sahipleri değiştirebilir.
+admin.configuration.remove,Kuruluşu kaldır
+admin.configuration.removeConfirm,{domain} alan adı kaldırılsın mı? Bunun için kuruluş keşfi anında durur.
+admin.configuration.removeTitle,Alan adını kaldır
+admin.configuration.signInDescription,Kuruluş oturum açma ve güvenlik politikası formları.
+admin.configuration.signInTitle,Oturum açma ve güvenlik
+admin.configuration.statusActive,Etkin
+admin.configuration.statusDescription,Etkin olmayan kuruluşlar oturum açmayı engeller; kaldırılan kuruluşlar salt okunur kalır.
+admin.configuration.statusInactive,Etkin değil
+admin.configuration.statusRemoved,Kaldırıldı
+admin.configuration.statusTitle,Durum
+admin.configuration.termsUrl,Hizmet şartları URL'si
+admin.configuration.themeDark,Koyu tema
+admin.configuration.themeLight,Açık tema
+admin.configuration.title,Yapılandırma
+admin.configuration.typeName,Onaylamak için kuruluş adını yazın
+admin.configuration.typeNameInvalid,Yazılan ad kuruluş adıyla eşleşmiyor.
+admin.configuration.watermark,Authworks filigranını gizle
 admin.events.actor,Aktör
 admin.events.aggregate,Toplam
 admin.events.count,{count} olay
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Kaldırıldı
 admin.projects.access.description,Bu yöneticinin şu anda projede fiilen sahip olduğu roller.
 admin.projects.access.empty,Geçerli kuruluş bağlamında etkin proje rolü yok.
 admin.projects.access.grantedOrganization,Kuruluş üzerinden verildi
+admin.projects.access.organizationDescription,Bu projeye erişimi olan kuruluşlar ve aldıkları roller.
+admin.projects.access.organizationTitle,Kuruluş erişimi
 admin.projects.access.permissionDescription,Sabit roller ve izinleri Authworks tarafından tanımlanır ve düzenlenemez.
 admin.projects.access.permissionTitle,Sabit roller ve izinler
 admin.projects.access.roleKeys,Etkin proje rolleri
+admin.projects.access.selectRoles,Rolleri seçin
 admin.projects.access.title,Etkin erişim
 admin.projects.applications.create,Uygulama ekle
 admin.projects.applications.description,Bu projeye karşı kimlik doğrulayan uygulamalar.
@@ -719,11 +784,32 @@ admin.projects.applications.name,Uygulama adı
 admin.projects.applications.removeConfirm,Bu uygulama kaldırılsın mı? Bu işlem geri alınamaz.
 admin.projects.applications.title,Uygulamalar
 admin.projects.applications.type,Uygulama türü
+admin.projects.assignments.create,Kullanıcı ata
+admin.projects.assignments.description,Bu projenin rollerini doğrudan etkin kuruluşun bir kullanıcısına atayın.
+admin.projects.assignments.empty,Bu projeye henüz doğrudan kullanıcı atanmadı.
+admin.projects.assignments.invalid,Bir kullanıcı girin ve en az bir rol seçin.
+admin.projects.assignments.removeConfirm,Bu kullanıcı ataması kaldırılsın mı? Kullanıcı bu proje rollerini kaybeder.
+admin.projects.assignments.title,Doğrudan kullanıcı atamaları
+admin.projects.assignments.user,Kullanıcı
 admin.projects.deleteConfirm,"Bu proje silinsin mi? Uygulamalar, roller ve hak atamaları onunla birlikte silinir."
 admin.projects.deleteConfirmAccept,Projeyi sil
 admin.projects.deleteConfirmTitle,Bu projeyi sil
+admin.projects.detail.authorizationHelp,Yetkilendirme gerekli: kullanıcıların uygulamalarında oturum açabilmesi için bu projeden en az bir role sahip olması gerekir.
+admin.projects.detail.backToProjects,Projelere dön
 admin.projects.detail.created,Oluşturulma
 admin.projects.detail.organization,Kuruluş
+admin.projects.detail.owned,Kendine ait
+admin.projects.detail.projectAccessHelp,Proje erişimi gerekli: kullanıcılara projeye erişim verilmiş olmalıdır (kuruluşları veya doğrudan atama yoluyla).
+admin.projects.detail.readOnly,Paylaşılan projeler salt okunurdur. Bu projeyi yalnızca sahibi kuruluş yönetir.
+admin.projects.detail.remove,Projeyi sil
+admin.projects.detail.removeTypeLabel,Proje adı
+admin.projects.detail.removeTypeMismatch,Proje adı eşleşmiyor.
+admin.projects.detail.removeTypePrompt,Onaylamak için proje adını girin.
+admin.projects.detail.rename,Yeniden adlandır
+admin.projects.detail.renameDescription,Yönetimde görünen proje adını değiştirin.
+admin.projects.detail.renameInvalid,Bir proje adı girin.
+admin.projects.detail.renameTitle,Projeyi yeniden adlandır
+admin.projects.detail.shared,Paylaşılan
 admin.projects.detail.updated,Son güncelleme
 admin.projects.detailTitle,Proje ayrıntısı
 admin.projects.grants.create,Kuruluş erişimi ver
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Bu proje kaldırılsın mı?
 admin.projects.lifecycle.removeConfirmAccept,Projeyi kaldır
 admin.projects.lifecycle.removeConfirmTitle,Bu projeyi kaldır
+admin.projects.list.applications,Uygulamalar
 admin.projects.list.create,Proje oluştur
 admin.projects.list.description,"Projeler bir kuruluşun uygulamalarını, rollerini ve yetkilerini gruplar."
 admin.projects.list.empty,Bu realm'de henüz proje yok.
+admin.projects.list.emptyDetail,"Uygulamaları, rolleri ve yetkileri gruplamak için bir proje oluşturun."
 admin.projects.list.invalid,Bir proje adı girin ve bir kuruluş seçin.
 admin.projects.list.name,Proje adı
+admin.projects.list.roles,Roller
 admin.projects.list.search,Projeleri ara
+admin.projects.list.subtitle,Etkin kuruluşun kendisine ait ve paylaşılan projeleri.
 admin.projects.list.title,Projeler
 admin.projects.missingId,Bu hedef için bir proje seçilmiş olmalıdır.
+admin.projects.overview.authorizationTitle,Yetkilendirme gerekli
+admin.projects.overview.projectAccessTitle,Proje erişimi gerekli
+admin.projects.overview.settingsDescription,Proje adını ve erişimin nasıl uygulandığını denetleyin.
+admin.projects.overview.settingsTitle,Proje ayarları
+admin.projects.overview.title,Projeye genel bakış
 admin.projects.roles.create,Rol oluştur
 admin.projects.roles.deleteConfirm,Bu proje rolü silinsin mi? Ona atıfta bulunan atamalar rolü kaybeder.
 admin.projects.roles.description,Bu projenin kuruluşlara ve üyelerine atayabileceği roller.
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Bu alanı devre dışı bırakmak tüm uygulamaları 
 admin.realm.disabled,Alan devre dışı bırakıldı.
 admin.realm.domains,Etki alanları
 admin.realm.domainsHint,Etki alanlarını virgülle ayırın. İlk etki alanı birincil etki alanıdır.
+admin.realm.edit,Düzenle
+admin.realm.editDescription,"Realm adını, durumunu ve bu realm'e çözümlenen etki alanlarını değiştirin."
+admin.realm.editTitle,Realm'i düzenle
 admin.realm.enabled,Alan etkinleştirildi.
+admin.realm.explore.administratorsDescription,Realm yöneticisi durumunu verin veya kaldırın.
+admin.realm.explore.auditEventsDescription,Bu realm'in güvenlik olayı akışını inceleyin.
+admin.realm.explore.oidcClientsDescription,Bu realm'e kayıtlı OIDC istemcilerini inceleyin.
+admin.realm.explore.organizationsDescription,Bu realm'deki kuruluşlara göz atın.
+admin.realm.explore.sessionsDescription,Bu realm'in etkin oturumlarını inceleyin.
+admin.realm.exploreTitle,Keşfet
 admin.realm.identifier,Alan tanımlayıcısı
+admin.realm.identityTitle,Kimlik
 admin.realm.invalid,Bir alan adı ve en az bir etki alanı girin.
 admin.realm.name,Alan adı
 admin.realm.permissionDenied,Bu alanı değiştirme izniniz yok.
+admin.realm.primary,Birincil
 admin.realm.primaryDomain,Birincil etki alanı
 admin.realm.saved,Alan ayarları kaydedildi.
 admin.realm.status,Durum
 admin.realm.statusActive,Etkin
 admin.realm.statusDisabled,Devre dışı
+admin.realmAdministrators.add,Yönetici ekle
+admin.realmAdministrators.addDialogDescription,"Realm kullanıcılarını arayın, ardından realm yöneticisi durumu verin. Yetkiler bu realm'deki her kuruluş için geçerlidir."
+admin.realmAdministrators.addDialogTitle,Realm yöneticisi ekle
+admin.realmAdministrators.added,{name} artık bir realm yöneticisi.
+admin.realmAdministrators.alreadyAdmin,Zaten yönetici
+admin.realmAdministrators.confirmRemoveAccept,Yöneticiyi kaldır
+admin.realmAdministrators.confirmRemoveMessage,{name} realm yöneticisi olarak kaldırılsın mı? Bu realm'deki tüm kuruluş ayarlarına erişimini kaybeder.
+admin.realmAdministrators.confirmRemoveTitle,Bu yöneticiyi kaldır
+admin.realmAdministrators.count,{count} yönetici
+admin.realmAdministrators.countOne,1 yönetici
+admin.realmAdministrators.description,"Realm yöneticileri her kuruluşu, realm ayarlarını, OIDC'yi ve denetim günlüğünü yönetebilir."
+admin.realmAdministrators.emptyDescription,Henüz realm yöneticisi yok. Bu realm'i yönetmesi için ilk yöneticiyi atayın.
+admin.realmAdministrators.emptySearchDescription,Bu aramayla eşleşen realm kullanıcısı yok.
+admin.realmAdministrators.emptyTitle,Yönetici yok
+admin.realmAdministrators.grant,Yönetici yetkisi ver
+admin.realmAdministrators.invitePlaceholder,Ad veya e-postayla kişi arayın
+admin.realmAdministrators.lastAdminHint,Son yönetici kaldırılamaz.
+admin.realmAdministrators.remove,Kaldır
+admin.realmAdministrators.removed,{name} artık bir realm yöneticisi değil.
+admin.realmAdministrators.revokeFailed,Bu yönetici kaldırılamadı.
+admin.realmAdministrators.search,Yöneticileri ara
+admin.realmAdministrators.systemAdded,Sistem
+admin.realmAdministrators.tableAdded,Eklenme
+admin.realmAdministrators.tableAddedBy,Ekleyen
+admin.realmAdministrators.tableUser,Yönetici
+admin.realmAdministrators.title,Realm yöneticileri
+admin.roles.delete,Sil
+admin.roles.description,İki tür rol vardır: kuruluş rolleri kişilerin bu yönetimde neler yapabileceğini belirler; proje rolleri ise uygulamalarınızın belirteçlerde gördükleridir.
+admin.roles.dialog.displayName,Görünen ad
+admin.roles.dialog.editDescription,Bu rolün görünümünü değiştirin; anahtar sabit kalır.
+admin.roles.dialog.editTitle,Proje rolünü düzenle
+admin.roles.dialog.group,Grup
+admin.roles.dialog.invalid,Bir görünen ad ve rol anahtarı girin.
+admin.roles.dialog.key,Rol anahtarı
+admin.roles.dialog.keyHint,"Belirteçlerde kullanıldığı gibi küçük harfler, rakamlar ve tireler."
+admin.roles.dialog.missingRole,Seçili rol artık kullanılamıyor.
+admin.roles.dialog.newDescription,Uygulamaların belirteçlerde aldığı bir rol anahtarı ekleyin.
+admin.roles.dialog.newTitle,Yeni proje rolü
+admin.roles.dialog.noProject,Yeni rol için bir proje seçin.
+admin.roles.dialog.project,Proje
+admin.roles.edit,Düzenle
+admin.roles.empty.createProjects,Önce bir proje oluşturun
+admin.roles.empty.description,Bir proje olduğunda uygulamalarınızın belirteçlerde gördüğü rolleri tanımlayın.
+admin.roles.empty.title,Henüz proje yok
+admin.roles.groupFallback,Grupsuz
+admin.roles.memberCount,{count} üye
+admin.roles.memberCountOne,1 üye
+admin.roles.orgRole.admin.bullet1,Sahipler hariç kişileri yönetme
+admin.roles.orgRole.admin.bullet2,"Rolleri, projeleri ve hizmet hesaplarını yönetme"
+admin.roles.orgRole.admin.bullet3,"Markayı, oturum açma politikasını veya etki alanlarını değiştiremez"
+admin.roles.orgRole.admin.description,Kişileri ve projeleri günlük olarak yönetir.
+admin.roles.orgRole.guest.bullet1,"Minimum erişim, örneğin bir projeye davet edildiğinde"
+admin.roles.orgRole.guest.bullet2,"Kişileri, rolleri veya projeleri yönetemez"
+admin.roles.orgRole.guest.description,Misafirler ve ortaklar için sınırlı erişim.
+admin.roles.orgRole.member.bullet1,Oturum açabilir ve kuruluşu görüntüleyebilir
+admin.roles.orgRole.member.bullet2,Kuruluşla paylaşılan projeleri kullanır
+admin.roles.orgRole.member.bullet3,"Kişileri, rolleri veya projeleri yönetemez"
+admin.roles.orgRole.member.description,Kuruluş üyeleri için standart erişim.
+admin.roles.orgRole.owner.bullet1,Yöneticilerin yapabildiği her şey
+admin.roles.orgRole.owner.bullet2,"Markayı, oturum açma politikasını ve etki alanlarını değiştirir"
+admin.roles.orgRole.owner.bullet3,Sahipleri ve kuruluşun kaldırılmasını yönetir
+admin.roles.orgRole.owner.description,Kuruluşun ve bu yönetimin tam denetimi.
+admin.roles.organizationRoles.description,Bu yönetimde kimlerin ne yapabileceği.
+admin.roles.organizationRoles.title,Kuruluş rolleri
+admin.roles.projects.deleteConfirm,Bu proje rolü silinsin mi? Ona başvuran yetkiler rolü kaybeder.
+admin.roles.projects.deleteConfirmAccept,Rolü sil
+admin.roles.projects.deleteConfirmTitle,Bu rolü sil
+admin.roles.projects.newRole,Yeni rol
+admin.roles.projects.owned,Kendine ait
+admin.roles.projects.shared,Paylaşılan
+admin.roles.projects.title,Proje rolleri
+admin.roles.rolesEmpty,Bu proje henüz rol tanımlamıyor.
+admin.roles.title,Roller
 admin.session.expired,Yönetici oturumunuzun süresi doldu
 admin.signIn.activeTitle,Yönetici oturumu etkin
 admin.signIn.credential,Başlangıç yönetici kimlik bilgisi
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Oturum kapatıldı
 admin.signIn.subject,Özne
 admin.signIn.subjectType,Özne türü
 admin.signIn.title,Yönetici oturumu açma
+admin.userProfile.accessTab,Roller ve erişim
+admin.userProfile.assignRoles,Proje rolleri ata
+admin.userProfile.assignRolesDialogTitle,Proje rolleri ata
+admin.userProfile.assignRolesEmpty,Proje rolü bulunamadı.
+admin.userProfile.assignRolesProject,Proje
+admin.userProfile.assignRolesRoles,Roller
+admin.userProfile.assignRolesSave,Atamaları kaydet
+admin.userProfile.assignRolesSearch,Projeleri ara
+admin.userProfile.assignRolesSelected,{count} rol seçildi
+admin.userProfile.assignRolesStepProject,Bir proje seçin
+admin.userProfile.authDescription,Güvenli oturum açma üst verileri. Parolalar ve özel anahtarlar asla gösterilmez.
+admin.userProfile.authTitle,Kimlik doğrulama yöntemleri
+admin.userProfile.backToUsers,Kullanıcılara dön
+admin.userProfile.contactTitle,İletişim
+admin.userProfile.deactivate,Kullanıcıyı devre dışı bırak
+admin.userProfile.deactivateConfirm,{userName} devre dışı bırakılsın mı? Kullanıcı artık oturum açamaz.
+admin.userProfile.deactivated,{userName} devre dışı bırakıldı.
+admin.userProfile.deleteConfirm,{userName} kalıcı olarak silinsin mi? Bu işlem geri alınamaz.
+admin.userProfile.deleteConfirmMismatch,Yazılan ad eşleşmiyor.
+admin.userProfile.deleteConfirmTitle,Bu kullanıcıyı sil
+admin.userProfile.deleteConfirmType,Onaylamak için {userName} yazın.
+admin.userProfile.deleted,{userName} silindi.
+admin.userProfile.editProfile,Profili düzenle
+admin.userProfile.editProfileTitle,Profili düzenle
+admin.userProfile.email,E-posta adresi
+admin.userProfile.emailUnverified,Doğrulanmadı
+admin.userProfile.emailVerified,Doğrulandı
+admin.userProfile.impersonate,Kullanıcının yerine geç
+admin.userProfile.lastSignIn,Son oturum açma
+admin.userProfile.makeRealmAdmin,Realm yöneticisi yap
+admin.userProfile.makeRealmAdminConfirm,{userName} kullanıcısına realm yöneticisi yetkileri verilsin mi?
+admin.userProfile.makeRealmAdminDone,{userName} artık bir realm yöneticisi.
+admin.userProfile.memberSince,Üyelik başlangıcı
+admin.userProfile.membershipAdd,Kuruluşa ekle
+admin.userProfile.membershipAdded,{userName} kuruluşa eklendi.
+admin.userProfile.membershipEmpty,Bu kullanıcı hiçbir kuruluşun üyesi değil.
+admin.userProfile.membershipOrganization,Kuruluş
+admin.userProfile.membershipsTitle,Kuruluş üyelikleri
+admin.userProfile.missingId,Bu kullanıcı adresten çözümlenemedi.
+admin.userProfile.never,Asla
+admin.userProfile.notMember,Bu kullanıcı etkin kuruluşun üyesi değil.
+admin.userProfile.organizationRoleChanged,Kuruluş rolü güncellendi.
+admin.userProfile.organizationRoleDescription,Etkin kuruluş için birincil rolü seçin.
+admin.userProfile.organizationRoleTitle,Kuruluş rolü
+admin.userProfile.overviewTab,Genel bakış
+admin.userProfile.passwordConfirm,Yeni parolayı onaylayın
+admin.userProfile.passwordMismatch,Parolalar eşleşmiyor.
+admin.userProfile.passwordNew,Yeni parola
+admin.userProfile.passwordSaved,Parola ayarlandı.
+admin.userProfile.passwordTooShort,En az 8 karakterli bir parola girin.
+admin.userProfile.phone,Telefon numarası
+admin.userProfile.preferredLanguage,Tercih edilen dil
+admin.userProfile.profileSaved,Kullanıcı profili kaydedildi.
+admin.userProfile.profileTitle,Kullanıcı profili
+admin.userProfile.projectRolesEmpty,Atanmış proje rolü yok.
+admin.userProfile.projectRolesRemove,Kaldır
+admin.userProfile.projectRolesRemoveConfirm,{projectName} ataması kaldırılsın mı?
+admin.userProfile.projectRolesRemoved,Proje ataması kaldırıldı.
+admin.userProfile.projectRolesSaved,Proje atamaları kaydedildi.
+admin.userProfile.projectRolesTitle,Proje rolleri
+admin.userProfile.reactivate,Kullanıcıyı yeniden etkinleştir
+admin.userProfile.reactivateConfirm,{userName} yeniden etkinleştirilsin mi? Kullanıcı yeniden oturum açabilir.
+admin.userProfile.reactivated,{userName} yeniden etkinleştirildi.
+admin.userProfile.realmAdminBadge,Realm yöneticisi
+admin.userProfile.removeRealmAdmin,Realm yöneticisini kaldır
+admin.userProfile.removeRealmAdminConfirm,{userName} kullanıcısının realm yöneticisi yetkileri kaldırılsın mı?
+admin.userProfile.removeRealmAdminDone,{userName} artık bir realm yöneticisi değil.
+admin.userProfile.revokeAll,Tümünü iptal et
+admin.userProfile.revokeAllConfirm,{userName} kullanıcısının tüm oturumları iptal edilsin mi? Kullanıcının her yerde oturumu kapatılır.
+admin.userProfile.revokeAllDone,Tüm oturumlar iptal edildi.
+admin.userProfile.securityTab,Güvenlik
+admin.userProfile.sessionsDescription,Etkin oturumları inceleyin ve bir cihazın erişimini iptal edin.
+admin.userProfile.sessionsEmpty,Bu kullanıcının etkin oturumu yok.
+admin.userProfile.sessionsRevoke,İptal et
+admin.userProfile.sessionsRevokeConfirm,Bu oturum hemen iptal edilsin mi? Cihazın oturumu anında kapatılır.
+admin.userProfile.sessionsRevoked,Oturum iptal edildi.
+admin.userProfile.sessionsTitle,Oturumlar ve cihazlar
+admin.userProfile.setPassword,Parola belirle
+admin.userProfile.setPasswordDescription,Oturum açma parolasını değiştirin ve kilitlenmeleri temizleyin.
+admin.userProfile.setPasswordTitle,Yeni parola belirle
+admin.userProfile.unlock,Kullanıcının kilidini aç
+admin.userProfile.unlockConfirm,{userName} kullanıcısının kilidi açılsın mı? Kullanıcı yeniden oturum açabilir.
+admin.userProfile.unlocked,{userName} kullanıcısının kilidi açıldı.
+admin.userProfile.username,Kullanıcı adı
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} oluşturuldu.
 admin.users.createdAt,Oluşturulma
 admin.users.deleteWarning,Bu kullanıcıyı silmek oturumlarını ve erişimini anında iptal eder.
 admin.users.detailTitle,Kullanıcı ayrıntısı
+admin.users.directoryClearFilters,Filtreleri temizle
+admin.users.directoryCreated,Oluşturulma
+admin.users.directoryEmptySearch,Bu aramayla eşleşen kişi yok.
+admin.users.directoryEmptySearchDetail,"Farklı bir ad, e-posta adresi deneyin veya rol filtresini temizleyin."
+admin.users.directoryInvite,Kullanıcı davet et
+admin.users.directoryInviteDescription,E-postayla bir kuruluş daveti gönderin. Bağlantı bir kez gösterilir.
+admin.users.directoryInviteEmail,E-posta adresi
+admin.users.directoryInviteRole,Davet rolü
+admin.users.directoryInviteSubmit,Daveti gönder
+admin.users.directoryLastSignIn,Son oturum açma
+admin.users.directoryNever,Asla
+admin.users.directoryNoPeople,Bu kuruluşta henüz kimse yok.
+admin.users.directoryNoPeopleDetail,Bu kuruluşu başlatmak için ilk kişiyi davet edin.
+admin.users.directoryOpen,Aç
+admin.users.directoryOpenProfile,{name} adlı kişinin profilini aç
+admin.users.directoryOrganizations,Kuruluşlar
+admin.users.directoryRole,Rol
+admin.users.directoryRoleAdmin,Yönetici
+admin.users.directoryRoleAll,Tüm roller
+admin.users.directoryRoleGuest,Misafir
+admin.users.directoryRoleMember,Üye
+admin.users.directoryRoleOwner,Sahip
+admin.users.directoryScopeAll,Tüm kuruluşlar
+admin.users.directoryScopeOrganization,Bu kuruluş
+admin.users.directorySearchPlaceholder,"Ad, kullanıcı adı veya e-postaya göre filtrele"
+admin.users.directoryServiceAccountCreate,Hizmet hesabı oluştur
+admin.users.directoryServiceAccountDescription,Otomasyon için makine kimlikleri. İstemci parolası bir kez gösterilir.
+admin.users.directoryServiceAccountEmpty,Bu kuruluşta henüz hizmet hesabı yok.
+admin.users.directoryServiceAccountEmptyDetail,Entegrasyonlar ve otomasyon için ilk hizmet hesabını oluşturun.
+admin.users.directoryServiceAccountName,Görünen ad
+admin.users.directoryServiceAccountScopes,Kapsamlar
+admin.users.directoryServiceAccountScopesHint,Kapsamları boşluk veya virgülle ayırın.
+admin.users.directoryServiceAccountSecretCopied,Parola panoya kopyalandı.
+admin.users.directoryServiceAccountSecretCopy,Parolayı kopyala
+admin.users.directoryServiceAccountSecretTitle,İstemci parolası
+admin.users.directoryServiceAccountSecretWarning,Bu parola bir kez gösterilir. Şimdi güvenli bir yerde saklayın.
+admin.users.directoryServiceAccountStatus,Durum
+admin.users.directoryServiceAccountUserName,Kullanıcı adı
+admin.users.directoryServiceAccountUserNameHint,İstemci kimlik bilgileri takas edilirken istemci ID'si olarak kullanılır.
+admin.users.directoryStatus,Durum
+admin.users.directorySubtitle,{count} kişi
+admin.users.directoryTabInvitations,Bekleyen davetler
+admin.users.directoryTabPeople,Kişiler
+admin.users.directoryTabServiceAccounts,Hizmet hesapları
+admin.users.directoryUser,Kullanıcı
+admin.users.directoryUserInvited,Davet edildi
+admin.users.directoryUserName,Kullanıcı adı
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Kullanıcı tanımlayıcısı
 admin.users.invalid,Geçerli bir e-posta adresi ve kullanıcı adı girin.
+admin.users.inviteEmailInvalid,Geçerli bir e-posta adresi girin.
+admin.users.inviteRevokeConfirm,{email} için davet iptal edilsin mi? Davet bağlantısı anında çalışmayı durdurur.
+admin.users.inviteRevoked,Davet iptal edildi.
+admin.users.inviteRolesInvalid,En az bir davet rolü seçin.
+admin.users.inviteSent,Davet oluşturuldu.
+admin.users.inviteTokenCopied,Davet bağlantısı panoya kopyalandı.
+admin.users.inviteTokenCopy,Bağlantıyı kopyala
+admin.users.inviteTokenDismiss,Bu bağlantıyı kaydettim
+admin.users.inviteTokenOnce,Bu davet bağlantısı bir kez gösterilir. Davet ettiğiniz kişiyle paylaşın.
+admin.users.inviteTokenTitle,Davet bağlantısı
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Etkin
 admin.users.lifecycle.deleted,Silindi
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Başlangıç
 admin.users.lifecycle.locked,Kilitli
 admin.users.lifecycle.suspended,Askıya alındı
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,Hizmet hesabı oluşturuldu.
+admin.users.serviceAccountInvalid,Hizmet hesabı için bir görünen ad ve kullanıcı adı girin.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
+admin.users.unverifiedEmail,Doğrulanmamış e-posta
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Güvenli kimlik hizmetleri

@@ -307,6 +307,68 @@ account.status.unavailable,غير متاح
 account.workspace.devicesTitle,الأجهزة والتطبيقات
 admin.common.confirmTitle,تأكيد هذا الإجراء
 admin.common.permission,ليس لديك إذن لعرض بيانات الإدارة هذه.
+admin.configuration.brandingDescription,ألوان فاتحة وداكنة وشعار وروابط قانونية مع معاينة حية.
+admin.configuration.brandingFormDescription,الألوان وعناوين URL للشعار والأيقونة والسمة الافتراضية والروابط القانونية.
+admin.configuration.brandingFormTitle,ألوان الهوية والأصول
+admin.configuration.brandingTitle,الهوية البصرية
+admin.configuration.claim,تأكيد النطاق
+admin.configuration.colorInvalid,أدخل لون hex مثل #2563eb.
+admin.configuration.copied,تم النسخ إلى الحافظة.
+admin.configuration.copy,نسخ
+admin.configuration.created,تاريخ الإنشاء
+admin.configuration.dangerDescription,إلغاء التنشيط يحظر تسجيل الدخول فوراً؛ والإزالة نهائية.
+admin.configuration.dangerTitle,منطقة الخطر
+admin.configuration.deactivate,إلغاء تنشيط المؤسسة
+admin.configuration.description,إعدادات المؤسسة وتسجيل الدخول والنطاقات المؤكدة.
+admin.configuration.dialogDescription,أكّد نطاقاً ليتمكن الأشخاص من اكتشاف هذه المؤسسة من بريدهم الإلكتروني.
+admin.configuration.dialogTitle,تأكيد النطاق
+admin.configuration.dirty,لديك تغييرات غير محفوظة.
+admin.configuration.discard,تجاهل
+admin.configuration.domainName,النطاق
+admin.configuration.domainsDescription,النطاقات المؤكدة واكتشاف المؤسسة.
+admin.configuration.domainsTitle,النطاقات
+admin.configuration.fontDescription,خط ويب اختياري وعنوان URL لورقة أنماط الخط.
+admin.configuration.fontFamily,عائلة الخط
+admin.configuration.fontFamilyPlaceholder,"system-ui, Inter, sans-serif"
+admin.configuration.fontTitle,الخطوط
+admin.configuration.fontUrl,عنوان URL لورقة أنماط الخط
+admin.configuration.generalDescription,اسم المؤسسة وحالتها ومنطقة الخطر.
+admin.configuration.generalTitle,عام
+admin.configuration.identifier,معرّف المؤسسة
+admin.configuration.legalDescription,تُعرض أسفل بطاقة تسجيل الدخول.
+admin.configuration.legalTitle,الروابط القانونية
+admin.configuration.loginDescription,اختر طرق تسجيل الدخول التي يستطيع الأشخاص استخدامها.
+admin.configuration.loginTitle,سياسة تسجيل الدخول
+admin.configuration.metaDescription,معرّفات ثانوية للدعم وتصحيح الأخطاء.
+admin.configuration.metaTitle,تفاصيل المؤسسة
+admin.configuration.nameDescription,يُعرض عند تسجيل الدخول وفي الدعوات ولوحة الإدارة.
+admin.configuration.nameTitle,اسم المؤسسة
+admin.configuration.previewDark,داكنة
+admin.configuration.previewDescription,تُعرض من قيم النموذج الحالية.
+admin.configuration.previewEmail,ivan@example.com
+admin.configuration.previewLight,فاتحة
+admin.configuration.previewTitle,معاينة تسجيل الدخول
+admin.configuration.primaryDomain,النطاق الأساسي
+admin.configuration.privacyUrl,عنوان URL لسياسة الخصوصية
+admin.configuration.reactivate,إعادة تنشيط المؤسسة
+admin.configuration.readOnly,يستطيع مالكو المؤسسة فقط تغيير هذه الإعدادات.
+admin.configuration.remove,إزالة المؤسسة
+admin.configuration.removeConfirm,هل تريد إزالة النطاق {domain}؟ سيتوقف اكتشاف المؤسسة له فوراً.
+admin.configuration.removeTitle,إزالة النطاق
+admin.configuration.signInDescription,نماذج سياسة تسجيل الدخول والأمان للمؤسسة.
+admin.configuration.signInTitle,تسجيل الدخول والأمان
+admin.configuration.statusActive,نشطة
+admin.configuration.statusDescription,المؤسسات غير النشطة تحظر تسجيل الدخول؛ وتبقى المؤسسات المزالة للقراءة فقط.
+admin.configuration.statusInactive,غير نشطة
+admin.configuration.statusRemoved,مزالة
+admin.configuration.statusTitle,الحالة
+admin.configuration.termsUrl,عنوان URL لشروط الاستخدام
+admin.configuration.themeDark,السمة الداكنة
+admin.configuration.themeLight,السمة الفاتحة
+admin.configuration.title,الإعدادات
+admin.configuration.typeName,اكتب اسم المؤسسة للتأكيد
+admin.configuration.typeNameInvalid,الاسم المكتوب لا يطابق اسم المؤسسة.
+admin.configuration.watermark,إخفاء العلامة المائية لـ Authworks
 admin.events.actor,الفاعل
 admin.events.aggregate,التجميع
 admin.events.count,{count} حدثاً
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,مُزالة
 admin.projects.access.description,الأدوار التي يمتلكها هذا المسؤول فعلياً في المشروع الآن.
 admin.projects.access.empty,لا توجد أدوار مشروع فعّالة في سياق المؤسسة الحالي.
 admin.projects.access.grantedOrganization,مُمنَح عبر المؤسسة
+admin.projects.access.organizationDescription,المؤسسات التي لديها حق الوصول إلى هذا المشروع والأدوار التي تحصل عليها.
+admin.projects.access.organizationTitle,وصول المؤسسات
 admin.projects.access.permissionDescription,تُحدَّد الأدوار الثابتة وأذوناتها بواسطة Authworks ولا يمكن تعديلها.
 admin.projects.access.permissionTitle,الأدوار والأذونات الثابتة
 admin.projects.access.roleKeys,أدوار المشروع الفعلية
+admin.projects.access.selectRoles,اختر الأدوار
 admin.projects.access.title,الوصول الفعلي
 admin.projects.applications.create,إضافة تطبيق
 admin.projects.applications.description,التطبيقات التي تصادق على هذا المشروع.
@@ -719,11 +784,32 @@ admin.projects.applications.name,اسم التطبيق
 admin.projects.applications.removeConfirm,هل تريد إزالة هذا التطبيق؟ لا يمكن التراجع عن هذا الإجراء.
 admin.projects.applications.title,التطبيقات
 admin.projects.applications.type,نوع التطبيق
+admin.projects.assignments.create,تعيين مستخدم
+admin.projects.assignments.description,عيّن أدوار هذا المشروع مباشرة لمستخدمي المؤسسة النشطة.
+admin.projects.assignments.empty,لم يُعيَّن أي مستخدم مباشرة في هذا المشروع بعد.
+admin.projects.assignments.invalid,أدخل مستخدماً واختر دوراً واحداً على الأقل.
+admin.projects.assignments.removeConfirm,هل تريد إزالة تعيين هذا المستخدم؟ سيفقد المستخدم أدوار هذا المشروع.
+admin.projects.assignments.title,تعيينات المستخدمين المباشرة
+admin.projects.assignments.user,المستخدم
 admin.projects.deleteConfirm,هل تريد حذف هذا المشروع؟ ستُحذف التطبيقات والأدوار والمنح معه.
 admin.projects.deleteConfirmAccept,حذف المشروع
 admin.projects.deleteConfirmTitle,حذف هذا المشروع
+admin.projects.detail.authorizationHelp,التفويض مطلوب: يحتاج المستخدمون إلى دور واحد على الأقل من هذا المشروع لتسجيل الدخول إلى تطبيقاته.
+admin.projects.detail.backToProjects,عودة إلى المشاريع
 admin.projects.detail.created,تاريخ الإنشاء
 admin.projects.detail.organization,المؤسسة
+admin.projects.detail.owned,مملوك
+admin.projects.detail.projectAccessHelp,الوصول إلى المشروع مطلوب: يجب منح المستخدمين حق الوصول إلى المشروع (عبر مؤسستهم أو بتعيين مباشر).
+admin.projects.detail.readOnly,المشاريع المشتركة للقراءة فقط. تدير هذا المشروع المؤسسة المالكة فقط.
+admin.projects.detail.remove,حذف المشروع
+admin.projects.detail.removeTypeLabel,اسم المشروع
+admin.projects.detail.removeTypeMismatch,اسم المشروع غير متطابق.
+admin.projects.detail.removeTypePrompt,أدخل اسم المشروع للتأكيد.
+admin.projects.detail.rename,إعادة تسمية
+admin.projects.detail.renameDescription,غيّر اسم المشروع المعروض في لوحة الإدارة.
+admin.projects.detail.renameInvalid,أدخل اسم المشروع.
+admin.projects.detail.renameTitle,إعادة تسمية المشروع
+admin.projects.detail.shared,مشترك
 admin.projects.detail.updated,آخر تحديث
 admin.projects.detailTitle,تفاصيل المشروع
 admin.projects.grants.create,منح وصول المؤسسة
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,إزالة
 admin.projects.lifecycle.removeConfirm,هل تريد إزالة هذا المشروع؟
 admin.projects.lifecycle.removeConfirmAccept,إزالة المشروع
 admin.projects.lifecycle.removeConfirmTitle,إزالة هذا المشروع
+admin.projects.list.applications,التطبيقات
 admin.projects.list.create,إنشاء مشروع
 admin.projects.list.description,تجمع المشاريع تطبيقات المؤسسة وأدوارها ومنحها.
 admin.projects.list.empty,لا توجد مشاريع في هذا النطاق بعد.
+admin.projects.list.emptyDetail,أنشئ مشروعاً لتجميع التطبيقات والأدوار والمنح.
 admin.projects.list.invalid,أدخل اسم المشروع واختر منظمة.
 admin.projects.list.name,اسم المشروع
+admin.projects.list.roles,الأدوار
 admin.projects.list.search,البحث في المشاريع
+admin.projects.list.subtitle,مشاريع المؤسسة النشطة المملوكة والمشتركة.
 admin.projects.list.title,المشاريع
 admin.projects.missingId,يجب اختيار مشروع لهذه الوجهة.
+admin.projects.overview.authorizationTitle,التفويض مطلوب
+admin.projects.overview.projectAccessTitle,الوصول إلى المشروع مطلوب
+admin.projects.overview.settingsDescription,تحكّم في اسم المشروع وكيفية فرض الوصول.
+admin.projects.overview.settingsTitle,إعدادات المشروع
+admin.projects.overview.title,نظرة عامة على المشروع
 admin.projects.roles.create,إنشاء دور
 admin.projects.roles.deleteConfirm,هل تريد حذف دور المشروع هذا؟ ستفقد المنح التي تشير إليه هذا الدور.
 admin.projects.roles.description,الأدوار التي يمكن لهذا المشروع إسنادها إلى المؤسسات وأعضائها.
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,تعطيل هذا النطاق يوقف تسجيل ا
 admin.realm.disabled,تم تعطيل النطاق.
 admin.realm.domains,المجالات
 admin.realm.domainsHint,افصل بين المجالات بفواصل. المجال الأول هو المجال الأساسي.
+admin.realm.edit,تعديل
+admin.realm.editDescription,غيّر اسم النطاق وحالته والنطاقات التي تُحل إليه.
+admin.realm.editTitle,تعديل النطاق
 admin.realm.enabled,تم تفعيل النطاق.
+admin.realm.explore.administratorsDescription,امنح صفة مسؤول النطاق أو ألغها.
+admin.realm.explore.auditEventsDescription,راجع سجل أحداث الأمان لهذا النطاق.
+admin.realm.explore.oidcClientsDescription,راجع عملاء OIDC المسجلين في هذا النطاق.
+admin.realm.explore.organizationsDescription,تصفح المؤسسات في هذا النطاق.
+admin.realm.explore.sessionsDescription,راجع الجلسات النشطة لهذا النطاق.
+admin.realm.exploreTitle,استكشاف
 admin.realm.identifier,معرّف النطاق
+admin.realm.identityTitle,الهوية
 admin.realm.invalid,أدخل اسم النطاق ومجالًا واحدًا على الأقل.
 admin.realm.name,اسم النطاق
 admin.realm.permissionDenied,ليس لديك إذن لتغيير هذا النطاق.
+admin.realm.primary,أساسي
 admin.realm.primaryDomain,المجال الأساسي
 admin.realm.saved,تم حفظ إعدادات النطاق.
 admin.realm.status,الحالة
 admin.realm.statusActive,نشط
 admin.realm.statusDisabled,معطل
+admin.realmAdministrators.add,إضافة مسؤول
+admin.realmAdministrators.addDialogDescription,ابحث عن مستخدمي النطاق، ثم امنح صفة مسؤول النطاق. تسري الصلاحيات على كل مؤسسة في هذا النطاق.
+admin.realmAdministrators.addDialogTitle,إضافة مسؤول النطاق
+admin.realmAdministrators.added,أصبح {name} مسؤول النطاق الآن.
+admin.realmAdministrators.alreadyAdmin,مسؤول بالفعل
+admin.realmAdministrators.confirmRemoveAccept,إزالة المسؤول
+admin.realmAdministrators.confirmRemoveMessage,هل تريد إزالة {name} كمسؤول للنطاق؟ سيفقد الوصول إلى كل إعدادات المؤسسات في هذا النطاق.
+admin.realmAdministrators.confirmRemoveTitle,إزالة هذا المسؤول
+admin.realmAdministrators.count,{count} من المسؤولين
+admin.realmAdministrators.countOne,مسؤول واحد
+admin.realmAdministrators.description,يستطيع مسؤولو النطاق إدارة كل مؤسسة وإعدادات النطاق وOIDC وسجل التدقيق.
+admin.realmAdministrators.emptyDescription,لا يوجد مسؤولو نطاق بعد. امنح أول مسؤول لإدارة هذا النطاق.
+admin.realmAdministrators.emptySearchDescription,لا يوجد مستخدمو نطاق يطابقون هذا البحث.
+admin.realmAdministrators.emptyTitle,لا يوجد مسؤولون
+admin.realmAdministrators.grant,منح صفة مسؤول
+admin.realmAdministrators.invitePlaceholder,ابحث عن الأشخاص بالاسم أو البريد الإلكتروني
+admin.realmAdministrators.lastAdminHint,لا يمكن إزالة المسؤول الأخير.
+admin.realmAdministrators.remove,إزالة
+admin.realmAdministrators.removed,لم يعد {name} مسؤول النطاق.
+admin.realmAdministrators.revokeFailed,تعذر إزالة هذا المسؤول.
+admin.realmAdministrators.search,البحث عن المسؤولين
+admin.realmAdministrators.systemAdded,النظام
+admin.realmAdministrators.tableAdded,أُضيف
+admin.realmAdministrators.tableAddedBy,أُضيف بواسطة
+admin.realmAdministrators.tableUser,المسؤول
+admin.realmAdministrators.title,مسؤولو النطاق
+admin.roles.delete,حذف
+admin.roles.description,نوعان من الأدوار: أدوار المؤسسة تحدد ما يمكن للأشخاص فعله في لوحة الإدارة؛ وأدوار المشروع هي ما تراه تطبيقاتك في الرموز.
+admin.roles.dialog.displayName,الاسم المعروض
+admin.roles.dialog.editDescription,غيّر طريقة ظهور هذا الدور؛ يبقى المفتاح ثابتاً.
+admin.roles.dialog.editTitle,تعديل دور المشروع
+admin.roles.dialog.group,المجموعة
+admin.roles.dialog.invalid,أدخل اسماً معروضاً ومفتاح دور.
+admin.roles.dialog.key,مفتاح الدور
+admin.roles.dialog.keyHint,أحرف صغيرة وأرقام وشرطات، كما تُستخدم في الرموز.
+admin.roles.dialog.missingRole,الدور المحدد لم يعد متاحاً.
+admin.roles.dialog.newDescription,أضف مفتاح دور تتلقاه التطبيقات في الرموز.
+admin.roles.dialog.newTitle,دور مشروع جديد
+admin.roles.dialog.noProject,اختر مشروعاً للدور الجديد.
+admin.roles.dialog.project,المشروع
+admin.roles.edit,تعديل
+admin.roles.empty.createProjects,أنشئ مشروعاً أولاً
+admin.roles.empty.description,حدّد الأدوار التي ستراها تطبيقاتك في الرموز بمجرد وجود مشروع.
+admin.roles.empty.title,لا توجد مشاريع بعد
+admin.roles.groupFallback,بلا مجموعة
+admin.roles.memberCount,{count} من الأعضاء
+admin.roles.memberCountOne,عضو واحد
+admin.roles.orgRole.admin.bullet1,يدير الأشخاص باستثناء المالكين
+admin.roles.orgRole.admin.bullet2,يدير الأدوار والمشاريع وحسابات الخدمة
+admin.roles.orgRole.admin.bullet3,لا يستطيع تغيير الهوية البصرية أو سياسة تسجيل الدخول أو النطاقات
+admin.roles.orgRole.admin.description,يدير الأشخاص والمشاريع يومياً.
+admin.roles.orgRole.guest.bullet1,وصول محدود، مثلاً عند الدعوة لمشروع
+admin.roles.orgRole.guest.bullet2,لا يستطيع إدارة الأشخاص أو الأدوار أو المشاريع
+admin.roles.orgRole.guest.description,وصول محدود للضيوف والشركاء.
+admin.roles.orgRole.member.bullet1,يستطيع تسجيل الدخول وعرض المؤسسة
+admin.roles.orgRole.member.bullet2,يستخدم المشاريع المشتركة مع المؤسسة
+admin.roles.orgRole.member.bullet3,لا يستطيع إدارة الأشخاص أو الأدوار أو المشاريع
+admin.roles.orgRole.member.description,وصول عادي لأعضاء المؤسسة.
+admin.roles.orgRole.owner.bullet1,كل ما يستطيع المسؤولون فعله
+admin.roles.orgRole.owner.bullet2,يغيّر الهوية البصرية وسياسة تسجيل الدخول والنطاقات
+admin.roles.orgRole.owner.bullet3,يدير المالكين وإزالة المؤسسة
+admin.roles.orgRole.owner.description,تحكم كامل في المؤسسة ولوحة الإدارة هذه.
+admin.roles.organizationRoles.description,من يستطيع فعل ماذا في لوحة الإدارة هذه.
+admin.roles.organizationRoles.title,أدوار المؤسسة
+admin.roles.projects.deleteConfirm,هل تريد حذف دور المشروع هذا؟ ستفقد المنح التي تشير إليه هذا الدور.
+admin.roles.projects.deleteConfirmAccept,حذف الدور
+admin.roles.projects.deleteConfirmTitle,حذف هذا الدور
+admin.roles.projects.newRole,دور جديد
+admin.roles.projects.owned,مملوكة
+admin.roles.projects.shared,مشتركة
+admin.roles.projects.title,أدوار المشاريع
+admin.roles.rolesEmpty,لم يحدد هذا المشروع أي أدوار بعد.
+admin.roles.title,الأدوار
 admin.session.expired,انتهت صلاحية جلسة المسؤول
 admin.signIn.activeTitle,جلسة المسؤول نشطة
 admin.signIn.credential,بيانات اعتماد المسؤول الأولي
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,تم تسجيل الخروج
 admin.signIn.subject,الموضوع
 admin.signIn.subjectType,نوع الموضوع
 admin.signIn.title,تسجيل دخول المسؤول
+admin.userProfile.accessTab,الأدوار والوصول
+admin.userProfile.assignRoles,تعيين أدوار المشاريع
+admin.userProfile.assignRolesDialogTitle,تعيين أدوار المشاريع
+admin.userProfile.assignRolesEmpty,لم يتم العثور على أدوار مشاريع.
+admin.userProfile.assignRolesProject,المشروع
+admin.userProfile.assignRolesRoles,الأدوار
+admin.userProfile.assignRolesSave,حفظ التعيينات
+admin.userProfile.assignRolesSearch,البحث في المشاريع
+admin.userProfile.assignRolesSelected,تم اختيار {count} من الأدوار
+admin.userProfile.assignRolesStepProject,اختر مشروعاً
+admin.userProfile.authDescription,بيانات آمنة لتسجيل الدخول. لا تُعرض الأسرار والمفاتيح الخاصة أبداً.
+admin.userProfile.authTitle,طرق المصادقة
+admin.userProfile.backToUsers,عودة إلى المستخدمين
+admin.userProfile.contactTitle,جهات الاتصال
+admin.userProfile.deactivate,إلغاء تنشيط المستخدم
+admin.userProfile.deactivateConfirm,هل تريد إلغاء تنشيط {userName}؟ لن يتمكن المستخدم من تسجيل الدخول بعد الآن.
+admin.userProfile.deactivated,تم إلغاء تنشيط {userName}.
+admin.userProfile.deleteConfirm,هل تريد حذف {userName} نهائياً؟ لا يمكن التراجع عن ذلك.
+admin.userProfile.deleteConfirmMismatch,الاسم المكتوب غير متطابق.
+admin.userProfile.deleteConfirmTitle,حذف هذا المستخدم
+admin.userProfile.deleteConfirmType,اكتب {userName} للتأكيد.
+admin.userProfile.deleted,تم حذف {userName}.
+admin.userProfile.editProfile,تعديل الملف الشخصي
+admin.userProfile.editProfileTitle,تعديل الملف الشخصي
+admin.userProfile.email,عنوان البريد الإلكتروني
+admin.userProfile.emailUnverified,لم يتم التحقق
+admin.userProfile.emailVerified,تم التحقق
+admin.userProfile.impersonate,انتحال صفة المستخدم
+admin.userProfile.lastSignIn,آخر تسجيل دخول
+admin.userProfile.makeRealmAdmin,تعيين مسؤول للنطاق
+admin.userProfile.makeRealmAdminConfirm,هل تريد منح {userName} صلاحيات مسؤول النطاق؟
+admin.userProfile.makeRealmAdminDone,أصبح {userName} مسؤول النطاق الآن.
+admin.userProfile.memberSince,عضو منذ
+admin.userProfile.membershipAdd,إضافة إلى مؤسسة
+admin.userProfile.membershipAdded,تمت إضافة {userName} إلى المؤسسة.
+admin.userProfile.membershipEmpty,هذا المستخدم ليس عضواً في أي مؤسسة.
+admin.userProfile.membershipOrganization,المؤسسة
+admin.userProfile.membershipsTitle,عضويات المؤسسات
+admin.userProfile.missingId,تعذر تحديد هذا المستخدم من العنوان.
+admin.userProfile.never,أبداً
+admin.userProfile.notMember,هذا المستخدم ليس عضواً في المؤسسة النشطة.
+admin.userProfile.organizationRoleChanged,تم تحديث دور المؤسسة.
+admin.userProfile.organizationRoleDescription,اختر الدور الأساسي للمؤسسة النشطة.
+admin.userProfile.organizationRoleTitle,دور المؤسسة
+admin.userProfile.overviewTab,نظرة عامة
+admin.userProfile.passwordConfirm,تأكيد كلمة المرور الجديدة
+admin.userProfile.passwordMismatch,كلمتا المرور غير متطابقتين.
+admin.userProfile.passwordNew,كلمة مرور جديدة
+admin.userProfile.passwordSaved,تم تعيين كلمة المرور.
+admin.userProfile.passwordTooShort,أدخل كلمة مرور من 8 أحرف على الأقل.
+admin.userProfile.phone,رقم الهاتف
+admin.userProfile.preferredLanguage,اللغة المفضلة
+admin.userProfile.profileSaved,تم حفظ الملف الشخصي للمستخدم.
+admin.userProfile.profileTitle,الملف الشخصي
+admin.userProfile.projectRolesEmpty,لم تُعيَّن أي أدوار مشاريع.
+admin.userProfile.projectRolesRemove,إزالة
+admin.userProfile.projectRolesRemoveConfirm,هل تريد إزالة تعيين {projectName}؟
+admin.userProfile.projectRolesRemoved,تمت إزالة تعيين المشروع.
+admin.userProfile.projectRolesSaved,تم حفظ تعيينات المشاريع.
+admin.userProfile.projectRolesTitle,أدوار المشاريع
+admin.userProfile.reactivate,إعادة تنشيط المستخدم
+admin.userProfile.reactivateConfirm,هل تريد إعادة تنشيط {userName}؟ سيتمكن المستخدم من تسجيل الدخول مجدداً.
+admin.userProfile.reactivated,تمت إعادة تنشيط {userName}.
+admin.userProfile.realmAdminBadge,مسؤول النطاق
+admin.userProfile.removeRealmAdmin,إزالة مسؤول النطاق
+admin.userProfile.removeRealmAdminConfirm,هل تريد إزالة صلاحيات مسؤول النطاق من {userName}؟
+admin.userProfile.removeRealmAdminDone,لم يعد {userName} مسؤول النطاق.
+admin.userProfile.revokeAll,إلغاء الكل
+admin.userProfile.revokeAllConfirm,هل تريد إلغاء كل جلسات {userName}؟ سيُسجَّل خروج المستخدم في كل مكان.
+admin.userProfile.revokeAllDone,تم إلغاء كل الجلسات.
+admin.userProfile.securityTab,الأمان
+admin.userProfile.sessionsDescription,افحص الجلسات النشطة وألغِ الوصول من جهاز ما.
+admin.userProfile.sessionsEmpty,ليس لهذا المستخدم أي جلسات نشطة.
+admin.userProfile.sessionsRevoke,إلغاء
+admin.userProfile.sessionsRevokeConfirm,هل تريد إلغاء هذه الجلسة فوراً؟ سيُسجَّل خروج الجهاز على الفور.
+admin.userProfile.sessionsRevoked,تم إلغاء الجلسة.
+admin.userProfile.sessionsTitle,الجلسات والأجهزة
+admin.userProfile.setPassword,تعيين كلمة مرور
+admin.userProfile.setPasswordDescription,استبدل كلمة مرور تسجيل الدخول وأزل أي قفل.
+admin.userProfile.setPasswordTitle,تعيين كلمة مرور جديدة
+admin.userProfile.unlock,إلغاء قفل المستخدم
+admin.userProfile.unlockConfirm,هل تريد إلغاء قفل {userName}؟ سيتمكن المستخدم من تسجيل الدخول مجدداً.
+admin.userProfile.unlocked,تم إلغاء قفل {userName}.
+admin.userProfile.username,اسم المستخدم
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,تم إنشاء {userName}.
 admin.users.createdAt,تاريخ الإنشاء
 admin.users.deleteWarning,يؤدي حذف هذا المستخدم إلى إبطال جلساته ووصوله فوراً.
 admin.users.detailTitle,تفاصيل المستخدم
+admin.users.directoryClearFilters,مسح عوامل التصفية
+admin.users.directoryCreated,تاريخ الإنشاء
+admin.users.directoryEmptySearch,لا يوجد أشخاص يطابقون هذا البحث.
+admin.users.directoryEmptySearchDetail,جرّب اسماً أو بريداً إلكترونياً مختلفاً، أو امسح عامل تصفية الدور.
+admin.users.directoryInvite,دعوة مستخدم
+admin.users.directoryInviteDescription,أرسل دعوة إلى المؤسسة بالبريد الإلكتروني. يُعرض الرابط مرة واحدة.
+admin.users.directoryInviteEmail,عنوان البريد الإلكتروني
+admin.users.directoryInviteRole,دور الدعوة
+admin.users.directoryInviteSubmit,إرسال الدعوة
+admin.users.directoryLastSignIn,آخر تسجيل دخول
+admin.users.directoryNever,أبداً
+admin.users.directoryNoPeople,لا يوجد أشخاص في هذه المؤسسة بعد.
+admin.users.directoryNoPeopleDetail,ادعُ أول شخص لبدء العمل في هذه المؤسسة.
+admin.users.directoryOpen,فتح
+admin.users.directoryOpenProfile,فتح الملف الشخصي لـ {name}
+admin.users.directoryOrganizations,المؤسسات
+admin.users.directoryRole,الدور
+admin.users.directoryRoleAdmin,المسؤول
+admin.users.directoryRoleAll,كل الأدوار
+admin.users.directoryRoleGuest,الضيف
+admin.users.directoryRoleMember,العضو
+admin.users.directoryRoleOwner,المالك
+admin.users.directoryScopeAll,كل المؤسسات
+admin.users.directoryScopeOrganization,هذه المؤسسة
+admin.users.directorySearchPlaceholder,تصفية بالاسم أو اسم المستخدم أو البريد الإلكتروني
+admin.users.directoryServiceAccountCreate,إنشاء حساب خدمة
+admin.users.directoryServiceAccountDescription,هويات آلية للأتمتة. يُعرض سر العميل مرة واحدة.
+admin.users.directoryServiceAccountEmpty,لا توجد حسابات خدمة في هذه المؤسسة بعد.
+admin.users.directoryServiceAccountEmptyDetail,أنشئ أول حساب خدمة للتكاملات والأتمتة.
+admin.users.directoryServiceAccountName,الاسم المعروض
+admin.users.directoryServiceAccountScopes,النطاقات
+admin.users.directoryServiceAccountScopesHint,افصل بين النطاقات بمسافات أو فواصل.
+admin.users.directoryServiceAccountSecretCopied,تم نسخ السر إلى الحافظة.
+admin.users.directoryServiceAccountSecretCopy,نسخ السر
+admin.users.directoryServiceAccountSecretTitle,سر العميل
+admin.users.directoryServiceAccountSecretWarning,يُعرض هذا السر مرة واحدة. احفظه في مكان آمن الآن.
+admin.users.directoryServiceAccountStatus,الحالة
+admin.users.directoryServiceAccountUserName,اسم المستخدم
+admin.users.directoryServiceAccountUserNameHint,يُستخدم كمعرّف العميل عند تبادل بيانات اعتماد العميل.
+admin.users.directoryStatus,الحالة
+admin.users.directorySubtitle,{count} من الأشخاص
+admin.users.directoryTabInvitations,الدعوات المعلقة
+admin.users.directoryTabPeople,الأشخاص
+admin.users.directoryTabServiceAccounts,حسابات الخدمة
+admin.users.directoryUser,المستخدم
+admin.users.directoryUserInvited,مدعو
+admin.users.directoryUserName,اسم المستخدم
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,معرّف المستخدم
 admin.users.invalid,أدخل عنوان بريد إلكتروني واسم مستخدم صالحين.
+admin.users.inviteEmailInvalid,أدخل عنوان بريد إلكتروني صالحاً.
+admin.users.inviteRevokeConfirm,هل تريد إلغاء دعوة {email}؟ سيتوقف رابط الدعوة عن العمل فوراً.
+admin.users.inviteRevoked,تم إلغاء الدعوة.
+admin.users.inviteRolesInvalid,اختر دور دعوة واحداً على الأقل.
+admin.users.inviteSent,تم إنشاء الدعوة.
+admin.users.inviteTokenCopied,تم نسخ رابط الدعوة إلى الحافظة.
+admin.users.inviteTokenCopy,نسخ الرابط
+admin.users.inviteTokenDismiss,لقد حفظت هذا الرابط
+admin.users.inviteTokenOnce,يُعرض رابط الدعوة هذا مرة واحدة. شاركه مع الشخص الذي دعوته.
+admin.users.inviteTokenTitle,رابط الدعوة
 admin.users.lastName,Last name
 admin.users.lifecycle.active,نشط
 admin.users.lifecycle.deleted,محذوف
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,مبدئي
 admin.users.lifecycle.locked,مقفل
 admin.users.lifecycle.suspended,موقوف
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,تم إنشاء حساب الخدمة.
+admin.users.serviceAccountInvalid,أدخل اسماً معروضاً واسم مستخدم لحساب الخدمة.
 admin.users.sessions.created,تاريخ الإنشاء
 admin.users.sessions.expires,تنتهي في
 admin.users.sessions.ipAddress,عنوان IP
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,آخر استخدام
 admin.users.sessions.method,طريقة تسجيل الدخول
 admin.users.state,الحالة
 admin.users.title,المستخدمون
+admin.users.unverifiedEmail,بريد إلكتروني غير مؤكد
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,خدمات هوية آمنة

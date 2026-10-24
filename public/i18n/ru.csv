@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Устройства и приложения
 admin.common.confirmTitle,Подтвердите это действие
 admin.common.permission,У вас нет разрешения просматривать эти административные данные.
+admin.configuration.brandingDescription,"Светлые и тёмные цвета, логотип и юридические ссылки с живым предпросмотром."
+admin.configuration.brandingFormDescription,"Цвета, URL логотипа и значка, тема по умолчанию и юридические ссылки."
+admin.configuration.brandingFormTitle,Фирменные цвета и ресурсы
+admin.configuration.brandingTitle,Оформление
+admin.configuration.claim,Подтвердить домен
+admin.configuration.colorInvalid,"Введите hex-цвет, например #2563eb."
+admin.configuration.copied,Скопировано в буфер обмена.
+admin.configuration.copy,Скопировать
+admin.configuration.created,Создана
+admin.configuration.dangerDescription,Деактивация немедленно блокирует вход; удаление необратимо.
+admin.configuration.dangerTitle,Опасная зона
+admin.configuration.deactivate,Деактивировать организацию
+admin.configuration.description,"Настройки организации, вход и подтверждённые домены."
+admin.configuration.dialogDescription,"Подтвердите домен, чтобы люди могли находить организацию по email."
+admin.configuration.dialogTitle,Подтверждение домена
+admin.configuration.dirty,Есть несохранённые изменения.
+admin.configuration.discard,Отменить
+admin.configuration.domainName,Домен
+admin.configuration.domainsDescription,Подтверждённые домены и обнаружение организации.
+admin.configuration.domainsTitle,Домены
+admin.configuration.fontDescription,Необязательный веб-шрифт и URL таблицы стилей шрифта.
+admin.configuration.fontFamily,Семейство шрифтов
+admin.configuration.fontFamilyPlaceholder,"system-ui, Inter, sans-serif"
+admin.configuration.fontTitle,Типографика
+admin.configuration.fontUrl,URL таблицы стилей шрифта
+admin.configuration.generalDescription,"Название организации, статус и опасная зона."
+admin.configuration.generalTitle,Общие
+admin.configuration.identifier,ID организации
+admin.configuration.legalDescription,Показываются под карточкой входа.
+admin.configuration.legalTitle,Юридические ссылки
+admin.configuration.loginDescription,"Выберите, какие методы входа доступны людям."
+admin.configuration.loginTitle,Политика входа
+admin.configuration.metaDescription,Дополнительные идентификаторы для поддержки и отладки.
+admin.configuration.metaTitle,Сведения об организации
+admin.configuration.nameDescription,"Показывается при входе, в приглашениях и администрировании."
+admin.configuration.nameTitle,Название организации
+admin.configuration.previewDark,Тёмная
+admin.configuration.previewDescription,Отрисовывается из текущих значений формы.
+admin.configuration.previewEmail,ivan@example.com
+admin.configuration.previewLight,Светлая
+admin.configuration.previewTitle,Предпросмотр входа
+admin.configuration.primaryDomain,Основной домен
+admin.configuration.privacyUrl,URL политики конфиденциальности
+admin.configuration.reactivate,Реактивировать организацию
+admin.configuration.readOnly,Эти настройки могут менять только владельцы организации.
+admin.configuration.remove,Удалить организацию
+admin.configuration.removeConfirm,Удалить домен {domain}? Обнаружение организации для него сразу прекратится.
+admin.configuration.removeTitle,Удаление домена
+admin.configuration.signInDescription,Формы политики входа и безопасности организации.
+admin.configuration.signInTitle,Вход и безопасность
+admin.configuration.statusActive,Активна
+admin.configuration.statusDescription,Неактивные организации блокируют вход; удалённые организации остаются только для чтения.
+admin.configuration.statusInactive,Неактивна
+admin.configuration.statusRemoved,Удалена
+admin.configuration.statusTitle,Статус
+admin.configuration.termsUrl,URL условий использования
+admin.configuration.themeDark,Тёмная тема
+admin.configuration.themeLight,Светлая тема
+admin.configuration.title,Конфигурация
+admin.configuration.typeName,Введите название организации для подтверждения
+admin.configuration.typeNameInvalid,Введённое название не совпадает с названием организации.
+admin.configuration.watermark,Скрыть водяной знак Authworks
 admin.events.actor,Субъект
 admin.events.aggregate,Агрегат
 admin.events.count,Событий: {count}
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Удалена
 admin.projects.access.description,"Роли, которыми этот администратор фактически обладает в проекте прямо сейчас."
 admin.projects.access.empty,В текущем контексте организации нет действующих ролей проекта.
 admin.projects.access.grantedOrganization,Предоставлено через организацию
+admin.projects.access.organizationDescription,"Организации с доступом к этому проекту и роли, которые они получают."
+admin.projects.access.organizationTitle,Доступ организаций
 admin.projects.access.permissionDescription,Фиксированные роли и их разрешения определяются Authworks и не могут быть изменены.
 admin.projects.access.permissionTitle,Фиксированные роли и разрешения
 admin.projects.access.roleKeys,Действующие роли проекта
+admin.projects.access.selectRoles,Выберите роли
 admin.projects.access.title,Действующий доступ
 admin.projects.applications.create,Добавить приложение
 admin.projects.applications.description,"Приложения, которые аутентифицируются в этом проекте."
@@ -719,11 +784,32 @@ admin.projects.applications.name,Название приложения
 admin.projects.applications.removeConfirm,Удалить это приложение? Это действие нельзя отменить.
 admin.projects.applications.title,Приложения
 admin.projects.applications.type,Тип приложения
+admin.projects.assignments.create,Назначить пользователя
+admin.projects.assignments.description,Назначайте роли этого проекта напрямую пользователям активной организации.
+admin.projects.assignments.empty,Ни один пользователь пока не назначен напрямую на этот проект.
+admin.projects.assignments.invalid,Укажите пользователя и выберите хотя бы одну роль.
+admin.projects.assignments.removeConfirm,Удалить это назначение пользователя? Пользователь потеряет эти роли проекта.
+admin.projects.assignments.title,Прямые назначения пользователей
+admin.projects.assignments.user,Пользователь
 admin.projects.deleteConfirm,"Удалить этот проект? Приложения, роли и выдачи прав будут удалены вместе с ним."
 admin.projects.deleteConfirmAccept,Удалить проект
 admin.projects.deleteConfirmTitle,Удалить этот проект
+admin.projects.detail.authorizationHelp,"Требуется авторизация: чтобы входить в приложения проекта, пользователям нужна хотя бы одна роль этого проекта."
+admin.projects.detail.backToProjects,Назад к проектам
 admin.projects.detail.created,Создано
 admin.projects.detail.organization,Организация
+admin.projects.detail.owned,Собственный
+admin.projects.detail.projectAccessHelp,Требуется доступ к проекту: пользователям нужно предоставить доступ к проекту (через их организацию или прямое назначение).
+admin.projects.detail.readOnly,Общие проекты доступны только для чтения. Этим проектом управляет только владеющая организация.
+admin.projects.detail.remove,Удалить проект
+admin.projects.detail.removeTypeLabel,Название проекта
+admin.projects.detail.removeTypeMismatch,Название проекта не совпадает.
+admin.projects.detail.removeTypePrompt,Введите название проекта для подтверждения.
+admin.projects.detail.rename,Переименовать
+admin.projects.detail.renameDescription,"Измените название проекта, отображаемое в администрировании."
+admin.projects.detail.renameInvalid,Введите название проекта.
+admin.projects.detail.renameTitle,Переименование проекта
+admin.projects.detail.shared,Общий
 admin.projects.detail.updated,Последнее обновление
 admin.projects.detailTitle,Сведения о проекте
 admin.projects.grants.create,Предоставить доступ организации
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Удалить этот проект?
 admin.projects.lifecycle.removeConfirmAccept,Убрать проект
 admin.projects.lifecycle.removeConfirmTitle,Убрать этот проект
+admin.projects.list.applications,Приложения
 admin.projects.list.create,Создать проект
 admin.projects.list.description,"Проекты объединяют приложения, роли и предоставления организации."
 admin.projects.list.empty,В этом realm ещё нет проектов.
+admin.projects.list.emptyDetail,"Создайте проект, чтобы группировать приложения, роли и выдачи прав."
 admin.projects.list.invalid,Введите название проекта и выберите организацию.
 admin.projects.list.name,Название проекта
+admin.projects.list.roles,Роли
 admin.projects.list.search,Поиск проектов
+admin.projects.list.subtitle,Собственные и общие проекты активной организации.
 admin.projects.list.title,Проекты
 admin.projects.missingId,Для этого раздела необходимо выбрать проект.
+admin.projects.overview.authorizationTitle,Требуется авторизация
+admin.projects.overview.projectAccessTitle,Требуется доступ к проекту
+admin.projects.overview.settingsDescription,Управляйте названием проекта и применением доступа.
+admin.projects.overview.settingsTitle,Настройки проекта
+admin.projects.overview.title,Обзор проекта
 admin.projects.roles.create,Создать роль
 admin.projects.roles.deleteConfirm,"Удалить эту роль проекта? Выдачи прав, ссылающиеся на неё, потеряют эту роль."
 admin.projects.roles.description,"Роли, которые этот проект может назначать организациям и их участникам."
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Отключение этой области оста
 admin.realm.disabled,Область отключена.
 admin.realm.domains,Домены
 admin.realm.domainsHint,Разделяйте домены запятыми. Первый домен является основным.
+admin.realm.edit,Изменить
+admin.realm.editDescription,"Измените название realm, статус и домены, ведущие к этому realm."
+admin.realm.editTitle,Изменение realm
 admin.realm.enabled,Область включена.
+admin.realm.explore.administratorsDescription,Выдавайте или отзывайте статус администратора realm.
+admin.realm.explore.auditEventsDescription,Просматривайте поток событий безопасности этого realm.
+admin.realm.explore.oidcClientsDescription,"Просматривайте OIDC-клиенты, зарегистрированные в этом realm."
+admin.realm.explore.organizationsDescription,Просматривайте организации этого realm.
+admin.realm.explore.sessionsDescription,Просматривайте активные сеансы этого realm.
+admin.realm.exploreTitle,Обзор
 admin.realm.identifier,Идентификатор области
+admin.realm.identityTitle,Идентичность
 admin.realm.invalid,Укажите имя области и хотя бы один домен.
 admin.realm.name,Имя области
 admin.realm.permissionDenied,У вас нет разрешения изменять эту область.
+admin.realm.primary,Основной
 admin.realm.primaryDomain,Основной домен
 admin.realm.saved,Настройки области сохранены.
 admin.realm.status,Состояние
 admin.realm.statusActive,Активна
 admin.realm.statusDisabled,Отключена
+admin.realmAdministrators.add,Добавить администратора
+admin.realmAdministrators.addDialogDescription,Найдите пользователей realm и выдайте статус администратора realm. Права действуют во всех организациях этого realm.
+admin.realmAdministrators.addDialogTitle,Добавление администратора realm
+admin.realmAdministrators.added,{name} теперь администратор realm.
+admin.realmAdministrators.alreadyAdmin,Уже администратор
+admin.realmAdministrators.confirmRemoveAccept,Удалить администратора
+admin.realmAdministrators.confirmRemoveMessage,Удалить {name} из администраторов realm? Он потеряет доступ ко всем настройкам организаций этого realm.
+admin.realmAdministrators.confirmRemoveTitle,Удаление администратора
+admin.realmAdministrators.count,{count} администраторов
+admin.realmAdministrators.countOne,1 администратор
+admin.realmAdministrators.description,"Администраторы realm могут управлять всеми организациями, настройками realm, OIDC и журналом аудита."
+admin.realmAdministrators.emptyDescription,Администраторов realm пока нет. Выдайте первого администратора для управления этим realm.
+admin.realmAdministrators.emptySearchDescription,Ни один пользователь realm не соответствует поиску.
+admin.realmAdministrators.emptyTitle,Нет администраторов
+admin.realmAdministrators.grant,Выдать права администратора
+admin.realmAdministrators.invitePlaceholder,Ищите людей по имени или email
+admin.realmAdministrators.lastAdminHint,Последнего администратора удалить нельзя.
+admin.realmAdministrators.remove,Удалить
+admin.realmAdministrators.removed,{name} больше не администратор realm.
+admin.realmAdministrators.revokeFailed,Не удалось удалить этого администратора.
+admin.realmAdministrators.search,Поиск администраторов
+admin.realmAdministrators.systemAdded,Система
+admin.realmAdministrators.tableAdded,Добавлен
+admin.realmAdministrators.tableAddedBy,Кем добавлен
+admin.realmAdministrators.tableUser,Администратор
+admin.realmAdministrators.title,Администраторы realm
+admin.roles.delete,Удалить
+admin.roles.description,"Два вида ролей: роли организации определяют, что люди могут делать в этом администрировании; роли проекта — то, что ваши приложения видят в токенах."
+admin.roles.dialog.displayName,Отображаемое имя
+admin.roles.dialog.editDescription,Измените отображение роли; ключ остаётся неизменным.
+admin.roles.dialog.editTitle,Изменение роли проекта
+admin.roles.dialog.group,Группа
+admin.roles.dialog.invalid,Введите отображаемое имя и ключ роли.
+admin.roles.dialog.key,Ключ роли
+admin.roles.dialog.keyHint,"Строчные буквы, цифры и дефисы, как в токенах."
+admin.roles.dialog.missingRole,Выбранная роль больше недоступна.
+admin.roles.dialog.newDescription,"Добавьте ключ роли, который приложения получат в токенах."
+admin.roles.dialog.newTitle,Новая роль проекта
+admin.roles.dialog.noProject,Выберите проект для новой роли.
+admin.roles.dialog.project,Проект
+admin.roles.edit,Изменить
+admin.roles.empty.createProjects,Сначала создайте проект
+admin.roles.empty.description,"Определите роли, которые ваши приложения увидят в токенах, когда проект появится."
+admin.roles.empty.title,Проектов пока нет
+admin.roles.groupFallback,Без группы
+admin.roles.memberCount,{count} участников
+admin.roles.memberCountOne,1 участник
+admin.roles.orgRole.admin.bullet1,"Управляет людьми, кроме владельцев"
+admin.roles.orgRole.admin.bullet2,"Управляет ролями, проектами и сервисными аккаунтами"
+admin.roles.orgRole.admin.bullet3,"Не может менять оформление, политику входа и домены"
+admin.roles.orgRole.admin.description,Повседневно управляет людьми и проектами.
+admin.roles.orgRole.guest.bullet1,"Минимальный доступ, например при приглашении в проект"
+admin.roles.orgRole.guest.bullet2,"Не может управлять людьми, ролями и проектами"
+admin.roles.orgRole.guest.description,Ограниченный доступ для гостей и партнёров.
+admin.roles.orgRole.member.bullet1,Может входить и просматривать организацию
+admin.roles.orgRole.member.bullet2,"Использует проекты, общие с организацией"
+admin.roles.orgRole.member.bullet3,"Не может управлять людьми, ролями и проектами"
+admin.roles.orgRole.member.description,Стандартный доступ для участников организации.
+admin.roles.orgRole.owner.bullet1,"Всё, что могут администраторы"
+admin.roles.orgRole.owner.bullet2,"Меняет оформление, политику входа и домены"
+admin.roles.orgRole.owner.bullet3,Управляет владельцами и удалением организации
+admin.roles.orgRole.owner.description,Полный контроль над организацией и этим администрированием.
+admin.roles.organizationRoles.description,Кто что может делать в этом администрировании.
+admin.roles.organizationRoles.title,Роли организации
+admin.roles.projects.deleteConfirm,"Удалить эту роль проекта? Выдачи прав, ссылающиеся на неё, потеряют роль."
+admin.roles.projects.deleteConfirmAccept,Удалить роль
+admin.roles.projects.deleteConfirmTitle,Удаление роли
+admin.roles.projects.newRole,Новая роль
+admin.roles.projects.owned,Собственные
+admin.roles.projects.shared,Общие
+admin.roles.projects.title,Роли проектов
+admin.roles.rolesEmpty,В этом проекте пока нет ролей.
+admin.roles.title,Роли
 admin.session.expired,Срок вашего сеанса администратора истёк
 admin.signIn.activeTitle,Сеанс администратора активен
 admin.signIn.credential,Начальные учётные данные администратора
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Выполнен выход
 admin.signIn.subject,Субъект
 admin.signIn.subjectType,Тип субъекта
 admin.signIn.title,Вход администратора
+admin.userProfile.accessTab,Роли и доступ
+admin.userProfile.assignRoles,Назначить роли проектов
+admin.userProfile.assignRolesDialogTitle,Назначение ролей проектов
+admin.userProfile.assignRolesEmpty,Роли проектов не найдены.
+admin.userProfile.assignRolesProject,Проект
+admin.userProfile.assignRolesRoles,Роли
+admin.userProfile.assignRolesSave,Сохранить назначения
+admin.userProfile.assignRolesSearch,Поиск проектов
+admin.userProfile.assignRolesSelected,Выбрано ролей: {count}
+admin.userProfile.assignRolesStepProject,Выберите проект
+admin.userProfile.authDescription,Безопасные метаданные входа. Секреты и закрытые ключи никогда не показываются.
+admin.userProfile.authTitle,Методы аутентификации
+admin.userProfile.backToUsers,Назад к пользователям
+admin.userProfile.contactTitle,Контакты
+admin.userProfile.deactivate,Деактивировать пользователя
+admin.userProfile.deactivateConfirm,Деактивировать {userName}? Пользователь больше не сможет войти.
+admin.userProfile.deactivated,{userName} деактивирован.
+admin.userProfile.deleteConfirm,Безвозвратно удалить {userName}? Это нельзя отменить.
+admin.userProfile.deleteConfirmMismatch,Введённое имя не совпадает.
+admin.userProfile.deleteConfirmTitle,Удаление пользователя
+admin.userProfile.deleteConfirmType,Введите {userName} для подтверждения.
+admin.userProfile.deleted,{userName} удалён.
+admin.userProfile.editProfile,Изменить профиль
+admin.userProfile.editProfileTitle,Изменение профиля
+admin.userProfile.email,Адрес email
+admin.userProfile.emailUnverified,Не подтверждён
+admin.userProfile.emailVerified,Подтверждён
+admin.userProfile.impersonate,Выдать себя за пользователя
+admin.userProfile.lastSignIn,Последний вход
+admin.userProfile.makeRealmAdmin,Сделать администратором realm
+admin.userProfile.makeRealmAdminConfirm,Выдать {userName} права администратора realm?
+admin.userProfile.makeRealmAdminDone,{userName} теперь администратор realm.
+admin.userProfile.memberSince,Участник с
+admin.userProfile.membershipAdd,Добавить в организацию
+admin.userProfile.membershipAdded,{userName} добавлен в организацию.
+admin.userProfile.membershipEmpty,Этот пользователь не состоит ни в одной организации.
+admin.userProfile.membershipOrganization,Организация
+admin.userProfile.membershipsTitle,Членство в организациях
+admin.userProfile.missingId,Не удалось определить пользователя по адресу.
+admin.userProfile.never,Никогда
+admin.userProfile.notMember,Этот пользователь не состоит в активной организации.
+admin.userProfile.organizationRoleChanged,Роль в организации обновлена.
+admin.userProfile.organizationRoleDescription,Выберите основную роль для активной организации.
+admin.userProfile.organizationRoleTitle,Роль в организации
+admin.userProfile.overviewTab,Обзор
+admin.userProfile.passwordConfirm,Подтвердите новый пароль
+admin.userProfile.passwordMismatch,Пароли не совпадают.
+admin.userProfile.passwordNew,Новый пароль
+admin.userProfile.passwordSaved,Пароль установлен.
+admin.userProfile.passwordTooShort,Введите пароль длиной не менее 8 символов.
+admin.userProfile.phone,Номер телефона
+admin.userProfile.preferredLanguage,Предпочитаемый язык
+admin.userProfile.profileSaved,Профиль пользователя сохранён.
+admin.userProfile.profileTitle,Профиль
+admin.userProfile.projectRolesEmpty,Роли проектов не назначены.
+admin.userProfile.projectRolesRemove,Удалить
+admin.userProfile.projectRolesRemoveConfirm,Удалить назначение {projectName}?
+admin.userProfile.projectRolesRemoved,Назначение проекта удалено.
+admin.userProfile.projectRolesSaved,Назначения проектов сохранены.
+admin.userProfile.projectRolesTitle,Роли проектов
+admin.userProfile.reactivate,Реактивировать пользователя
+admin.userProfile.reactivateConfirm,Реактивировать {userName}? Пользователь снова сможет войти.
+admin.userProfile.reactivated,{userName} реактивирован.
+admin.userProfile.realmAdminBadge,Администратор realm
+admin.userProfile.removeRealmAdmin,Удалить администратора realm
+admin.userProfile.removeRealmAdminConfirm,Удалить права администратора realm у {userName}?
+admin.userProfile.removeRealmAdminDone,{userName} больше не администратор realm.
+admin.userProfile.revokeAll,Отозвать все
+admin.userProfile.revokeAllConfirm,Отозвать все сеансы {userName}? Пользователь выйдет везде.
+admin.userProfile.revokeAllDone,Все сеансы отозваны.
+admin.userProfile.securityTab,Безопасность
+admin.userProfile.sessionsDescription,Проверяйте активные сеансы и отзывайте доступ с устройства.
+admin.userProfile.sessionsEmpty,У этого пользователя нет активных сеансов.
+admin.userProfile.sessionsRevoke,Отозвать
+admin.userProfile.sessionsRevokeConfirm,Немедленно отозвать этот сеанс? Устройство сразу выйдет.
+admin.userProfile.sessionsRevoked,Сеанс отозван.
+admin.userProfile.sessionsTitle,Сеансы и устройства
+admin.userProfile.setPassword,Установить пароль
+admin.userProfile.setPasswordDescription,Замените пароль для входа и снимите блокировку.
+admin.userProfile.setPasswordTitle,Установка нового пароля
+admin.userProfile.unlock,Разблокировать пользователя
+admin.userProfile.unlockConfirm,Разблокировать {userName}? Пользователь снова сможет войти.
+admin.userProfile.unlocked,{userName} разблокирован.
+admin.userProfile.username,Имя пользователя
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} создан.
 admin.users.createdAt,Создано
 admin.users.deleteWarning,Удаление этого пользователя немедленно отзывает его сеансы и доступ.
 admin.users.detailTitle,Сведения о пользователе
+admin.users.directoryClearFilters,Очистить фильтры
+admin.users.directoryCreated,Создан
+admin.users.directoryEmptySearch,Никто не соответствует поиску.
+admin.users.directoryEmptySearchDetail,"Попробуйте другое имя, email или сбросьте фильтр ролей."
+admin.users.directoryInvite,Пригласить пользователя
+admin.users.directoryInviteDescription,Отправьте приглашение в организацию по email. Ссылка показывается один раз.
+admin.users.directoryInviteEmail,Адрес email
+admin.users.directoryInviteRole,Роль приглашения
+admin.users.directoryInviteSubmit,Отправить приглашение
+admin.users.directoryLastSignIn,Последний вход
+admin.users.directoryNever,Никогда
+admin.users.directoryNoPeople,В этой организации пока никого нет.
+admin.users.directoryNoPeopleDetail,"Пригласите первого человека, чтобы начать работу организации."
+admin.users.directoryOpen,Открыть
+admin.users.directoryOpenProfile,Открыть профиль {name}
+admin.users.directoryOrganizations,Организации
+admin.users.directoryRole,Роль
+admin.users.directoryRoleAdmin,Администратор
+admin.users.directoryRoleAll,Все роли
+admin.users.directoryRoleGuest,Гость
+admin.users.directoryRoleMember,Участник
+admin.users.directoryRoleOwner,Владелец
+admin.users.directoryScopeAll,Все организации
+admin.users.directoryScopeOrganization,Эта организация
+admin.users.directorySearchPlaceholder,"Фильтр по имени, имени пользователя или email"
+admin.users.directoryServiceAccountCreate,Создать сервисный аккаунт
+admin.users.directoryServiceAccountDescription,Машинные идентичности для автоматизации. Секрет клиента показывается один раз.
+admin.users.directoryServiceAccountEmpty,В этой организации пока нет сервисных аккаунтов.
+admin.users.directoryServiceAccountEmptyDetail,Создайте первый сервисный аккаунт для интеграций и автоматизации.
+admin.users.directoryServiceAccountName,Отображаемое имя
+admin.users.directoryServiceAccountScopes,Области
+admin.users.directoryServiceAccountScopesHint,Разделяйте области пробелами или запятыми.
+admin.users.directoryServiceAccountSecretCopied,Секрет скопирован в буфер обмена.
+admin.users.directoryServiceAccountSecretCopy,Скопировать секрет
+admin.users.directoryServiceAccountSecretTitle,Секрет клиента
+admin.users.directoryServiceAccountSecretWarning,Этот секрет показывается один раз. Сохраните его в надёжном месте сейчас.
+admin.users.directoryServiceAccountStatus,Статус
+admin.users.directoryServiceAccountUserName,Имя пользователя
+admin.users.directoryServiceAccountUserNameHint,Используется как ID клиента при обмене учётных данных клиента.
+admin.users.directoryStatus,Статус
+admin.users.directorySubtitle,{count} человек
+admin.users.directoryTabInvitations,Ожидающие приглашения
+admin.users.directoryTabPeople,Люди
+admin.users.directoryTabServiceAccounts,Сервисные аккаунты
+admin.users.directoryUser,Пользователь
+admin.users.directoryUserInvited,Приглашён
+admin.users.directoryUserName,Имя пользователя
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Идентификатор пользователя
 admin.users.invalid,Введите действительный адрес электронной почты и имя пользователя.
+admin.users.inviteEmailInvalid,Введите корректный email.
+admin.users.inviteRevokeConfirm,Отозвать приглашение для {email}? Ссылка приглашения сразу перестанет работать.
+admin.users.inviteRevoked,Приглашение отозвано.
+admin.users.inviteRolesInvalid,Выберите хотя бы одну роль приглашения.
+admin.users.inviteSent,Приглашение создано.
+admin.users.inviteTokenCopied,Ссылка приглашения скопирована в буфер обмена.
+admin.users.inviteTokenCopy,Скопировать ссылку
+admin.users.inviteTokenDismiss,Я сохранил ссылку
+admin.users.inviteTokenOnce,Эта ссылка приглашения показывается один раз. Поделитесь ею с приглашённым.
+admin.users.inviteTokenTitle,Ссылка приглашения
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Активна
 admin.users.lifecycle.deleted,Удалён
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Начальный
 admin.users.lifecycle.locked,Заблокирован
 admin.users.lifecycle.suspended,Приостановлен
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,Сервисный аккаунт создан.
+admin.users.serviceAccountInvalid,Введите отображаемое имя и имя пользователя сервисного аккаунта.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Статус
 admin.users.title,Пользователи
+admin.users.unverifiedEmail,Неподтверждённый email
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Безопасные сервисы идентификации

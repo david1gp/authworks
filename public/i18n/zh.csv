@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,设备和应用
 admin.common.confirmTitle,确认此操作
 admin.common.permission,您没有权限查看这些管理数据。
+admin.configuration.brandingDescription,浅色与深色配色、徽标及法律链接，附实时预览。
+admin.configuration.brandingFormDescription,颜色、徽标与图标链接、默认主题及法律链接。
+admin.configuration.brandingFormTitle,品牌颜色与素材
+admin.configuration.brandingTitle,品牌外观
+admin.configuration.claim,认领域名
+admin.configuration.colorInvalid,请输入 #2563eb 格式的十六进制颜色。
+admin.configuration.copied,已复制到剪贴板。
+admin.configuration.copy,复制
+admin.configuration.created,创建时间
+admin.configuration.dangerDescription,停用将立即阻止登录；移除是永久性的。
+admin.configuration.dangerTitle,危险区
+admin.configuration.deactivate,停用组织
+admin.configuration.description,组织设置、登录与已验证域名。
+admin.configuration.dialogDescription,认领域名后，人们可通过邮箱地址发现此组织。
+admin.configuration.dialogTitle,认领域名
+admin.configuration.dirty,您有未保存的更改。
+admin.configuration.discard,放弃
+admin.configuration.domainName,域名
+admin.configuration.domainsDescription,已验证域名与组织发现。
+admin.configuration.domainsTitle,域名
+admin.configuration.fontDescription,可选的网页字体与自定义字体样式表链接。
+admin.configuration.fontFamily,字体
+admin.configuration.fontFamilyPlaceholder,Noto Sans SC、system-ui、sans-serif
+admin.configuration.fontTitle,排版
+admin.configuration.fontUrl,字体样式表链接
+admin.configuration.generalDescription,组织名称、状态与危险区。
+admin.configuration.generalTitle,常规
+admin.configuration.identifier,组织 ID
+admin.configuration.legalDescription,显示在登录卡片下方。
+admin.configuration.legalTitle,法律链接
+admin.configuration.loginDescription,选择人员可使用的登录方式。
+admin.configuration.loginTitle,登录策略
+admin.configuration.metaDescription,用于支持与调试的辅助标识。
+admin.configuration.metaTitle,组织详情
+admin.configuration.nameDescription,显示在登录页、邀请函与整个后台管理中。
+admin.configuration.nameTitle,组织名称
+admin.configuration.previewDark,深色
+admin.configuration.previewDescription,根据当前表单值渲染。
+admin.configuration.previewEmail,zhang.san@example.com
+admin.configuration.previewLight,浅色
+admin.configuration.previewTitle,登录预览
+admin.configuration.primaryDomain,主要域名
+admin.configuration.privacyUrl,隐私政策链接
+admin.configuration.reactivate,重新启用组织
+admin.configuration.readOnly,只有组织所有者才能更改这些设置。
+admin.configuration.remove,移除组织
+admin.configuration.removeConfirm,要移除域名 {domain} 吗？其组织发现将立即停止。
+admin.configuration.removeTitle,移除域名
+admin.configuration.signInDescription,组织登录与安全策略表单。
+admin.configuration.signInTitle,登录与安全
+admin.configuration.statusActive,启用
+admin.configuration.statusDescription,停用的组织将阻止登录；已移除的组织保持只读。
+admin.configuration.statusInactive,停用
+admin.configuration.statusRemoved,已移除
+admin.configuration.statusTitle,状态
+admin.configuration.termsUrl,服务条款链接
+admin.configuration.themeDark,深色主题
+admin.configuration.themeLight,浅色主题
+admin.configuration.title,配置
+admin.configuration.typeName,请输入组织名称以确认
+admin.configuration.typeNameInvalid,输入的名称与组织名称不匹配。
+admin.configuration.watermark,隐藏 Authworks 水印
 admin.events.actor,操作者
 admin.events.aggregate,聚合
 admin.events.count,{count} 个事件
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,已移除
 admin.projects.access.description,该管理员当前在此项目上实际拥有的角色。
 admin.projects.access.empty,在当前组织上下文中没有生效的项目角色。
 admin.projects.access.grantedOrganization,通过组织授予
+admin.projects.access.organizationDescription,可访问此项目的组织及其获得的角色。
+admin.projects.access.organizationTitle,组织访问权限
 admin.projects.access.permissionDescription,固定角色及其权限由 Authworks 定义，无法编辑。
 admin.projects.access.permissionTitle,固定角色与权限
 admin.projects.access.roleKeys,有效的项目角色
+admin.projects.access.selectRoles,选择角色
 admin.projects.access.title,有效访问权限
 admin.projects.applications.create,添加应用
 admin.projects.applications.description,针对此项目进行身份验证的应用。
@@ -719,11 +784,32 @@ admin.projects.applications.name,应用名称
 admin.projects.applications.removeConfirm,移除此应用？此操作无法撤消。
 admin.projects.applications.title,应用
 admin.projects.applications.type,应用类型
+admin.projects.assignments.create,分配用户
+admin.projects.assignments.description,将此项目的角色直接分配给当前组织的用户。
+admin.projects.assignments.empty,尚无用户被直接分配到此项目。
+admin.projects.assignments.invalid,请输入用户并至少选择一个角色。
+admin.projects.assignments.removeConfirm,要移除此用户分配吗？该用户将失去这些项目角色。
+admin.projects.assignments.title,直接用户分配
+admin.projects.assignments.user,用户
 admin.projects.deleteConfirm,删除此项目？应用、角色和授权将一并被删除。
 admin.projects.deleteConfirmAccept,删除项目
 admin.projects.deleteConfirmTitle,删除此项目
+admin.projects.detail.authorizationHelp,需要授权：用户必须拥有此项目至少一个角色，才能登录其应用。
+admin.projects.detail.backToProjects,返回项目列表
 admin.projects.detail.created,创建时间
 admin.projects.detail.organization,组织
+admin.projects.detail.owned,拥有的
+admin.projects.detail.projectAccessHelp,需要项目访问权限：用户必须被授予项目访问权限（通过其组织或直接分配）。
+admin.projects.detail.readOnly,共享项目为只读。只有拥有该项目的组织才能管理它。
+admin.projects.detail.remove,删除项目
+admin.projects.detail.removeTypeLabel,项目名称
+admin.projects.detail.removeTypeMismatch,项目名称不匹配。
+admin.projects.detail.removeTypePrompt,请输入项目名称以确认。
+admin.projects.detail.rename,重命名
+admin.projects.detail.renameDescription,更改在整个管理后台显示的项目名称。
+admin.projects.detail.renameInvalid,请输入项目名称。
+admin.projects.detail.renameTitle,重命名项目
+admin.projects.detail.shared,共享的
 admin.projects.detail.updated,最近更新
 admin.projects.detailTitle,项目详情
 admin.projects.grants.create,授予组织访问权限
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,移除此项目？
 admin.projects.lifecycle.removeConfirmAccept,移除项目
 admin.projects.lifecycle.removeConfirmTitle,移除此项目
+admin.projects.list.applications,应用
 admin.projects.list.create,创建项目
 admin.projects.list.description,项目将一个组织的应用、角色和授权归为一组。
 admin.projects.list.empty,此领域中尚不存在任何项目。
+admin.projects.list.emptyDetail,创建项目以归集应用、角色和授权。
 admin.projects.list.invalid,请输入项目名称并选择组织。
 admin.projects.list.name,项目名称
+admin.projects.list.roles,角色
 admin.projects.list.search,搜索项目
+admin.projects.list.subtitle,当前组织拥有和共享的项目。
 admin.projects.list.title,项目
 admin.projects.missingId,此目的地必须选择一个项目。
+admin.projects.overview.authorizationTitle,需要授权
+admin.projects.overview.projectAccessTitle,需要项目访问权限
+admin.projects.overview.settingsDescription,管理项目名称及访问强制方式。
+admin.projects.overview.settingsTitle,项目设置
+admin.projects.overview.title,项目概览
 admin.projects.roles.create,创建角色
 admin.projects.roles.deleteConfirm,删除此项目角色？引用它的授权将失去该角色。
 admin.projects.roles.description,此项目可分配给组织及其成员的角色。
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,停用此领域会停止其所有应用的登录。�
 admin.realm.disabled,该领域已停用。
 admin.realm.domains,域名
 admin.realm.domainsHint,使用逗号分隔域名。第一个域名为主域名。
+admin.realm.edit,编辑
+admin.realm.editDescription,更改领域名称、状态以及解析到该领域的域名。
+admin.realm.editTitle,编辑领域
 admin.realm.enabled,该领域已启用。
+admin.realm.explore.administratorsDescription,授予或撤销领域管理员身份。
+admin.realm.explore.auditEventsDescription,查看该领域的安全事件流。
+admin.realm.explore.oidcClientsDescription,查看在该领域注册的 OIDC 客户端。
+admin.realm.explore.organizationsDescription,浏览该领域中的组织。
+admin.realm.explore.sessionsDescription,查看该领域的活跃会话。
+admin.realm.exploreTitle,探索
 admin.realm.identifier,领域标识符
+admin.realm.identityTitle,身份
 admin.realm.invalid,请输入领域名称和至少一个域名。
 admin.realm.name,领域名称
 admin.realm.permissionDenied,您没有更改此领域的权限。
+admin.realm.primary,主要
 admin.realm.primaryDomain,主域名
 admin.realm.saved,领域设置已保存。
 admin.realm.status,状态
 admin.realm.statusActive,启用中
 admin.realm.statusDisabled,已停用
+admin.realmAdministrators.add,添加管理员
+admin.realmAdministrators.addDialogDescription,搜索领域用户并授予领域管理员身份。授权适用于该领域中的所有组织。
+admin.realmAdministrators.addDialogTitle,添加领域管理员
+admin.realmAdministrators.added,{name} 现已成为领域管理员。
+admin.realmAdministrators.alreadyAdmin,已是管理员
+admin.realmAdministrators.confirmRemoveAccept,移除管理员
+admin.realmAdministrators.confirmRemoveMessage,要移除 {name} 的领域管理员身份吗？其将失去该领域中所有组织设置的访问权限。
+admin.realmAdministrators.confirmRemoveTitle,移除此管理员
+admin.realmAdministrators.count,{count} 位管理员
+admin.realmAdministrators.countOne,1 位管理员
+admin.realmAdministrators.description,领域管理员可以管理所有组织、领域设置、OIDC 和审计日志。
+admin.realmAdministrators.emptyDescription,尚无领域管理员。请授予第一位管理员来管理该领域。
+admin.realmAdministrators.emptySearchDescription,没有与此搜索匹配的领域用户。
+admin.realmAdministrators.emptyTitle,暂无管理员
+admin.realmAdministrators.grant,授予管理员
+admin.realmAdministrators.invitePlaceholder,按姓名或邮箱搜索人员
+admin.realmAdministrators.lastAdminHint,无法移除最后一位管理员。
+admin.realmAdministrators.remove,移除
+admin.realmAdministrators.removed,{name} 不再是领域管理员。
+admin.realmAdministrators.revokeFailed,无法移除此管理员。
+admin.realmAdministrators.search,搜索管理员
+admin.realmAdministrators.systemAdded,系统
+admin.realmAdministrators.tableAdded,添加时间
+admin.realmAdministrators.tableAddedBy,添加人
+admin.realmAdministrators.tableUser,管理员
+admin.realmAdministrators.title,领域管理员
+admin.roles.delete,删除
+admin.roles.description,角色分为两种：组织角色控制人员在此后台的操作权限；项目角色是应用在令牌中看到的内容。
+admin.roles.dialog.displayName,显示名称
+admin.roles.dialog.editDescription,更改此角色的显示方式；键保持不变。
+admin.roles.dialog.editTitle,编辑项目角色
+admin.roles.dialog.group,分组
+admin.roles.dialog.invalid,请输入显示名称和角色键。
+admin.roles.dialog.key,角色键
+admin.roles.dialog.keyHint,令牌中使用的小写字母、数字和短横线。
+admin.roles.dialog.missingRole,所选角色已不可用。
+admin.roles.dialog.newDescription,添加应用在令牌中接收的角色键。
+admin.roles.dialog.newTitle,新建项目角色
+admin.roles.dialog.noProject,请为新角色选择项目。
+admin.roles.dialog.project,项目
+admin.roles.edit,编辑
+admin.roles.empty.createProjects,请先创建项目
+admin.roles.empty.description,项目创建后，即可定义应用在令牌中看到的角色。
+admin.roles.empty.title,尚无项目
+admin.roles.groupFallback,未分组
+admin.roles.memberCount,{count} 位成员
+admin.roles.memberCountOne,1 位成员
+admin.roles.orgRole.admin.bullet1,管理除所有者以外的人员
+admin.roles.orgRole.admin.bullet2,管理角色、项目和服务账号
+admin.roles.orgRole.admin.bullet3,不能更改品牌外观、登录策略或域名
+admin.roles.orgRole.admin.description,负责人员与项目的日常管理。
+admin.roles.orgRole.guest.bullet1,最低访问权限，例如受邀参与项目时
+admin.roles.orgRole.guest.bullet2,不能管理人员、角色或项目
+admin.roles.orgRole.guest.description,面向访客与合作伙伴的受限访问。
+admin.roles.orgRole.member.bullet1,可登录并查看组织
+admin.roles.orgRole.member.bullet2,可使用与组织共享的项目
+admin.roles.orgRole.member.bullet3,不能管理人员、角色或项目
+admin.roles.orgRole.member.description,面向组织成员的标准访问。
+admin.roles.orgRole.owner.bullet1,拥有管理员的全部权限
+admin.roles.orgRole.owner.bullet2,可更改品牌外观、登录策略和域名
+admin.roles.orgRole.owner.bullet3,管理所有者与组织移除
+admin.roles.orgRole.owner.description,全面管理组织与此后台。
+admin.roles.organizationRoles.description,谁可以在此后台执行哪些操作。
+admin.roles.organizationRoles.title,组织角色
+admin.roles.projects.deleteConfirm,要删除此项目角色吗？引用它的授权将失去该角色。
+admin.roles.projects.deleteConfirmAccept,删除角色
+admin.roles.projects.deleteConfirmTitle,删除此角色
+admin.roles.projects.newRole,新建角色
+admin.roles.projects.owned,拥有的
+admin.roles.projects.shared,共享的
+admin.roles.projects.title,项目角色
+admin.roles.rolesEmpty,此项目尚未定义任何角色。
+admin.roles.title,角色
 admin.session.expired,您的管理员会话已过期
 admin.signIn.activeTitle,管理员会话已激活
 admin.signIn.credential,引导管理员凭据
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,已退出登录
 admin.signIn.subject,主体
 admin.signIn.subjectType,主体类型
 admin.signIn.title,管理员登录
+admin.userProfile.accessTab,角色与访问权限
+admin.userProfile.assignRoles,分配项目角色
+admin.userProfile.assignRolesDialogTitle,分配项目角色
+admin.userProfile.assignRolesEmpty,未找到项目角色。
+admin.userProfile.assignRolesProject,项目
+admin.userProfile.assignRolesRoles,角色
+admin.userProfile.assignRolesSave,保存分配
+admin.userProfile.assignRolesSearch,搜索项目
+admin.userProfile.assignRolesSelected,已选择 {count} 个角色
+admin.userProfile.assignRolesStepProject,选择项目
+admin.userProfile.authDescription,安全的登录元数据。绝不会显示密钥与私钥。
+admin.userProfile.authTitle,身份验证方式
+admin.userProfile.backToUsers,返回用户列表
+admin.userProfile.contactTitle,联系方式
+admin.userProfile.deactivate,停用用户
+admin.userProfile.deactivateConfirm,要停用 {userName} 吗？该用户将无法登录。
+admin.userProfile.deactivated,已停用 {userName}。
+admin.userProfile.deleteConfirm,要永久删除 {userName} 吗？此操作无法撤销。
+admin.userProfile.deleteConfirmMismatch,输入的名称不匹配。
+admin.userProfile.deleteConfirmTitle,删除此用户
+admin.userProfile.deleteConfirmType,请输入 {userName} 以确认。
+admin.userProfile.deleted,已删除 {userName}。
+admin.userProfile.editProfile,编辑个人资料
+admin.userProfile.editProfileTitle,编辑个人资料
+admin.userProfile.email,邮箱地址
+admin.userProfile.emailUnverified,未验证
+admin.userProfile.emailVerified,已验证
+admin.userProfile.impersonate,模拟该用户
+admin.userProfile.lastSignIn,上次登录
+admin.userProfile.makeRealmAdmin,设为领域管理员
+admin.userProfile.makeRealmAdminConfirm,要授予 {userName} 领域管理员权限吗？
+admin.userProfile.makeRealmAdminDone,{userName} 现已成为领域管理员。
+admin.userProfile.memberSince,加入时间
+admin.userProfile.membershipAdd,添加到组织
+admin.userProfile.membershipAdded,已将 {userName} 添加到组织。
+admin.userProfile.membershipEmpty,该用户不属于任何组织。
+admin.userProfile.membershipOrganization,组织
+admin.userProfile.membershipsTitle,组织成员资格
+admin.userProfile.missingId,无法根据该地址解析此用户。
+admin.userProfile.never,从未
+admin.userProfile.notMember,该用户不是当前组织的成员。
+admin.userProfile.organizationRoleChanged,组织角色已更新。
+admin.userProfile.organizationRoleDescription,为当前组织选择主要角色。
+admin.userProfile.organizationRoleTitle,组织角色
+admin.userProfile.overviewTab,概览
+admin.userProfile.passwordConfirm,确认新密码
+admin.userProfile.passwordMismatch,两次输入的密码不一致。
+admin.userProfile.passwordNew,新密码
+admin.userProfile.passwordSaved,密码已设置。
+admin.userProfile.passwordTooShort,请输入至少 8 个字符的密码。
+admin.userProfile.phone,电话号码
+admin.userProfile.preferredLanguage,首选语言
+admin.userProfile.profileSaved,用户资料已保存。
+admin.userProfile.profileTitle,个人资料
+admin.userProfile.projectRolesEmpty,尚未分配项目角色。
+admin.userProfile.projectRolesRemove,移除
+admin.userProfile.projectRolesRemoveConfirm,要移除 {projectName} 的分配吗？
+admin.userProfile.projectRolesRemoved,已移除该项目分配。
+admin.userProfile.projectRolesSaved,项目分配已保存。
+admin.userProfile.projectRolesTitle,项目角色
+admin.userProfile.reactivate,重新启用用户
+admin.userProfile.reactivateConfirm,要重新启用 {userName} 吗？该用户可再次登录。
+admin.userProfile.reactivated,已重新启用 {userName}。
+admin.userProfile.realmAdminBadge,领域管理员
+admin.userProfile.removeRealmAdmin,取消领域管理员
+admin.userProfile.removeRealmAdminConfirm,要取消 {userName} 的领域管理员权限吗？
+admin.userProfile.removeRealmAdminDone,{userName} 不再是领域管理员。
+admin.userProfile.revokeAll,全部撤销
+admin.userProfile.revokeAllConfirm,要撤销 {userName} 的所有会话吗？该用户将在所有位置退出登录。
+admin.userProfile.revokeAllDone,所有会话已撤销。
+admin.userProfile.securityTab,安全
+admin.userProfile.sessionsDescription,查看活跃会话并撤销某设备的访问权限。
+admin.userProfile.sessionsEmpty,该用户没有活跃会话。
+admin.userProfile.sessionsRevoke,撤销
+admin.userProfile.sessionsRevokeConfirm,要立即撤销此会话吗？该设备将即刻退出登录。
+admin.userProfile.sessionsRevoked,会话已撤销。
+admin.userProfile.sessionsTitle,会话与设备
+admin.userProfile.setPassword,设置密码
+admin.userProfile.setPasswordDescription,替换登录密码并清除锁定状态。
+admin.userProfile.setPasswordTitle,设置新密码
+admin.userProfile.unlock,解锁用户
+admin.userProfile.unlockConfirm,要解锁 {userName} 吗？该用户可再次登录。
+admin.userProfile.unlocked,已解锁 {userName}。
+admin.userProfile.username,用户名
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} 已创建。
 admin.users.createdAt,创建时间
 admin.users.deleteWarning,删除该用户会立即撤销其会话和访问权限。
 admin.users.detailTitle,用户详情
+admin.users.directoryClearFilters,清除筛选
+admin.users.directoryCreated,创建时间
+admin.users.directoryEmptySearch,没有与此搜索匹配的人员。
+admin.users.directoryEmptySearchDetail,请尝试其他姓名、邮箱，或清除角色筛选。
+admin.users.directoryInvite,邀请用户
+admin.users.directoryInviteDescription,通过邮箱发送组织邀请。链接仅显示一次。
+admin.users.directoryInviteEmail,邮箱地址
+admin.users.directoryInviteRole,邀请角色
+admin.users.directoryInviteSubmit,发送邀请
+admin.users.directoryLastSignIn,上次登录
+admin.users.directoryNever,从未
+admin.users.directoryNoPeople,此组织中尚无人员。
+admin.users.directoryNoPeopleDetail,邀请第一位成员，开始使用此组织。
+admin.users.directoryOpen,打开
+admin.users.directoryOpenProfile,打开 {name} 的个人资料
+admin.users.directoryOrganizations,组织
+admin.users.directoryRole,角色
+admin.users.directoryRoleAdmin,管理员
+admin.users.directoryRoleAll,全部角色
+admin.users.directoryRoleGuest,访客
+admin.users.directoryRoleMember,成员
+admin.users.directoryRoleOwner,所有者
+admin.users.directoryScopeAll,所有组织
+admin.users.directoryScopeOrganization,本组织
+admin.users.directorySearchPlaceholder,按姓名、用户名或邮箱筛选
+admin.users.directoryServiceAccountCreate,创建服务账号
+admin.users.directoryServiceAccountDescription,用于自动化的机器身份。客户端密钥仅显示一次。
+admin.users.directoryServiceAccountEmpty,此组织中尚无服务账号。
+admin.users.directoryServiceAccountEmptyDetail,为集成与自动化创建第一个服务账号。
+admin.users.directoryServiceAccountName,显示名称
+admin.users.directoryServiceAccountScopes,作用域
+admin.users.directoryServiceAccountScopesHint,请用空格或逗号分隔作用域。
+admin.users.directoryServiceAccountSecretCopied,密钥已复制到剪贴板。
+admin.users.directoryServiceAccountSecretCopy,复制密钥
+admin.users.directoryServiceAccountSecretTitle,客户端密钥
+admin.users.directoryServiceAccountSecretWarning,此密钥仅显示一次。请立即妥善保存。
+admin.users.directoryServiceAccountStatus,状态
+admin.users.directoryServiceAccountUserName,用户名
+admin.users.directoryServiceAccountUserNameHint,在交换客户端凭据时用作客户端 ID。
+admin.users.directoryStatus,状态
+admin.users.directorySubtitle,{count} 人
+admin.users.directoryTabInvitations,待处理的邀请
+admin.users.directoryTabPeople,人员
+admin.users.directoryTabServiceAccounts,服务账号
+admin.users.directoryUser,用户
+admin.users.directoryUserInvited,已邀请
+admin.users.directoryUserName,用户名
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,用户标识符
 admin.users.invalid,请输入有效的电子邮件地址和用户名。
+admin.users.inviteEmailInvalid,请输入有效的邮箱地址。
+admin.users.inviteRevokeConfirm,要撤销发给 {email} 的邀请吗？邀请链接将立即失效。
+admin.users.inviteRevoked,邀请已撤销。
+admin.users.inviteRolesInvalid,请至少选择一个邀请角色。
+admin.users.inviteSent,邀请已创建。
+admin.users.inviteTokenCopied,邀请链接已复制到剪贴板。
+admin.users.inviteTokenCopy,复制链接
+admin.users.inviteTokenDismiss,我已保存此链接
+admin.users.inviteTokenOnce,此邀请链接仅显示一次。请将其分享给受邀人。
+admin.users.inviteTokenTitle,邀请链接
 admin.users.lastName,Last name
 admin.users.lifecycle.active,启用中
 admin.users.lifecycle.deleted,已删除
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,初始
 admin.users.lifecycle.locked,已锁定
 admin.users.lifecycle.suspended,已暂停
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,服务账号已创建。
+admin.users.serviceAccountInvalid,请输入服务账号的显示名称和用户名。
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,状态
 admin.users.title,用户
+admin.users.unverifiedEmail,未验证的邮箱
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,安全的身份服务

@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,デバイスとアプリケーション
 admin.common.confirmTitle,この操作を確認
 admin.common.permission,この管理データを表示する権限がありません。
+admin.configuration.brandingDescription,ライト・ダークの色、ロゴ、法的リンクをライブプレビュー付きで。
+admin.configuration.brandingFormDescription,色、ロゴ・アイコンの URL、既定テーマ、法的リンク。
+admin.configuration.brandingFormTitle,ブランドの色とアセット
+admin.configuration.brandingTitle,ブランディング
+admin.configuration.claim,ドメインを申請
+admin.configuration.colorInvalid,#2563eb のような16進カラーを入力してください。
+admin.configuration.copied,クリップボードにコピーしました。
+admin.configuration.copy,コピー
+admin.configuration.created,作成日
+admin.configuration.dangerDescription,無効化するとサインインは直ちにブロックされます。削除は元に戻せません。
+admin.configuration.dangerTitle,危険ゾーン
+admin.configuration.deactivate,組織を無効化
+admin.configuration.description,組織設定、サインイン、確認済みドメイン。
+admin.configuration.dialogDescription,ドメインを申請すると、メールアドレスからこの組織を検出できるようになります。
+admin.configuration.dialogTitle,ドメインの申請
+admin.configuration.dirty,未保存の変更があります。
+admin.configuration.discard,破棄
+admin.configuration.domainName,ドメイン
+admin.configuration.domainsDescription,確認済みドメインと組織検出。
+admin.configuration.domainsTitle,ドメイン
+admin.configuration.fontDescription,任意のWebフォントとカスタムフォントスタイルシートの URL。
+admin.configuration.fontFamily,フォントファミリー
+admin.configuration.fontFamilyPlaceholder,Noto Sans JP、system-ui、sans-serif
+admin.configuration.fontTitle,タイポグラフィ
+admin.configuration.fontUrl,フォントスタイルシートの URL
+admin.configuration.generalDescription,組織名、状態、危険ゾーン。
+admin.configuration.generalTitle,全般
+admin.configuration.identifier,組織 ID
+admin.configuration.legalDescription,サインインカードの下に表示されます。
+admin.configuration.legalTitle,法的リンク
+admin.configuration.loginDescription,メンバーが利用できるサインイン方法を選択します。
+admin.configuration.loginTitle,ログインポリシー
+admin.configuration.metaDescription,サポートとデバッグ用の補助識別子。
+admin.configuration.metaTitle,組織の詳細
+admin.configuration.nameDescription,サインイン、招待、管理画面全体に表示されます。
+admin.configuration.nameTitle,組織名
+admin.configuration.previewDark,ダーク
+admin.configuration.previewDescription,現在のフォーム値から描画されます。
+admin.configuration.previewEmail,taro.yamada@example.com
+admin.configuration.previewLight,ライト
+admin.configuration.previewTitle,サインインプレビュー
+admin.configuration.primaryDomain,プライマリドメイン
+admin.configuration.privacyUrl,プライバシーポリシーの URL
+admin.configuration.reactivate,組織を再有効化
+admin.configuration.readOnly,これらの設定を変更できるのは組織の所有者のみです。
+admin.configuration.remove,組織を削除
+admin.configuration.removeConfirm,ドメイン {domain} を削除しますか?その組織検出は直ちに停止します。
+admin.configuration.removeTitle,ドメインの削除
+admin.configuration.signInDescription,組織のログインとセキュリティポリシーのフォーム。
+admin.configuration.signInTitle,サインインとセキュリティ
+admin.configuration.statusActive,アクティブ
+admin.configuration.statusDescription,非アクティブな組織はサインインをブロックします。削除された組織は読み取り専用になります。
+admin.configuration.statusInactive,非アクティブ
+admin.configuration.statusRemoved,削除済み
+admin.configuration.statusTitle,状態
+admin.configuration.termsUrl,利用規約の URL
+admin.configuration.themeDark,ダークテーマ
+admin.configuration.themeLight,ライトテーマ
+admin.configuration.title,設定
+admin.configuration.typeName,確認のため組織名を入力
+admin.configuration.typeNameInvalid,入力された名前が組織名と一致しません。
+admin.configuration.watermark,Authworks の透かしを非表示にする
 admin.events.actor,アクター
 admin.events.aggregate,集約
 admin.events.count,{count} 件のイベント
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,削除済み
 admin.projects.access.description,この管理者が現在このプロジェクトで実効的に保持しているロール。
 admin.projects.access.empty,現在の組織コンテキストで有効なプロジェクトロールはありません。
 admin.projects.access.grantedOrganization,組織を通じて付与
+admin.projects.access.organizationDescription,このプロジェクトにアクセスできる組織と、付与されるロールの一覧です。
+admin.projects.access.organizationTitle,組織のアクセス
 admin.projects.access.permissionDescription,固定ロールとその権限は Authworks によって定義されており、編集できません。
 admin.projects.access.permissionTitle,固定ロールと権限
 admin.projects.access.roleKeys,実効プロジェクトロール
+admin.projects.access.selectRoles,ロールを選択
 admin.projects.access.title,実効アクセス権
 admin.projects.applications.create,アプリケーションを追加
 admin.projects.applications.description,このプロジェクトに対して認証するアプリケーション。
@@ -719,11 +784,32 @@ admin.projects.applications.name,アプリケーション名
 admin.projects.applications.removeConfirm,このアプリケーションを削除しますか？この操作は元に戻せません。
 admin.projects.applications.title,アプリケーション
 admin.projects.applications.type,アプリケーションの種類
+admin.projects.assignments.create,ユーザーを割り当て
+admin.projects.assignments.description,アクティブな組織のユーザーに、このプロジェクトのロールを直接割り当てます。
+admin.projects.assignments.empty,このプロジェクトに直接割り当てられたユーザーはいません。
+admin.projects.assignments.invalid,ユーザーを入力し、ロールを1つ以上選択してください。
+admin.projects.assignments.removeConfirm,このユーザーの割り当てを削除しますか?ユーザーはこれらのプロジェクトロールを失います。
+admin.projects.assignments.title,直接のユーザー割り当て
+admin.projects.assignments.user,ユーザー
 admin.projects.deleteConfirm,このプロジェクトを削除しますか？アプリケーション、ロール、付与も一緒に削除されます。
 admin.projects.deleteConfirmAccept,プロジェクトを削除
 admin.projects.deleteConfirmTitle,このプロジェクトを削除
+admin.projects.detail.authorizationHelp,認可が必要です:ユーザーはこのプロジェクトのロールを1つ以上持っていないと、そのアプリケーションにサインインできません。
+admin.projects.detail.backToProjects,プロジェクトに戻る
 admin.projects.detail.created,作成日時
 admin.projects.detail.organization,組織
+admin.projects.detail.owned,所有
+admin.projects.detail.projectAccessHelp,プロジェクトアクセスが必要です:ユーザーはプロジェクトへのアクセス権(組織経由または直接割り当て)を付与されている必要があります。
+admin.projects.detail.readOnly,共有プロジェクトは読み取り専用です。このプロジェクトを管理できるのは所有組織のみです。
+admin.projects.detail.remove,プロジェクトを削除
+admin.projects.detail.removeTypeLabel,プロジェクト名
+admin.projects.detail.removeTypeMismatch,プロジェクト名が一致しません。
+admin.projects.detail.removeTypePrompt,確認のためプロジェクト名を入力してください。
+admin.projects.detail.rename,名前を変更
+admin.projects.detail.renameDescription,管理画面全体に表示されるプロジェクト名を変更します。
+admin.projects.detail.renameInvalid,プロジェクト名を入力してください。
+admin.projects.detail.renameTitle,プロジェクト名の変更
+admin.projects.detail.shared,共有
 admin.projects.detail.updated,最終更新
 admin.projects.detailTitle,プロジェクトの詳細
 admin.projects.grants.create,組織にアクセス権を付与
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,このプロジェクトを削除しますか？
 admin.projects.lifecycle.removeConfirmAccept,プロジェクトを除去
 admin.projects.lifecycle.removeConfirmTitle,このプロジェクトを除去
+admin.projects.list.applications,アプリケーション
 admin.projects.list.create,プロジェクトを作成
 admin.projects.list.description,プロジェクトは、組織のアプリケーション、ロール、付与をまとめます。
 admin.projects.list.empty,このレルムにはまだプロジェクトがありません。
+admin.projects.list.emptyDetail,プロジェクトを作成して、アプリケーション、ロール、権限をまとめます。
 admin.projects.list.invalid,プロジェクト名を入力し、組織を選択してください。
 admin.projects.list.name,プロジェクト名
+admin.projects.list.roles,ロール
 admin.projects.list.search,プロジェクトを検索
+admin.projects.list.subtitle,アクティブな組織が所有・共有しているプロジェクト。
 admin.projects.list.title,プロジェクト
 admin.projects.missingId,この宛先にはプロジェクトの選択が必要です。
+admin.projects.overview.authorizationTitle,認可が必要です
+admin.projects.overview.projectAccessTitle,プロジェクトアクセスが必要です
+admin.projects.overview.settingsDescription,プロジェクト名とアクセス強制の方法を管理します。
+admin.projects.overview.settingsTitle,プロジェクト設定
+admin.projects.overview.title,プロジェクト概要
 admin.projects.roles.create,ロールを作成
 admin.projects.roles.deleteConfirm,このプロジェクトロールを削除しますか？参照している付与はロールを失います。
 admin.projects.roles.description,このプロジェクトが組織とそのメンバーに割り当てられるロール。
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,このレルムを無効化すると、すべての�
 admin.realm.disabled,レルムを無効化しました。
 admin.realm.domains,ドメイン
 admin.realm.domainsHint,ドメインはカンマで区切ってください。最初のドメインが主ドメインです。
+admin.realm.edit,編集
+admin.realm.editDescription,レルム名、状態、このレルムに解決されるドメインを変更します。
+admin.realm.editTitle,レルムの編集
 admin.realm.enabled,レルムを有効化しました。
+admin.realm.explore.administratorsDescription,レルム管理者のステータスを付与・取り消しします。
+admin.realm.explore.auditEventsDescription,このレルムのセキュリティイベントストリームを確認します。
+admin.realm.explore.oidcClientsDescription,このレルムに登録されたOIDCクライアントを確認します。
+admin.realm.explore.organizationsDescription,このレルムの組織を参照します。
+admin.realm.explore.sessionsDescription,このレルムのアクティブなセッションを確認します。
+admin.realm.exploreTitle,探索
 admin.realm.identifier,レルム識別子
+admin.realm.identityTitle,アイデンティティ
 admin.realm.invalid,レルム名とドメインを1つ以上入力してください。
 admin.realm.name,レルム名
 admin.realm.permissionDenied,このレルムを変更する権限がありません。
+admin.realm.primary,プライマリ
 admin.realm.primaryDomain,主ドメイン
 admin.realm.saved,レルム設定を保存しました。
 admin.realm.status,状態
 admin.realm.statusActive,有効
 admin.realm.statusDisabled,無効
+admin.realmAdministrators.add,管理者を追加
+admin.realmAdministrators.addDialogDescription,レルムユーザーを検索し、レルム管理者のステータスを付与します。権限はこのレルム内のすべての組織に適用されます。
+admin.realmAdministrators.addDialogTitle,レルム管理者の追加
+admin.realmAdministrators.added,{name} がレルム管理者になりました。
+admin.realmAdministrators.alreadyAdmin,すでに管理者です
+admin.realmAdministrators.confirmRemoveAccept,管理者を削除
+admin.realmAdministrators.confirmRemoveMessage,{name} をレルム管理者から削除しますか?このレルム内のすべての組織設定へのアクセスを失います。
+admin.realmAdministrators.confirmRemoveTitle,この管理者を削除
+admin.realmAdministrators.count,管理者 {count} 人
+admin.realmAdministrators.countOne,管理者1人
+admin.realmAdministrators.description,レルム管理者は、すべての組織、レルム設定、OIDC、監査ログを管理できます。
+admin.realmAdministrators.emptyDescription,レルム管理者はまだ存在しません。このレルムを管理する最初の管理者を任命してください。
+admin.realmAdministrators.emptySearchDescription,この検索に一致するレルムユーザーはいません。
+admin.realmAdministrators.emptyTitle,管理者がいません
+admin.realmAdministrators.grant,管理者権限を付与
+admin.realmAdministrators.invitePlaceholder,名前またはメールでユーザーを検索
+admin.realmAdministrators.lastAdminHint,最後の管理者は削除できません。
+admin.realmAdministrators.remove,削除
+admin.realmAdministrators.removed,{name} はレルム管理者ではなくなりました。
+admin.realmAdministrators.revokeFailed,この管理者を削除できませんでした。
+admin.realmAdministrators.search,管理者を検索
+admin.realmAdministrators.systemAdded,システム
+admin.realmAdministrators.tableAdded,追加日
+admin.realmAdministrators.tableAddedBy,追加者
+admin.realmAdministrators.tableUser,管理者
+admin.realmAdministrators.title,レルム管理者
+admin.roles.delete,削除
+admin.roles.description,ロールには2種類あります:組織ロールはこの管理画面でできることを制御し、プロジェクトロールはアプリケーションがトークンで受け取るものです。
+admin.roles.dialog.displayName,表示名
+admin.roles.dialog.editDescription,このロールの表示方法を変更します。キーは固定のままです。
+admin.roles.dialog.editTitle,プロジェクトロールの編集
+admin.roles.dialog.group,グループ
+admin.roles.dialog.invalid,表示名とロールキーを入力してください。
+admin.roles.dialog.key,ロールキー
+admin.roles.dialog.keyHint,トークンで使われる小文字英数字とダッシュ。
+admin.roles.dialog.missingRole,選択したロールは利用できなくなりました。
+admin.roles.dialog.newDescription,アプリケーションがトークンで受け取るロールキーを追加します。
+admin.roles.dialog.newTitle,新しいプロジェクトロール
+admin.roles.dialog.noProject,新しいロールのプロジェクトを選択してください。
+admin.roles.dialog.project,プロジェクト
+admin.roles.edit,編集
+admin.roles.empty.createProjects,先にプロジェクトを作成
+admin.roles.empty.description,プロジェクトができたら、アプリケーションがトークンで受け取るロールを定義します。
+admin.roles.empty.title,プロジェクトがまだありません
+admin.roles.groupFallback,グループなし
+admin.roles.memberCount,メンバー {count} 人
+admin.roles.memberCountOne,メンバー1人
+admin.roles.orgRole.admin.bullet1,所有者以外のメンバーを管理
+admin.roles.orgRole.admin.bullet2,ロール、プロジェクト、サービスアカウントを管理
+admin.roles.orgRole.admin.bullet3,ブランディング、サインインポリシー、ドメインは変更不可
+admin.roles.orgRole.admin.description,メンバーとプロジェクトを日常的に管理します。
+admin.roles.orgRole.guest.bullet1,プロジェクト招待向けなどの最小限のアクセス
+admin.roles.orgRole.guest.bullet2,メンバー、ロール、プロジェクトは管理不可
+admin.roles.orgRole.guest.description,ゲストやパートナー向けの制限付きアクセス。
+admin.roles.orgRole.member.bullet1,サインインして組織を表示可能
+admin.roles.orgRole.member.bullet2,組織と共有されたプロジェクトを利用
+admin.roles.orgRole.member.bullet3,メンバー、ロール、プロジェクトは管理不可
+admin.roles.orgRole.member.description,組織メンバー向けの標準アクセス。
+admin.roles.orgRole.owner.bullet1,管理者のすべての操作が可能
+admin.roles.orgRole.owner.bullet2,ブランディング、サインインポリシー、ドメインを変更
+admin.roles.orgRole.owner.bullet3,所有者と組織の削除を管理
+admin.roles.orgRole.owner.description,組織とこの管理画面を完全に管理します。
+admin.roles.organizationRoles.description,この管理画面で誰が何をできるか。
+admin.roles.organizationRoles.title,組織ロール
+admin.roles.projects.deleteConfirm,このプロジェクトロールを削除しますか?参照している権限からこのロールが失われます。
+admin.roles.projects.deleteConfirmAccept,ロールを削除
+admin.roles.projects.deleteConfirmTitle,このロールを削除
+admin.roles.projects.newRole,新しいロール
+admin.roles.projects.owned,所有
+admin.roles.projects.shared,共有
+admin.roles.projects.title,プロジェクトロール
+admin.roles.rolesEmpty,このプロジェクトにはまだロールが定義されていません。
+admin.roles.title,ロール
 admin.session.expired,管理者セッションの有効期限が切れました
 admin.signIn.activeTitle,管理者セッションが有効です
 admin.signIn.credential,ブートストラップ管理者の資格情報
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,サインアウトしました
 admin.signIn.subject,サブジェクト
 admin.signIn.subjectType,サブジェクトの種類
 admin.signIn.title,管理者サインイン
+admin.userProfile.accessTab,ロールとアクセス
+admin.userProfile.assignRoles,プロジェクトロールを割り当て
+admin.userProfile.assignRolesDialogTitle,プロジェクトロールの割り当て
+admin.userProfile.assignRolesEmpty,プロジェクトロールが見つかりません。
+admin.userProfile.assignRolesProject,プロジェクト
+admin.userProfile.assignRolesRoles,ロール
+admin.userProfile.assignRolesSave,割り当てを保存
+admin.userProfile.assignRolesSearch,プロジェクトを検索
+admin.userProfile.assignRolesSelected,{count} 件のロールを選択中
+admin.userProfile.assignRolesStepProject,プロジェクトを選択
+admin.userProfile.authDescription,安全なサインインのメタデータです。シークレットや秘密鍵が表示されることはありません。
+admin.userProfile.authTitle,認証方法
+admin.userProfile.backToUsers,ユーザーに戻る
+admin.userProfile.contactTitle,連絡先
+admin.userProfile.deactivate,ユーザーを無効化
+admin.userProfile.deactivateConfirm,{userName} を無効化しますか?ユーザーはサインインできなくなります。
+admin.userProfile.deactivated,{userName} を無効化しました。
+admin.userProfile.deleteConfirm,{userName} を完全に削除しますか?この操作は取り消せません。
+admin.userProfile.deleteConfirmMismatch,入力された名前が一致しません。
+admin.userProfile.deleteConfirmTitle,このユーザーを削除
+admin.userProfile.deleteConfirmType,確認のため {userName} と入力してください。
+admin.userProfile.deleted,{userName} を削除しました。
+admin.userProfile.editProfile,プロフィールを編集
+admin.userProfile.editProfileTitle,プロフィールの編集
+admin.userProfile.email,メールアドレス
+admin.userProfile.emailUnverified,未確認
+admin.userProfile.emailVerified,確認済み
+admin.userProfile.impersonate,ユーザーになりすます
+admin.userProfile.lastSignIn,最終サインイン
+admin.userProfile.makeRealmAdmin,レルム管理者にする
+admin.userProfile.makeRealmAdminConfirm,{userName} にレルム管理者権限を付与しますか?
+admin.userProfile.makeRealmAdminDone,{userName} がレルム管理者になりました。
+admin.userProfile.memberSince,メンバー登録日
+admin.userProfile.membershipAdd,組織に追加
+admin.userProfile.membershipAdded,{userName} を組織に追加しました。
+admin.userProfile.membershipEmpty,このユーザーはいかなる組織のメンバーでもありません。
+admin.userProfile.membershipOrganization,組織
+admin.userProfile.membershipsTitle,組織メンバーシップ
+admin.userProfile.missingId,アドレスからこのユーザーを特定できませんでした。
+admin.userProfile.never,なし
+admin.userProfile.notMember,このユーザーはアクティブな組織のメンバーではありません。
+admin.userProfile.organizationRoleChanged,組織ロールを更新しました。
+admin.userProfile.organizationRoleDescription,アクティブな組織での主なロールを選択します。
+admin.userProfile.organizationRoleTitle,組織ロール
+admin.userProfile.overviewTab,概要
+admin.userProfile.passwordConfirm,新しいパスワード(確認)
+admin.userProfile.passwordMismatch,パスワードが一致しません。
+admin.userProfile.passwordNew,新しいパスワード
+admin.userProfile.passwordSaved,パスワードを設定しました。
+admin.userProfile.passwordTooShort,8文字以上のパスワードを入力してください。
+admin.userProfile.phone,電話番号
+admin.userProfile.preferredLanguage,優先言語
+admin.userProfile.profileSaved,ユーザープロフィールを保存しました。
+admin.userProfile.profileTitle,プロフィール
+admin.userProfile.projectRolesEmpty,プロジェクトロールは割り当てられていません。
+admin.userProfile.projectRolesRemove,削除
+admin.userProfile.projectRolesRemoveConfirm,{projectName} の割り当てを削除しますか?
+admin.userProfile.projectRolesRemoved,プロジェクトの割り当てを削除しました。
+admin.userProfile.projectRolesSaved,プロジェクトの割り当てを保存しました。
+admin.userProfile.projectRolesTitle,プロジェクトロール
+admin.userProfile.reactivate,ユーザーを再有効化
+admin.userProfile.reactivateConfirm,{userName} を再有効化しますか?ユーザーは再びサインインできます。
+admin.userProfile.reactivated,{userName} を再有効化しました。
+admin.userProfile.realmAdminBadge,レルム管理者
+admin.userProfile.removeRealmAdmin,レルム管理者を解除
+admin.userProfile.removeRealmAdminConfirm,{userName} のレルム管理者権限を解除しますか?
+admin.userProfile.removeRealmAdminDone,{userName} はレルム管理者ではなくなりました。
+admin.userProfile.revokeAll,すべて取り消し
+admin.userProfile.revokeAllConfirm,{userName} のすべてのセッションを取り消しますか?ユーザーはすべての場所でサインアウトされます。
+admin.userProfile.revokeAllDone,すべてのセッションを取り消しました。
+admin.userProfile.securityTab,セキュリティ
+admin.userProfile.sessionsDescription,アクティブなセッションを確認し、デバイスのアクセスを取り消します。
+admin.userProfile.sessionsEmpty,このユーザーにはアクティブなセッションがありません。
+admin.userProfile.sessionsRevoke,取り消し
+admin.userProfile.sessionsRevokeConfirm,このセッションを今すぐ取り消しますか?デバイスは直ちにサインアウトされます。
+admin.userProfile.sessionsRevoked,セッションを取り消しました。
+admin.userProfile.sessionsTitle,セッションとデバイス
+admin.userProfile.setPassword,パスワードを設定
+admin.userProfile.setPasswordDescription,サインイン用パスワードを置き換え、ロックアウトを解除します。
+admin.userProfile.setPasswordTitle,新しいパスワードの設定
+admin.userProfile.unlock,ユーザーのロックを解除
+admin.userProfile.unlockConfirm,{userName} のロックを解除しますか?ユーザーは再びサインインできます。
+admin.userProfile.unlocked,{userName} のロックを解除しました。
+admin.userProfile.username,ユーザー名
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} を作成しました。
 admin.users.createdAt,作成日時
 admin.users.deleteWarning,このユーザーを削除すると、セッションとアクセス権が直ちに取り消されます。
 admin.users.detailTitle,ユーザー詳細
+admin.users.directoryClearFilters,フィルターをクリア
+admin.users.directoryCreated,作成日
+admin.users.directoryEmptySearch,この検索に一致するユーザーはいません。
+admin.users.directoryEmptySearchDetail,別の名前やメールアドレスを試すか、ロールフィルターをクリアしてください。
+admin.users.directoryInvite,ユーザーを招待
+admin.users.directoryInviteDescription,メールで組織招待を送信します。リンクは一度だけ表示されます。
+admin.users.directoryInviteEmail,メールアドレス
+admin.users.directoryInviteRole,招待ロール
+admin.users.directoryInviteSubmit,招待を送信
+admin.users.directoryLastSignIn,最終サインイン
+admin.users.directoryNever,なし
+admin.users.directoryNoPeople,この組織にはまだメンバーがいません。
+admin.users.directoryNoPeopleDetail,最初のメンバーを招待して、この組織を始めましょう。
+admin.users.directoryOpen,開く
+admin.users.directoryOpenProfile,{name} のプロフィールを開く
+admin.users.directoryOrganizations,組織
+admin.users.directoryRole,ロール
+admin.users.directoryRoleAdmin,管理者
+admin.users.directoryRoleAll,すべてのロール
+admin.users.directoryRoleGuest,ゲスト
+admin.users.directoryRoleMember,メンバー
+admin.users.directoryRoleOwner,所有者
+admin.users.directoryScopeAll,すべての組織
+admin.users.directoryScopeOrganization,この組織
+admin.users.directorySearchPlaceholder,名前、ユーザー名、メールで絞り込み
+admin.users.directoryServiceAccountCreate,サービスアカウントを作成
+admin.users.directoryServiceAccountDescription,自動化用のマシンIDです。クライアントシークレットは一度だけ表示されます。
+admin.users.directoryServiceAccountEmpty,この組織にはサービスアカウントがありません。
+admin.users.directoryServiceAccountEmptyDetail,連携や自動化のために最初のサービスアカウントを作成します。
+admin.users.directoryServiceAccountName,表示名
+admin.users.directoryServiceAccountScopes,スコープ
+admin.users.directoryServiceAccountScopesHint,スコープはスペースまたはカンマで区切ります。
+admin.users.directoryServiceAccountSecretCopied,シークレットをクリップボードにコピーしました。
+admin.users.directoryServiceAccountSecretCopy,シークレットをコピー
+admin.users.directoryServiceAccountSecretTitle,クライアントシークレット
+admin.users.directoryServiceAccountSecretWarning,このシークレットは一度だけ表示されます。今すぐ安全な場所に保存してください。
+admin.users.directoryServiceAccountStatus,状態
+admin.users.directoryServiceAccountUserName,ユーザー名
+admin.users.directoryServiceAccountUserNameHint,クライアント資格情報の交換時にクライアント ID として使用されます。
+admin.users.directoryStatus,状態
+admin.users.directorySubtitle,{count} 人のメンバー
+admin.users.directoryTabInvitations,保留中の招待
+admin.users.directoryTabPeople,メンバー
+admin.users.directoryTabServiceAccounts,サービスアカウント
+admin.users.directoryUser,ユーザー
+admin.users.directoryUserInvited,招待済み
+admin.users.directoryUserName,ユーザー名
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,ユーザー識別子
 admin.users.invalid,有効なメールアドレスとユーザー名を入力してください。
+admin.users.inviteEmailInvalid,有効なメールアドレスを入力してください。
+admin.users.inviteRevokeConfirm,{email} への招待を取り消しますか?招待リンクは直ちに無効になります。
+admin.users.inviteRevoked,招待を取り消しました。
+admin.users.inviteRolesInvalid,招待ロールを1つ以上選択してください。
+admin.users.inviteSent,招待を作成しました。
+admin.users.inviteTokenCopied,招待リンクをクリップボードにコピーしました。
+admin.users.inviteTokenCopy,リンクをコピー
+admin.users.inviteTokenDismiss,リンクを保存しました
+admin.users.inviteTokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
+admin.users.inviteTokenTitle,招待リンク
 admin.users.lastName,Last name
 admin.users.lifecycle.active,有効
 admin.users.lifecycle.deleted,削除済み
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,初期
 admin.users.lifecycle.locked,ロック済み
 admin.users.lifecycle.suspended,停止中
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,サービスアカウントを作成しました。
+admin.users.serviceAccountInvalid,サービスアカウントの表示名とユーザー名を入力してください。
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,状態
 admin.users.title,ユーザー
+admin.users.unverifiedEmail,未確認のメール
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,安全なアイデンティティサービス

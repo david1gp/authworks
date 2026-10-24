@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Dispositivos e aplicativos
 admin.common.confirmTitle,Confirmar esta ação
 admin.common.permission,Não tem permissão para ver estes dados de administração.
+admin.configuration.brandingDescription,"Cores claras e escuras, logótipo e ligações legais com pré-visualização ao vivo."
+admin.configuration.brandingFormDescription,"Cores, URL do logótipo e do ícone, tema predefinido e ligações legais."
+admin.configuration.brandingFormTitle,Cores e recursos da marca
+admin.configuration.brandingTitle,Personalização
+admin.configuration.claim,Reivindicar domínio
+admin.configuration.colorInvalid,Introduza uma cor hexadecimal como #2563eb.
+admin.configuration.copied,Copiado para a área de transferência.
+admin.configuration.copy,Copiar
+admin.configuration.created,Criado
+admin.configuration.dangerDescription,A desativação bloqueia de imediato o início de sessão; a remoção é permanente.
+admin.configuration.dangerTitle,Zona de perigo
+admin.configuration.deactivate,Desativar organização
+admin.configuration.description,"Definições da organização, início de sessão e domínios verificados."
+admin.configuration.dialogDescription,Reivindique um domínio para as pessoas descobrirem esta organização a partir do seu endereço de e-mail.
+admin.configuration.dialogTitle,Reivindicar um domínio
+admin.configuration.dirty,Tem alterações não guardadas.
+admin.configuration.discard,Descartar
+admin.configuration.domainName,Domínio
+admin.configuration.domainsDescription,Domínios verificados e descoberta da organização.
+admin.configuration.domainsTitle,Domínios
+admin.configuration.fontDescription,Tipo de letra Web opcional e URL personalizado da folha de estilos dos tipos de letra.
+admin.configuration.fontFamily,Família de tipos de letra
+admin.configuration.fontFamilyPlaceholder,"Inter, Segoe UI, sans-serif"
+admin.configuration.fontTitle,Tipografia
+admin.configuration.fontUrl,URL da folha de estilos dos tipos de letra
+admin.configuration.generalDescription,"Nome da organização, estado e zona de perigo."
+admin.configuration.generalTitle,Geral
+admin.configuration.identifier,ID da organização
+admin.configuration.legalDescription,Mostradas por baixo do cartão de início de sessão.
+admin.configuration.legalTitle,Ligações legais
+admin.configuration.loginDescription,Escolha que métodos de início de sessão as pessoas podem usar.
+admin.configuration.loginTitle,Política de início de sessão
+admin.configuration.metaDescription,Identificadores secundários para suporte e depuração.
+admin.configuration.metaTitle,Detalhes da organização
+admin.configuration.nameDescription,"Mostrado no início de sessão, nos convites e na administração."
+admin.configuration.nameTitle,Nome da organização
+admin.configuration.previewDark,Escuro
+admin.configuration.previewDescription,Gerada a partir dos valores atuais do formulário.
+admin.configuration.previewEmail,nome@exemplo.pt
+admin.configuration.previewLight,Claro
+admin.configuration.previewTitle,Pré-visualização do início de sessão
+admin.configuration.primaryDomain,Domínio principal
+admin.configuration.privacyUrl,URL da política de privacidade
+admin.configuration.reactivate,Reativar organização
+admin.configuration.readOnly,Só os proprietários da organização podem alterar estas definições.
+admin.configuration.remove,Remover organização
+admin.configuration.removeConfirm,Remover o domínio {domain}? A descoberta da organização termina de imediato.
+admin.configuration.removeTitle,Remover domínio
+admin.configuration.signInDescription,Formulários de início de sessão e política de segurança da organização.
+admin.configuration.signInTitle,Início de sessão e segurança
+admin.configuration.statusActive,Ativa
+admin.configuration.statusDescription,Organizações inativas bloqueiam o início de sessão; as removidas ficam só de leitura.
+admin.configuration.statusInactive,Inativa
+admin.configuration.statusRemoved,Removida
+admin.configuration.statusTitle,Estado
+admin.configuration.termsUrl,URL dos termos de serviço
+admin.configuration.themeDark,Tema escuro
+admin.configuration.themeLight,Tema claro
+admin.configuration.title,Configuração
+admin.configuration.typeName,Escreva o nome da organização para confirmar
+admin.configuration.typeNameInvalid,O nome escrito não corresponde ao nome da organização.
+admin.configuration.watermark,Ocultar a marca de água Authworks
 admin.events.actor,Ator
 admin.events.aggregate,Agregado
 admin.events.count,{count} eventos
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Removida
 admin.projects.access.description,As funções que este administrador detém efetivamente no projeto neste momento.
 admin.projects.access.empty,Nenhuma função de projeto está efetiva no contexto organizacional atual.
 admin.projects.access.grantedOrganization,Concedido através da organização
+admin.projects.access.organizationDescription,Organizações com acesso a este projeto e as funções que recebem.
+admin.projects.access.organizationTitle,Acesso das organizações
 admin.projects.access.permissionDescription,As funções fixas e as suas permissões são definidas pelo Authworks e não podem ser editadas.
 admin.projects.access.permissionTitle,Funções e permissões fixas
 admin.projects.access.roleKeys,Funções de projeto efetivas
+admin.projects.access.selectRoles,Escolher funções
 admin.projects.access.title,Acesso efetivo
 admin.projects.applications.create,Adicionar aplicação
 admin.projects.applications.description,Aplicações que se autenticam neste projeto.
@@ -719,11 +784,32 @@ admin.projects.applications.name,Nome da aplicação
 admin.projects.applications.removeConfirm,Remover esta aplicação? Não é possível anular.
 admin.projects.applications.title,Aplicações
 admin.projects.applications.type,Tipo de aplicação
+admin.projects.assignments.create,Atribuir utilizador
+admin.projects.assignments.description,Atribua as funções deste projeto diretamente a um utilizador da organização ativa.
+admin.projects.assignments.empty,Ainda nenhum utilizador foi atribuído diretamente a este projeto.
+admin.projects.assignments.invalid,Introduza um utilizador e escolha pelo menos uma função.
+admin.projects.assignments.removeConfirm,Remover esta atribuição de utilizador? O utilizador perde estas funções de projeto.
+admin.projects.assignments.title,Atribuições diretas de utilizadores
+admin.projects.assignments.user,Utilizador
 admin.projects.deleteConfirm,"Eliminar este projeto? As aplicações, os papéis e as concessões são eliminados com ele."
 admin.projects.deleteConfirmAccept,Eliminar projeto
 admin.projects.deleteConfirmTitle,Eliminar este projeto
+admin.projects.detail.authorizationHelp,Autorização necessária: os utilizadores precisam de pelo menos uma função deste projeto para iniciar sessão nas suas aplicações.
+admin.projects.detail.backToProjects,Voltar aos projetos
 admin.projects.detail.created,Criado
 admin.projects.detail.organization,Organização
+admin.projects.detail.owned,Próprio
+admin.projects.detail.projectAccessHelp,Acesso ao projeto necessário: os utilizadores precisam de ter acesso ao projeto (através da sua organização ou de uma atribuição direta).
+admin.projects.detail.readOnly,Os projetos partilhados são só de leitura. Só a organização proprietária gere este projeto.
+admin.projects.detail.remove,Eliminar projeto
+admin.projects.detail.removeTypeLabel,Nome do projeto
+admin.projects.detail.removeTypeMismatch,O nome do projeto não corresponde.
+admin.projects.detail.removeTypePrompt,Introduza o nome do projeto para confirmar.
+admin.projects.detail.rename,Mudar o nome
+admin.projects.detail.renameDescription,Altere o nome do projeto mostrado em toda a administração.
+admin.projects.detail.renameInvalid,Introduza um nome de projeto.
+admin.projects.detail.renameTitle,Mudar o nome do projeto
+admin.projects.detail.shared,Partilhado
 admin.projects.detail.updated,Última atualização
 admin.projects.detailTitle,Detalhe do projeto
 admin.projects.grants.create,Conceder acesso à organização
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Remover este projeto?
 admin.projects.lifecycle.removeConfirmAccept,Remover projeto
 admin.projects.lifecycle.removeConfirmTitle,Remover este projeto
+admin.projects.list.applications,Aplicações
 admin.projects.list.create,Criar projeto
 admin.projects.list.description,"Os projetos agrupam as aplicações, funções e concessões de uma organização."
 admin.projects.list.empty,Ainda não existe nenhum projeto neste realm.
+admin.projects.list.emptyDetail,"Crie um projeto para agrupar aplicações, funções e concessões."
 admin.projects.list.invalid,Introduza um nome de projeto e escolha uma organização.
 admin.projects.list.name,Nome do projeto
+admin.projects.list.roles,Funções
 admin.projects.list.search,Procurar projetos
+admin.projects.list.subtitle,Projetos próprios e partilhados da organização ativa.
 admin.projects.list.title,Projetos
 admin.projects.missingId,Um projeto tem de estar selecionado para este destino.
+admin.projects.overview.authorizationTitle,Autorização necessária
+admin.projects.overview.projectAccessTitle,Acesso ao projeto necessário
+admin.projects.overview.settingsDescription,Controle o nome do projeto e a forma como o acesso é aplicado.
+admin.projects.overview.settingsTitle,Definições do projeto
+admin.projects.overview.title,Resumo do projeto
 admin.projects.roles.create,Criar função
 admin.projects.roles.deleteConfirm,Eliminar este papel de projeto? As concessões que o referenciam perdem o papel.
 admin.projects.roles.description,As funções que este projeto pode atribuir a organizações e aos seus membros.
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Desativar este domínio de segurança interrompe o lo
 admin.realm.disabled,O domínio de segurança foi desativado.
 admin.realm.domains,Domínios
 admin.realm.domainsHint,Separe os domínios com vírgulas. O primeiro domínio é o domínio principal.
+admin.realm.edit,Editar
+admin.realm.editDescription,"Altere o nome do realm, o estado e os domínios que apontam para este realm."
+admin.realm.editTitle,Editar realm
 admin.realm.enabled,O domínio de segurança foi ativado.
+admin.realm.explore.administratorsDescription,Conceda ou revogue o estado de administrador do realm.
+admin.realm.explore.auditEventsDescription,Reveja o fluxo de eventos de segurança deste realm.
+admin.realm.explore.oidcClientsDescription,Reveja os clientes OIDC registados neste realm.
+admin.realm.explore.organizationsDescription,Explore as organizações deste realm.
+admin.realm.explore.sessionsDescription,Reveja as sessões ativas deste realm.
+admin.realm.exploreTitle,Explorar
 admin.realm.identifier,Identificador do domínio de segurança
+admin.realm.identityTitle,Identidade
 admin.realm.invalid,Informe um nome e ao menos um domínio.
 admin.realm.name,Nome do domínio de segurança
 admin.realm.permissionDenied,Você não tem permissão para alterar este domínio de segurança.
+admin.realm.primary,Principal
 admin.realm.primaryDomain,Domínio principal
 admin.realm.saved,As configurações foram salvas.
 admin.realm.status,Status
 admin.realm.statusActive,Ativo
 admin.realm.statusDisabled,Desativado
+admin.realmAdministrators.add,Adicionar administrador
+admin.realmAdministrators.addDialogDescription,Pesquise utilizadores do realm e conceda o estado de administrador do realm. As concessões aplicam-se a todas as organizações deste realm.
+admin.realmAdministrators.addDialogTitle,Adicionar administrador do realm
+admin.realmAdministrators.added,{name} é agora um administrador do realm.
+admin.realmAdministrators.alreadyAdmin,Já é administrador
+admin.realmAdministrators.confirmRemoveAccept,Remover administrador
+admin.realmAdministrators.confirmRemoveMessage,Remover {name} como administrador do realm? Perde o acesso a todas as definições das organizações deste realm.
+admin.realmAdministrators.confirmRemoveTitle,Remover este administrador
+admin.realmAdministrators.count,{count} administradores
+admin.realmAdministrators.countOne,1 administrador
+admin.realmAdministrators.description,"Os administradores do realm podem gerir todas as organizações, as definições do realm, OIDC e o registo de auditoria."
+admin.realmAdministrators.emptyDescription,Ainda não existe nenhum administrador do realm. Conceda o primeiro administrador para gerir este realm.
+admin.realmAdministrators.emptySearchDescription,Nenhum utilizador do realm corresponde a esta pesquisa.
+admin.realmAdministrators.emptyTitle,Sem administradores
+admin.realmAdministrators.grant,Conceder administração
+admin.realmAdministrators.invitePlaceholder,Pesquisar pessoas por nome ou e-mail
+admin.realmAdministrators.lastAdminHint,O último administrador não pode ser removido.
+admin.realmAdministrators.remove,Remover
+admin.realmAdministrators.removed,{name} deixou de ser administrador do realm.
+admin.realmAdministrators.revokeFailed,Este administrador não pôde ser removido.
+admin.realmAdministrators.search,Pesquisar administradores
+admin.realmAdministrators.systemAdded,Sistema
+admin.realmAdministrators.tableAdded,Adicionado
+admin.realmAdministrators.tableAddedBy,Adicionado por
+admin.realmAdministrators.tableUser,Administrador
+admin.realmAdministrators.title,Administradores do realm
+admin.roles.delete,Eliminar
+admin.roles.description,Dois tipos de funções: as funções de organização controlam o que as pessoas podem fazer nesta administração; as funções de projeto são o que as suas aplicações veem nos tokens.
+admin.roles.dialog.displayName,Nome de apresentação
+admin.roles.dialog.editDescription,Altere a forma como esta função aparece; a chave permanece fixa.
+admin.roles.dialog.editTitle,Editar função de projeto
+admin.roles.dialog.group,Grupo
+admin.roles.dialog.invalid,Introduza um nome de apresentação e uma chave de função.
+admin.roles.dialog.key,Chave da função
+admin.roles.dialog.keyHint,"Letras minúsculas, números e hífenes, como usados nos tokens."
+admin.roles.dialog.missingRole,A função selecionada já não está disponível.
+admin.roles.dialog.newDescription,Adicione uma chave de função que as aplicações recebem nos tokens.
+admin.roles.dialog.newTitle,Nova função de projeto
+admin.roles.dialog.noProject,Escolha um projeto para a nova função.
+admin.roles.dialog.project,Projeto
+admin.roles.edit,Editar
+admin.roles.empty.createProjects,Crie primeiro um projeto
+admin.roles.empty.description,Defina as funções que as suas aplicações veem nos tokens assim que existir um projeto.
+admin.roles.empty.title,Ainda sem projetos
+admin.roles.groupFallback,Sem grupo
+admin.roles.memberCount,{count} membros
+admin.roles.memberCountOne,1 membro
+admin.roles.orgRole.admin.bullet1,"Gere pessoas, exceto proprietários"
+admin.roles.orgRole.admin.bullet2,"Gere funções, projetos e contas de serviço"
+admin.roles.orgRole.admin.bullet3,"Não pode alterar personalização, política de início de sessão ou domínios"
+admin.roles.orgRole.admin.description,Administra pessoas e projetos no dia a dia.
+admin.roles.orgRole.guest.bullet1,"Acesso mínimo, por exemplo quando convidado para um projeto"
+admin.roles.orgRole.guest.bullet2,"Não pode gerir pessoas, funções ou projetos"
+admin.roles.orgRole.guest.description,Acesso limitado para convidados e parceiros.
+admin.roles.orgRole.member.bullet1,Pode iniciar sessão e ver a organização
+admin.roles.orgRole.member.bullet2,Usa projetos partilhados com a organização
+admin.roles.orgRole.member.bullet3,"Não pode gerir pessoas, funções ou projetos"
+admin.roles.orgRole.member.description,Acesso padrão para membros da organização.
+admin.roles.orgRole.owner.bullet1,Tudo o que os administradores podem fazer
+admin.roles.orgRole.owner.bullet2,"Altera personalização, política de início de sessão e domínios"
+admin.roles.orgRole.owner.bullet3,Gere proprietários e a remoção da organização
+admin.roles.orgRole.owner.description,Controlo total da organização e desta administração.
+admin.roles.organizationRoles.description,Quem pode fazer o quê nesta administração.
+admin.roles.organizationRoles.title,Funções da organização
+admin.roles.projects.deleteConfirm,Eliminar esta função de projeto? As concessões que a referem perdem a função.
+admin.roles.projects.deleteConfirmAccept,Eliminar função
+admin.roles.projects.deleteConfirmTitle,Eliminar esta função
+admin.roles.projects.newRole,Nova função
+admin.roles.projects.owned,Próprio
+admin.roles.projects.shared,Partilhado
+admin.roles.projects.title,Funções de projeto
+admin.roles.rolesEmpty,Este projeto ainda não define nenhuma função.
+admin.roles.title,Funções
 admin.session.expired,Sua sessão de administrador expirou
 admin.signIn.activeTitle,Sessão de administrador ativa
 admin.signIn.credential,Credencial de administrador inicial
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Sessão encerrada
 admin.signIn.subject,Sujeito
 admin.signIn.subjectType,Tipo de sujeito
 admin.signIn.title,Login de administrador
+admin.userProfile.accessTab,Funções e acessos
+admin.userProfile.assignRoles,Atribuir funções de projeto
+admin.userProfile.assignRolesDialogTitle,Atribuir funções de projeto
+admin.userProfile.assignRolesEmpty,Não foram encontradas funções de projeto.
+admin.userProfile.assignRolesProject,Projeto
+admin.userProfile.assignRolesRoles,Funções
+admin.userProfile.assignRolesSave,Guardar atribuições
+admin.userProfile.assignRolesSearch,Pesquisar projetos
+admin.userProfile.assignRolesSelected,{count} funções selecionadas
+admin.userProfile.assignRolesStepProject,Escolha um projeto
+admin.userProfile.authDescription,Metadados de início de sessão seguros. Segredos e chaves privadas nunca são mostrados.
+admin.userProfile.authTitle,Métodos de autenticação
+admin.userProfile.backToUsers,Voltar aos utilizadores
+admin.userProfile.contactTitle,Contacto
+admin.userProfile.deactivate,Desativar utilizador
+admin.userProfile.deactivateConfirm,Desativar {userName}? O utilizador deixará de poder iniciar sessão.
+admin.userProfile.deactivated,{userName} foi desativado.
+admin.userProfile.deleteConfirm,Eliminar permanentemente {userName}? Não pode ser anulado.
+admin.userProfile.deleteConfirmMismatch,O nome escrito não corresponde.
+admin.userProfile.deleteConfirmTitle,Eliminar este utilizador
+admin.userProfile.deleteConfirmType,Escreva {userName} para confirmar.
+admin.userProfile.deleted,{userName} foi eliminado.
+admin.userProfile.editProfile,Editar perfil
+admin.userProfile.editProfileTitle,Editar perfil
+admin.userProfile.email,Endereço de e-mail
+admin.userProfile.emailUnverified,Não verificado
+admin.userProfile.emailVerified,Verificado
+admin.userProfile.impersonate,Representar utilizador
+admin.userProfile.lastSignIn,Último início de sessão
+admin.userProfile.makeRealmAdmin,Tornar administrador do realm
+admin.userProfile.makeRealmAdminConfirm,Conceder a {userName} privilégios de administrador do realm?
+admin.userProfile.makeRealmAdminDone,{userName} é agora um administrador do realm.
+admin.userProfile.memberSince,Membro desde
+admin.userProfile.membershipAdd,Adicionar à organização
+admin.userProfile.membershipAdded,{userName} foi adicionado à organização.
+admin.userProfile.membershipEmpty,Este utilizador não é membro de nenhuma organização.
+admin.userProfile.membershipOrganization,Organização
+admin.userProfile.membershipsTitle,Pertenças às organizações
+admin.userProfile.missingId,Este utilizador não pôde ser resolvido a partir do endereço.
+admin.userProfile.never,Nunca
+admin.userProfile.notMember,Este utilizador não é membro da organização ativa.
+admin.userProfile.organizationRoleChanged,A função da organização foi atualizada.
+admin.userProfile.organizationRoleDescription,Escolha a função principal para a organização ativa.
+admin.userProfile.organizationRoleTitle,Função da organização
+admin.userProfile.overviewTab,Vista geral
+admin.userProfile.passwordConfirm,Confirme a nova palavra-passe
+admin.userProfile.passwordMismatch,As palavras-passe não coincidem.
+admin.userProfile.passwordNew,Nova palavra-passe
+admin.userProfile.passwordSaved,A palavra-passe foi definida.
+admin.userProfile.passwordTooShort,Introduza uma palavra-passe com pelo menos 8 caracteres.
+admin.userProfile.phone,Número de telefone
+admin.userProfile.preferredLanguage,Idioma preferido
+admin.userProfile.profileSaved,O perfil do utilizador foi guardado.
+admin.userProfile.profileTitle,Perfil
+admin.userProfile.projectRolesEmpty,Não há funções de projeto atribuídas.
+admin.userProfile.projectRolesRemove,Remover
+admin.userProfile.projectRolesRemoveConfirm,Remover a atribuição de {projectName}?
+admin.userProfile.projectRolesRemoved,A atribuição do projeto foi removida.
+admin.userProfile.projectRolesSaved,As atribuições do projeto foram guardadas.
+admin.userProfile.projectRolesTitle,Funções de projeto
+admin.userProfile.reactivate,Reativar utilizador
+admin.userProfile.reactivateConfirm,Reativar {userName}? O utilizador poderá iniciar sessão novamente.
+admin.userProfile.reactivated,{userName} foi reativado.
+admin.userProfile.realmAdminBadge,Administrador do realm
+admin.userProfile.removeRealmAdmin,Remover administrador do realm
+admin.userProfile.removeRealmAdminConfirm,Remover os privilégios de administrador do realm de {userName}?
+admin.userProfile.removeRealmAdminDone,{userName} deixou de ser administrador do realm.
+admin.userProfile.revokeAll,Revogar todas
+admin.userProfile.revokeAllConfirm,Revogar todas as sessões de {userName}? O utilizador terminará sessão em todo o lado.
+admin.userProfile.revokeAllDone,Todas as sessões foram revogadas.
+admin.userProfile.securityTab,Segurança
+admin.userProfile.sessionsDescription,Inspecione as sessões ativas e revogue o acesso de um dispositivo.
+admin.userProfile.sessionsEmpty,Este utilizador não tem sessões ativas.
+admin.userProfile.sessionsRevoke,Revogar
+admin.userProfile.sessionsRevokeConfirm,Revogar esta sessão de imediato? O dispositivo termina sessão na hora.
+admin.userProfile.sessionsRevoked,A sessão foi revogada.
+admin.userProfile.sessionsTitle,Sessões e dispositivos
+admin.userProfile.setPassword,Definir palavra-passe
+admin.userProfile.setPasswordDescription,Substitua a palavra-passe de início de sessão e limpe qualquer bloqueio.
+admin.userProfile.setPasswordTitle,Definir uma nova palavra-passe
+admin.userProfile.unlock,Desbloquear utilizador
+admin.userProfile.unlockConfirm,Desbloquear {userName}? O utilizador poderá iniciar sessão novamente.
+admin.userProfile.unlocked,{userName} foi desbloqueado.
+admin.userProfile.username,Nome de utilizador
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} foi criado.
 admin.users.createdAt,Criado
 admin.users.deleteWarning,Eliminar este utilizador revoga imediatamente as suas sessões e acessos.
 admin.users.detailTitle,Detalhe do utilizador
+admin.users.directoryClearFilters,Limpar filtros
+admin.users.directoryCreated,Criado
+admin.users.directoryEmptySearch,Nenhuma pessoa corresponde a esta pesquisa.
+admin.users.directoryEmptySearchDetail,"Experimente outro nome, endereço de e-mail ou limpe o filtro de funções."
+admin.users.directoryInvite,Convidar utilizador
+admin.users.directoryInviteDescription,Envie um convite da organização por e-mail. A ligação é mostrada uma vez.
+admin.users.directoryInviteEmail,Endereço de e-mail
+admin.users.directoryInviteRole,Função do convite
+admin.users.directoryInviteSubmit,Enviar convite
+admin.users.directoryLastSignIn,Último início de sessão
+admin.users.directoryNever,Nunca
+admin.users.directoryNoPeople,Ainda sem pessoas nesta organização.
+admin.users.directoryNoPeopleDetail,Convide a primeira pessoa para arrancar esta organização.
+admin.users.directoryOpen,Abrir
+admin.users.directoryOpenProfile,Abrir o perfil de {name}
+admin.users.directoryOrganizations,Organizações
+admin.users.directoryRole,Função
+admin.users.directoryRoleAdmin,Administrador
+admin.users.directoryRoleAll,Todas as funções
+admin.users.directoryRoleGuest,Convidado
+admin.users.directoryRoleMember,Membro
+admin.users.directoryRoleOwner,Proprietário
+admin.users.directoryScopeAll,Todas as organizações
+admin.users.directoryScopeOrganization,Esta organização
+admin.users.directorySearchPlaceholder,"Filtrar por nome, nome de utilizador ou e-mail"
+admin.users.directoryServiceAccountCreate,Criar conta de serviço
+admin.users.directoryServiceAccountDescription,Identidades máquina para automação. O segredo do cliente é mostrado uma vez.
+admin.users.directoryServiceAccountEmpty,Ainda sem contas de serviço nesta organização.
+admin.users.directoryServiceAccountEmptyDetail,Crie a primeira conta de serviço para integrações e automação.
+admin.users.directoryServiceAccountName,Nome de apresentação
+admin.users.directoryServiceAccountScopes,Âmbitos
+admin.users.directoryServiceAccountScopesHint,Separe os âmbitos com espaços ou vírgulas.
+admin.users.directoryServiceAccountSecretCopied,O segredo foi copiado para a área de transferência.
+admin.users.directoryServiceAccountSecretCopy,Copiar segredo
+admin.users.directoryServiceAccountSecretTitle,Segredo do cliente
+admin.users.directoryServiceAccountSecretWarning,Este segredo é mostrado uma vez. Guarde-o já num lugar seguro.
+admin.users.directoryServiceAccountStatus,Estado
+admin.users.directoryServiceAccountUserName,Nome de utilizador
+admin.users.directoryServiceAccountUserNameHint,Usado como ID de cliente ao trocar credenciais de cliente.
+admin.users.directoryStatus,Estado
+admin.users.directorySubtitle,{count} pessoas
+admin.users.directoryTabInvitations,Convites pendentes
+admin.users.directoryTabPeople,Pessoas
+admin.users.directoryTabServiceAccounts,Contas de serviço
+admin.users.directoryUser,Utilizador
+admin.users.directoryUserInvited,Convidado
+admin.users.directoryUserName,Nome de utilizador
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Identificador do usuário
 admin.users.invalid,Introduza um endereço de e-mail e um nome de utilizador válidos.
+admin.users.inviteEmailInvalid,Introduza um endereço de e-mail válido.
+admin.users.inviteRevokeConfirm,Revogar o convite para {email}? A ligação do convite deixa de funcionar de imediato.
+admin.users.inviteRevoked,O convite foi revogado.
+admin.users.inviteRolesInvalid,Escolha pelo menos uma função para o convite.
+admin.users.inviteSent,O convite foi criado.
+admin.users.inviteTokenCopied,A ligação do convite foi copiada para a área de transferência.
+admin.users.inviteTokenCopy,Copiar ligação
+admin.users.inviteTokenDismiss,Guardei esta ligação
+admin.users.inviteTokenOnce,Esta ligação de convite é mostrada uma vez. Partilhe-a com a pessoa convidada.
+admin.users.inviteTokenTitle,Ligação do convite
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Ativo
 admin.users.lifecycle.deleted,Eliminado
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Inicial
 admin.users.lifecycle.locked,Bloqueado
 admin.users.lifecycle.suspended,Suspenso
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,A conta de serviço foi criada.
+admin.users.serviceAccountInvalid,Introduza um nome de apresentação e um nome de utilizador para a conta de serviço.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Estado
 admin.users.title,Utilizadores
+admin.users.unverifiedEmail,E-mail não verificado
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Serviços de identidade seguros

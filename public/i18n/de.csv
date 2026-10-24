@@ -307,6 +307,68 @@ account.status.unavailable,Nicht verfügbar
 account.workspace.devicesTitle,Geräte und Anwendungen
 admin.common.confirmTitle,Diese Aktion bestätigen
 admin.common.permission,"Sie haben keine Berechtigung, diese Administrationsdaten anzuzeigen."
+admin.configuration.brandingDescription,"Helle und dunkle Farben, Logo und rechtliche Links mit Live-Vorschau."
+admin.configuration.brandingFormDescription,"Farben, Logo- und Icon-URLs, Standard-Theme und rechtliche Links."
+admin.configuration.brandingFormTitle,Markenfarben und Assets
+admin.configuration.brandingTitle,Markenauftritt
+admin.configuration.claim,Domain beanspruchen
+admin.configuration.colorInvalid,Geben Sie eine Hex-Farbe wie #2563eb ein.
+admin.configuration.copied,In die Zwischenablage kopiert.
+admin.configuration.copy,Kopieren
+admin.configuration.created,Erstellt
+admin.configuration.dangerDescription,Deaktivierung blockiert die Anmeldung sofort; Entfernung ist endgültig.
+admin.configuration.dangerTitle,Gefahrenzone
+admin.configuration.deactivate,Organisation deaktivieren
+admin.configuration.description,"Organisationseinstellungen, Anmeldung und verifizierte Domains."
+admin.configuration.dialogDescription,"Beanspruchen Sie eine Domain, damit Personen diese Organisation anhand ihrer E-Mail-Adresse finden."
+admin.configuration.dialogTitle,Domain beanspruchen
+admin.configuration.dirty,Sie haben ungespeicherte Änderungen.
+admin.configuration.discard,Verwerfen
+admin.configuration.domainName,Domäne
+admin.configuration.domainsDescription,Verifizierte Domains und Organisationserkennung.
+admin.configuration.domainsTitle,Domänen
+admin.configuration.fontDescription,Optionale Webschriftart und eine eigene Stylesheet-URL für Schriftarten.
+admin.configuration.fontFamily,Schriftfamilie
+admin.configuration.fontFamilyPlaceholder,"Inter, system-ui, sans-serif "
+admin.configuration.fontTitle,Typografie
+admin.configuration.fontUrl,Stylesheet-URL für Schriftarten
+admin.configuration.generalDescription,"Organisationsname, Status und Gefahrenzone."
+admin.configuration.generalTitle,Allgemein
+admin.configuration.identifier,Organisations-ID
+admin.configuration.legalDescription,Werden unter der Anmeldekarte angezeigt.
+admin.configuration.legalTitle,Rechtliche Links
+admin.configuration.loginDescription,"Wählen Sie, welche Anmeldemethoden Personen verwenden dürfen."
+admin.configuration.loginTitle,Anmelderichtlinie
+admin.configuration.metaDescription,Zusätzliche Kennungen für Support und Fehlerdiagnose.
+admin.configuration.metaTitle,Organisationsdetails
+admin.configuration.nameDescription,"Wird bei Anmeldung, Einladungen und in der Verwaltung angezeigt."
+admin.configuration.nameTitle,Organisationsname
+admin.configuration.previewDark,Dunkel
+admin.configuration.previewDescription,Wird aus den aktuellen Formularwerten gerendert.
+admin.configuration.previewEmail,name@beispiel.de
+admin.configuration.previewLight,Hell
+admin.configuration.previewTitle,Anmeldevorschau
+admin.configuration.primaryDomain,Primäre Domäne
+admin.configuration.privacyUrl,URL der Datenschutzerklärung
+admin.configuration.reactivate,Organisation reaktivieren
+admin.configuration.readOnly,Nur Organisationseigentümer können diese Einstellungen ändern.
+admin.configuration.remove,Organisation entfernen
+admin.configuration.removeConfirm,Die Domain {domain} entfernen? Die Organisationserkennung dafür stoppt sofort.
+admin.configuration.removeTitle,Domain entfernen
+admin.configuration.signInDescription,Anmelde- und Sicherheitsrichtlinien der Organisation.
+admin.configuration.signInTitle,Anmeldung und Sicherheit
+admin.configuration.statusActive,Aktiv
+admin.configuration.statusDescription,Inaktive Organisationen blockieren die Anmeldung; entfernte Organisationen bleiben schreibgeschützt.
+admin.configuration.statusInactive,Inaktiv
+admin.configuration.statusRemoved,Entfernt
+admin.configuration.statusTitle,Zustand
+admin.configuration.termsUrl,URL der Nutzungsbedingungen
+admin.configuration.themeDark,Dunkles Theme
+admin.configuration.themeLight,Helles Theme
+admin.configuration.title,Konfiguration
+admin.configuration.typeName,Geben Sie zur Bestätigung den Organisationsnamen ein
+admin.configuration.typeNameInvalid,Der eingegebene Name stimmt nicht mit dem Organisationsnamen überein.
+admin.configuration.watermark,Das Authworks-Wasserzeichen ausblenden
 admin.events.actor,Akteur
 admin.events.aggregate,Aggregat
 admin.events.count,{count} Ereignisse
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Entfernt
 admin.projects.access.description,"Rollen, die dieser Administrator derzeit effektiv im Projekt besitzt."
 admin.projects.access.empty,Im aktuellen Organisationskontext sind keine Projektrollen wirksam.
 admin.projects.access.grantedOrganization,Gewährt über Organisation
+admin.projects.access.organizationDescription,"Organisationen mit Zugriff auf dieses Projekt und die Rollen, die sie erhalten."
+admin.projects.access.organizationTitle,Organisationszugriff
 admin.projects.access.permissionDescription,Feste Rollen und ihre Berechtigungen werden von Authworks definiert und können nicht bearbeitet werden.
 admin.projects.access.permissionTitle,Feste Rollen und Berechtigungen
 admin.projects.access.roleKeys,Effektive Projektrollen
+admin.projects.access.selectRoles,Rollen wählen
 admin.projects.access.title,Effektiver Zugriff
 admin.projects.applications.create,Anwendung hinzufügen
 admin.projects.applications.description,"Anwendungen, die sich gegenüber diesem Projekt authentifizieren."
@@ -719,11 +784,32 @@ admin.projects.applications.name,Anwendungsname
 admin.projects.applications.removeConfirm,Diese Anwendung entfernen? Dies kann nicht rückgängig gemacht werden.
 admin.projects.applications.title,Anwendungen
 admin.projects.applications.type,Anwendungstyp
+admin.projects.assignments.create,Benutzer zuweisen
+admin.projects.assignments.description,Weisen Sie die Rollen dieses Projekts direkt einem Benutzer der aktiven Organisation zu.
+admin.projects.assignments.empty,Diesem Projekt wurde noch kein Benutzer direkt zugewiesen.
+admin.projects.assignments.invalid,Wählen Sie einen Benutzer und mindestens eine Rolle.
+admin.projects.assignments.removeConfirm,Diese Benutzerzuweisung entfernen? Der Benutzer verliert diese Projektrollen.
+admin.projects.assignments.title,Direkte Benutzerzuweisungen
+admin.projects.assignments.user,Benutzer
 admin.projects.deleteConfirm,"Dieses Projekt löschen? Anwendungen, Rollen und Grants werden mitgelöscht."
 admin.projects.deleteConfirmAccept,Projekt löschen
 admin.projects.deleteConfirmTitle,Dieses Projekt löschen
+admin.projects.detail.authorizationHelp,"Autorisierung erforderlich: Benutzer benötigen mindestens eine Rolle dieses Projekts, um sich bei seinen Anwendungen anzumelden."
+admin.projects.detail.backToProjects,Zurück zu den Projekten
 admin.projects.detail.created,Erstellt
 admin.projects.detail.organization,Organisation
+admin.projects.detail.owned,Eigene
+admin.projects.detail.projectAccessHelp,Projektzugriff erforderlich: Benutzern muss Zugriff auf das Projekt gewährt werden (über ihre Organisation oder eine direkte Zuweisung).
+admin.projects.detail.readOnly,Geteilte Projekte sind schreibgeschützt. Nur die Eigentümerorganisation verwaltet dieses Projekt.
+admin.projects.detail.remove,Projekt löschen
+admin.projects.detail.removeTypeLabel,Projektname
+admin.projects.detail.removeTypeMismatch,Der Projektname stimmt nicht überein.
+admin.projects.detail.removeTypePrompt,Geben Sie zur Bestätigung den Projektnamen ein.
+admin.projects.detail.rename,Umbenennen
+admin.projects.detail.renameDescription,"Ändern Sie den Projektnamen, der in der gesamten Verwaltung angezeigt wird."
+admin.projects.detail.renameInvalid,Geben Sie einen Projektnamen ein.
+admin.projects.detail.renameTitle,Projekt umbenennen
+admin.projects.detail.shared,Geteilte
 admin.projects.detail.updated,Zuletzt aktualisiert
 admin.projects.detailTitle,Projektdetails
 admin.projects.grants.create,Organisationszugriff gewähren
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Entfernen
 admin.projects.lifecycle.removeConfirm,Dieses Projekt entfernen?
 admin.projects.lifecycle.removeConfirmAccept,Projekt entfernen
 admin.projects.lifecycle.removeConfirmTitle,Dieses Projekt entfernen
+admin.projects.list.applications,Anwendungen
 admin.projects.list.create,Projekt erstellen
 admin.projects.list.description,"Projekte bündeln die Anwendungen, Rollen und Zuweisungen einer Organisation."
 admin.projects.list.empty,In diesem Realm existieren noch keine Projekte.
+admin.projects.list.emptyDetail,"Erstellen Sie ein Projekt, um Anwendungen, Rollen und Grants zu gruppieren."
 admin.projects.list.invalid,Geben Sie einen Projektnamen ein und wählen Sie eine Organisation.
 admin.projects.list.name,Projektname
+admin.projects.list.roles,Rollen
 admin.projects.list.search,Projekte durchsuchen
+admin.projects.list.subtitle,Eigene und geteilte Projekte der aktiven Organisation.
 admin.projects.list.title,Projekte
 admin.projects.missingId,Für dieses Ziel muss ein Projekt ausgewählt sein.
+admin.projects.overview.authorizationTitle,Autorisierung erforderlich
+admin.projects.overview.projectAccessTitle,Projektzugriff erforderlich
+admin.projects.overview.settingsDescription,Steuern Sie den Projektnamen und wie der Zugriff durchgesetzt wird.
+admin.projects.overview.settingsTitle,Projekteinstellungen
+admin.projects.overview.title,Projektübersicht
 admin.projects.roles.create,Rolle erstellen
 admin.projects.roles.deleteConfirm,"Diese Projektrolle löschen? Grants, die sie referenzieren, verlieren die Rolle."
 admin.projects.roles.description,"Rollen, die dieses Projekt Organisationen und ihren Mitgliedern zuweisen kann."
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Durch das Deaktivieren dieses Bereichs wird die Anmel
 admin.realm.disabled,Der Bereich wurde deaktiviert.
 admin.realm.domains,Domains
 admin.realm.domainsHint,Trennen Sie Domains durch Kommas. Die erste Domain ist die primäre Domain.
+admin.realm.edit,Bearbeiten
+admin.realm.editDescription,"Ändern Sie den Realm-Namen, den Status und die Domains, die auf diesen Realm verweisen."
+admin.realm.editTitle,Realm bearbeiten
 admin.realm.enabled,Der Bereich wurde aktiviert.
+admin.realm.explore.administratorsDescription,Realm-Administratorstatus gewähren oder entziehen.
+admin.realm.explore.auditEventsDescription,Prüfen Sie den Sicherheitsereignisstrom dieses Realms.
+admin.realm.explore.oidcClientsDescription,Prüfen Sie die in diesem Realm registrierten OIDC-Clients.
+admin.realm.explore.organizationsDescription,Durchsuchen Sie die Organisationen in diesem Realm.
+admin.realm.explore.sessionsDescription,Prüfen Sie die aktiven Sitzungen dieses Realms.
+admin.realm.exploreTitle,Erkunden
 admin.realm.identifier,Bereichskennung
+admin.realm.identityTitle,Identität
 admin.realm.invalid,Geben Sie einen Bereichsnamen und mindestens eine Domain ein.
 admin.realm.name,Bereichsname
 admin.realm.permissionDenied,"Sie haben keine Berechtigung, diesen Bereich zu ändern."
+admin.realm.primary,Primär
 admin.realm.primaryDomain,Primäre Domain
 admin.realm.saved,Die Bereichseinstellungen wurden gespeichert.
 admin.realm.status,Status
 admin.realm.statusActive,Aktiv
 admin.realm.statusDisabled,Deaktiviert
+admin.realmAdministrators.add,Administrator hinzufügen
+admin.realmAdministrators.addDialogDescription,Suchen Sie Realm-Benutzer und gewähren Sie dann Realm-Administratorstatus. Gewährungen gelten für jede Organisation in diesem Realm.
+admin.realmAdministrators.addDialogTitle,Realm-Administrator hinzufügen
+admin.realmAdministrators.added,{name} ist jetzt Realm-Administrator.
+admin.realmAdministrators.alreadyAdmin,Bereits Administrator
+admin.realmAdministrators.confirmRemoveAccept,Administrator entfernen
+admin.realmAdministrators.confirmRemoveMessage,Soll {name} als Realm-Administrator entfernt werden? Der Zugriff auf alle Organisationseinstellungen in diesem Realm geht verloren.
+admin.realmAdministrators.confirmRemoveTitle,Diesen Administrator entfernen
+admin.realmAdministrators.count,{count} Administratoren
+admin.realmAdministrators.countOne,1 Administrator
+admin.realmAdministrators.description,"Realm-Administratoren können jede Organisation, Realm-Einstellungen, OIDC und Audit-Log verwalten."
+admin.realmAdministrators.emptyDescription,"Es existieren noch keine Realm-Administratoren. Gewähren Sie den ersten Administrator, um diesen Realm zu verwalten."
+admin.realmAdministrators.emptySearchDescription,Kein Realm-Benutzer passt zu dieser Suche.
+admin.realmAdministrators.emptyTitle,Keine Administratoren
+admin.realmAdministrators.grant,Administratorrechte gewähren
+admin.realmAdministrators.invitePlaceholder,Personen nach Name oder E-Mail suchen
+admin.realmAdministrators.lastAdminHint,Der letzte Administrator kann nicht entfernt werden.
+admin.realmAdministrators.remove,Entfernen
+admin.realmAdministrators.removed,{name} ist kein Realm-Administrator mehr.
+admin.realmAdministrators.revokeFailed,Dieser Administrator konnte nicht entfernt werden.
+admin.realmAdministrators.search,Administratoren suchen
+admin.realmAdministrators.systemAdded,Vom System
+admin.realmAdministrators.tableAdded,Hinzugefügt
+admin.realmAdministrators.tableAddedBy,Hinzugefügt von
+admin.realmAdministrators.tableUser,Admin-Benutzer
+admin.realmAdministrators.title,Realm-Administratoren
+admin.roles.delete,Löschen
+admin.roles.description,"Zwei Arten von Rollen: Organisationsrollen steuern, was Personen in dieser Verwaltung tun können; Projektrollen sehen Ihre Anwendungen in Token."
+admin.roles.dialog.displayName,Anzeigename
+admin.roles.dialog.editDescription,"Ändern Sie, wie diese Rolle angezeigt wird; der Schlüssel bleibt unverändert."
+admin.roles.dialog.editTitle,Projektrolle bearbeiten
+admin.roles.dialog.group,Gruppe
+admin.roles.dialog.invalid,Geben Sie einen Anzeigenamen und einen Rollenschlüssel ein.
+admin.roles.dialog.key,Rollenschlüssel
+admin.roles.dialog.keyHint,"Kleinbuchstaben, Zahlen und Bindestriche, wie in Token verwendet."
+admin.roles.dialog.missingRole,Die gewählte Rolle ist nicht mehr verfügbar.
+admin.roles.dialog.newDescription,"Fügen Sie einen Rollenschlüssel hinzu, den Anwendungen in Token erhalten."
+admin.roles.dialog.newTitle,Neue Projektrolle
+admin.roles.dialog.noProject,Wählen Sie ein Projekt für die neue Rolle.
+admin.roles.dialog.project,Projekt
+admin.roles.edit,Bearbeiten
+admin.roles.empty.createProjects,Erstellen Sie zuerst ein Projekt
+admin.roles.empty.description,"Definieren Sie die Rollen, die Ihre Anwendungen in Token sehen, sobald ein Projekt existiert."
+admin.roles.empty.title,Noch keine Projekte
+admin.roles.groupFallback,Ohne Gruppe
+admin.roles.memberCount,{count} Mitglieder
+admin.roles.memberCountOne,1 Mitglied
+admin.roles.orgRole.admin.bullet1,"Verwaltet Personen, außer Eigentümer"
+admin.roles.orgRole.admin.bullet2,"Verwaltet Rollen, Projekte und Maschinenbenutzer"
+admin.roles.orgRole.admin.bullet3,"Kann Branding, Anmelderichtlinie oder Domains nicht ändern"
+admin.roles.orgRole.admin.description,Verwaltet Personen und Projekte im Alltag.
+admin.roles.orgRole.guest.bullet1,"Minimaler Zugriff, etwa bei Einladung für ein Projekt"
+admin.roles.orgRole.guest.bullet2,"Kann Personen, Rollen oder Projekte nicht verwalten"
+admin.roles.orgRole.guest.description,Eingeschränkter Zugriff für Gäste und Partner.
+admin.roles.orgRole.member.bullet1,Kann sich anmelden und die Organisation einsehen
+admin.roles.orgRole.member.bullet2,"Nutzt Projekte, die mit der Organisation geteilt werden"
+admin.roles.orgRole.member.bullet3,"Kann Personen, Rollen oder Projekte nicht verwalten"
+admin.roles.orgRole.member.description,Standardzugriff für Organisationsmitglieder.
+admin.roles.orgRole.owner.bullet1,"Alles, was Administratoren können"
+admin.roles.orgRole.owner.bullet2,"Ändert Branding, Anmelderichtlinie und Domains"
+admin.roles.orgRole.owner.bullet3,Verwaltet Eigentümer und Entfernung der Organisation
+admin.roles.orgRole.owner.description,Volle Kontrolle über die Organisation und diese Verwaltung.
+admin.roles.organizationRoles.description,Wer darf was in dieser Verwaltung.
+admin.roles.organizationRoles.title,Organisationsrollen
+admin.roles.projects.deleteConfirm,Diese Projektrolle löschen? Verweise darauf verlieren die Rolle.
+admin.roles.projects.deleteConfirmAccept,Rolle löschen
+admin.roles.projects.deleteConfirmTitle,Diese Rolle löschen
+admin.roles.projects.newRole,Neue Rolle
+admin.roles.projects.owned,Eigene
+admin.roles.projects.shared,Geteilte
+admin.roles.projects.title,Projektrollen
+admin.roles.rolesEmpty,Dieses Projekt definiert noch keine Rollen.
+admin.roles.title,Rollen
 admin.session.expired,Ihre Administratorsitzung ist abgelaufen
 admin.signIn.activeTitle,Administratorsitzung aktiv
 admin.signIn.credential,Bootstrap-Administratoranmeldedaten
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Abgemeldet
 admin.signIn.subject,Subjekt
 admin.signIn.subjectType,Subjekttyp
 admin.signIn.title,Administratoranmeldung
+admin.userProfile.accessTab,Rollen und Zugriff
+admin.userProfile.assignRoles,Projektrollen zuweisen
+admin.userProfile.assignRolesDialogTitle,Projektrollen zuweisen
+admin.userProfile.assignRolesEmpty,Keine Projektrollen gefunden.
+admin.userProfile.assignRolesProject,Projekt
+admin.userProfile.assignRolesRoles,Rollen
+admin.userProfile.assignRolesSave,Zuweisungen speichern
+admin.userProfile.assignRolesSearch,Projekte suchen
+admin.userProfile.assignRolesSelected,{count} Rollen ausgewählt
+admin.userProfile.assignRolesStepProject,Wählen Sie ein Projekt
+admin.userProfile.authDescription,Sichere Anmeldemetadaten. Geheimnisse und private Schlüssel werden nie angezeigt.
+admin.userProfile.authTitle,Authentifizierungsmethoden
+admin.userProfile.backToUsers,Zurück zu den Benutzern
+admin.userProfile.contactTitle,Kontakt
+admin.userProfile.deactivate,Benutzer deaktivieren
+admin.userProfile.deactivateConfirm,{userName} deaktivieren? Der Benutzer kann sich nicht mehr anmelden.
+admin.userProfile.deactivated,{userName} wurde deaktiviert.
+admin.userProfile.deleteConfirm,{userName} endgültig löschen? Dies kann nicht rückgängig gemacht werden.
+admin.userProfile.deleteConfirmMismatch,Der eingegebene Name stimmt nicht überein.
+admin.userProfile.deleteConfirmTitle,Diesen Benutzer löschen
+admin.userProfile.deleteConfirmType,Geben Sie {userName} zur Bestätigung ein.
+admin.userProfile.deleted,{userName} wurde gelöscht.
+admin.userProfile.editProfile,Profil bearbeiten
+admin.userProfile.editProfileTitle,Profil bearbeiten
+admin.userProfile.email,E-Mail-Adresse
+admin.userProfile.emailUnverified,Unbestätigt
+admin.userProfile.emailVerified,Verifiziert
+admin.userProfile.impersonate,Identität übernehmen
+admin.userProfile.lastSignIn,Letzte Anmeldung
+admin.userProfile.makeRealmAdmin,Zum Realm-Administrator ernennen
+admin.userProfile.makeRealmAdminConfirm,{userName} Realm-Administratorrechte gewähren?
+admin.userProfile.makeRealmAdminDone,{userName} ist jetzt Realm-Administrator.
+admin.userProfile.memberSince,Mitglied seit
+admin.userProfile.membershipAdd,Zur Organisation hinzufügen
+admin.userProfile.membershipAdded,{userName} wurde zur Organisation hinzugefügt.
+admin.userProfile.membershipEmpty,Dieser Benutzer ist kein Mitglied einer Organisation.
+admin.userProfile.membershipOrganization,Organisation
+admin.userProfile.membershipsTitle,Organisationsmitgliedschaften
+admin.userProfile.missingId,Dieser Benutzer konnte anhand der Adresse nicht aufgelöst werden.
+admin.userProfile.never,Nie
+admin.userProfile.notMember,Dieser Benutzer ist kein Mitglied der aktiven Organisation.
+admin.userProfile.organizationRoleChanged,Die Organisationsrolle wurde aktualisiert.
+admin.userProfile.organizationRoleDescription,Wählen Sie die primäre Rolle für die aktive Organisation.
+admin.userProfile.organizationRoleTitle,Organisationsrolle
+admin.userProfile.overviewTab,Übersicht
+admin.userProfile.passwordConfirm,Neues Passwort bestätigen
+admin.userProfile.passwordMismatch,Die Passwörter stimmen nicht überein.
+admin.userProfile.passwordNew,Neues Passwort
+admin.userProfile.passwordSaved,Das Passwort wurde festgelegt.
+admin.userProfile.passwordTooShort,Geben Sie ein Passwort mit mindestens 8 Zeichen ein.
+admin.userProfile.phone,Telefonnummer
+admin.userProfile.preferredLanguage,Bevorzugte Sprache
+admin.userProfile.profileSaved,Das Benutzerprofil wurde gespeichert.
+admin.userProfile.profileTitle,Profil
+admin.userProfile.projectRolesEmpty,Es sind keine Projektrollen zugewiesen.
+admin.userProfile.projectRolesRemove,Entfernen
+admin.userProfile.projectRolesRemoveConfirm,Die {projectName}-Zuweisung entfernen?
+admin.userProfile.projectRolesRemoved,Die Projektzuweisung wurde entfernt.
+admin.userProfile.projectRolesSaved,Die Projektzuweisungen wurden gespeichert.
+admin.userProfile.projectRolesTitle,Projektrollen
+admin.userProfile.reactivate,Benutzer reaktivieren
+admin.userProfile.reactivateConfirm,{userName} reaktivieren? Der Benutzer kann sich wieder anmelden.
+admin.userProfile.reactivated,{userName} wurde reaktiviert.
+admin.userProfile.realmAdminBadge,Realm-Administrator
+admin.userProfile.removeRealmAdmin,Realm-Administrator entfernen
+admin.userProfile.removeRealmAdminConfirm,{userName} die Realm-Administratorrechte entziehen?
+admin.userProfile.removeRealmAdminDone,{userName} ist kein Realm-Administrator mehr.
+admin.userProfile.revokeAll,Alle widerrufen
+admin.userProfile.revokeAllConfirm,Alle Sitzungen von {userName} widerrufen? Der Benutzer wird überall abgemeldet.
+admin.userProfile.revokeAllDone,Alle Sitzungen wurden widerrufen.
+admin.userProfile.securityTab,Sicherheit
+admin.userProfile.sessionsDescription,Prüfen Sie aktive Sitzungen und entziehen Sie einem Gerät den Zugriff.
+admin.userProfile.sessionsEmpty,Dieser Benutzer hat keine aktiven Sitzungen.
+admin.userProfile.sessionsRevoke,Widerrufen
+admin.userProfile.sessionsRevokeConfirm,Diese Sitzung sofort widerrufen? Das Gerät wird umgehend abgemeldet.
+admin.userProfile.sessionsRevoked,Die Sitzung wurde widerrufen.
+admin.userProfile.sessionsTitle,Sitzungen und Geräte
+admin.userProfile.setPassword,Passwort festlegen
+admin.userProfile.setPasswordDescription,Ersetzen Sie das Anmeldepasswort und heben Sie eine Sperrung auf.
+admin.userProfile.setPasswordTitle,Neues Passwort festlegen
+admin.userProfile.unlock,Benutzer entsperren
+admin.userProfile.unlockConfirm,{userName} entsperren? Der Benutzer kann sich wieder anmelden.
+admin.userProfile.unlocked,{userName} wurde entsperrt.
+admin.userProfile.username,Benutzername
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} wurde erstellt.
 admin.users.createdAt,Erstellt
 admin.users.deleteWarning,Das Löschen dieses Benutzers widerruft sofort seine Sitzungen und Zugriffe.
 admin.users.detailTitle,Benutzerdetails
+admin.users.directoryClearFilters,Filter zurücksetzen
+admin.users.directoryCreated,Erstellt
+admin.users.directoryEmptySearch,Keine Personen passen zu dieser Suche.
+admin.users.directoryEmptySearchDetail,"Versuchen Sie einen anderen Namen, eine andere E-Mail-Adresse oder entfernen Sie den Rollenfilter."
+admin.users.directoryInvite,Benutzer einladen
+admin.users.directoryInviteDescription,Senden Sie eine Organisationseinladung per E-Mail. Der Link wird einmalig angezeigt.
+admin.users.directoryInviteEmail,E-Mail-Adresse
+admin.users.directoryInviteRole,Einladungsrolle
+admin.users.directoryInviteSubmit,Einladung senden
+admin.users.directoryLastSignIn,Letzte Anmeldung
+admin.users.directoryNever,Nie
+admin.users.directoryNoPeople,Noch keine Personen in dieser Organisation.
+admin.users.directoryNoPeopleDetail,"Laden Sie die erste Person ein, um diese Organisation zu starten."
+admin.users.directoryOpen,Öffnen
+admin.users.directoryOpenProfile,Profil von {name} öffnen
+admin.users.directoryOrganizations,Organisationen
+admin.users.directoryRole,Rolle
+admin.users.directoryRoleAdmin,Administrator
+admin.users.directoryRoleAll,Alle Rollen
+admin.users.directoryRoleGuest,Gast
+admin.users.directoryRoleMember,Mitglied
+admin.users.directoryRoleOwner,Eigentümer
+admin.users.directoryScopeAll,Alle Organisationen
+admin.users.directoryScopeOrganization,Diese Organisation
+admin.users.directorySearchPlaceholder,"Nach Name, Benutzername oder E-Mail filtern"
+admin.users.directoryServiceAccountCreate,Maschinenbenutzer erstellen
+admin.users.directoryServiceAccountDescription,Maschinenidentitäten für Automatisierung. Das Client-Secret wird einmalig angezeigt.
+admin.users.directoryServiceAccountEmpty,Noch keine Maschinenbenutzer in dieser Organisation.
+admin.users.directoryServiceAccountEmptyDetail,Erstellen Sie den ersten Maschinenbenutzer für Integrationen und Automatisierung.
+admin.users.directoryServiceAccountName,Anzeigename
+admin.users.directoryServiceAccountScopes,Zugriffsbereiche
+admin.users.directoryServiceAccountScopesHint,Trennen Sie Bereiche durch Leerzeichen oder Kommas.
+admin.users.directoryServiceAccountSecretCopied,Das Secret wurde in die Zwischenablage kopiert.
+admin.users.directoryServiceAccountSecretCopy,Secret kopieren
+admin.users.directoryServiceAccountSecretTitle,Client-Secret
+admin.users.directoryServiceAccountSecretWarning,Dieses Secret wird einmalig angezeigt. Speichern Sie es jetzt an einem sicheren Ort.
+admin.users.directoryServiceAccountStatus,Zustand
+admin.users.directoryServiceAccountUserName,Benutzername
+admin.users.directoryServiceAccountUserNameHint,Wird beim Austausch von Client-Anmeldedaten als Client-ID verwendet.
+admin.users.directoryStatus,Zustand
+admin.users.directorySubtitle,{count} Personen
+admin.users.directoryTabInvitations,Offene Einladungen
+admin.users.directoryTabPeople,Personen
+admin.users.directoryTabServiceAccounts,Maschinenbenutzer
+admin.users.directoryUser,Benutzer
+admin.users.directoryUserInvited,Eingeladen
+admin.users.directoryUserName,Benutzername
 admin.users.displayName,Anzeigename
 admin.users.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 admin.users.email,E-Mail-Adresse
 admin.users.firstName,Vorname
 admin.users.identifier,Benutzerkennung
 admin.users.invalid,Geben Sie eine gültige E-Mail-Adresse und einen Benutzernamen ein.
+admin.users.inviteEmailInvalid,Geben Sie eine gültige E-Mail-Adresse ein.
+admin.users.inviteRevokeConfirm,Die Einladung für {email} widerrufen? Der Einladungslink funktioniert sofort nicht mehr.
+admin.users.inviteRevoked,Die Einladung wurde widerrufen.
+admin.users.inviteRolesInvalid,Wählen Sie mindestens eine Einladungsrolle.
+admin.users.inviteSent,Die Einladung wurde erstellt.
+admin.users.inviteTokenCopied,Der Einladungslink wurde in die Zwischenablage kopiert.
+admin.users.inviteTokenCopy,Link kopieren
+admin.users.inviteTokenDismiss,Ich habe diesen Link gespeichert
+admin.users.inviteTokenOnce,Dieser Einladungslink wird einmalig angezeigt. Teilen Sie ihn mit der eingeladenen Person.
+admin.users.inviteTokenTitle,Einladungslink
 admin.users.lastName,Nachname
 admin.users.lifecycle.active,Aktiv
 admin.users.lifecycle.deleted,Gelöscht
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Initial
 admin.users.lifecycle.locked,Gesperrt
 admin.users.lifecycle.suspended,Ausgesetzt
 admin.users.nickName,Spitzname
+admin.users.serviceAccountCreated,Der Maschinenbenutzer wurde erstellt.
+admin.users.serviceAccountInvalid,Geben Sie einen Anzeigenamen und einen Benutzernamen für den Maschinenbenutzer ein.
 admin.users.sessions.created,Erstellt
 admin.users.sessions.expires,Läuft ab
 admin.users.sessions.ipAddress,IP-Adresse
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Zuletzt verwendet
 admin.users.sessions.method,Anmeldemethode
 admin.users.state,Status
 admin.users.title,Benutzer
+admin.users.unverifiedEmail,Unbestätigte E-Mail
 admin.users.userName,Benutzername
 app.name,Authworks
 app.tagline,Sichere Identitätsdienste

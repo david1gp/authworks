@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Пристрої та програми
 admin.common.confirmTitle,Підтвердьте цю дію
 admin.common.permission,Ви не маєте дозволу переглядати ці адміністративні дані.
+admin.configuration.brandingDescription,"Світлі й темні кольори, логотип і юридичні посилання з живим попереднім переглядом."
+admin.configuration.brandingFormDescription,"Кольори, URL логотипа та піктограми, тема за замовчуванням і юридичні посилання."
+admin.configuration.brandingFormTitle,Фірмові кольори та ресурси
+admin.configuration.brandingTitle,Оформлення
+admin.configuration.claim,Підтвердити домен
+admin.configuration.colorInvalid,"Введіть hex-колір, наприклад #2563eb."
+admin.configuration.copied,Скопійовано до буфера обміну.
+admin.configuration.copy,Скопіювати
+admin.configuration.created,Створено
+admin.configuration.dangerDescription,Деактивація негайно блокує вхід; видалення остаточне.
+admin.configuration.dangerTitle,Небезпечна зона
+admin.configuration.deactivate,Деактивувати організацію
+admin.configuration.description,"Налаштування організації, вхід і підтверджені домени."
+admin.configuration.dialogDescription,"Підтвердьте домен, щоб люди могли знаходити організацію за email."
+admin.configuration.dialogTitle,Підтвердження домену
+admin.configuration.dirty,Є незбережені зміни.
+admin.configuration.discard,Скасувати
+admin.configuration.domainName,Домен
+admin.configuration.domainsDescription,Підтверджені домени та виявлення організації.
+admin.configuration.domainsTitle,Домени
+admin.configuration.fontDescription,Необов’язковий веб-шрифт і URL таблиці стилів шрифту.
+admin.configuration.fontFamily,Сімейство шрифтів
+admin.configuration.fontFamilyPlaceholder,"system-ui, Inter, sans-serif"
+admin.configuration.fontTitle,Типографіка
+admin.configuration.fontUrl,URL таблиці стилів шрифту
+admin.configuration.generalDescription,"Назва організації, статус і небезпечна зона."
+admin.configuration.generalTitle,Загальні
+admin.configuration.identifier,ID організації
+admin.configuration.legalDescription,Показуються під карткою входу.
+admin.configuration.legalTitle,Юридичні посилання
+admin.configuration.loginDescription,"Виберіть, які методи входу доступні людям."
+admin.configuration.loginTitle,Політика входу
+admin.configuration.metaDescription,Додаткові ідентифікатори для підтримки та налагодження.
+admin.configuration.metaTitle,Відомості про організацію
+admin.configuration.nameDescription,"Показується під час входу, у запрошеннях та адмініструванні."
+admin.configuration.nameTitle,Назва організації
+admin.configuration.previewDark,Темна
+admin.configuration.previewDescription,Малюється з поточних значень форми.
+admin.configuration.previewEmail,ivan@example.com
+admin.configuration.previewLight,Світла
+admin.configuration.previewTitle,Попередній перегляд входу
+admin.configuration.primaryDomain,Основний домен
+admin.configuration.privacyUrl,URL політики конфіденційності
+admin.configuration.reactivate,Реактивувати організацію
+admin.configuration.readOnly,Ці налаштування можуть змінювати лише власники організації.
+admin.configuration.remove,Видалити організацію
+admin.configuration.removeConfirm,Видалити домен {domain}? Виявлення організації для нього одразу припиниться.
+admin.configuration.removeTitle,Видалення домену
+admin.configuration.signInDescription,Форми політики входу та безпеки організації.
+admin.configuration.signInTitle,Вхід і безпека
+admin.configuration.statusActive,Активна
+admin.configuration.statusDescription,Неактивні організації блокують вхід; видалені організації лишаються лише для читання.
+admin.configuration.statusInactive,Неактивна
+admin.configuration.statusRemoved,Видалена
+admin.configuration.statusTitle,Статус
+admin.configuration.termsUrl,URL умов використання
+admin.configuration.themeDark,Темна тема
+admin.configuration.themeLight,Світла тема
+admin.configuration.title,Конфігурація
+admin.configuration.typeName,Введіть назву організації для підтвердження
+admin.configuration.typeNameInvalid,Введена назва не збігається з назвою організації.
+admin.configuration.watermark,Приховати водяний знак Authworks
 admin.events.actor,Суб'єкт
 admin.events.aggregate,Агрегат
 admin.events.count,Подій: {count}
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Видалена
 admin.projects.access.description,"Ролі, якими цей адміністратор фактично володіє в проєкті просто зараз."
 admin.projects.access.empty,У поточному контексті організації немає чинних ролей проєкту.
 admin.projects.access.grantedOrganization,Надано через організацію
+admin.projects.access.organizationDescription,"Організації з доступом до цього проєкту та ролі, які вони отримують."
+admin.projects.access.organizationTitle,Доступ організацій
 admin.projects.access.permissionDescription,Фіксовані ролі та їхні дозволи визначаються Authworks і не можуть бути змінені.
 admin.projects.access.permissionTitle,Фіксовані ролі та дозволи
 admin.projects.access.roleKeys,Чинні ролі проєкту
+admin.projects.access.selectRoles,Виберіть ролі
 admin.projects.access.title,Чинний доступ
 admin.projects.applications.create,Додати застосунок
 admin.projects.applications.description,"Застосунки, які автентифікуються в цьому проєкті."
@@ -719,11 +784,32 @@ admin.projects.applications.name,Назва застосунку
 admin.projects.applications.removeConfirm,Видалити цей застосунок? Цю дію неможливо скасувати.
 admin.projects.applications.title,Застосунки
 admin.projects.applications.type,Тип застосунку
+admin.projects.assignments.create,Призначити користувача
+admin.projects.assignments.description,Призначайте ролі цього проєкту напряму користувачам активної організації.
+admin.projects.assignments.empty,Жодного користувача ще не призначено напряму на цей проєкт.
+admin.projects.assignments.invalid,Вкажіть користувача й виберіть принаймні одну роль.
+admin.projects.assignments.removeConfirm,Видалити це призначення користувача? Користувач втратить ці ролі проєкту.
+admin.projects.assignments.title,Прямі призначення користувачів
+admin.projects.assignments.user,Користувач
 admin.projects.deleteConfirm,"Видалити цей проєкт? Застосунки, ролі та видані права буде видалено разом із ним."
 admin.projects.deleteConfirmAccept,Видалити проєкт
 admin.projects.deleteConfirmTitle,Видалити цей проєкт
+admin.projects.detail.authorizationHelp,"Потрібна авторизація: щоб входити в застосунки проєкту, користувачам потрібна принаймні одна роль цього проєкту."
+admin.projects.detail.backToProjects,Назад до проєктів
 admin.projects.detail.created,Створено
 admin.projects.detail.organization,Організація
+admin.projects.detail.owned,Власний
+admin.projects.detail.projectAccessHelp,Потрібен доступ до проєкту: користувачам треба надати доступ до проєкту (через їхню організацію або пряме призначення).
+admin.projects.detail.readOnly,Спільні проєкти доступні лише для читання. Цим проєктом керує лише організація-власник.
+admin.projects.detail.remove,Видалити проєкт
+admin.projects.detail.removeTypeLabel,Назва проєкту
+admin.projects.detail.removeTypeMismatch,Назва проєкту не збігається.
+admin.projects.detail.removeTypePrompt,Введіть назву проєкту для підтвердження.
+admin.projects.detail.rename,Перейменувати
+admin.projects.detail.renameDescription,"Змініть назву проєкту, показану в адмініструванні."
+admin.projects.detail.renameInvalid,Введіть назву проєкту.
+admin.projects.detail.renameTitle,Перейменування проєкту
+admin.projects.detail.shared,Спільний
 admin.projects.detail.updated,Останнє оновлення
 admin.projects.detailTitle,Відомості про проєкт
 admin.projects.grants.create,Надати доступ організації
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Видалити цей проєкт?
 admin.projects.lifecycle.removeConfirmAccept,Прибрати проєкт
 admin.projects.lifecycle.removeConfirmTitle,Прибрати цей проєкт
+admin.projects.list.applications,Застосунки
 admin.projects.list.create,Створити проєкт
 admin.projects.list.description,"Проєкти об'єднують застосунки, ролі та надання організації."
 admin.projects.list.empty,У цьому realm ще немає проєктів.
+admin.projects.list.emptyDetail,"Створіть проєкт, щоб групувати застосунки, ролі та видані права."
 admin.projects.list.invalid,Введіть назву проєкту та виберіть організацію.
 admin.projects.list.name,Назва проєкту
+admin.projects.list.roles,Ролі
 admin.projects.list.search,Пошук проєктів
+admin.projects.list.subtitle,Власні та спільні проєкти активної організації.
 admin.projects.list.title,Проєкти
 admin.projects.missingId,Для цього розділу потрібно вибрати проєкт.
+admin.projects.overview.authorizationTitle,Потрібна авторизація
+admin.projects.overview.projectAccessTitle,Потрібен доступ до проєкту
+admin.projects.overview.settingsDescription,Керуйте назвою проєкту та застосуванням доступу.
+admin.projects.overview.settingsTitle,Налаштування проєкту
+admin.projects.overview.title,Огляд проєкту
 admin.projects.roles.create,Створити роль
 admin.projects.roles.deleteConfirm,"Видалити цю роль проєкту? Видані права, що посилаються на неї, втратять цю роль."
 admin.projects.roles.description,"Ролі, які цей проєкт може призначати організаціям та їхнім учасникам."
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,Вимкнення цієї області припи
 admin.realm.disabled,Область вимкнено.
 admin.realm.domains,Домени
 admin.realm.domainsHint,Розділяйте домени комами. Перший домен є основним.
+admin.realm.edit,Редагувати
+admin.realm.editDescription,"Змініть назву realm, статус і домени, що ведуть до цього realm."
+admin.realm.editTitle,Редагування realm
 admin.realm.enabled,Область увімкнено.
+admin.realm.explore.administratorsDescription,Надавайте або відкликайте статус адміністратора realm.
+admin.realm.explore.auditEventsDescription,Переглядайте потік подій безпеки цього realm.
+admin.realm.explore.oidcClientsDescription,"Переглядайте OIDC-клієнти, зареєстровані в цьому realm."
+admin.realm.explore.organizationsDescription,Переглядайте організації цього realm.
+admin.realm.explore.sessionsDescription,Переглядайте активні сеанси цього realm.
+admin.realm.exploreTitle,Огляд
 admin.realm.identifier,Ідентифікатор області
+admin.realm.identityTitle,Ідентичність
 admin.realm.invalid,Вкажіть назву області та щонайменше один домен.
 admin.realm.name,Назва області
 admin.realm.permissionDenied,У вас немає дозволу змінювати цю область.
+admin.realm.primary,Основний
 admin.realm.primaryDomain,Основний домен
 admin.realm.saved,Налаштування області збережено.
 admin.realm.status,Стан
 admin.realm.statusActive,Активна
 admin.realm.statusDisabled,Вимкнена
+admin.realmAdministrators.add,Додати адміністратора
+admin.realmAdministrators.addDialogDescription,Знайдіть користувачів realm і надайте статус адміністратора realm. Права діють в усіх організаціях цього realm.
+admin.realmAdministrators.addDialogTitle,Додавання адміністратора realm
+admin.realmAdministrators.added,{name} тепер адміністратор realm.
+admin.realmAdministrators.alreadyAdmin,Уже адміністратор
+admin.realmAdministrators.confirmRemoveAccept,Видалити адміністратора
+admin.realmAdministrators.confirmRemoveMessage,Видалити {name} з адміністраторів realm? Він втратить доступ до всіх налаштувань організацій цього realm.
+admin.realmAdministrators.confirmRemoveTitle,Видалення адміністратора
+admin.realmAdministrators.count,{count} адміністраторів
+admin.realmAdministrators.countOne,1 адміністратор
+admin.realmAdministrators.description,"Адміністратори realm можуть керувати всіма організаціями, налаштуваннями realm, OIDC та журналом аудиту."
+admin.realmAdministrators.emptyDescription,Адміністраторів realm ще немає. Надайте першого адміністратора для керування цим realm.
+admin.realmAdministrators.emptySearchDescription,Жоден користувач realm не відповідає пошуку.
+admin.realmAdministrators.emptyTitle,Немає адміністраторів
+admin.realmAdministrators.grant,Надати права адміністратора
+admin.realmAdministrators.invitePlaceholder,Шукайте людей за ім’ям або email
+admin.realmAdministrators.lastAdminHint,Останнього адміністратора видалити не можна.
+admin.realmAdministrators.remove,Видалити
+admin.realmAdministrators.removed,{name} більше не адміністратор realm.
+admin.realmAdministrators.revokeFailed,Не вдалося видалити цього адміністратора.
+admin.realmAdministrators.search,Пошук адміністраторів
+admin.realmAdministrators.systemAdded,Система
+admin.realmAdministrators.tableAdded,Додано
+admin.realmAdministrators.tableAddedBy,Ким додано
+admin.realmAdministrators.tableUser,Адміністратор
+admin.realmAdministrators.title,Адміністратори realm
+admin.roles.delete,Видалити
+admin.roles.description,"Два види ролей: ролі організації визначають, що люди можуть робити в цьому адмініструванні; ролі проєкту — те, що ваші застосунки бачать у токенах."
+admin.roles.dialog.displayName,Відображуване ім’я
+admin.roles.dialog.editDescription,Змініть відображення ролі; ключ лишається незмінним.
+admin.roles.dialog.editTitle,Редагування ролі проєкту
+admin.roles.dialog.group,Група
+admin.roles.dialog.invalid,Введіть відображуване ім’я та ключ ролі.
+admin.roles.dialog.key,Ключ ролі
+admin.roles.dialog.keyHint,"Малі літери, цифри та дефіси, як у токенах."
+admin.roles.dialog.missingRole,Вибрана роль більше недоступна.
+admin.roles.dialog.newDescription,"Додайте ключ ролі, який застосунки отримають у токенах."
+admin.roles.dialog.newTitle,Нова роль проєкту
+admin.roles.dialog.noProject,Виберіть проєкт для нової ролі.
+admin.roles.dialog.project,Проєкт
+admin.roles.edit,Редагувати
+admin.roles.empty.createProjects,Спочатку створіть проєкт
+admin.roles.empty.description,"Визначте ролі, які ваші застосунки побачать у токенах, коли з’явиться проєкт."
+admin.roles.empty.title,Проєктів ще немає
+admin.roles.groupFallback,Без групи
+admin.roles.memberCount,{count} учасників
+admin.roles.memberCountOne,1 учасник
+admin.roles.orgRole.admin.bullet1,"Керує людьми, крім власників"
+admin.roles.orgRole.admin.bullet2,"Керує ролями, проєктами та сервісними обліковками"
+admin.roles.orgRole.admin.bullet3,"Не може змінювати оформлення, політику входу та домени"
+admin.roles.orgRole.admin.description,Щодня керує людьми та проєктами.
+admin.roles.orgRole.guest.bullet1,"Мінімальний доступ, наприклад за запрошенням до проєкту"
+admin.roles.orgRole.guest.bullet2,"Не може керувати людьми, ролями чи проєктами"
+admin.roles.orgRole.guest.description,Обмежений доступ для гостей і партнерів.
+admin.roles.orgRole.member.bullet1,Може входити й переглядати організацію
+admin.roles.orgRole.member.bullet2,"Використовує проєкти, спільні з організацією"
+admin.roles.orgRole.member.bullet3,"Не може керувати людьми, ролями чи проєктами"
+admin.roles.orgRole.member.description,Стандартний доступ для учасників організації.
+admin.roles.orgRole.owner.bullet1,"Усе, що можуть адміністратори"
+admin.roles.orgRole.owner.bullet2,"Змінює оформлення, політику входу та домени"
+admin.roles.orgRole.owner.bullet3,Керує власниками та видаленням організації
+admin.roles.orgRole.owner.description,Повний контроль над організацією та цим адмініструванням.
+admin.roles.organizationRoles.description,Хто що може робити в цьому адмініструванні.
+admin.roles.organizationRoles.title,Ролі організації
+admin.roles.projects.deleteConfirm,"Видалити цю роль проєкту? Видані права, що посилаються на неї, втратять роль."
+admin.roles.projects.deleteConfirmAccept,Видалити роль
+admin.roles.projects.deleteConfirmTitle,Видалення ролі
+admin.roles.projects.newRole,Нова роль
+admin.roles.projects.owned,Власні
+admin.roles.projects.shared,Спільні
+admin.roles.projects.title,Ролі проєктів
+admin.roles.rolesEmpty,Цей проєкт ще не визначає ролей.
+admin.roles.title,Ролі
 admin.session.expired,Термін вашого сеансу адміністратора минув
 admin.signIn.activeTitle,Сеанс адміністратора активний
 admin.signIn.credential,Початкові облікові дані адміністратора
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Ви вийшли
 admin.signIn.subject,Суб'єкт
 admin.signIn.subjectType,Тип суб'єкта
 admin.signIn.title,Вхід адміністратора
+admin.userProfile.accessTab,Ролі та доступ
+admin.userProfile.assignRoles,Призначити ролі проєктів
+admin.userProfile.assignRolesDialogTitle,Призначення ролей проєктів
+admin.userProfile.assignRolesEmpty,Ролей проєктів не знайдено.
+admin.userProfile.assignRolesProject,Проєкт
+admin.userProfile.assignRolesRoles,Ролі
+admin.userProfile.assignRolesSave,Зберегти призначення
+admin.userProfile.assignRolesSearch,Пошук проєктів
+admin.userProfile.assignRolesSelected,Вибрано ролей: {count}
+admin.userProfile.assignRolesStepProject,Виберіть проєкт
+admin.userProfile.authDescription,Безпечні метадані входу. Секрети й приватні ключі ніколи не показуються.
+admin.userProfile.authTitle,Методи автентифікації
+admin.userProfile.backToUsers,Назад до користувачів
+admin.userProfile.contactTitle,Контакти
+admin.userProfile.deactivate,Деактивувати користувача
+admin.userProfile.deactivateConfirm,Деактивувати {userName}? Користувач більше не зможе увійти.
+admin.userProfile.deactivated,{userName} деактивовано.
+admin.userProfile.deleteConfirm,Остаточно видалити {userName}? Це не можна скасувати.
+admin.userProfile.deleteConfirmMismatch,Введене ім’я не збігається.
+admin.userProfile.deleteConfirmTitle,Видалення користувача
+admin.userProfile.deleteConfirmType,Введіть {userName} для підтвердження.
+admin.userProfile.deleted,{userName} видалено.
+admin.userProfile.editProfile,Редагувати профіль
+admin.userProfile.editProfileTitle,Редагування профілю
+admin.userProfile.email,Адреса email
+admin.userProfile.emailUnverified,Не підтверджено
+admin.userProfile.emailVerified,Підтверджено
+admin.userProfile.impersonate,Видатися за користувача
+admin.userProfile.lastSignIn,Останній вхід
+admin.userProfile.makeRealmAdmin,Зробити адміністратором realm
+admin.userProfile.makeRealmAdminConfirm,Надати {userName} права адміністратора realm?
+admin.userProfile.makeRealmAdminDone,{userName} тепер адміністратор realm.
+admin.userProfile.memberSince,Учасник із
+admin.userProfile.membershipAdd,Додати до організації
+admin.userProfile.membershipAdded,{userName} додано до організації.
+admin.userProfile.membershipEmpty,Цей користувач не належить до жодної організації.
+admin.userProfile.membershipOrganization,Організація
+admin.userProfile.membershipsTitle,Членство в організаціях
+admin.userProfile.missingId,Не вдалося визначити користувача за адресою.
+admin.userProfile.never,Ніколи
+admin.userProfile.notMember,Цей користувач не належить до активної організації.
+admin.userProfile.organizationRoleChanged,Роль в організації оновлено.
+admin.userProfile.organizationRoleDescription,Виберіть основну роль для активної організації.
+admin.userProfile.organizationRoleTitle,Роль в організації
+admin.userProfile.overviewTab,Огляд
+admin.userProfile.passwordConfirm,Підтвердьте новий пароль
+admin.userProfile.passwordMismatch,Паролі не збігаються.
+admin.userProfile.passwordNew,Новий пароль
+admin.userProfile.passwordSaved,Пароль встановлено.
+admin.userProfile.passwordTooShort,Введіть пароль довжиною щонайменше 8 символів.
+admin.userProfile.phone,Номер телефону
+admin.userProfile.preferredLanguage,Бажана мова
+admin.userProfile.profileSaved,Профіль користувача збережено.
+admin.userProfile.profileTitle,Профіль
+admin.userProfile.projectRolesEmpty,Ролі проєктів не призначено.
+admin.userProfile.projectRolesRemove,Видалити
+admin.userProfile.projectRolesRemoveConfirm,Видалити призначення {projectName}?
+admin.userProfile.projectRolesRemoved,Призначення проєкту видалено.
+admin.userProfile.projectRolesSaved,Призначення проєктів збережено.
+admin.userProfile.projectRolesTitle,Ролі проєктів
+admin.userProfile.reactivate,Реактивувати користувача
+admin.userProfile.reactivateConfirm,Реактивувати {userName}? Користувач знову зможе увійти.
+admin.userProfile.reactivated,{userName} реактивовано.
+admin.userProfile.realmAdminBadge,Адміністратор realm
+admin.userProfile.removeRealmAdmin,Видалити адміністратора realm
+admin.userProfile.removeRealmAdminConfirm,Видалити права адміністратора realm у {userName}?
+admin.userProfile.removeRealmAdminDone,{userName} більше не адміністратор realm.
+admin.userProfile.revokeAll,Відкликати всі
+admin.userProfile.revokeAllConfirm,Відкликати всі сеанси {userName}? Користувач вийде скрізь.
+admin.userProfile.revokeAllDone,Усі сеанси відкликано.
+admin.userProfile.securityTab,Безпека
+admin.userProfile.sessionsDescription,Перевіряйте активні сеанси й відкликайте доступ із пристрою.
+admin.userProfile.sessionsEmpty,Цей користувач не має активних сеансів.
+admin.userProfile.sessionsRevoke,Відкликати
+admin.userProfile.sessionsRevokeConfirm,Негайно відкликати цей сеанс? Пристрій одразу вийде.
+admin.userProfile.sessionsRevoked,Сеанс відкликано.
+admin.userProfile.sessionsTitle,Сеанси та пристрої
+admin.userProfile.setPassword,Встановити пароль
+admin.userProfile.setPasswordDescription,Замініть пароль для входу та зніміть блокування.
+admin.userProfile.setPasswordTitle,Встановлення нового пароля
+admin.userProfile.unlock,Розблокувати користувача
+admin.userProfile.unlockConfirm,Розблокувати {userName}? Користувач знову зможе увійти.
+admin.userProfile.unlocked,{userName} розблоковано.
+admin.userProfile.username,Ім’я користувача
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,{userName} створено.
 admin.users.createdAt,Створено
 admin.users.deleteWarning,Видалення цього користувача негайно відкликає його сеанси та доступ.
 admin.users.detailTitle,Відомості про користувача
+admin.users.directoryClearFilters,Очистити фільтри
+admin.users.directoryCreated,Створено
+admin.users.directoryEmptySearch,Ніхто не відповідає пошуку.
+admin.users.directoryEmptySearchDetail,"Спробуйте інше ім’я, email або скиньте фільтр ролей."
+admin.users.directoryInvite,Запросити користувача
+admin.users.directoryInviteDescription,Надішліть запрошення до організації email. Посилання показується один раз.
+admin.users.directoryInviteEmail,Адреса email
+admin.users.directoryInviteRole,Роль запрошення
+admin.users.directoryInviteSubmit,Надіслати запрошення
+admin.users.directoryLastSignIn,Останній вхід
+admin.users.directoryNever,Ніколи
+admin.users.directoryNoPeople,У цій організації ще нікого немає.
+admin.users.directoryNoPeopleDetail,"Запросіть першу людину, щоб розпочати роботу організації."
+admin.users.directoryOpen,Відкрити
+admin.users.directoryOpenProfile,Відкрити профіль {name}
+admin.users.directoryOrganizations,Організації
+admin.users.directoryRole,Роль
+admin.users.directoryRoleAdmin,Адміністратор
+admin.users.directoryRoleAll,Усі ролі
+admin.users.directoryRoleGuest,Гість
+admin.users.directoryRoleMember,Учасник
+admin.users.directoryRoleOwner,Власник
+admin.users.directoryScopeAll,Усі організації
+admin.users.directoryScopeOrganization,Ця організація
+admin.users.directorySearchPlaceholder,"Фільтр за ім’ям, ім’ям користувача або email"
+admin.users.directoryServiceAccountCreate,Створити сервісний обліковий запис
+admin.users.directoryServiceAccountDescription,Машинні ідентичності для автоматизації. Секрет клієнта показується один раз.
+admin.users.directoryServiceAccountEmpty,У цій організації ще немає сервісних облікових записів.
+admin.users.directoryServiceAccountEmptyDetail,Створіть перший сервісний обліковий запис для інтеграцій та автоматизації.
+admin.users.directoryServiceAccountName,Відображуване ім’я
+admin.users.directoryServiceAccountScopes,Області
+admin.users.directoryServiceAccountScopesHint,Розділяйте області пробілами або комами.
+admin.users.directoryServiceAccountSecretCopied,Секрет скопійовано до буфера обміну.
+admin.users.directoryServiceAccountSecretCopy,Скопіювати секрет
+admin.users.directoryServiceAccountSecretTitle,Секрет клієнта
+admin.users.directoryServiceAccountSecretWarning,Цей секрет показується один раз. Збережіть його в надійному місці зараз.
+admin.users.directoryServiceAccountStatus,Статус
+admin.users.directoryServiceAccountUserName,Ім’я користувача
+admin.users.directoryServiceAccountUserNameHint,Використовується як ID клієнта під час обміну облікових даних клієнта.
+admin.users.directoryStatus,Статус
+admin.users.directorySubtitle,{count} людей
+admin.users.directoryTabInvitations,Очікувані запрошення
+admin.users.directoryTabPeople,Люди
+admin.users.directoryTabServiceAccounts,Сервісні облікові записи
+admin.users.directoryUser,Користувач
+admin.users.directoryUserInvited,Запрошено
+admin.users.directoryUserName,Ім’я користувача
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Ідентифікатор користувача
 admin.users.invalid,Введіть дійсну адресу електронної пошти та ім'я користувача.
+admin.users.inviteEmailInvalid,Введіть дійсний email.
+admin.users.inviteRevokeConfirm,Відкликати запрошення для {email}? Посилання запрошення одразу припинить працювати.
+admin.users.inviteRevoked,Запрошення відкликано.
+admin.users.inviteRolesInvalid,Виберіть принаймні одну роль запрошення.
+admin.users.inviteSent,Запрошення створено.
+admin.users.inviteTokenCopied,Посилання запрошення скопійовано до буфера обміну.
+admin.users.inviteTokenCopy,Скопіювати посилання
+admin.users.inviteTokenDismiss,Я зберіг посилання
+admin.users.inviteTokenOnce,Це посилання запрошення показується один раз. Поділіться ним із запрошеним.
+admin.users.inviteTokenTitle,Посилання запрошення
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Активна
 admin.users.lifecycle.deleted,Видалено
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Початковий
 admin.users.lifecycle.locked,Заблоковано
 admin.users.lifecycle.suspended,Призупинено
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,Сервісний обліковий запис створено.
+admin.users.serviceAccountInvalid,Введіть відображуване ім’я та ім’я користувача сервісного облікового запису.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Статус
 admin.users.title,Користувачі
+admin.users.unverifiedEmail,Непідтверджений email
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Безпечні сервіси ідентифікації

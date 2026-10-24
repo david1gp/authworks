@@ -307,6 +307,68 @@ account.status.unavailable,Unavailable
 account.workspace.devicesTitle,Eszközök és alkalmazások
 admin.common.confirmTitle,Erősítse meg ezt a műveletet
 admin.common.permission,Nincs jogosultsága megtekinteni ezeket az adminisztrációs adatokat.
+admin.configuration.brandingDescription,"Világos és sötét színek, logó és jogi linkek élő előnézettel."
+admin.configuration.brandingFormDescription,"Színek, logó- és ikon-URL-ek, alapértelmezett téma és jogi linkek."
+admin.configuration.brandingFormTitle,Márkaszínek és erőforrások
+admin.configuration.brandingTitle,Arculat
+admin.configuration.claim,Tartomány igénylése
+admin.configuration.colorInvalid,"Adjon meg hexadecimális színt, például #2563eb."
+admin.configuration.copied,Vágólapra másolva.
+admin.configuration.copy,Másolás
+admin.configuration.created,Létrehozva
+admin.configuration.dangerDescription,A deaktiválás azonnal blokkolja a bejelentkezést; az eltávolítás végleges.
+admin.configuration.dangerTitle,Veszélyzóna
+admin.configuration.deactivate,Szervezet deaktiválása
+admin.configuration.description,"Szervezeti beállítások, bejelentkezés és ellenőrzött tartományok."
+admin.configuration.dialogDescription,"Igényeljen tartományt, hogy az emberek az e-mail-címük alapján megtalálhassák ezt a szervezetet."
+admin.configuration.dialogTitle,Tartomány igénylése
+admin.configuration.dirty,Nem mentett módosításai vannak.
+admin.configuration.discard,Elvetés
+admin.configuration.domainName,Tartomány
+admin.configuration.domainsDescription,Ellenőrzött tartományok és szervezetfelismerés.
+admin.configuration.domainsTitle,Tartományok
+admin.configuration.fontDescription,Opcionális webes betűtípus és egyéni betűtípus-stíluslap URL.
+admin.configuration.fontFamily,Betűcsalád
+admin.configuration.fontFamilyPlaceholder,"system-ui, Inter, sans-serif"
+admin.configuration.fontTitle,Tipográfia
+admin.configuration.fontUrl,Betűtípus-stíluslap URL-je
+admin.configuration.generalDescription,"Szervezet neve, állapota és veszélyzóna."
+admin.configuration.generalTitle,Általános
+admin.configuration.identifier,Szervezet ID
+admin.configuration.legalDescription,A bejelentkezési kártya alatt jelennek meg.
+admin.configuration.legalTitle,Jogi linkek
+admin.configuration.loginDescription,"Válassza ki, mely bejelentkezési módokat használhatják az emberek."
+admin.configuration.loginTitle,Bejelentkezési szabályzat
+admin.configuration.metaDescription,Másodlagos azonosítók támogatáshoz és hibakereséshez.
+admin.configuration.metaTitle,Szervezet adatai
+admin.configuration.nameDescription,"Megjelenik a bejelentkezéskor, a meghívókban és az adminisztrációban."
+admin.configuration.nameTitle,Szervezet neve
+admin.configuration.previewDark,Sötét
+admin.configuration.previewDescription,Az aktuális űrlapértékek alapján megjelenítve.
+admin.configuration.previewEmail,nev@pelda.hu
+admin.configuration.previewLight,Világos
+admin.configuration.previewTitle,Bejelentkezési előnézet
+admin.configuration.primaryDomain,Elsődleges tartomány
+admin.configuration.privacyUrl,Adatvédelmi szabályzat URL-je
+admin.configuration.reactivate,Szervezet újraaktiválása
+admin.configuration.readOnly,Ezeket a beállításokat csak a szervezet tulajdonosai módosíthatják.
+admin.configuration.remove,Szervezet eltávolítása
+admin.configuration.removeConfirm,Eltávolítja a(z) {domain} tartományt? A szervezetfelismerés azonnal leáll.
+admin.configuration.removeTitle,Tartomány eltávolítása
+admin.configuration.signInDescription,Szervezeti bejelentkezési és biztonsági szabályzat űrlapjai.
+admin.configuration.signInTitle,Bejelentkezés és biztonság
+admin.configuration.statusActive,Aktív
+admin.configuration.statusDescription,Az inaktív szervezetek blokkolják a bejelentkezést; az eltávolított szervezetek csak olvashatók maradnak.
+admin.configuration.statusInactive,Inaktív
+admin.configuration.statusRemoved,Eltávolítva
+admin.configuration.statusTitle,Állapot
+admin.configuration.termsUrl,Szolgáltatási feltételek URL-je
+admin.configuration.themeDark,Sötét téma
+admin.configuration.themeLight,Világos téma
+admin.configuration.title,Konfiguráció
+admin.configuration.typeName,Írja be a megerősítéshez a szervezet nevét
+admin.configuration.typeNameInvalid,A beírt név nem egyezik a szervezet nevével.
+admin.configuration.watermark,Az Authworks vízjel elrejtése
 admin.events.actor,Szereplő
 admin.events.aggregate,Aggregátum
 admin.events.count,{count} esemény
@@ -707,9 +769,12 @@ admin.organizations.statusValue.removed,Eltávolítva
 admin.projects.access.description,"Azok a szerepkörök, amelyekkel ez az adminisztrátor jelenleg ténylegesen rendelkezik a projektben."
 admin.projects.access.empty,A jelenlegi szervezeti környezetben nincs érvényes projektszerepkör.
 admin.projects.access.grantedOrganization,Szervezeten keresztül megadva
+admin.projects.access.organizationDescription,A projekthez hozzáféréssel rendelkező szervezetek és a nekik adott szerepkörök.
+admin.projects.access.organizationTitle,Szervezeti hozzáférés
 admin.projects.access.permissionDescription,"A rögzített szerepköröket és jogosultságaikat az Authworks határozza meg, és nem szerkeszthetők."
 admin.projects.access.permissionTitle,Rögzített szerepkörök és jogosultságok
 admin.projects.access.roleKeys,Tényleges projektszerepkörök
+admin.projects.access.selectRoles,Szerepkörök kiválasztása
 admin.projects.access.title,Tényleges hozzáférés
 admin.projects.applications.create,Alkalmazás hozzáadása
 admin.projects.applications.description,"Alkalmazások, amelyek ezzel a projekttel hitelesítenek."
@@ -719,11 +784,32 @@ admin.projects.applications.name,Alkalmazás neve
 admin.projects.applications.removeConfirm,Eltávolítja ezt az alkalmazást? Ez nem vonható vissza.
 admin.projects.applications.title,Alkalmazások
 admin.projects.applications.type,Alkalmazás típusa
+admin.projects.assignments.create,Felhasználó hozzárendelése
+admin.projects.assignments.description,Rendelje hozzá a projekt szerepköreit közvetlenül az aktív szervezet egy felhasználójához.
+admin.projects.assignments.empty,Ehhez a projekthez még nincs közvetlenül hozzárendelve felhasználó.
+admin.projects.assignments.invalid,"Adjon meg egy felhasználót, és válasszon legalább egy szerepkört."
+admin.projects.assignments.removeConfirm,Eltávolítja ezt a felhasználó-hozzárendelést? A felhasználó elveszíti ezeket a projektszerepköröket.
+admin.projects.assignments.title,Közvetlen felhasználó-hozzárendelések
+admin.projects.assignments.user,Felhasználó
 admin.projects.deleteConfirm,"Törli ezt a projektet? Az alkalmazások, szerepek és hozzárendelések együtt törlődnek."
 admin.projects.deleteConfirmAccept,Projekt törlése
 admin.projects.deleteConfirmTitle,A projekt törlése
+admin.projects.detail.authorizationHelp,Engedélyezés szükséges: a felhasználóknak legalább egy szerepkörrel kell rendelkezniük ebből a projektből az alkalmazásaiba való bejelentkezéshez.
+admin.projects.detail.backToProjects,Vissza a projektekhez
 admin.projects.detail.created,Létrehozva
 admin.projects.detail.organization,Szervezet
+admin.projects.detail.owned,Saját
+admin.projects.detail.projectAccessHelp,Projekthozzáférés szükséges: a felhasználóknak hozzáférést kell kapniuk a projekthez (a szervezetükön keresztül vagy közvetlen hozzárendeléssel).
+admin.projects.detail.readOnly,A megosztott projektek csak olvashatók. Ezt a projektet csak a tulajdonos szervezet kezeli.
+admin.projects.detail.remove,Projekt törlése
+admin.projects.detail.removeTypeLabel,Projekt neve
+admin.projects.detail.removeTypeMismatch,A projekt neve nem egyezik.
+admin.projects.detail.removeTypePrompt,A megerősítéshez írja be a projekt nevét.
+admin.projects.detail.rename,Átnevezés
+admin.projects.detail.renameDescription,Módosítsa az adminisztrációban megjelenő projektnevet.
+admin.projects.detail.renameInvalid,Adjon meg egy projektnevet.
+admin.projects.detail.renameTitle,Projekt átnevezése
+admin.projects.detail.shared,Megosztott
 admin.projects.detail.updated,Utoljára frissítve
 admin.projects.detailTitle,Projekt részletei
 admin.projects.grants.create,Szervezeti hozzáférés megadása
@@ -740,14 +826,23 @@ admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Eltávolítja ezt a projektet?
 admin.projects.lifecycle.removeConfirmAccept,Projekt eltávolítása
 admin.projects.lifecycle.removeConfirmTitle,A projekt eltávolítása
+admin.projects.list.applications,Alkalmazások
 admin.projects.list.create,Projekt létrehozása
 admin.projects.list.description,"A projektek csoportosítják egy szervezet alkalmazásait, szerepköreit és hozzáféréseit."
 admin.projects.list.empty,Ebben a realmben még nincs projekt.
+admin.projects.list.emptyDetail,"Hozzon létre egy projektet az alkalmazások, szerepkörök és hozzáférések csoportosításához."
 admin.projects.list.invalid,"Adjon meg egy projektnevet, és válasszon szervezetet."
 admin.projects.list.name,Projekt neve
+admin.projects.list.roles,Szerepkörök
 admin.projects.list.search,Projektek keresése
+admin.projects.list.subtitle,Az aktív szervezet saját és megosztott projektjei.
 admin.projects.list.title,Projektek
 admin.projects.missingId,Ehhez a célhoz ki kell választani egy projektet.
+admin.projects.overview.authorizationTitle,Engedélyezés szükséges
+admin.projects.overview.projectAccessTitle,Projekthozzáférés szükséges
+admin.projects.overview.settingsDescription,Szabályozza a projekt nevét és a hozzáférés érvényesítését.
+admin.projects.overview.settingsTitle,Projektbeállítások
+admin.projects.overview.title,Projekt áttekintése
 admin.projects.roles.create,Szerepkör létrehozása
 admin.projects.roles.deleteConfirm,Törli ezt a projekt-szerepet? A rá hivatkozó hozzárendelések elveszítik a szerepet.
 admin.projects.roles.description,"Azok a szerepkörök, amelyeket ez a projekt szervezeteknek és tagjaiknak kioszthat."
@@ -768,16 +863,100 @@ admin.realm.disableConfirm,A tartomány letiltása leállítja a bejelentkezést
 admin.realm.disabled,A tartomány le lett tiltva.
 admin.realm.domains,Domainek
 admin.realm.domainsHint,Válassza el a domaineket vesszővel. Az első domain az elsődleges domain.
+admin.realm.edit,Szerkesztés
+admin.realm.editDescription,"Módosítsa a realm nevét, állapotát és a realmre feloldódó tartományokat."
+admin.realm.editTitle,Realm szerkesztése
 admin.realm.enabled,A tartomány engedélyezve lett.
+admin.realm.explore.administratorsDescription,Realm-adminisztrátori állapot megadása vagy visszavonása.
+admin.realm.explore.auditEventsDescription,Tekintse át a realm biztonsági eseményfolyamát.
+admin.realm.explore.oidcClientsDescription,Tekintse át a realmben regisztrált OIDC-ügyfeleket.
+admin.realm.explore.organizationsDescription,Tallózza a realm szervezeteit.
+admin.realm.explore.sessionsDescription,Tekintse át a realm aktív munkameneteit.
+admin.realm.exploreTitle,Felfedezés
 admin.realm.identifier,Tartományazonosító
+admin.realm.identityTitle,Identitás
 admin.realm.invalid,Adjon meg egy tartománynevet és legalább egy domaint.
 admin.realm.name,Tartomány neve
 admin.realm.permissionDenied,Nincs jogosultsága a tartomány módosítására.
+admin.realm.primary,Elsődleges
 admin.realm.primaryDomain,Elsődleges domain
 admin.realm.saved,A tartomány beállításai mentve lettek.
 admin.realm.status,Állapot
 admin.realm.statusActive,Aktív
 admin.realm.statusDisabled,Letiltva
+admin.realmAdministrators.add,Adminisztrátor hozzáadása
+admin.realmAdministrators.addDialogDescription,"Keressen realmfelhasználókat, majd adjon realm-adminisztrátori állapotot. A megadások a realm minden szervezetére vonatkoznak."
+admin.realmAdministrators.addDialogTitle,Realm-adminisztrátor hozzáadása
+admin.realmAdministrators.added,{name} mostantól realm-adminisztrátor.
+admin.realmAdministrators.alreadyAdmin,Már adminisztrátor
+admin.realmAdministrators.confirmRemoveAccept,Adminisztrátor eltávolítása
+admin.realmAdministrators.confirmRemoveMessage,Eltávolítja {name} felhasználót realm-adminisztrátorként? Elveszíti a realm minden szervezeti beállításához való hozzáférést.
+admin.realmAdministrators.confirmRemoveTitle,Az adminisztrátor eltávolítása
+admin.realmAdministrators.count,{count} adminisztrátor
+admin.realmAdministrators.countOne,1 adminisztrátor
+admin.realmAdministrators.description,"A realm-adminisztrátorok minden szervezetet, a realm beállításait, az OIDC-t és a naplózott eseményeket kezelhetik."
+admin.realmAdministrators.emptyDescription,Még nincsenek realm-adminisztrátorok. Adjon meg egy első adminisztrátort a realm kezeléséhez.
+admin.realmAdministrators.emptySearchDescription,Egyetlen realmfelhasználó sem felel meg ennek a keresésnek.
+admin.realmAdministrators.emptyTitle,Nincsenek adminisztrátorok
+admin.realmAdministrators.grant,Adminisztrátori jog megadása
+admin.realmAdministrators.invitePlaceholder,Keresés név vagy e-mail alapján
+admin.realmAdministrators.lastAdminHint,Az utolsó adminisztrátor nem távolítható el.
+admin.realmAdministrators.remove,Eltávolítás
+admin.realmAdministrators.removed,{name} már nem realm-adminisztrátor.
+admin.realmAdministrators.revokeFailed,Ezt az adminisztrátort nem sikerült eltávolítani.
+admin.realmAdministrators.search,Adminisztrátorok keresése
+admin.realmAdministrators.systemAdded,Rendszer
+admin.realmAdministrators.tableAdded,Hozzáadva
+admin.realmAdministrators.tableAddedBy,Hozzáadta
+admin.realmAdministrators.tableUser,Adminisztrátor
+admin.realmAdministrators.title,Realm-adminisztrátorok
+admin.roles.delete,Törlés
+admin.roles.description,"Kétféle szerepkör létezik: a szervezeti szerepkörök szabályozzák, hogy ki mit tehet ebben az adminisztrációban; a projektszerepkörök azok, amelyeket az alkalmazásai tokenekben látnak."
+admin.roles.dialog.displayName,Megjelenítendő név
+admin.roles.dialog.editDescription,Módosítsa a szerepkör megjelenését; a kulcs változatlan marad.
+admin.roles.dialog.editTitle,Projektszerepkör szerkesztése
+admin.roles.dialog.group,Csoport
+admin.roles.dialog.invalid,Adjon meg megjelenítendő nevet és szerepkörkulcsot.
+admin.roles.dialog.key,Szerepkörkulcs
+admin.roles.dialog.keyHint,"Kisbetűk, számok és kötőjelek, ahogyan a tokenekben szerepelnek."
+admin.roles.dialog.missingRole,A kiválasztott szerepkör már nem érhető el.
+admin.roles.dialog.newDescription,"Adjon hozzá egy szerepkörkulcsot, amelyet az alkalmazások tokenekben kapnak meg."
+admin.roles.dialog.newTitle,Új projektszerepkör
+admin.roles.dialog.noProject,Válasszon projektet az új szerepkörhöz.
+admin.roles.dialog.project,Projekt
+admin.roles.edit,Szerkesztés
+admin.roles.empty.createProjects,Először hozzon létre egy projektet
+admin.roles.empty.description,"Határozza meg azokat a szerepköröket, amelyeket az alkalmazásai tokenekben látnak, ha már létezik projekt."
+admin.roles.empty.title,Még nincsenek projektek
+admin.roles.groupFallback,Csoport nélküli
+admin.roles.memberCount,{count} tag
+admin.roles.memberCountOne,1 tag
+admin.roles.orgRole.admin.bullet1,"Személyek kezelése, kivéve a tulajdonosokat"
+admin.roles.orgRole.admin.bullet2,"Szerepkörök, projektek és szolgáltatásfiókok kezelése"
+admin.roles.orgRole.admin.bullet3,"Nem módosíthatja az arculatot, a bejelentkezési szabályzatot és a tartományokat"
+admin.roles.orgRole.admin.description,Naponta adminisztrálja a személyeket és a projekteket.
+admin.roles.orgRole.guest.bullet1,"Minimális hozzáférés, például projekthez való meghíváskor"
+admin.roles.orgRole.guest.bullet2,"Nem kezelhet személyeket, szerepköröket vagy projekteket"
+admin.roles.orgRole.guest.description,Korlátozott hozzáférés vendégeknek és partnereknek.
+admin.roles.orgRole.member.bullet1,Bejelentkezhet és megtekintheti a szervezetet
+admin.roles.orgRole.member.bullet2,A szervezettel megosztott projekteket használja
+admin.roles.orgRole.member.bullet3,"Nem kezelhet személyeket, szerepköröket vagy projekteket"
+admin.roles.orgRole.member.description,Alapértelmezett hozzáférés szervezeti tagoknak.
+admin.roles.orgRole.owner.bullet1,"Minden, amit az adminisztrátorok tudnak"
+admin.roles.orgRole.owner.bullet2,"Módosítja az arculatot, a bejelentkezési szabályzatot és a tartományokat"
+admin.roles.orgRole.owner.bullet3,Kezeli a tulajdonosokat és a szervezet eltávolítását
+admin.roles.orgRole.owner.description,A szervezet és ezen adminisztráció teljes körű irányítása.
+admin.roles.organizationRoles.description,Ki mit tehet ebben az adminisztrációban.
+admin.roles.organizationRoles.title,Szervezeti szerepkörök
+admin.roles.projects.deleteConfirm,Törli ezt a projektszerepkört? A rá hivatkozó hozzárendelések elveszítik a szerepet.
+admin.roles.projects.deleteConfirmAccept,Szerepkör törlése
+admin.roles.projects.deleteConfirmTitle,A szerepkör törlése
+admin.roles.projects.newRole,Új szerepkör
+admin.roles.projects.owned,Saját
+admin.roles.projects.shared,Megosztott
+admin.roles.projects.title,Projektszerepkörök
+admin.roles.rolesEmpty,Ez a projekt még nem határoz meg szerepköröket.
+admin.roles.title,Szerepkörök
 admin.session.expired,A rendszergazdai munkamenete lejárt
 admin.signIn.activeTitle,Rendszergazdai munkamenet aktív
 admin.signIn.credential,Kezdeti rendszergazdai hitelesítő adat
@@ -791,6 +970,90 @@ admin.signIn.signedOutTitle,Kijelentkezve
 admin.signIn.subject,Alany
 admin.signIn.subjectType,Alany típusa
 admin.signIn.title,Rendszergazdai bejelentkezés
+admin.userProfile.accessTab,Szerepkörök és hozzáférés
+admin.userProfile.assignRoles,Projektszerepkörök hozzárendelése
+admin.userProfile.assignRolesDialogTitle,Projektszerepkörök hozzárendelése
+admin.userProfile.assignRolesEmpty,Nem találhatók projektszerepkörök.
+admin.userProfile.assignRolesProject,Projekt
+admin.userProfile.assignRolesRoles,Szerepkörök
+admin.userProfile.assignRolesSave,Hozzárendelések mentése
+admin.userProfile.assignRolesSearch,Projektek keresése
+admin.userProfile.assignRolesSelected,{count} szerepkör kiválasztva
+admin.userProfile.assignRolesStepProject,Válasszon projektet
+admin.userProfile.authDescription,Biztonságos bejelentkezési metaadatok. A titkok és a privát kulcsok soha nem jelennek meg.
+admin.userProfile.authTitle,Hitelesítési módszerek
+admin.userProfile.backToUsers,Vissza a felhasználókhoz
+admin.userProfile.contactTitle,Kapcsolat
+admin.userProfile.deactivate,Felhasználó deaktiválása
+admin.userProfile.deactivateConfirm,Deaktiválja {userName} felhasználót? A felhasználó többé nem tud bejelentkezni.
+admin.userProfile.deactivated,{userName} felhasználó deaktiválva.
+admin.userProfile.deleteConfirm,Véglegesen törli {userName} felhasználót? Ez nem vonható vissza.
+admin.userProfile.deleteConfirmMismatch,A beírt név nem egyezik.
+admin.userProfile.deleteConfirmTitle,Felhasználó törlése
+admin.userProfile.deleteConfirmType,A megerősítéshez írja be: {userName}.
+admin.userProfile.deleted,{userName} felhasználó törölve.
+admin.userProfile.editProfile,Profil szerkesztése
+admin.userProfile.editProfileTitle,Profil szerkesztése
+admin.userProfile.email,E-mail-cím
+admin.userProfile.emailUnverified,Nincs ellenőrizve
+admin.userProfile.emailVerified,Ellenőrzött
+admin.userProfile.impersonate,Felhasználó megszemélyesítése
+admin.userProfile.lastSignIn,Utolsó bejelentkezés
+admin.userProfile.makeRealmAdmin,Realm-adminisztrátorrá tétel
+admin.userProfile.makeRealmAdminConfirm,Megadja {userName} felhasználónak a realm-adminisztrátori jogosultságokat?
+admin.userProfile.makeRealmAdminDone,{userName} mostantól realm-adminisztrátor.
+admin.userProfile.memberSince,Tagság kezdete
+admin.userProfile.membershipAdd,Szervezethez adás
+admin.userProfile.membershipAdded,{userName} felhasználó hozzáadva a szervezethez.
+admin.userProfile.membershipEmpty,Ez a felhasználó egyetlen szervezetnek sem tagja.
+admin.userProfile.membershipOrganization,Szervezet
+admin.userProfile.membershipsTitle,Szervezeti tagságok
+admin.userProfile.missingId,Ez a felhasználó nem oldható fel a cím alapján.
+admin.userProfile.never,Soha
+admin.userProfile.notMember,Ez a felhasználó nem tagja az aktív szervezetnek.
+admin.userProfile.organizationRoleChanged,A szervezeti szerepkör frissítve.
+admin.userProfile.organizationRoleDescription,Válassza ki az elsődleges szerepkört az aktív szervezethez.
+admin.userProfile.organizationRoleTitle,Szervezeti szerepkör
+admin.userProfile.overviewTab,Áttekintés
+admin.userProfile.passwordConfirm,Erősítse meg az új jelszót
+admin.userProfile.passwordMismatch,A jelszavak nem egyeznek.
+admin.userProfile.passwordNew,Új jelszó
+admin.userProfile.passwordSaved,A jelszó beállítva.
+admin.userProfile.passwordTooShort,Adjon meg legalább 8 karakteres jelszót.
+admin.userProfile.phone,Telefonszám
+admin.userProfile.preferredLanguage,Preferált nyelv
+admin.userProfile.profileSaved,A felhasználói profil mentve.
+admin.userProfile.profileTitle,Felhasználói profil
+admin.userProfile.projectRolesEmpty,Nincsenek hozzárendelt projektszerepkörök.
+admin.userProfile.projectRolesRemove,Eltávolítás
+admin.userProfile.projectRolesRemoveConfirm,Eltávolítja a(z) {projectName} hozzárendelést?
+admin.userProfile.projectRolesRemoved,A projekthozzárendelés eltávolítva.
+admin.userProfile.projectRolesSaved,A projekthozzárendelések mentve.
+admin.userProfile.projectRolesTitle,Projektszerepkörök
+admin.userProfile.reactivate,Felhasználó újraaktiválása
+admin.userProfile.reactivateConfirm,Újraaktiválja {userName} felhasználót? A felhasználó újra bejelentkezhet.
+admin.userProfile.reactivated,{userName} felhasználó újraaktiválva.
+admin.userProfile.realmAdminBadge,Realm-adminisztrátor
+admin.userProfile.removeRealmAdmin,Realm-adminisztrátori jog visszavonása
+admin.userProfile.removeRealmAdminConfirm,Visszavonja {userName} felhasználó realm-adminisztrátori jogosultságait?
+admin.userProfile.removeRealmAdminDone,{userName} már nem realm-adminisztrátor.
+admin.userProfile.revokeAll,Összes visszavonása
+admin.userProfile.revokeAllConfirm,Visszavonja {userName} összes munkamenetét? A felhasználó mindenhonnan kijelentkezik.
+admin.userProfile.revokeAllDone,Minden munkamenet visszavonva.
+admin.userProfile.securityTab,Biztonság
+admin.userProfile.sessionsDescription,"Vizsgálja meg az aktív munkameneteket, és vonja vissza a hozzáférést egy eszközről."
+admin.userProfile.sessionsEmpty,Ennek a felhasználónak nincsenek aktív munkamenetei.
+admin.userProfile.sessionsRevoke,Visszavonás
+admin.userProfile.sessionsRevokeConfirm,Azonnal visszavonja ezt a munkamenetet? Az eszköz azonnal kijelentkezik.
+admin.userProfile.sessionsRevoked,A munkamenet visszavonva.
+admin.userProfile.sessionsTitle,Munkamenetek és eszközök
+admin.userProfile.setPassword,Jelszó beállítása
+admin.userProfile.setPasswordDescription,"Cserélje le a bejelentkezési jelszót, és törölje az esetleges zárolást."
+admin.userProfile.setPasswordTitle,Új jelszó beállítása
+admin.userProfile.unlock,Felhasználó feloldása
+admin.userProfile.unlockConfirm,Feloldja {userName} felhasználót? A felhasználó újra bejelentkezhet.
+admin.userProfile.unlocked,{userName} felhasználó feloldva.
+admin.userProfile.username,Felhasználónév
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -806,12 +1069,69 @@ admin.users.created,A(z) {userName} létrehozva.
 admin.users.createdAt,Létrehozva
 admin.users.deleteWarning,A felhasználó törlése azonnal visszavonja a munkameneteit és hozzáféréseit.
 admin.users.detailTitle,Felhasználó részletei
+admin.users.directoryClearFilters,Szűrők törlése
+admin.users.directoryCreated,Létrehozva
+admin.users.directoryEmptySearch,Senki sem felel meg ennek a keresésnek.
+admin.users.directoryEmptySearchDetail,"Próbáljon másik nevet, e-mail-címet, vagy törölje a szerepkörszűrőt."
+admin.users.directoryInvite,Felhasználó meghívása
+admin.users.directoryInviteDescription,Küldjön szervezeti meghívót e-mailben. A link egyszer jelenik meg.
+admin.users.directoryInviteEmail,E-mail-cím
+admin.users.directoryInviteRole,Meghívó szerepköre
+admin.users.directoryInviteSubmit,Meghívó küldése
+admin.users.directoryLastSignIn,Utolsó bejelentkezés
+admin.users.directoryNever,Soha
+admin.users.directoryNoPeople,Ebben a szervezetben még nincsenek személyek.
+admin.users.directoryNoPeopleDetail,Hívja meg az első személyt a szervezet beindításához.
+admin.users.directoryOpen,Megnyitás
+admin.users.directoryOpenProfile,{name} profiljának megnyitása
+admin.users.directoryOrganizations,Szervezetek
+admin.users.directoryRole,Szerepkör
+admin.users.directoryRoleAdmin,Adminisztrátor
+admin.users.directoryRoleAll,Összes szerepkör
+admin.users.directoryRoleGuest,Vendég
+admin.users.directoryRoleMember,Tag
+admin.users.directoryRoleOwner,Tulajdonos
+admin.users.directoryScopeAll,Összes szervezet
+admin.users.directoryScopeOrganization,Ez a szervezet
+admin.users.directorySearchPlaceholder,"Szűrés név, felhasználónév vagy e-mail alapján"
+admin.users.directoryServiceAccountCreate,Szolgáltatásfiók létrehozása
+admin.users.directoryServiceAccountDescription,Automatizáláshoz használt gépi identitások. Az ügyfél-titok egyszer jelenik meg.
+admin.users.directoryServiceAccountEmpty,Ebben a szervezetben még nincsenek szolgáltatásfiókok.
+admin.users.directoryServiceAccountEmptyDetail,Hozza létre az első szolgáltatásfiókot integrációkhoz és automatizáláshoz.
+admin.users.directoryServiceAccountName,Megjelenítendő név
+admin.users.directoryServiceAccountScopes,Hatókörök
+admin.users.directoryServiceAccountScopesHint,A hatóköröket szóközzel vagy vesszővel válassza el.
+admin.users.directoryServiceAccountSecretCopied,A titok a vágólapra másolva.
+admin.users.directoryServiceAccountSecretCopy,Titok másolása
+admin.users.directoryServiceAccountSecretTitle,Ügyfél-titok
+admin.users.directoryServiceAccountSecretWarning,Ez a titok egyszer jelenik meg. Mentse el most biztonságos helyen.
+admin.users.directoryServiceAccountStatus,Állapot
+admin.users.directoryServiceAccountUserName,Felhasználónév
+admin.users.directoryServiceAccountUserNameHint,Ügyfél ID-ként használatos az ügyfél-hitelesítő adatok cseréjekor.
+admin.users.directoryStatus,Állapot
+admin.users.directorySubtitle,{count} személy
+admin.users.directoryTabInvitations,Függőben lévő meghívók
+admin.users.directoryTabPeople,Személyek
+admin.users.directoryTabServiceAccounts,Szolgáltatásfiókok
+admin.users.directoryUser,Felhasználó
+admin.users.directoryUserInvited,Meghívott
+admin.users.directoryUserName,Felhasználónév
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.firstName,First name
 admin.users.identifier,Felhasználóazonosító
 admin.users.invalid,Adjon meg érvényes e-mail-címet és felhasználónevet.
+admin.users.inviteEmailInvalid,Adjon meg érvényes e-mail-címet.
+admin.users.inviteRevokeConfirm,Visszavonja a(z) {email} meghívását? A meghívó linkje azonnal leáll.
+admin.users.inviteRevoked,A meghívó visszavonva.
+admin.users.inviteRolesInvalid,Válasszon legalább egy meghívó-szerepkört.
+admin.users.inviteSent,A meghívó létrejött.
+admin.users.inviteTokenCopied,A meghívó linkje a vágólapra másolva.
+admin.users.inviteTokenCopy,Link másolása
+admin.users.inviteTokenDismiss,Elmentettem ezt a linket
+admin.users.inviteTokenOnce,Ez a meghívólink egyszer jelenik meg. Ossza meg a meghívott személlyel.
+admin.users.inviteTokenTitle,Meghívó linkje
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Aktív
 admin.users.lifecycle.deleted,Törölve
@@ -820,6 +1140,8 @@ admin.users.lifecycle.initial,Kezdeti
 admin.users.lifecycle.locked,Zárolva
 admin.users.lifecycle.suspended,Felfüggesztve
 admin.users.nickName,Nickname
+admin.users.serviceAccountCreated,A szolgáltatásfiók létrejött.
+admin.users.serviceAccountInvalid,Adjon meg megjelenítendő nevet és felhasználónevet a szolgáltatásfiókhoz.
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
@@ -827,6 +1149,7 @@ admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
 admin.users.state,Állapot
 admin.users.title,Felhasználók
+admin.users.unverifiedEmail,Nem ellenőrzött e-mail
 admin.users.userName,Username
 app.name,Authworks
 app.tagline,Biztonságos identitásszolgáltatások
