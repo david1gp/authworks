@@ -130,7 +130,8 @@ describe("production application contexts", () => {
     expect(contexts.session.organizations).toEqual([{ id: organizationId, label: "Owner organization" }])
     expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
     expect(contexts.session.guard.authentication).toEqual({ status: "authenticated", userId })
-    expect(contexts.session.guard.permission).toBe("denied")
+    // Signed-in users pass the coarse permission gate; per-screen `access` (realm admin / org admin) decides.
+    expect(contexts.session.guard.permission).toBe("granted")
 
     const firstMeResponse = responses[mePath]
     if (firstMeResponse === undefined || typeof firstMeResponse !== "object" || firstMeResponse === null)
