@@ -226,6 +226,7 @@ Directory feature (`src/features/directory/`, consumes other features only throu
 - Not allowed unless the task says so: `bun run test`, `bun run check`, `bun run build`, Playwright/E2E.
 - Ignore type errors in files owned by concurrently running tasks; report them.
 - Do not commit; the main agent commits at milestones.
+- **Never delete or revert files you did not create in this task** (other agents' untracked files included).
 - **Never run git commands that change the working tree, index or stash** (`git stash`, `checkout`, `restore`,
   `reset`, `clean`, `add`, `commit`). Several agents work in the same tree concurrently. Read-only git (`status`,
   `diff`, `log`, `show`) is fine. To compare with baseline use `git diff` / `git show HEAD:<path>`.
@@ -266,7 +267,7 @@ Pages (depend 5,6,8)
 15a. [x] Realm overview/settings page.
 15b. [x] Realm administrators page.
 16. [ ] Remove obsolete admin views, adapters, demo routes, unit tests, e2e specs; `bun run check` green.
-16a. [ ] Translate all missing keys into the 14 CSVs; `test/ui/i18n.test.ts` green.
+16a. [x] Translate all missing keys into the 14 CSVs; `test/ui/i18n.test.ts` green.
 
 E2E and release
 17. [x] Harness `e2e/harness/` + pageerror fixture (all specs import `e2eTest`/`e2eExpect`), unit tests in
@@ -286,7 +287,8 @@ E2E and release
 
 - Subagent model: `multisub/muse-spark-1.3-contributor` (the `go/` provider hit its usage limit).
 - Dev target: `bun scripts/e2eDevEnvironment.ts start|status|stop` → `http://login.localhost:5190`, state in
-  `/tmp/david-opencode/authworks/e2e/dev/` (DB, system secret, `env.json` with service + member credentials).
+  `<stateDir>/dev/` (DB, system secret, `env.json` with service + member credentials). `/tmp` was wiped once by a
+  server restart; the state is recreated by `start`. Agents' scratch files go to `/home/david/adaptive/.authworks-work/`.
   Service user `authworks-e2e-service` (realm admin + owner of "Authworks Dev"), member `e2e-dev-member`.
 - Discovery strips `:port`; dev org gets `login.localhost` seeded as verified domain via system-only
   `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`. Member UI sign-in on dev
