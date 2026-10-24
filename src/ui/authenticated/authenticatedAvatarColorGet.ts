@@ -9,9 +9,6 @@ const avatarColorClasses = [
   "bg-success-soft text-success",
   "bg-warning-soft text-warning",
   "bg-muted text-muted-foreground",
-  "bg-accent/15 text-accent",
-  "bg-success/15 text-success",
-  "bg-danger/15 text-danger",
 ] as const
 
 export function authenticatedAvatarColorGet(seed: string): string {

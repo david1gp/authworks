@@ -173,8 +173,7 @@ test("e2e cleanup hook requires service credentials on production", async () => 
       target: "production",
     })
     expect(cleanup.success).toBe(false)
-    if (!cleanup.success)
-      expect(cleanup.errorMessage).toContain("AUTHWORKS_E2E_SERVICE_USERNAME")
+    if (!cleanup.success) expect(cleanup.errorMessage).toContain("AUTHWORKS_E2E_SERVICE_USERNAME")
   }
 })
 

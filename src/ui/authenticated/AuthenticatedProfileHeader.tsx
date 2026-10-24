@@ -35,7 +35,7 @@ export function AuthenticatedProfileHeader(props: {
             <div class="mt-1.5 flex flex-wrap items-center gap-1.5">{chips()}</div>
           </Show>
         </div>
-        <Show when={actions.toArray().length > 0}>
+        <Show when={actions() !== undefined}>
           <div class="flex shrink-0 flex-wrap items-center gap-1.5">{actions()}</div>
         </Show>
       </div>

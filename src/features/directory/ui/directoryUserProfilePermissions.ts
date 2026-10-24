@@ -38,8 +38,7 @@ export function directoryUserProfileStatusTone(state: UserState): AuthenticatedS
 const actorManagesOwners = (actor: DirectoryUserProfileActor): boolean =>
   actor.realmAdministrator || actor.organizationRoles.includes("owner")
 
-const targetHasOwnerRole = (target: DirectoryUserProfileTarget): boolean =>
-  target.roles?.includes("owner") ?? false
+const targetHasOwnerRole = (target: DirectoryUserProfileTarget): boolean => target.roles?.includes("owner") ?? false
 
 /**
  * Resolves which profile actions the actor may perform on the target. Realm administrators may
