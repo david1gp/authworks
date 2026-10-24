@@ -2,6 +2,7 @@ import { AuthenticatedPageHeader } from "../../../ui/authenticated/Authenticated
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
+import { AdminRealmView } from "./AdminRealmView.js"
 import { AdminScreenView } from "./AdminScreenView.js"
 import { adminDemoStateCreate } from "./adminDemoStateCreate.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
@@ -21,7 +22,11 @@ export function AdminDemoAdapter(props: { readonly screen: AdminScreen }) {
         }
         title={state.scenarioTitle()}
       />
-      <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
+      {props.screen === "realm" ? (
+        <AdminRealmView basePath="/demo/admin" state={state} />
+      ) : (
+        <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
+      )}
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
     </div>
   )
