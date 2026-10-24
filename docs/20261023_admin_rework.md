@@ -258,12 +258,13 @@ Backend
    system password route, grant realm admin via system administrators route) — done together with task 18.
 
 Pages (depend 5,6,8)
-10. [ ] Users list (+ service accounts and invitations tabs, invite/create dialogs).
-11. [ ] User profile (depends 7 for set password).
-12. [ ] Roles.
+10. [x] Users list (+ service accounts and invitations tabs, invite/create dialogs).
+11. [x] User profile (depends 7 for set password).
+12. [x] Roles.
 13. [ ] Projects list + detail tabs.
-14. [ ] Configuration (general, branding with live preview, sign-in & security, domains).
-15. [ ] Realm group: overview/settings, administrators page.
+14. [x] Configuration (general, branding with live preview, sign-in & security, domains).
+15a. [ ] Realm overview/settings page.
+15b. [ ] Realm administrators page.
 16. [ ] Remove obsolete admin views, adapters, demo routes, unit tests, e2e specs; `bun run check` green.
 16a. [ ] Translate all missing keys into the 14 CSVs; `test/ui/i18n.test.ts` green.
 
@@ -287,5 +288,9 @@ E2E and release
 - Dev target: `bun scripts/e2eDevEnvironment.ts start|status|stop` → `http://login.localhost:5190`, state in
   `/tmp/david-opencode/authworks/e2e/dev/` (DB, system secret, `env.json` with service + member credentials).
   Service user `authworks-e2e-service` (realm admin + owner of "Authworks Dev"), member `e2e-dev-member`.
-- Open issue: browser discovery sends `window.location.host` incl. port → `/organization-discovery` rejects it.
-- Impersonation start does not validate the target (fix in 4b via `realmAdministratorContextAuthorize`).
+- Discovery strips `:port`; dev org gets `login.localhost` seeded as verified domain via system-only
+  `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`. Member UI sign-in on dev
+  verified.
+- Commits up to `e6fddbe` (backend, harness, UI kit, shell) are on `origin/main`; production still on `1bb6b27`.
+- Done pages: User profile (11), Roles (12), Configuration (14). In progress: Users list (10), Projects (13), Realm
+  overview (15a), Realm administrators (15b).
