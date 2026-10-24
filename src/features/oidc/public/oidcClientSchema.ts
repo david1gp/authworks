@@ -1,7 +1,7 @@
 import * as v from "valibot"
+import { projectResourceIdSchema } from "../../projects/public/projectResourceIdSchema.js"
 import { oidcClientStatusSchema } from "./oidcClientStatusSchema.js"
 import { oidcClientTypeSchema } from "./oidcClientTypeSchema.js"
-import { projectResourceIdSchema } from "../../projects/public/projectResourceIdSchema.js"
 import { oidcOriginSchema } from "./oidcOriginSchema.js"
 import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "./oidcScopeSchema.js"
