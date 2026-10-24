@@ -6,7 +6,6 @@ import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
 import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
-import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import {
@@ -48,6 +47,7 @@ import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVer
 import type { UserEmailChangeVerifyResponse } from "../public/userEmailChangeVerifyResponseSchema.js"
 import { userEmailChangeVerifyResponseSchema } from "../public/userEmailChangeVerifyResponseSchema.js"
 import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
+import type { UserListQuery } from "../public/userListQuerySchema.js"
 import { type UserListResponse, userListResponseSchema } from "../public/userListResponseSchema.js"
 import {
   type UserProfileUpdateRequest,
@@ -56,6 +56,7 @@ import {
 import { type UserPurgeResponse, userPurgeResponseSchema } from "../public/userPurgeResponseSchema.js"
 import { type UserResponse, userResponseSchema } from "../public/userResponseSchema.js"
 import { type UserVerificationRequest, userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
+import { userListQueryToSearchParams } from "./userListQueryToSearchParams.js"
 
 type UserApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -164,9 +165,9 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         systemRequestToken ?? tokenNoFallback,
       )
     },
-    userList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {
+    userList(realmId: string, query?: ListQuery | UserListQuery): Promise<Result<UserListResponse>> {
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/users${listQueryToSearchParams(query)}`,
+        `/system/realms/${encodeURIComponent(realmId)}/users${userListQueryToSearchParams(query)}`,
         { method: "GET" },
         userListResponseSchema,
         systemRequestToken ?? tokenNoFallback,
@@ -413,8 +414,8 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         systemRequestToken ?? tokenNoFallback,
       )
     },
-    userTenantList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {
-      return tenantRead(tenantPath(realmId, listQueryToSearchParams(query)), userListResponseSchema)
+    userTenantList(realmId: string, query?: ListQuery | UserListQuery): Promise<Result<UserListResponse>> {
+      return tenantRead(tenantPath(realmId, userListQueryToSearchParams(query)), userListResponseSchema)
     },
     userTenantGet(realmId: string, userId: string): Promise<Result<UserResponse>> {
       return tenantRead(tenantUserPath(realmId, userId), userResponseSchema)

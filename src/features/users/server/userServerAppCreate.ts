@@ -3,6 +3,8 @@ import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
 import type { Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -54,6 +56,8 @@ import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeRes
 import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
 import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
+import type { UserListQuery } from "../public/userListQuerySchema.js"
+import { userListQuerySchema } from "../public/userListQuerySchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
 
@@ -109,7 +113,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
   app.get("/system/realms/:realmId/users", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
-    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    const query = userListQueryRead(context.req.url)
     if (!query.success) return userErrorResponseCreate(context, query)
     return userResultResponseCreate(
       context,
@@ -609,7 +613,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       authorizationPermissionDefinitions.userRead,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
-    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    const query = userListQueryRead(context.req.url)
     if (!query.success) return userErrorResponseCreate(context, query)
     return userResultResponseCreate(
       context,
@@ -1006,6 +1010,22 @@ function userAdministratorAuthorize(
     realmId,
     ...(targetUserId === undefined ? {} : { targetUserId }),
   })
+}
+
+function userListQueryRead(requestUrl: string): Result<UserListQuery> {
+  const op = "userListQueryRead"
+  const searchParams = new URL(requestUrl).searchParams
+  const state = searchParams.get("state")
+  const withoutState = new URLSearchParams(searchParams)
+  withoutState.delete("state")
+  const parsed = listQueryFromSearchParams(withoutState)
+  if (!parsed.success) return parsed
+  const query = v.safeParse(userListQuerySchema, {
+    ...parsed.data,
+    ...(state === null ? {} : { state }),
+  })
+  if (!query.success) return resultErrorCodedCreate(op, "The user list query is invalid.", "users.invalid")
+  return resultCreate(query.output)
 }
 
 function userSubjectContextResolve(

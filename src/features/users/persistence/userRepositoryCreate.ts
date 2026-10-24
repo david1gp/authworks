@@ -281,13 +281,25 @@ export function userRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userList(realmId: string): Result<UserRecord[]> {
+    userList(
+      realmId: string,
+      options?: { readonly includeDeleted?: boolean; readonly onlyDeleted?: boolean },
+    ): Result<UserRecord[]> {
       try {
         const users = database
           .select({ profile: userProfileTable, user: userTable })
           .from(userTable)
           .innerJoin(userProfileTable, eq(userProfileTable.userId, userTable.id))
-          .where(and(eq(userTable.realmId, realmId), ne(userTable.state, "deleted")))
+          .where(
+            and(
+              eq(userTable.realmId, realmId),
+              ...(options?.onlyDeleted === true
+                ? [eq(userTable.state, "deleted")]
+                : options?.includeDeleted === true
+                  ? []
+                  : [ne(userTable.state, "deleted")]),
+            ),
+          )
           .orderBy(asc(userTable.createdAt))
           .all()
         return resultCreate(users.map(({ profile, user }) => ({ ...user, profile })))
