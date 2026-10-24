@@ -16,6 +16,12 @@ mock.module("@solidjs/router", () => ({
   useNavigate: () => navigate,
 }))
 
+// Bun keeps module mocks for the whole test run, and other suites replace `solid-js` with
+// hand-written stubs whose `createSignal`, `createEffect` and `on` never react to a change.
+// Bind the real runtime so the provider-callback effect under test behaves like in production.
+const solidRuntimePath = "solid-js/dist/dev.js"
+mock.module("solid-js", () => import(solidRuntimePath))
+
 const { accountIdentitiesSectionStateCreate } = await import("./accountIdentitiesSectionStateCreate.js")
 
 const identityCreate = (id: string, providerId = "github"): ExternalIdentity => ({
