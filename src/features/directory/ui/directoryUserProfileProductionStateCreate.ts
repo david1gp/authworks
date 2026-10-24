@@ -7,7 +7,7 @@ import { directoryUserProfileProductionAdapterCreate } from "./directoryUserProf
 import { directoryUserProfileDialogSelect, directoryUserProfileTabSelect } from "./directoryUserProfileUrlState.js"
 
 /** Binds the user profile screen to realm-scoped browser clients and the active session context. */
-export function directoryUserProfileProductionStateCreate() {
+export function directoryUserProfileProductionStateCreate(options: { readonly userId?: string } = {}) {
   const session = productionSessionContextGet()
   const location = useLocation()
   const navigate = useNavigate()
@@ -38,7 +38,10 @@ export function directoryUserProfileProductionStateCreate() {
     realmId,
   })
   const confirmState = confirmStateCreate()
-  const userId = () => params.userId
+  // Production routes render through catch-all `/admin/*adminPath` entries, so `useParams`
+  // carries no `:userId`; prefer the explicit prop, which the route resolves from its own
+  // path contract (same pattern as the machine-user and project screens).
+  const userId = () => options.userId ?? params.userId
   const page = directoryUserProfilePageStateCreate(adapter, {
     actorOrganizationRoles: actorRoles,
     actorRealmAdministrator,

@@ -4,8 +4,8 @@ import { DirectoryUserProfileView } from "./DirectoryUserProfileView.js"
 import { directoryUserProfileProductionStateCreate } from "./directoryUserProfileProductionStateCreate.js"
 
 /** Production mount for the user profile screen: session-bound adapter plus the shared view. */
-export function DirectoryUserProfileProductionAdapter() {
-  const screen = directoryUserProfileProductionStateCreate()
+export function DirectoryUserProfileProductionAdapter(props: { readonly userId?: string }) {
+  const screen = directoryUserProfileProductionStateCreate({ userId: props.userId })
   const state: DirectoryUserProfileViewState = {
     asParam: undefined,
     basePath: screen.basePath,

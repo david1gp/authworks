@@ -164,7 +164,7 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
         <OidcAdminProductionAdapter clientId={props.state.routeParam("clientId")} screen={oidcAdminScreen()!} />
       </Match>
       <Match when={directoryScreen() !== undefined}>
-        <DirectoryAdminProductionAdapter screen={directoryScreen()!} />
+        <DirectoryAdminProductionAdapter screen={directoryScreen()!} userId={props.state.routeParam("userId")} />
       </Match>
       <Match when={organizationAdminScreen() !== undefined}>
         <OrganizationAdminProductionAdapter screen={organizationAdminScreen()!} />
