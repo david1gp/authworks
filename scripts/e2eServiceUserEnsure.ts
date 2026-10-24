@@ -1,4 +1,8 @@
 import { e2eServiceUserEnsure } from "../e2e/harness/e2eServiceUserEnsure.js"
+import {
+  e2eServiceUserEnsureExitCodeGet,
+  e2eServiceUserEnsureFailureOutputCreate,
+} from "../e2e/harness/e2eServiceUserEnsureFailureOutputCreate.js"
 import { e2eServiceUserStdinPasswordParse } from "../e2e/harness/e2eServiceUserStdinPasswordParse.js"
 
 type E2eServiceUserEnsureRunOptions = {
@@ -7,6 +11,10 @@ type E2eServiceUserEnsureRunOptions = {
   readonly stdinRead: () => Promise<string>
 }
 
+// Documented stable exit codes (shared with e2eServiceUserEnsureFailureExitCodes):
+// 0 = ensured (stdout is the status envelope); 1 = internal/api failure;
+// 2 = environment or stdin failure; 32-39 = server-rejected stage;
+// 44-51 = documented input/state failures; 52-65 = documented API failures.
 function flagValueGet(argv: readonly string[], flag: string): string | undefined {
   for (let index = 0; index < argv.length; index += 1) {
     if (argv[index] === flag) return argv[index + 1]
@@ -19,28 +27,24 @@ async function e2eServiceUserEnsureScriptRun(options: E2eServiceUserEnsureRunOpt
   const systemSecret = processEnvTrimmed(options.environment.AUTHWORKS_SYSTEM_SECRET)
   const realmDomain = flagValueGet(options.argv, "--realm-domain")
   if (baseUrl === undefined || baseUrl.length === 0) {
-    process.stderr.write(`${JSON.stringify({ error: { code: "config", message: "AUTHWORKS_URL is required." } })}\n`)
-    return 2
+    process.stderr.write(e2eServiceUserEnsureFailureOutputCreate("e2e.service-user-ensure.authorization-unavailable"))
+    return e2eServiceUserEnsureExitCodeGet("e2e.service-user-ensure.authorization-unavailable")
   }
   if (systemSecret === undefined || systemSecret.length === 0) {
-    process.stderr.write(
-      `${JSON.stringify({ error: { code: "config", message: "AUTHWORKS_SYSTEM_SECRET is required." } })}\n`,
-    )
-    return 2
+    process.stderr.write(e2eServiceUserEnsureFailureOutputCreate("e2e.service-user-ensure.authorization-unavailable"))
+    return e2eServiceUserEnsureExitCodeGet("e2e.service-user-ensure.authorization-unavailable")
   }
   let rawStdin: string
   try {
     rawStdin = await options.stdinRead()
   } catch {
-    process.stderr.write(
-      `${JSON.stringify({ error: { code: "stdin", message: "The service-user password could not be read." } })}\n`,
-    )
-    return 2
+    process.stderr.write(e2eServiceUserEnsureFailureOutputCreate("e2e.service-user-ensure.input-invalid"))
+    return e2eServiceUserEnsureExitCodeGet("e2e.service-user-ensure.input-invalid")
   }
   const password = e2eServiceUserStdinPasswordParse(rawStdin)
   if (!password.success) {
-    process.stderr.write(`${JSON.stringify({ error: { code: "stdin", message: password.errorMessage } })}\n`)
-    return 2
+    process.stderr.write(e2eServiceUserEnsureFailureOutputCreate("e2e.service-user-ensure.input-invalid"))
+    return e2eServiceUserEnsureExitCodeGet("e2e.service-user-ensure.input-invalid")
   }
   const realmId = flagValueGet(options.argv, "--realm-id")
   const ensured = await e2eServiceUserEnsure({
@@ -51,12 +55,11 @@ async function e2eServiceUserEnsureScriptRun(options: E2eServiceUserEnsureRunOpt
     systemSecret,
   })
   if (!ensured.success) {
-    const code = ensured.code ?? "ensure-failed"
-    process.stderr.write(`${JSON.stringify({ error: { code, message: ensured.errorMessage } })}\n`)
-    return 1
+    process.stderr.write(e2eServiceUserEnsureFailureOutputCreate(ensured))
+    return e2eServiceUserEnsureExitCodeGet(ensured)
   }
   process.stdout.write(
-    `${JSON.stringify({ realmId: ensured.data.realmId, status: ensured.data.status, userId: ensured.data.userId })}\n`,
+    `${JSON.stringify({ status: ensured.data.status, userId: ensured.data.userId, realmId: ensured.data.realmId })}\n`,
   )
   return 0
 }

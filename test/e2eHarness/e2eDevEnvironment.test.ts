@@ -9,9 +9,9 @@ import { e2eServiceUserIdentityGet } from "../../e2e/harness/e2eServiceUserEnsur
 import { e2eServiceUserStdinPasswordParse } from "../../e2e/harness/e2eServiceUserStdinPasswordParse.js"
 
 test("e2e service-user stdin passwords parse without logging the secret", () => {
-  const parsed = e2eServiceUserStdinPasswordParse(JSON.stringify({ password: "correct horse" }))
+  const parsed = e2eServiceUserStdinPasswordParse(JSON.stringify({ password: "correct horse battery staple 1234" }))
   expect(parsed.success).toBe(true)
-  if (parsed.success) expect(parsed.data).toBe("correct horse")
+  if (parsed.success) expect(parsed.data).toBe("correct horse battery staple 1234")
   expect(e2eServiceUserStdinPasswordParse("not json").success).toBe(false)
   expect(e2eServiceUserStdinPasswordParse(JSON.stringify({ password: "" })).success).toBe(false)
   expect(e2eServiceUserStdinPasswordParse(JSON.stringify({})).success).toBe(false)

@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { createResult, createResultError, type Result } from "#result"
 
 const stdinPasswordSchema = v.strictObject({
-  password: v.pipe(v.string(), v.minLength(1), v.maxLength(1024)),
+  password: v.pipe(v.string(), v.minLength(16), v.maxLength(256)),
 })
 
 export function e2eServiceUserStdinPasswordParse(raw: string): Result<string> {
