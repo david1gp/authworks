@@ -40,7 +40,6 @@ account.access.invitationOpen,Открыть приглашение
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,Сделать активной организацией
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,"Показать {count} разрешений, предоставленных {source}"
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
 account.delete.dangerZoneToggle,Показать параметры удаления учётной записи
@@ -64,20 +61,17 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,Приложение-аутентификатор
 account.factors.configured,Приложение-аутентификатор настроено
 account.factors.count,Число приложений-аутентификаторов: {count}
 account.factors.missing,Приложение-аутентификатор не настроено
-account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
 account.factors.emailOtp,Email code
 account.factors.finishTotp,Finish authenticator setup
 account.factors.passkeyCount,{count} passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
 account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
@@ -91,13 +85,13 @@ account.identities.description,External accounts linked to your Authworks identi
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,Управление учётной записью {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Отвязать эту внешнюю учётную запись?
 account.passkeys.add,Add passkey
@@ -130,8 +124,6 @@ account.profile.edit,Редактировать профиль
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailMissing,Адрес электронной почты не указан
-account.profile.emailVerified,Адрес электронной почты подтверждён
-account.profile.emailVerificationPending,Ожидается подтверждение адреса электронной почты
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,Номера телефонов
-account.profile.phoneNumbersEmpty,Нет доступных номеров телефонов.
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,7 +179,6 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,Изменить фото профиля
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Перетащите изображение сюда или нажмите для выбора
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,Удаление изображения…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,Не удалось загрузить фото профиля
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.preferredLanguage.unspecified,Не задано
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
@@ -214,7 +202,6 @@ account.recovery.once,Copy or print these codes now. They cannot be displayed ag
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
 account.refreshTokens.active,Активен
 account.refreshTokens.activeShown,Показано активных: {count}
 account.refreshTokens.countOneShown,Показано приложений: {count}
@@ -222,7 +209,6 @@ account.refreshTokens.countShown,Показано приложений: {count}
 account.refreshTokens.description,"Просмотрите приложения, использующие токены обновления для этой учетной записи. Показываются только безопасные метаданные; отзыв семейства также аннулирует его токены доступа."
 account.refreshTokens.empty,Нет доступных семейств токенов обновления
 account.refreshTokens.expired,Истек
-account.refreshTokens.expires,Истекает {date}
 account.refreshTokens.lastUsed,Последнее использование {date}
 account.refreshTokens.loadMore,Загрузить ещё приложения
 account.refreshTokens.manage,Приложение: {application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,Отозвать все семейства
 account.refreshTokens.revokeAllConfirm,Отозвать все семейства токенов обновления для этой учетной записи?
 account.refreshTokens.revokeConfirm,Отозвать это семейство токенов обновления и его токены доступа?
 account.refreshTokens.revoked,Отозван
-account.refreshTokens.revokedAt,Отозвано {date}
-account.refreshTokens.scope,Области: {scope}
 account.refreshTokens.title,Семейства токенов обновления
-account.security.label,Account security management
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
-account.workspace.accessDescription,"Просмотрите свои организации, разрешения и авторизованные приложения."
-account.workspace.dangerDescription,Просмотрите необратимые действия для этой учётной записи.
-account.workspace.devicesDescription,"Просмотрите события безопасности, устройства с выполненным входом и подключённые приложения."
 account.workspace.devicesTitle,Устройства и приложения
-account.workspace.securityDescription,Управляйте способами входа и вариантами восстановления.
 admin.common.confirmTitle,Подтвердите это действие
-admin.common.next,Далее
-admin.common.pagination,Постраничная навигация
 admin.common.permission,У вас нет разрешения просматривать эти административные данные.
-admin.common.previous,Назад
 admin.events.actor,Субъект
 admin.events.aggregate,Агрегат
 admin.events.count,Событий: {count}
-admin.events.description,"Неизменяемая активность безопасности текущего realm, начиная с самой новой."
 admin.events.empty,Ни одно событие не соответствует текущему фильтру.
 admin.events.hide,Скрыть полезную нагрузку
 admin.events.occurred,Произошло
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"Управление машинными пользователями и их учётными данными требует более надёжного и недавнего входа. Войдите снова, чтобы продолжить."
 admin.machine.assuranceRequiredTitle,Требуется более надёжный вход
 admin.machine.created,Создано
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,Согласие
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Требуется
 admin.oidc.clients.consentSkipped,Не требуется
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,Конечная точка userinfo
 admin.oidc.keys.algorithm,Алгоритм
 admin.oidc.keys.create,Добавить ключ
 admin.oidc.keys.created,Опубликован новый ключ подписи.
-admin.oidc.keys.description,"Ключи, которыми подписываются токены этой области. Ротация публикует новый ключ и выводит текущий из обращения."
 admin.oidc.keys.empty,Для этой области ещё нет ключей подписи.
 admin.oidc.keys.keyId,Идентификатор ключа
 admin.oidc.keys.privateNotice,Отображаются только метаданные открытого ключа. Закрытый ключ никогда не передаётся в браузер.
@@ -589,35 +561,22 @@ admin.oidc.updated,Последнее обновление
 admin.organizations.assuranceRequired,"Войдите снова с более надёжным способом аутентификации, чтобы изменить эту настройку организации."
 admin.organizations.assuranceRequiredTitle,Требуется более надёжный вход
 admin.organizations.branding.background,Цвет фона
-admin.organizations.branding.dark,Тёмная тема
-admin.organizations.branding.description,"Цвета, логотипы и правовые ссылки, отображаемые на размещённых страницах входа и учётной записи."
 admin.organizations.branding.font,Цвет текста
 admin.organizations.branding.iconUrl,URL значка
-admin.organizations.branding.light,Светлая тема
 admin.organizations.branding.logoUrl,URL логотипа
-admin.organizations.branding.preview,Предпросмотр
 admin.organizations.branding.primary,Основной цвет
-admin.organizations.branding.privacyUrl,URL политики конфиденциальности
 admin.organizations.branding.saved,Оформление сохранено.
-admin.organizations.branding.termsUrl,URL условий обслуживания
 admin.organizations.branding.themeMode,Тема по умолчанию
-admin.organizations.branding.title,Оформление
 admin.organizations.branding.warn,Цвет предупреждения
-admin.organizations.branding.watermark,Скрыть водяной знак Authworks
 admin.organizations.detail.created,Создано
 admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Управляйте названием организации и её статусом жизненного цикла.
 admin.organizations.detail.settingsTitle,Настройки организации
 admin.organizations.detail.updated,Последнее обновление
 admin.organizations.detailTitle,Сведения об организации
-admin.organizations.domains.claim,Заявить домен
 admin.organizations.domains.claimed,{domain} заявлен и ожидает проверки.
-admin.organizations.domains.description,Подтверждённые домены позволяют людям находить эту организацию по адресу электронной почты.
-admin.organizations.domains.discovery,Предпросмотр определения
-admin.organizations.domains.discoveryDescription,"Проверьте, к какой организации в данный момент разрешается домен при входе."
 admin.organizations.domains.discoveryFound,{domain} разрешается в {organization}.
 admin.organizations.domains.discoveryMissing,{domain} не разрешается ни в одну организацию.
-admin.organizations.domains.domain,Домен
 admin.organizations.domains.empty,Эта организация ещё не заявила ни одного домена.
 admin.organizations.domains.invalid,Введите допустимое доменное имя.
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,Основной домен
 admin.organizations.domains.remove,Удалить домен
 admin.organizations.domains.removeConfirm,Удалить домен {domain}? Обнаружение организации для него сразу прекратится.
 admin.organizations.domains.removed,Домен удалён.
-admin.organizations.domains.title,Домены и определение
 admin.organizations.domains.unverified,Ожидает проверки
 admin.organizations.domains.verificationRecord,"Добавьте эту DNS TXT-запись, затем выполните проверку."
 admin.organizations.domains.verified,Verified
 admin.organizations.domains.verify,Проверить домен
 admin.organizations.domains.verifyDone,Домен подтверждён.
-admin.organizations.invitations.create,Пригласить человека
-admin.organizations.invitations.description,"Приглашайте людей по электронной почте и отслеживайте, какие приглашения ещё не приняты."
 admin.organizations.invitations.email,Email address
 admin.organizations.invitations.emailInvalid,Введите действительный адрес электронной почты.
 admin.organizations.invitations.empty,Для этой организации не отправлено ни одного приглашения.
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,Истекли
 admin.organizations.invitations.statusValue.pending,Ожидает
 admin.organizations.invitations.statusValue.revoked,Отозваны
 admin.organizations.invitations.title,Приглашения
-admin.organizations.invitations.tokenDismiss,Я сохранил эту ссылку
-admin.organizations.invitations.tokenOnce,Эта ссылка приглашения показывается один раз. Поделитесь ею с приглашённым человеком.
-admin.organizations.invitations.tokenTitle,Ссылка приглашения
 admin.organizations.lifecycle.activate,Повторно активировать организацию
 admin.organizations.lifecycle.activateConfirm,"Реактивировать эту организацию? Участники теряют доступ, пока она неактивна."
 admin.organizations.lifecycle.changed,Статус жизненного цикла организации изменён.
@@ -665,22 +618,16 @@ admin.organizations.list.name,Название организации
 admin.organizations.list.nameRequired,Введите название организации.
 admin.organizations.list.search,Поиск организаций
 admin.organizations.list.title,Организации
-admin.organizations.memberships.add,Добавить участника
 admin.organizations.memberships.added,Участник добавлен.
-admin.organizations.memberships.description,Люди в этой организации и назначенные им фиксированные роли.
 admin.organizations.memberships.empty,В этой организации пока нет участников.
 admin.organizations.memberships.invalid,Введите идентификатор пользователя и выберите от одной до четырёх ролей.
-admin.organizations.memberships.remove,Удалить участника
 admin.organizations.memberships.removeConfirm,Удалить {userId} из этой организации? Доступ к организации будет немедленно прекращён.
 admin.organizations.memberships.removed,Участник удалён.
 admin.organizations.memberships.roles,Роли
-admin.organizations.memberships.rolesFixed,Роли зафиксированы Authworks и не могут быть переименованы.
 admin.organizations.memberships.title,Участники и роли
 admin.organizations.memberships.updated,Роли участника обновлены.
 admin.organizations.memberships.user,Пользователь
 admin.organizations.memberships.userId,Идентификатор пользователя
-admin.organizations.pageNext,Следующая страница
-admin.organizations.pagePrevious,Предыдущая страница
 admin.organizations.permissionDenied,У вас нет разрешения просматривать или изменять эту организацию.
 admin.organizations.permissionDeniedTitle,Доступ недоступен
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,Состояние
 admin.organizations.statusValue.active,Активна
 admin.organizations.statusValue.inactive,Неактивен
 admin.organizations.statusValue.removed,Удалена
-admin.overview.description,"Идентификатор, домены и жизненный цикл области, которой вы управляете."
-admin.overview.sessionTitle,Сеанс администратора
-admin.overview.title,Обзор области
 admin.projects.access.description,"Роли, которыми этот администратор фактически обладает в проекте прямо сейчас."
 admin.projects.access.empty,В текущем контексте организации нет действующих ролей проекта.
 admin.projects.access.grantedOrganization,Предоставлено через организацию
@@ -775,17 +719,11 @@ admin.projects.applications.name,Название приложения
 admin.projects.applications.removeConfirm,Удалить это приложение? Это действие нельзя отменить.
 admin.projects.applications.title,Приложения
 admin.projects.applications.type,Тип приложения
-admin.projects.crossTenant,Этот ресурс принадлежит другому realm и здесь недоступен.
 admin.projects.deleteConfirm,"Удалить этот проект? Приложения, роли и выдачи прав будут удалены вместе с ним."
 admin.projects.deleteConfirmAccept,Удалить проект
 admin.projects.deleteConfirmTitle,Удалить этот проект
-admin.projects.detail.authorizationRequired,Требуется авторизация
 admin.projects.detail.created,Создано
-admin.projects.detail.identifier,Идентификатор проекта
 admin.projects.detail.organization,Организация
-admin.projects.detail.projectAccessRequired,Требуется доступ к проекту
-admin.projects.detail.settingsDescription,"Управляйте названием проекта и тем, как применяется доступ."
-admin.projects.detail.settingsTitle,Настройки проекта
 admin.projects.detail.updated,Последнее обновление
 admin.projects.detailTitle,Сведения о проекте
 admin.projects.grants.create,Предоставить доступ организации
@@ -810,7 +748,6 @@ admin.projects.list.name,Название проекта
 admin.projects.list.search,Поиск проектов
 admin.projects.list.title,Проекты
 admin.projects.missingId,Для этого раздела необходимо выбрать проект.
-admin.projects.permissionDenied,У вас нет разрешения просматривать или изменять эти сведения о проекте.
 admin.projects.roles.create,Создать роль
 admin.projects.roles.deleteConfirm,"Удалить эту роль проекта? Выдачи прав, ссылающиеся на неё, потеряют эту роль."
 admin.projects.roles.description,"Роли, которые этот проект может назначать организациям и их участникам."
@@ -825,37 +762,22 @@ admin.projects.status,Состояние
 admin.projects.statusValue.active,Активна
 admin.projects.statusValue.inactive,Неактивен
 admin.projects.statusValue.removed,Удалена
-admin.realm.confirmLabel,Введите {name} для подтверждения
 admin.realm.confirmMismatch,Имя области не совпадает.
-admin.realm.created,Создано
-admin.realm.dangerZone,Опасная зона
 admin.realm.description,"Настройки идентификации и входа для области, которой вы управляете."
-admin.realm.disable,Отключить область
 admin.realm.disableConfirm,Отключение этой области остановит вход для всех её приложений. Продолжить?
-admin.realm.disableWarning,Отключение этой области немедленно останавливает вход и выдачу токенов для всех её приложений.
 admin.realm.disabled,Область отключена.
-admin.realm.domainRequired,Укажите хотя бы один домен области.
 admin.realm.domains,Домены
 admin.realm.domainsHint,Разделяйте домены запятыми. Первый домен является основным.
-admin.realm.enable,Включить область
-admin.realm.enableDescription,"Эта область отключена. Включите её, чтобы восстановить вход и выдачу токенов."
 admin.realm.enabled,Область включена.
 admin.realm.identifier,Идентификатор области
 admin.realm.invalid,Укажите имя области и хотя бы один домен.
-admin.realm.lifecycleTitle,Жизненный цикл области
 admin.realm.name,Имя области
-admin.realm.nameRequired,Укажите имя области.
 admin.realm.permissionDenied,У вас нет разрешения изменять эту область.
 admin.realm.primaryDomain,Основной домен
-admin.realm.save,Сохранить настройки
 admin.realm.saved,Настройки области сохранены.
-admin.realm.settingsDescription,"Измените имя области и домены, которые указывают на неё."
-admin.realm.settingsTitle,Общие настройки
 admin.realm.status,Состояние
 admin.realm.statusActive,Активна
 admin.realm.statusDisabled,Отключена
-admin.realm.title,Настройки области
-admin.realm.updated,Последнее обновление
 admin.session.expired,Срок вашего сеанса администратора истёк
 admin.signIn.activeTitle,Сеанс администратора активен
 admin.signIn.credential,Начальные учётные данные администратора
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,Выполнен выход
 admin.signIn.subject,Субъект
 admin.signIn.subjectType,Тип субъекта
 admin.signIn.title,Вход администратора
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,Назад к пользователям
 admin.users.count,Пользователей: {count}
 admin.users.create,Создать пользователя
 admin.users.createDescription,Добавьте человека-пользователя в текущий realm.
 admin.users.createSubmit,Создать
 admin.users.created,{userName} создан.
 admin.users.createdAt,Создано
-admin.users.dangerZone,Опасная зона
-admin.users.delete,Удалить пользователя
-admin.users.deleteConfirm,Безвозвратно удалить {userName}?
 admin.users.deleteWarning,Удаление этого пользователя немедленно отзывает его сеансы и доступ.
-admin.users.deleted,{userName} удалён.
-admin.users.description,Человеческие идентичности в текущем realm.
 admin.users.detailTitle,Сведения о пользователе
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
-admin.users.empty,Ни один пользователь не соответствует текущему фильтру.
 admin.users.firstName,First name
 admin.users.identifier,Идентификатор пользователя
 admin.users.invalid,Введите действительный адрес электронной почты и имя пользователя.
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,Неактивен
 admin.users.lifecycle.initial,Начальный
 admin.users.lifecycle.locked,Заблокирован
 admin.users.lifecycle.suspended,Приостановлен
-admin.users.lifecycleChanged,Статус пользователя теперь {state}.
-admin.users.lifecycleConfirm,Установить для {userName} значение {state}?
-admin.users.lifecycleDescription,"Определите, может ли этот пользователь входить в систему."
-admin.users.lifecycleTitle,Жизненный цикл
-admin.users.markUnverified,Отметить как неподтверждённый
-admin.users.markVerified,Отметить как подтверждённый
-admin.users.missingId,Не удалось определить этого пользователя по адресу.
 admin.users.nickName,Nickname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Preferred language
-admin.users.profileSave,Сохранить профиль
-admin.users.profileSaved,Профиль пользователя сохранён.
-admin.users.profileTitle,Профиль
-admin.users.search,Поиск пользователей
-admin.users.searchPlaceholder,"Фильтр по имени пользователя, электронной почте или идентификатору"
 admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 admin.users.state,Статус
 admin.users.title,Пользователи
-admin.users.unverified,Не подтверждён
-admin.users.updated,Последнее обновление
 admin.users.userName,Username
-admin.users.verification,Подтверждение
-admin.users.verificationChanged,Статус подтверждения теперь {state}.
-admin.users.verificationDescription,"Определите, считается ли адрес электронной почты этого пользователя подтверждённым."
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verified
 app.name,Authworks
 app.tagline,Безопасные сервисы идентификации
 common.back,Назад
@@ -963,7 +849,6 @@ common.retry,Повторить
 common.revoke,Revoke
 common.save,Сохранить
 common.signIn,Войти
-common.signInWithProvider,Войти с помощью {provider}
 common.signOut,Выйти
 common.theme.dark,Тёмная
 common.theme.light,Светлая
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,Ожидающие приглашения: н�
 ui.authenticated.demo.keyboardHint,Стрелки двигают и Home и End прыгают и Enter выбирает и Escape закрывает.
 ui.authenticated.demo.loadingBlurb,Переключатель загрузки: имитирует задержку строками-заглушками.
 ui.authenticated.demo.memberBlurb,Участник: входит и использует выданные проекты без администрирования.
-ui.authenticated.demo.ownedBlurb,Свой: только владеющая организация открывает этот проект.
 ui.authenticated.demo.ownerBlurb,Владелец: полный контроль настроек и стиля и доменов и владельцев.
 ui.authenticated.demo.peopleBlurb,Люди: пользователи с аватаром и ролью и последним входом.
 ui.authenticated.demo.profileName,Алекс Морган
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,Владелец
 ui.authenticated.demo.rolesBlurb,Роли организации: Владелец отключен без управления владельцами.
 ui.authenticated.demo.sectionsBlurb,Разделы: общие настройки и стиль и вход и домены.
 ui.authenticated.demo.serviceBlurb,Сервисные аккаунты: нечеловеческие сущности с учетными данными.
-ui.authenticated.demo.sharedBlurb,Общий: партнерская организация имеет доступ через один грант.
 ui.authenticated.demo.sortCaption,Точное совпадение: URL таблицы ниже несет активную сортировку.
 ui.authenticated.moreActions,Другие действия
 ui.authenticated.never,Никогда
 ui.authenticated.search,Поиск
 ui.authenticated.sortBy,Сортировать по {column}
-ui.authenticated.demo.actions,Попробуйте меню строки
 ui.authenticated.demo.avatarDescription,Фото с инициалами-заглушкой в детерминированных тонах.
 ui.authenticated.demo.avatarTitle,Аватар
-ui.authenticated.demo.chipsDescription,"Компактные пилюли для счётчиков, флагов и категорий."
 ui.authenticated.demo.chipsTitle,Метки
 ui.authenticated.demo.dataDescription,"Сортируемые заголовки, ссылки строк, скелетонная загрузка и пустое состояние."
 ui.authenticated.demo.dataTitle,Таблица данных
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,Нечего показать
 ui.authenticated.demo.menuArchive,Архивировать
 ui.authenticated.demo.menuDelete,Удалить
 ui.authenticated.demo.menuRename,Переименовать
-ui.authenticated.demo.optionDescription,"Понятное резюме того, что разрешает этот выбор."
 ui.authenticated.demo.optionsDescription,Выбираемые карточки для ролей и параметров.
 ui.authenticated.demo.optionsTitle,Карточки вариантов
-ui.authenticated.demo.profileDescription,"Аватар, заголовок, подзаголовок, метки, метаданные и действия."
-ui.authenticated.demo.profileTitle,Шапка профиля
 ui.authenticated.demo.rowDelete,Удалить строку
 ui.authenticated.demo.rowEdit,Изменить строку
 ui.authenticated.demo.searchDescription,Отложенная запись URL-запроса через history.replaceState.
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,Поле поиска
 ui.authenticated.demo.skeletonDescription,Мерцающие блоки размером вызывающего.
 ui.authenticated.demo.skeletonTitle,Скелетон
 ui.authenticated.demo.statHint,Во всех организациях
-ui.authenticated.demo.statsDescription,"Компактные KPI-плитки, первая ссылается на свою коллекцию."
-ui.authenticated.demo.statsTitle,Показатели
-ui.authenticated.demo.subNavDescription,"Вертикальная навигация, сворачивающаяся в строку прокрутки."
 ui.authenticated.demo.subNavTitle,Поднавигация
 ui.authenticated.demo.tabsDescription,У каждой вкладки собственный URL.
 ui.authenticated.demo.tabsTitle,Вкладки
 ui.authenticated.demo.timeDescription,Относительный текст с абсолютным временем в атрибуте title.
-ui.authenticated.demo.timeTitle,Относительное время
 ui.authenticated.demo.title,UI-набор аутентификации
 demo.account.description,"Автономная карта интерфейсов управления профилем, организацией, безопасностью и доступом к приложениям, поддерживаемым Authworks. У каждого назначения есть явный контракт состояния данных."
 demo.account.eyebrow,Самообслуживание идентификации
@@ -1199,7 +1073,7 @@ demo.login.group.mfa.description,"Проверки второго фактора
 demo.login.group.mfa.title,Многофакторная аутентификация
 demo.login.group.password_email.description,Аутентификация по паролю и коду из письма с детерминированными локальными данными.
 demo.login.group.password_email.title,Пароль и код из письма
-demo.login.group.passwordless.description,"Ключи доступа и настроенные внешние поставщики удостоверений."
+demo.login.group.passwordless.description,Ключи доступа и настроенные внешние поставщики удостоверений.
 demo.login.group.passwordless.title,Беспарольный и внешний вход
 demo.login.group.recovery.description,Запросите и завершите восстановление пароля без раскрытия данных аккаунта.
 demo.login.group.recovery.title,Восстановление
@@ -1452,7 +1326,7 @@ login.password.signInTitle,Войти с паролем
 login.password.signingIn,Выполняется вход...
 login.password.submit,Войти
 login.password.title,Введите свой пароль
-login.provider.accountNotFoundDescription,"С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены."
+login.provider.accountNotFoundDescription,С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены.
 login.provider.accountNotFoundTitle,Связанный аккаунт не найден
 login.provider.description,"Вы продолжите работу с {provider} и вернетесь сюда, когда закончите."
 login.provider.failureDescription,Вход через {provider} не завершён. Попробуйте ещё раз.
@@ -1524,7 +1398,7 @@ login.verify.verifiedTitle,Адрес электронной почты подт
 login.whatsappOtp.codeDescription,"Введите код, отправленный на номер {phoneNumber} в WhatsApp."
 login.whatsappOtp.codeError,Неверный код WhatsApp.
 login.whatsappOtp.codeTitle,Код подтверждения WhatsApp
-login.whatsappOtp.description,"Вместо пароля мы отправим вам одноразовый код в WhatsApp."
+login.whatsappOtp.description,Вместо пароля мы отправим вам одноразовый код в WhatsApp.
 login.whatsappOtp.differentNumber,Использовать другой номер
 login.whatsappOtp.phoneHint,"Используйте международный формат E.164, например +14155552671."
 login.whatsappOtp.phoneInvalid,Введите действительный номер телефона в формате E.164.
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,Согласие приложения
 shell.nav.applicationConsents,Согласия приложений
 shell.nav.applications,Приложения
 shell.nav.auditEvents,События аудита
-shell.nav.branding,Оформление
 shell.nav.chooseDestination,Выберите раздел
 shell.nav.credentialsTokens,Учётные данные и токены
-shell.nav.deleteAccount,Удалить аккаунт
-shell.nav.directory,Каталог
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,Эффективный доступ
-shell.nav.emailAddress,Адрес электронной почты
 shell.nav.emailOtpSignIn,Вход по коду из письма
 shell.nav.externalIdentitySignIn,Вход через внешний сервис
 shell.nav.impersonation,Имперсонация
 shell.nav.invitations,Приглашения
 shell.nav.linkedIdentities,Связанные учетные записи
 shell.nav.loginPolicy,Вход и идентификация
-shell.nav.loginPolicyProviders,Вход и поставщики удостоверений
 shell.nav.logout,Выйти
 shell.nav.machineCredentials,Учетные данные машины
 shell.nav.machineUsers,Машинные пользователи
-shell.nav.membershipsRoles,Участники и роли
-shell.nav.mfa,Многофакторная аутентификация
 shell.nav.mfaSignIn,Многофакторный вход
-shell.nav.myOrganizations,Мои организации
 shell.nav.navigationTitle,Навигация {title}
 shell.nav.oidcClients,Клиенты OIDC
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,Операции
-shell.nav.organization,Организация
 shell.nav.organizations,Организации
-shell.nav.overview,Обзор
 shell.nav.passkeySignIn,Вход по ключу доступа
 shell.nav.passkeys,Ключи доступа
 shell.nav.password,Пароль
 shell.nav.passwordRecovery,Восстановление пароля
 shell.nav.passwordSignIn,Вход по паролю
-shell.nav.personalInformation,Личные данные
 shell.nav.profile,Профиль
 shell.nav.projects,Проекты
 shell.nav.protocolDocuments,Документы протокола
-shell.nav.realm,Область
-shell.nav.realmSettings,Настройки области
 shell.nav.recoveryCodes,Коды восстановления
-shell.nav.refreshTokens,Токены обновления
 shell.nav.registration,Регистрация
-shell.nav.rolesGrants,Роли и разрешения
 shell.nav.security,Безопасность
 shell.nav.securityHistory,История безопасности
 shell.nav.sessions,Сессии
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,Администраторы
 demo.admin.scenario.roles.description,Роли организации и назначения ролей проектов.
 demo.admin.scenario.roles.title,Роли
 shell.nav.organizationSwitcher,Организация
-admin.directory.administrators.placeholder,Управление администраторами realm скоро появится.
-admin.directory.roles.placeholder,Управление ролями скоро появится.
-admin.directory.users.placeholder,Новый каталог пользователей скоро появится.
-admin.organizations.configuration.branding,Брендинг
 admin.organizations.configuration.brandingDescription,"Светлые и тёмные цвета, логотип и правовые ссылки с предпросмотром."
-admin.organizations.configuration.domains,Домены
-admin.organizations.configuration.domainsDescription,Подтверждённые домены и обнаружение организации.
-admin.organizations.configuration.general,Общие
 admin.organizations.configuration.generalDescription,"Название, статус и опасная зона организации."
-admin.organizations.configuration.placeholder,Новая конфигурация организации скоро появится.
-admin.organizations.configuration.signIn,Вход и безопасность
 admin.organizations.configuration.signInDescription,Формы входа и политики безопасности организации.
 admin.projects.detail.accessTab,Доступ
 admin.projects.detail.applicationsTab,Приложения
 admin.projects.detail.overviewTab,Обзор
-admin.projects.detail.placeholder,Детали проекта с вкладками скоро появятся.
 admin.projects.detail.rolesTab,Роли
-admin.realm.overview.placeholder,Объединённый обзор realm скоро появится.
 shell.nav.configuration,Конфигурация
 shell.nav.realmAdministrators,Администраторы
 shell.nav.realmGroup,Область
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations

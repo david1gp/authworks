@@ -40,7 +40,6 @@ account.access.invitationOpen,招待を開く
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,アクティブな組織に設定
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,{source} により付与された {count} 件の権限を表示
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
 account.delete.dangerZoneToggle,アカウント削除のオプションを表示
@@ -64,20 +61,17 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,認証アプリ
 account.factors.configured,認証アプリを設定済み
 account.factors.count,認証アプリ {count} 件
 account.factors.missing,認証アプリが未設定
-account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
 account.factors.emailOtp,Email code
 account.factors.finishTotp,Finish authenticator setup
 account.factors.passkeyCount,{count} passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
 account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
@@ -91,13 +85,13 @@ account.identities.description,External accounts linked to your Authworks identi
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,{provider} アカウントを管理（{account}）
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,この外部アカウントのリンクを解除しますか？
 account.passkeys.add,Add passkey
@@ -130,8 +124,6 @@ account.profile.edit,プロフィールを編集
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailMissing,メールアドレス未設定
-account.profile.emailVerified,メールアドレス確認済み
-account.profile.emailVerificationPending,メールアドレスの確認待ち
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,電話番号
-account.profile.phoneNumbersEmpty,利用できる電話番号はありません。
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,7 +179,6 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,プロフィール画像を変更
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,画像をここにドラッグ＆ドロップするか、クリックして参照
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,画像を削除中…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,プロフィール画像を読み込めませんでした
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.preferredLanguage.unspecified,未設定
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
@@ -214,15 +202,13 @@ account.recovery.once,Copy or print these codes now. They cannot be displayed ag
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
 account.refreshTokens.active,有効
 account.refreshTokens.activeShown,有効なものを {count} 件表示
 account.refreshTokens.countOneShown,アプリケーションを {count} 件表示
 account.refreshTokens.countShown,アプリケーションを {count} 件表示
-account.refreshTokens.description,"このアカウントでリフレッシュトークンを使用しているアプリケーションを確認します。安全なメタデータのみを表示し、ファミリーを失効させると関連するアクセストークンも無効になります。"
+account.refreshTokens.description,このアカウントでリフレッシュトークンを使用しているアプリケーションを確認します。安全なメタデータのみを表示し、ファミリーを失効させると関連するアクセストークンも無効になります。
 account.refreshTokens.empty,利用可能なリフレッシュトークンファミリーはありません
 account.refreshTokens.expired,期限切れ
-account.refreshTokens.expires,有効期限 {date}
 account.refreshTokens.lastUsed,最終使用 {date}
 account.refreshTokens.loadMore,アプリケーションをさらに読み込む
 account.refreshTokens.manage,アプリケーション: {application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,すべてのファミリーを失効
 account.refreshTokens.revokeAllConfirm,このアカウントのすべてのリフレッシュトークンファミリーを失効させますか？
 account.refreshTokens.revokeConfirm,このリフレッシュトークンファミリーと関連するアクセストークンを失効させますか？
 account.refreshTokens.revoked,失効済み
-account.refreshTokens.revokedAt,失効日時 {date}
-account.refreshTokens.scope,スコープ: {scope}
 account.refreshTokens.title,リフレッシュトークンファミリー
-account.security.label,Account security management
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
-account.workspace.accessDescription,"組織、権限、許可されたアプリケーションを確認します。"
-account.workspace.dangerDescription,このアカウントに対する取り消しできない操作を確認します。
-account.workspace.devicesDescription,"セキュリティアクティビティ、サインイン中のデバイス、接続済みアプリケーションを確認します。"
 account.workspace.devicesTitle,デバイスとアプリケーション
-account.workspace.securityDescription,サインイン方法とアカウント復旧オプションを管理します。
 admin.common.confirmTitle,この操作を確認
-admin.common.next,次へ
-admin.common.pagination,ページ送り
 admin.common.permission,この管理データを表示する権限がありません。
-admin.common.previous,戻る
 admin.events.actor,アクター
 admin.events.aggregate,集約
 admin.events.count,{count} 件のイベント
-admin.events.description,現在のレルムの変更不可能なセキュリティ活動を新しい順に表示します。
 admin.events.empty,現在のフィルターに一致するイベントはありません。
 admin.events.hide,ペイロードを非表示
 admin.events.occurred,発生日時
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,マシンユーザーとその資格情報を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.machine.assuranceRequiredTitle,より強力なサインインが必要です
 admin.machine.created,作成日時
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,同意
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,必要
 admin.oidc.clients.consentSkipped,不要
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,userinfo エンドポイント
 admin.oidc.keys.algorithm,アルゴリズム
 admin.oidc.keys.create,鍵を追加
 admin.oidc.keys.created,新しい署名鍵を公開しました。
-admin.oidc.keys.description,このレルムのトークンに署名する鍵。ローテーションでは新しい鍵を公開し、現在の鍵を退役させます。
 admin.oidc.keys.empty,このレルムにはまだ署名鍵がありません。
 admin.oidc.keys.keyId,鍵 ID
 admin.oidc.keys.privateNotice,表示されるのは公開鍵のメタデータのみです。秘密鍵がブラウザーに送信されることはありません。
@@ -589,35 +561,22 @@ admin.oidc.updated,最終更新
 admin.organizations.assuranceRequired,この組織設定を変更するには、より強力な認証方法で再度サインインしてください。
 admin.organizations.assuranceRequiredTitle,より強力なサインインが必要です
 admin.organizations.branding.background,背景色
-admin.organizations.branding.dark,ダークテーマ
-admin.organizations.branding.description,ホストされたサインインおよびアカウント画面に表示される色、ロゴ、法的リンク。
 admin.organizations.branding.font,文字色
 admin.organizations.branding.iconUrl,アイコン URL
-admin.organizations.branding.light,ライトテーマ
 admin.organizations.branding.logoUrl,ロゴ URL
-admin.organizations.branding.preview,プレビュー
 admin.organizations.branding.primary,プライマリカラー
-admin.organizations.branding.privacyUrl,プライバシーポリシー URL
 admin.organizations.branding.saved,ブランディングを保存しました。
-admin.organizations.branding.termsUrl,利用規約 URL
 admin.organizations.branding.themeMode,既定のテーマ
-admin.organizations.branding.title,ブランディング
 admin.organizations.branding.warn,警告色
-admin.organizations.branding.watermark,Authworks の透かしを非表示にする
 admin.organizations.detail.created,作成日時
 admin.organizations.detail.realm,レルム
 admin.organizations.detail.settingsDescription,組織名とそのライフサイクル状態を管理します。
 admin.organizations.detail.settingsTitle,組織設定
 admin.organizations.detail.updated,最終更新
 admin.organizations.detailTitle,組織の詳細
-admin.organizations.domains.claim,ドメインを申請
 admin.organizations.domains.claimed,{domain} は申請され、検証待ちです。
-admin.organizations.domains.description,検証済みドメインにより、メールアドレスからこの組織を見つけられるようになります。
-admin.organizations.domains.discovery,判別プレビュー
-admin.organizations.domains.discoveryDescription,サインイン時にドメインが現在どの組織に解決されるかを確認します。
 admin.organizations.domains.discoveryFound,{domain} は {organization} に解決されます。
 admin.organizations.domains.discoveryMissing,{domain} はどの組織にも解決されません。
-admin.organizations.domains.domain,ドメイン
 admin.organizations.domains.empty,この組織はまだドメインを申請していません。
 admin.organizations.domains.invalid,有効なドメイン名を入力してください。
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,主ドメイン
 admin.organizations.domains.remove,ドメインを削除
 admin.organizations.domains.removeConfirm,ドメイン {domain} を削除しますか？このドメインの組織の検出は即座に停止します。
 admin.organizations.domains.removed,ドメインを削除しました。
-admin.organizations.domains.title,ドメインと判別
 admin.organizations.domains.unverified,検証待ち
 admin.organizations.domains.verificationRecord,この DNS TXT レコードを追加してから検証してください。
 admin.organizations.domains.verified,Verified
 admin.organizations.domains.verify,ドメインを検証
 admin.organizations.domains.verifyDone,ドメインを検証しました。
-admin.organizations.invitations.create,ユーザーを招待
-admin.organizations.invitations.description,メールで招待し、まだ保留中の招待を追跡します。
 admin.organizations.invitations.email,Email address
 admin.organizations.invitations.emailInvalid,有効なメールアドレスを入力してください。
 admin.organizations.invitations.empty,この組織に対して招待は送信されていません。
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,期限切れ
 admin.organizations.invitations.statusValue.pending,保留中
 admin.organizations.invitations.statusValue.revoked,取り消し済み
 admin.organizations.invitations.title,招待
-admin.organizations.invitations.tokenDismiss,このリンクを保存しました
-admin.organizations.invitations.tokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
-admin.organizations.invitations.tokenTitle,招待リンク
 admin.organizations.lifecycle.activate,組織を再有効化
 admin.organizations.lifecycle.activateConfirm,この組織を再アクティブ化しますか？有効になるまでメンバーはアクセスできません。
 admin.organizations.lifecycle.changed,組織のライフサイクル状態を変更しました。
@@ -665,22 +618,16 @@ admin.organizations.list.name,組織名
 admin.organizations.list.nameRequired,組織名を入力してください。
 admin.organizations.list.search,組織を検索
 admin.organizations.list.title,組織
-admin.organizations.memberships.add,メンバーを追加
 admin.organizations.memberships.added,メンバーを追加しました。
-admin.organizations.memberships.description,この組織の人と、割り当てられた固定ロール。
 admin.organizations.memberships.empty,この組織にはまだメンバーがいません。
 admin.organizations.memberships.invalid,ユーザー ID を入力し、1 つから 4 つまでのロールを選択してください。
-admin.organizations.memberships.remove,メンバーを削除
 admin.organizations.memberships.removeConfirm,{userId} をこの組織から削除しますか？組織へのアクセスは直ちに終了します。
 admin.organizations.memberships.removed,メンバーを削除しました。
 admin.organizations.memberships.roles,ロール
-admin.organizations.memberships.rolesFixed,ロールは Authworks によって固定されており、名前を変更できません。
 admin.organizations.memberships.title,メンバーとロール
 admin.organizations.memberships.updated,メンバーのロールを更新しました。
 admin.organizations.memberships.user,ユーザー
 admin.organizations.memberships.userId,ユーザー ID
-admin.organizations.pageNext,次のページ
-admin.organizations.pagePrevious,前のページ
 admin.organizations.permissionDenied,この組織を表示または変更する権限がありません。
 admin.organizations.permissionDeniedTitle,アクセスできません
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,状態
 admin.organizations.statusValue.active,有効
 admin.organizations.statusValue.inactive,非アクティブ
 admin.organizations.statusValue.removed,削除済み
-admin.overview.description,管理しているレルムの識別情報、ドメイン、ライフサイクルです。
-admin.overview.sessionTitle,管理者セッション
-admin.overview.title,レルムの概要
 admin.projects.access.description,この管理者が現在このプロジェクトで実効的に保持しているロール。
 admin.projects.access.empty,現在の組織コンテキストで有効なプロジェクトロールはありません。
 admin.projects.access.grantedOrganization,組織を通じて付与
@@ -775,17 +719,11 @@ admin.projects.applications.name,アプリケーション名
 admin.projects.applications.removeConfirm,このアプリケーションを削除しますか？この操作は元に戻せません。
 admin.projects.applications.title,アプリケーション
 admin.projects.applications.type,アプリケーションの種類
-admin.projects.crossTenant,このリソースは別のレルムに属しており、ここでは利用できません。
 admin.projects.deleteConfirm,このプロジェクトを削除しますか？アプリケーション、ロール、付与も一緒に削除されます。
 admin.projects.deleteConfirmAccept,プロジェクトを削除
 admin.projects.deleteConfirmTitle,このプロジェクトを削除
-admin.projects.detail.authorizationRequired,認可が必要です
 admin.projects.detail.created,作成日時
-admin.projects.detail.identifier,プロジェクト識別子
 admin.projects.detail.organization,組織
-admin.projects.detail.projectAccessRequired,プロジェクトへのアクセスが必要です
-admin.projects.detail.settingsDescription,プロジェクト名とアクセスの適用方法を管理します。
-admin.projects.detail.settingsTitle,プロジェクト設定
 admin.projects.detail.updated,最終更新
 admin.projects.detailTitle,プロジェクトの詳細
 admin.projects.grants.create,組織にアクセス権を付与
@@ -810,7 +748,6 @@ admin.projects.list.name,プロジェクト名
 admin.projects.list.search,プロジェクトを検索
 admin.projects.list.title,プロジェクト
 admin.projects.missingId,この宛先にはプロジェクトの選択が必要です。
-admin.projects.permissionDenied,このプロジェクト情報を表示または変更する権限がありません。
 admin.projects.roles.create,ロールを作成
 admin.projects.roles.deleteConfirm,このプロジェクトロールを削除しますか？参照している付与はロールを失います。
 admin.projects.roles.description,このプロジェクトが組織とそのメンバーに割り当てられるロール。
@@ -825,37 +762,22 @@ admin.projects.status,状態
 admin.projects.statusValue.active,有効
 admin.projects.statusValue.inactive,非アクティブ
 admin.projects.statusValue.removed,削除済み
-admin.realm.confirmLabel,確認のため {name} と入力してください
 admin.realm.confirmMismatch,レルム名が一致しません。
-admin.realm.created,作成日時
-admin.realm.dangerZone,危険な操作
 admin.realm.description,管理しているレルムの識別情報とサインインの設定です。
-admin.realm.disable,レルムを無効化
 admin.realm.disableConfirm,このレルムを無効化すると、すべてのアプリケーションのサインインが停止します。続行しますか？
-admin.realm.disableWarning,このレルムを無効化すると、レルム内のすべてのアプリケーションのサインインとトークン発行が直ちに停止します。
 admin.realm.disabled,レルムを無効化しました。
-admin.realm.domainRequired,レルムのドメインを1つ以上入力してください。
 admin.realm.domains,ドメイン
 admin.realm.domainsHint,ドメインはカンマで区切ってください。最初のドメインが主ドメインです。
-admin.realm.enable,レルムを有効化
-admin.realm.enableDescription,このレルムは無効です。有効化するとサインインとトークン発行が再開されます。
 admin.realm.enabled,レルムを有効化しました。
 admin.realm.identifier,レルム識別子
 admin.realm.invalid,レルム名とドメインを1つ以上入力してください。
-admin.realm.lifecycleTitle,レルムのライフサイクル
 admin.realm.name,レルム名
-admin.realm.nameRequired,レルム名を入力してください。
 admin.realm.permissionDenied,このレルムを変更する権限がありません。
 admin.realm.primaryDomain,主ドメイン
-admin.realm.save,設定を保存
 admin.realm.saved,レルム設定を保存しました。
-admin.realm.settingsDescription,レルム名と、このレルムに解決されるドメインを変更します。
-admin.realm.settingsTitle,一般設定
 admin.realm.status,状態
 admin.realm.statusActive,有効
 admin.realm.statusDisabled,無効
-admin.realm.title,レルム設定
-admin.realm.updated,最終更新
 admin.session.expired,管理者セッションの有効期限が切れました
 admin.signIn.activeTitle,管理者セッションが有効です
 admin.signIn.credential,ブートストラップ管理者の資格情報
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,サインアウトしました
 admin.signIn.subject,サブジェクト
 admin.signIn.subjectType,サブジェクトの種類
 admin.signIn.title,管理者サインイン
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,ユーザー一覧に戻る
 admin.users.count,{count} 人のユーザー
 admin.users.create,ユーザーを作成
 admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
 admin.users.createSubmit,作成
 admin.users.created,{userName} を作成しました。
 admin.users.createdAt,作成日時
-admin.users.dangerZone,危険な操作
-admin.users.delete,ユーザーを削除
-admin.users.deleteConfirm,{userName} を完全に削除しますか？
 admin.users.deleteWarning,このユーザーを削除すると、セッションとアクセス権が直ちに取り消されます。
-admin.users.deleted,{userName} を削除しました。
-admin.users.description,現在のレルム内の人間の ID。
 admin.users.detailTitle,ユーザー詳細
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
-admin.users.empty,現在のフィルターに一致するユーザーはいません。
 admin.users.firstName,First name
 admin.users.identifier,ユーザー識別子
 admin.users.invalid,有効なメールアドレスとユーザー名を入力してください。
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,非アクティブ
 admin.users.lifecycle.initial,初期
 admin.users.lifecycle.locked,ロック済み
 admin.users.lifecycle.suspended,停止中
-admin.users.lifecycleChanged,ユーザーの状態は現在 {state} です。
-admin.users.lifecycleConfirm,{userName} を {state} に設定しますか？
-admin.users.lifecycleDescription,このユーザーがサインインできるかどうかを変更します。
-admin.users.lifecycleTitle,ライフサイクル
-admin.users.markUnverified,未検証としてマーク
-admin.users.markVerified,検証済みとしてマーク
-admin.users.missingId,アドレスからこのユーザーを解決できませんでした。
 admin.users.nickName,Nickname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Preferred language
-admin.users.profileSave,プロフィールを保存
-admin.users.profileSaved,ユーザープロフィールを保存しました。
-admin.users.profileTitle,プロフィール
-admin.users.search,ユーザーを検索
-admin.users.searchPlaceholder,ユーザー名、メール、識別子で絞り込む
 admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 admin.users.state,状態
 admin.users.title,ユーザー
-admin.users.unverified,未検証
-admin.users.updated,最終更新
 admin.users.userName,Username
-admin.users.verification,検証
-admin.users.verificationChanged,検証状態は現在 {state} です。
-admin.users.verificationDescription,このユーザーのメールアドレスを検証済みとして扱うかどうかを制御します。
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verified
 app.name,Authworks
 app.tagline,安全なアイデンティティサービス
 common.back,戻る
@@ -963,7 +849,6 @@ common.retry,もう一度お試しください
 common.revoke,Revoke
 common.save,保存
 common.signIn,サインイン
-common.signInWithProvider,{provider}でサインイン
 common.signOut,サインアウト
 common.theme.dark,ダーク
 common.theme.light,ライト
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,保留中の招待: 未承諾の招待が受�
 ui.authenticated.demo.keyboardHint,矢印で移動しHomeとEndで跳躍しEnterで選択しEscapeで閉じる。
 ui.authenticated.demo.loadingBlurb,読込切替: スケルトン行で遅延を再現。
 ui.authenticated.demo.memberBlurb,メンバー: 管理なしで付与プロジェクトにサインインし利用。
-ui.authenticated.demo.ownedBlurb,所有: 所有組織のみがこのプロジェクトにアクセス可能。
 ui.authenticated.demo.ownerBlurb,所有者: 設定とブランドとドメインと所有者を完全管理。
 ui.authenticated.demo.peopleBlurb,人物: アバターと役割と最終サインインを持つ人間ユーザー。
 ui.authenticated.demo.profileName,アレックス・モーガン
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,所有者
 ui.authenticated.demo.rolesBlurb,組織役割: 所有者管理なしでは所有者は無効のまま。
 ui.authenticated.demo.sectionsBlurb,区分プレビュー: 一般設定とブランドとサインインとドメイン。
 ui.authenticated.demo.serviceBlurb,サービスアカウント: 資格情報を持つ非人間ID。
-ui.authenticated.demo.sharedBlurb,共有: パートナー組織が単一付与でアクセス保持。
 ui.authenticated.demo.sortCaption,完全一致: 下の表URLが有効な並替えを保持。
 ui.authenticated.moreActions,その他の操作
 ui.authenticated.never,なし
 ui.authenticated.search,検索
 ui.authenticated.sortBy,{column}で並べ替え
-ui.authenticated.demo.actions,行メニューを試す
 ui.authenticated.demo.avatarDescription,決定的なトーンのイニシャルフォールバック付き写真。
 ui.authenticated.demo.avatarTitle,アバター
-ui.authenticated.demo.chipsDescription,件数・フラグ・カテゴリ用のコンパクトなピル。
 ui.authenticated.demo.chipsTitle,チップ
 ui.authenticated.demo.dataDescription,ソート可能なヘッダー、行リンク、スケルトン読み込み、空状態。
 ui.authenticated.demo.dataTitle,データテーブル
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,表示するものがありません
 ui.authenticated.demo.menuArchive,アーカイブ
 ui.authenticated.demo.menuDelete,削除
 ui.authenticated.demo.menuRename,名前変更
-ui.authenticated.demo.optionDescription,この選択で許可される内容の平易な概要。
 ui.authenticated.demo.optionsDescription,ロール・オプション選択用の選択可能カード。
 ui.authenticated.demo.optionsTitle,オプションカード
-ui.authenticated.demo.profileDescription,アバター、タイトル、サブタイトル、チップ、メタ、操作。
-ui.authenticated.demo.profileTitle,プロフィールヘッダー
 ui.authenticated.demo.rowDelete,行を削除
 ui.authenticated.demo.rowEdit,行を編集
 ui.authenticated.demo.searchDescription,history.replaceStateによるデバウンスURLクエリ書き込み。
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,検索フィールド
 ui.authenticated.demo.skeletonDescription,呼び出し側がサイズ指定するシマーブロック。
 ui.authenticated.demo.skeletonTitle,スケルトン
 ui.authenticated.demo.statHint,すべての組織で
-ui.authenticated.demo.statsDescription,コンパクトなKPIタイル、先頭はコレクションへリンク。
-ui.authenticated.demo.statsTitle,統計タイル
-ui.authenticated.demo.subNavDescription,スクロール行に折りたたまれる縦型セクションナビ。
 ui.authenticated.demo.subNavTitle,サブナビ
 ui.authenticated.demo.tabsDescription,各タブが独自のURLを持ちます。
 ui.authenticated.demo.tabsTitle,タブ
 ui.authenticated.demo.timeDescription,title属性に絶対時刻を持つ相対テキスト。
-ui.authenticated.demo.timeTitle,相対時刻
 ui.authenticated.demo.title,認証UIキット
 demo.account.description,Authworksがサポートするプロファイル、組織、セキュリティ、およびアプリケーションアクセス管理体験のネットワーク不要なマップ。各遷移先には明示的なフィクスチャ状態契約があります。
 demo.account.eyebrow,セルフサービスID
@@ -1391,7 +1265,7 @@ login.mfa.optionalTitle,任意の2段階認証
 login.mfa.optionsUnavailableDescription,利用可能な2つ目の認証要素を読み込めませんでした。
 login.mfa.optionsUnavailableTitle,2段階認証を利用できません
 login.mfa.passkey,パスキー
-login.mfa.passkeyDescription,"パスキー、デバイスの画面ロック、または生体認証で確認します。"
+login.mfa.passkeyDescription,パスキー、デバイスの画面ロック、または生体認証で確認します。
 login.mfa.passkeyDetail,パスキーまたはデバイスの生体認証で確認します。
 login.mfa.passkeyEnrollmentUnavailableDescription,ホスト型ログイン契約ではパスキー登録を利用できません。
 login.mfa.passkeyEnrollmentUnavailableNotice,認証済みのアカウントセキュリティページでパスキーの設定を完了してから、サインインに戻ってください。
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,アプリケーションの同意
 shell.nav.applicationConsents,アプリケーションの同意
 shell.nav.applications,アプリケーション
 shell.nav.auditEvents,監査イベント
-shell.nav.branding,ブランディング
 shell.nav.chooseDestination,宛先を選択
 shell.nav.credentialsTokens,資格情報とトークン
-shell.nav.deleteAccount,アカウントを削除
-shell.nav.directory,ディレクトリ
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,実効アクセス
-shell.nav.emailAddress,メールアドレス
 shell.nav.emailOtpSignIn,メールコードサインイン
 shell.nav.externalIdentitySignIn,外部IDサインイン
 shell.nav.impersonation,代理ログイン
 shell.nav.invitations,招待
 shell.nav.linkedIdentities,連携済みID
 shell.nav.loginPolicy,ログインとID
-shell.nav.loginPolicyProviders,ログインとIDプロバイダー
 shell.nav.logout,ログアウト
 shell.nav.machineCredentials,マシン認証情報
 shell.nav.machineUsers,マシンユーザー
-shell.nav.membershipsRoles,メンバーとロール
-shell.nav.mfa,多要素認証
 shell.nav.mfaSignIn,多要素サインイン
-shell.nav.myOrganizations,マイ組織
 shell.nav.navigationTitle,{title}ナビゲーション
 shell.nav.oidcClients,OIDCクライアント
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,運用
-shell.nav.organization,組織
 shell.nav.organizations,組織
-shell.nav.overview,概要
 shell.nav.passkeySignIn,パスキーサインイン
 shell.nav.passkeys,パスキー
 shell.nav.password,パスワード
 shell.nav.passwordRecovery,パスワードの復旧
 shell.nav.passwordSignIn,パスワードサインイン
-shell.nav.personalInformation,個人情報
 shell.nav.profile,プロフィール
 shell.nav.projects,プロジェクト
 shell.nav.protocolDocuments,プロトコルドキュメント
-shell.nav.realm,レルム
-shell.nav.realmSettings,レルム設定
 shell.nav.recoveryCodes,リカバリコード
-shell.nav.refreshTokens,リフレッシュトークン
 shell.nav.registration,登録
-shell.nav.rolesGrants,ロールと権限付与
 shell.nav.security,セキュリティ
 shell.nav.securityHistory,セキュリティ履歴
 shell.nav.sessions,セッション
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,管理者
 demo.admin.scenario.roles.description,組織ロールとプロジェクトロールの割り当て。
 demo.admin.scenario.roles.title,ロール
 shell.nav.organizationSwitcher,組織
-admin.directory.administrators.placeholder,Realm管理者の管理は近日公開です。
-admin.directory.roles.placeholder,ロール管理は近日公開です。
-admin.directory.users.placeholder,新しいユーザーディレクトリは近日公開です。
-admin.organizations.configuration.branding,ブランディング
 admin.organizations.configuration.brandingDescription,ライト・ダークの色、ロゴ、法的リンクをライブプレビュー付きで。
-admin.organizations.configuration.domains,ドメイン
-admin.organizations.configuration.domainsDescription,検証済みドメインと組織検出。
-admin.organizations.configuration.general,全般
 admin.organizations.configuration.generalDescription,組織名、ステータス、危険ゾーン。
-admin.organizations.configuration.placeholder,新しい組織設定は近日公開です。
-admin.organizations.configuration.signIn,サインインとセキュリティ
 admin.organizations.configuration.signInDescription,組織のログインとセキュリティポリシー。
 admin.projects.detail.accessTab,アクセス
 admin.projects.detail.applicationsTab,アプリケーション
 admin.projects.detail.overviewTab,概要
-admin.projects.detail.placeholder,タブ付きプロジェクト詳細は近日公開です。
 admin.projects.detail.rolesTab,ロール
-admin.realm.overview.placeholder,統合されたRealm概要は近日公開です。
 shell.nav.configuration,設定
 shell.nav.realmAdministrators,管理者
 shell.nav.realmGroup,レルム
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations

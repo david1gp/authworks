@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test"
-import type { OrganizationAdminScreen } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 
 /** A real storage implementation so acknowledgement is exercised through the browser API. */
 const sessionStorageCreate = (): Storage => {
@@ -119,7 +118,7 @@ describe("organization administration page state dismissal wiring", () => {
         dismissed = true
       },
       organizationId: () => "01900000-0000-7000-8000-000000000011",
-      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
 
     expect(page.invitationToken()).toBe("demo-invitation-token-0f9c31a7e5b24d68")
@@ -154,7 +153,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
 
     // Initial mount: token is visible
@@ -170,7 +169,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
     expect(pageAfterReload.invitationToken()).toBeUndefined()
 
@@ -181,7 +180,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
     expect(pageDifferentOrg.invitationToken()).toBe("demo-invitation-token-0f9c31a7e5b24d68")
   })

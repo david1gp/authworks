@@ -6,7 +6,6 @@ import { translationPlaceholdersApply } from "../../src/ui/i18n/model/translatio
 /** Administration state creators whose destructive guards must speak the catalog language. */
 const guardedStateCreators = [
   "src/features/admin/ui/adminPageStateCreate.ts",
-  "src/features/admin/ui/adminUserSecurityStateCreate.ts",
   "src/features/impersonation/ui/impersonationAdminPageStateCreate.ts",
   "src/features/impersonation/ui/impersonationAdminShellBannerStateCreate.ts",
   "src/features/machineUsers/ui/machineAdminPageStateCreate.ts",
@@ -38,9 +37,6 @@ const guardedKeys = [
   "admin.projects.grants.revokeConfirm",
   "admin.projects.lifecycle.removeConfirm",
   "admin.projects.roles.deleteConfirm",
-  "admin.users.deleteConfirm",
-  "admin.users.lifecycleConfirm",
-  "admin.users.sessions.revokeConfirm",
 ]
 
 /** Locale catalogs that must carry the directly affected user-administration wording. */
@@ -56,10 +52,6 @@ const translatedKeys = [
   "admin.organizations.providers.displayName",
   "admin.organizations.providers.secretWriteOnly",
   "admin.users.createdAt",
-  "admin.users.sessions.revokeConfirm",
-  "admin.users.sessions.revoked",
-  "admin.users.sessions.title",
-  "admin.users.updated",
   "demo.admin.description",
   "demo.admin.directoryTitle",
   "demo.admin.eyebrow",
@@ -103,8 +95,7 @@ describe("localized destructive confirmations in administration state creators",
   })
 
   test("timestamp labels carry no unresolved placeholder", () => {
-    // These keys are rendered as detail labels beside a separately formatted value.
-    expect(englishCatalog["admin.users.updated"]).not.toContain("{")
+    // This key is rendered as a detail label beside a separately formatted value.
     expect(englishCatalog["admin.users.createdAt"]).not.toContain("{")
   })
 

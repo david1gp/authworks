@@ -40,7 +40,6 @@ account.access.invitationOpen,打开邀请
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,设为活动组织
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,显示由 {source} 授予的 {count} 项权限
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
 account.delete.dangerZoneToggle,显示账户删除选项
@@ -64,20 +61,17 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,身份验证器
 account.factors.configured,已配置身份验证器
 account.factors.count,{count} 个身份验证器
 account.factors.missing,未配置身份验证器
-account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
 account.factors.emailOtp,Email code
 account.factors.finishTotp,Finish authenticator setup
 account.factors.passkeyCount,{count} passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
 account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
@@ -91,13 +85,13 @@ account.identities.description,External accounts linked to your Authworks identi
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,管理 {provider} 账户（{account}）
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,要取消关联此外部账户吗？
 account.passkeys.add,Add passkey
@@ -130,8 +124,6 @@ account.profile.edit,编辑个人资料
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailMissing,未设置邮箱
-account.profile.emailVerified,邮箱已验证
-account.profile.emailVerificationPending,邮箱待验证
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,电话号码
-account.profile.phoneNumbersEmpty,没有可用的电话号码。
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,10 +179,9 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,更换头像
 account.profile.pictureChoose,Choose a picture file
-account.profile.pictureDropHint,"将图片拖放至此处，或点击浏览"
+account.profile.pictureDropHint,将图片拖放至此处，或点击浏览
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.picturePreview,个人资料图片预览
 account.profile.pictureRemove,Remove picture
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,正在删除头像…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,无法加载头像
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.preferredLanguage.unspecified,未设置
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
@@ -214,15 +202,13 @@ account.recovery.once,Copy or print these codes now. They cannot be displayed ag
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
 account.refreshTokens.active,有效
 account.refreshTokens.activeShown,已显示 {count} 个有效应用
 account.refreshTokens.countOneShown,已显示 {count} 个应用
 account.refreshTokens.countShown,已显示 {count} 个应用
-account.refreshTokens.description,"查看使用此账户刷新令牌的应用。仅显示安全元数据；撤销一个族也会使其访问令牌失效。"
+account.refreshTokens.description,查看使用此账户刷新令牌的应用。仅显示安全元数据；撤销一个族也会使其访问令牌失效。
 account.refreshTokens.empty,没有可用的刷新令牌族
 account.refreshTokens.expired,已过期
-account.refreshTokens.expires,过期时间 {date}
 account.refreshTokens.lastUsed,上次使用 {date}
 account.refreshTokens.loadMore,加载更多应用
 account.refreshTokens.manage,应用：{application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,撤销所有令牌族
 account.refreshTokens.revokeAllConfirm,要撤销此账户的所有刷新令牌族吗？
 account.refreshTokens.revokeConfirm,要撤销此刷新令牌族及其访问令牌吗？
 account.refreshTokens.revoked,已撤销
-account.refreshTokens.revokedAt,撤销时间 {date}
-account.refreshTokens.scope,范围：{scope}
 account.refreshTokens.title,刷新令牌族
-account.security.label,Account security management
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
-account.workspace.accessDescription,"查看你的组织、权限和已授权的应用。"
-account.workspace.dangerDescription,查看此账户的不可逆操作。
-account.workspace.devicesDescription,"查看安全活动、已登录的设备和已连接的应用。"
 account.workspace.devicesTitle,设备和应用
-account.workspace.securityDescription,管理登录方式和账户恢复选项。
 admin.common.confirmTitle,确认此操作
-admin.common.next,下一页
-admin.common.pagination,分页
 admin.common.permission,您没有权限查看这些管理数据。
-admin.common.previous,上一页
 admin.events.actor,操作者
 admin.events.aggregate,聚合
 admin.events.count,{count} 个事件
-admin.events.description,当前领域不可变的安全活动，最新的在前。
 admin.events.empty,没有事件符合当前筛选条件。
 admin.events.hide,隐藏载荷
 admin.events.occurred,发生时间
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,管理机器用户及其凭据需要更强、更近期的登录。请重新登录以继续。
 admin.machine.assuranceRequiredTitle,需要更强的登录
 admin.machine.created,创建时间
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,授权
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,必需
 admin.oidc.clients.consentSkipped,不必需
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,userinfo 端点
 admin.oidc.keys.algorithm,算法
 admin.oidc.keys.create,添加密钥
 admin.oidc.keys.created,已发布新的签名密钥。
-admin.oidc.keys.description,为此域的令牌签名的密钥。轮换会发布新密钥并停用当前密钥。
 admin.oidc.keys.empty,此域尚不存在签名密钥。
 admin.oidc.keys.keyId,密钥 ID
 admin.oidc.keys.privateNotice,仅显示公钥元数据。私钥内容绝不会发送到浏览器。
@@ -589,35 +561,22 @@ admin.oidc.updated,最近更新
 admin.organizations.assuranceRequired,请使用更强的身份验证方式重新登录，才能更改此组织设置。
 admin.organizations.assuranceRequiredTitle,需要更强的登录方式
 admin.organizations.branding.background,背景色
-admin.organizations.branding.dark,深色主题
-admin.organizations.branding.description,在托管的登录和账户页面上显示的颜色、徽标和法律链接。
 admin.organizations.branding.font,文本颜色
 admin.organizations.branding.iconUrl,图标 URL
-admin.organizations.branding.light,浅色主题
 admin.organizations.branding.logoUrl,徽标 URL
-admin.organizations.branding.preview,预览
 admin.organizations.branding.primary,主色
-admin.organizations.branding.privacyUrl,隐私政策 URL
 admin.organizations.branding.saved,品牌外观已保存。
-admin.organizations.branding.termsUrl,服务条款 URL
 admin.organizations.branding.themeMode,默认主题
-admin.organizations.branding.title,品牌外观
 admin.organizations.branding.warn,警告色
-admin.organizations.branding.watermark,隐藏 Authworks 水印
 admin.organizations.detail.created,创建时间
 admin.organizations.detail.realm,领域
 admin.organizations.detail.settingsDescription,管理组织名称及其生命周期状态。
 admin.organizations.detail.settingsTitle,组织设置
 admin.organizations.detail.updated,最近更新
 admin.organizations.detailTitle,组织详情
-admin.organizations.domains.claim,认领域名
 admin.organizations.domains.claimed,{domain} 已认领，正在等待验证。
-admin.organizations.domains.description,已验证的域名可让用户通过其电子邮件地址找到此组织。
-admin.organizations.domains.discovery,识别预览
-admin.organizations.domains.discoveryDescription,查看某个域名在登录时当前解析到哪个组织。
 admin.organizations.domains.discoveryFound,{domain} 解析到 {organization}。
 admin.organizations.domains.discoveryMissing,{domain} 未解析到任何组织。
-admin.organizations.domains.domain,域名
 admin.organizations.domains.empty,此组织尚未认领任何域名。
 admin.organizations.domains.invalid,请输入有效的域名。
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,主域名
 admin.organizations.domains.remove,移除域名
 admin.organizations.domains.removeConfirm,移除域名 {domain}？针对它的组织发现将立即停止。
 admin.organizations.domains.removed,域名已移除。
-admin.organizations.domains.title,域名与识别
 admin.organizations.domains.unverified,等待验证
 admin.organizations.domains.verificationRecord,添加此 DNS TXT 记录，然后进行验证。
 admin.organizations.domains.verified,Verified
 admin.organizations.domains.verify,验证域名
 admin.organizations.domains.verifyDone,域名已验证。
-admin.organizations.invitations.create,邀请他人
-admin.organizations.invitations.description,通过电子邮件邀请他人，并跟踪哪些邀请仍待处理。
 admin.organizations.invitations.email,Email address
 admin.organizations.invitations.emailInvalid,请输入有效的电子邮件地址。
 admin.organizations.invitations.empty,尚未为此组织发送任何邀请。
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,已过期
 admin.organizations.invitations.statusValue.pending,待处理
 admin.organizations.invitations.statusValue.revoked,已吊销
 admin.organizations.invitations.title,邀请
-admin.organizations.invitations.tokenDismiss,我已保存此链接
-admin.organizations.invitations.tokenOnce,此邀请链接仅显示一次。请与您邀请的人分享。
-admin.organizations.invitations.tokenTitle,邀请链接
 admin.organizations.lifecycle.activate,重新激活组织
 admin.organizations.lifecycle.activateConfirm,重新激活此组织？在组织未启用期间成员将失去访问权限。
 admin.organizations.lifecycle.changed,组织的生命周期状态已更改。
@@ -665,22 +618,16 @@ admin.organizations.list.name,组织名称
 admin.organizations.list.nameRequired,请输入组织名称。
 admin.organizations.list.search,搜索组织
 admin.organizations.list.title,组织
-admin.organizations.memberships.add,添加成员
 admin.organizations.memberships.added,成员已添加。
-admin.organizations.memberships.description,此组织中的人员及分配给他们的固定角色。
 admin.organizations.memberships.empty,此组织尚无成员。
 admin.organizations.memberships.invalid,请输入用户 ID 并选择一到四个角色。
-admin.organizations.memberships.remove,移除成员
 admin.organizations.memberships.removeConfirm,从组织中移除 {userId}？其对组织的访问将立即终止。
 admin.organizations.memberships.removed,成员已移除。
 admin.organizations.memberships.roles,角色
-admin.organizations.memberships.rolesFixed,角色由 Authworks 固定，无法重命名。
 admin.organizations.memberships.title,成员与角色
 admin.organizations.memberships.updated,成员角色已更新。
 admin.organizations.memberships.user,用户
 admin.organizations.memberships.userId,用户 ID
-admin.organizations.pageNext,下一页
-admin.organizations.pagePrevious,上一页
 admin.organizations.permissionDenied,您没有权限查看或更改此组织。
 admin.organizations.permissionDeniedTitle,无法访问
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,状态
 admin.organizations.statusValue.active,启用中
 admin.organizations.statusValue.inactive,未激活
 admin.organizations.statusValue.removed,已移除
-admin.overview.description,您正在管理的领域的标识、域名和生命周期。
-admin.overview.sessionTitle,管理员会话
-admin.overview.title,领域概览
 admin.projects.access.description,该管理员当前在此项目上实际拥有的角色。
 admin.projects.access.empty,在当前组织上下文中没有生效的项目角色。
 admin.projects.access.grantedOrganization,通过组织授予
@@ -775,17 +719,11 @@ admin.projects.applications.name,应用名称
 admin.projects.applications.removeConfirm,移除此应用？此操作无法撤消。
 admin.projects.applications.title,应用
 admin.projects.applications.type,应用类型
-admin.projects.crossTenant,此资源属于其他领域，在此不可用。
 admin.projects.deleteConfirm,删除此项目？应用、角色和授权将一并被删除。
 admin.projects.deleteConfirmAccept,删除项目
 admin.projects.deleteConfirmTitle,删除此项目
-admin.projects.detail.authorizationRequired,需要授权
 admin.projects.detail.created,创建时间
-admin.projects.detail.identifier,项目标识符
 admin.projects.detail.organization,组织
-admin.projects.detail.projectAccessRequired,需要项目访问权限
-admin.projects.detail.settingsDescription,管理项目名称以及访问的强制方式。
-admin.projects.detail.settingsTitle,项目设置
 admin.projects.detail.updated,最近更新
 admin.projects.detailTitle,项目详情
 admin.projects.grants.create,授予组织访问权限
@@ -810,7 +748,6 @@ admin.projects.list.name,项目名称
 admin.projects.list.search,搜索项目
 admin.projects.list.title,项目
 admin.projects.missingId,此目的地必须选择一个项目。
-admin.projects.permissionDenied,您没有权限查看或更改此项目信息。
 admin.projects.roles.create,创建角色
 admin.projects.roles.deleteConfirm,删除此项目角色？引用它的授权将失去该角色。
 admin.projects.roles.description,此项目可分配给组织及其成员的角色。
@@ -825,37 +762,22 @@ admin.projects.status,状态
 admin.projects.statusValue.active,启用中
 admin.projects.statusValue.inactive,未激活
 admin.projects.statusValue.removed,已移除
-admin.realm.confirmLabel,输入 {name} 以确认
 admin.realm.confirmMismatch,领域名称不匹配。
-admin.realm.created,创建时间
-admin.realm.dangerZone,危险区域
 admin.realm.description,您正在管理的领域的身份与登录配置。
-admin.realm.disable,停用领域
 admin.realm.disableConfirm,停用此领域会停止其所有应用的登录。是否继续？
-admin.realm.disableWarning,停用此领域会立即停止其中所有应用的登录和令牌颁发。
 admin.realm.disabled,该领域已停用。
-admin.realm.domainRequired,请至少输入一个领域域名。
 admin.realm.domains,域名
 admin.realm.domainsHint,使用逗号分隔域名。第一个域名为主域名。
-admin.realm.enable,启用领域
-admin.realm.enableDescription,此领域已停用。启用后可恢复登录和令牌颁发。
 admin.realm.enabled,该领域已启用。
 admin.realm.identifier,领域标识符
 admin.realm.invalid,请输入领域名称和至少一个域名。
-admin.realm.lifecycleTitle,领域生命周期
 admin.realm.name,领域名称
-admin.realm.nameRequired,请输入领域名称。
 admin.realm.permissionDenied,您没有更改此领域的权限。
 admin.realm.primaryDomain,主域名
-admin.realm.save,保存设置
 admin.realm.saved,领域设置已保存。
-admin.realm.settingsDescription,更改领域名称以及解析到此领域的域名。
-admin.realm.settingsTitle,常规设置
 admin.realm.status,状态
 admin.realm.statusActive,启用中
 admin.realm.statusDisabled,已停用
-admin.realm.title,领域设置
-admin.realm.updated,最近更新
 admin.session.expired,您的管理员会话已过期
 admin.signIn.activeTitle,管理员会话已激活
 admin.signIn.credential,引导管理员凭据
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,已退出登录
 admin.signIn.subject,主体
 admin.signIn.subjectType,主体类型
 admin.signIn.title,管理员登录
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,返回用户列表
 admin.users.count,{count} 个用户
 admin.users.create,创建用户
 admin.users.createDescription,向当前领域添加一个真人用户。
 admin.users.createSubmit,创建
 admin.users.created,{userName} 已创建。
 admin.users.createdAt,创建时间
-admin.users.dangerZone,危险区域
-admin.users.delete,删除用户
-admin.users.deleteConfirm,永久删除 {userName}？
 admin.users.deleteWarning,删除该用户会立即撤销其会话和访问权限。
-admin.users.deleted,{userName} 已删除。
-admin.users.description,当前领域中的真人身份。
 admin.users.detailTitle,用户详情
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
-admin.users.empty,没有用户符合当前筛选条件。
 admin.users.firstName,First name
 admin.users.identifier,用户标识符
 admin.users.invalid,请输入有效的电子邮件地址和用户名。
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,未激活
 admin.users.lifecycle.initial,初始
 admin.users.lifecycle.locked,已锁定
 admin.users.lifecycle.suspended,已暂停
-admin.users.lifecycleChanged,用户状态现在为 {state}。
-admin.users.lifecycleConfirm,将 {userName} 设置为 {state}？
-admin.users.lifecycleDescription,设置该用户是否可以登录。
-admin.users.lifecycleTitle,生命周期
-admin.users.markUnverified,标记为未验证
-admin.users.markVerified,标记为已验证
-admin.users.missingId,无法根据该地址解析此用户。
 admin.users.nickName,Nickname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Preferred language
-admin.users.profileSave,保存个人资料
-admin.users.profileSaved,用户资料已保存。
-admin.users.profileTitle,个人资料
-admin.users.search,搜索用户
-admin.users.searchPlaceholder,按用户名、电子邮件或标识符筛选
 admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 admin.users.state,状态
 admin.users.title,用户
-admin.users.unverified,未验证
-admin.users.updated,最后更新
 admin.users.userName,Username
-admin.users.verification,验证
-admin.users.verificationChanged,验证状态现在为 {state}。
-admin.users.verificationDescription,控制该用户的电子邮件地址是否算作已验证。
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verified
 app.name,Authworks
 app.tagline,安全的身份服务
 common.back,返回
@@ -963,7 +849,6 @@ common.retry,重试
 common.revoke,Revoke
 common.save,保存
 common.signIn,登录
-common.signInWithProvider,使用 {provider} 登录
 common.signOut,退出登录
 common.theme.dark,深色
 common.theme.light,浅色
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,待定邀请:未接受的邀请等待接收人
 ui.authenticated.demo.keyboardHint,方向键移动而Home与End跳转而回车选择而Escape关闭。
 ui.authenticated.demo.loadingBlurb,加载开关:用骨架行模拟延迟。
 ui.authenticated.demo.memberBlurb,成员:登录并使用授权项目而不管理。
-ui.authenticated.demo.ownedBlurb,自有:仅所属组织可访问此项目。
 ui.authenticated.demo.ownerBlurb,所有者:全权管理设置品牌域名与所有者。
 ui.authenticated.demo.peopleBlurb,人员:带头像角色与上次登录的人类用户。
 ui.authenticated.demo.profileName,亚历克斯·摩根
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,所有者
 ui.authenticated.demo.rolesBlurb,组织角色:无所有者管理时所有者保持禁用。
 ui.authenticated.demo.sectionsBlurb,分区预览:常规设置品牌登录与域名。
 ui.authenticated.demo.serviceBlurb,服务帐户:带凭证的非人类身份。
-ui.authenticated.demo.sharedBlurb,共享:合作组织经单项授权保持访问。
 ui.authenticated.demo.sortCaption,完全匹配:下方表格链接携带有效排序。
 ui.authenticated.moreActions,更多操作
 ui.authenticated.never,从不
 ui.authenticated.search,搜索
 ui.authenticated.sortBy,按{column}排序
-ui.authenticated.demo.actions,试用行菜单
 ui.authenticated.demo.avatarDescription,照片，带确定性色调的首字母回退。
 ui.authenticated.demo.avatarTitle,头像
-ui.authenticated.demo.chipsDescription,用于计数、标记和类别的紧凑徽章。
 ui.authenticated.demo.chipsTitle,徽章
 ui.authenticated.demo.dataDescription,可排序表头、整行链接、骨架加载和空状态。
 ui.authenticated.demo.dataTitle,数据表
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,暂无内容
 ui.authenticated.demo.menuArchive,归档
 ui.authenticated.demo.menuDelete,删除
 ui.authenticated.demo.menuRename,重命名
-ui.authenticated.demo.optionDescription,用通俗语言说明此选项允许的内容。
 ui.authenticated.demo.optionsDescription,用于角色和选项选择器的可选卡片。
 ui.authenticated.demo.optionsTitle,选项卡片
-ui.authenticated.demo.profileDescription,头像、标题、副标题、徽章、元数据和操作。
-ui.authenticated.demo.profileTitle,个人资料页眉
 ui.authenticated.demo.rowDelete,删除行
 ui.authenticated.demo.rowEdit,编辑行
 ui.authenticated.demo.searchDescription,通过history.replaceState进行防抖URL查询写入。
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,搜索框
 ui.authenticated.demo.skeletonDescription,由调用方确定尺寸的闪烁占位块。
 ui.authenticated.demo.skeletonTitle,骨架屏
 ui.authenticated.demo.statHint,跨所有组织
-ui.authenticated.demo.statsDescription,紧凑的KPI磁贴，第一个链接到其集合。
-ui.authenticated.demo.statsTitle,统计磁贴
-ui.authenticated.demo.subNavDescription,垂直分区导航，在移动端折叠为滚动行。
 ui.authenticated.demo.subNavTitle,子导航
 ui.authenticated.demo.tabsDescription,每个选项卡都有自己的URL。
 ui.authenticated.demo.tabsTitle,选项卡
 ui.authenticated.demo.timeDescription,相对文本，title属性中包含绝对时间。
-ui.authenticated.demo.timeTitle,相对时间
 ui.authenticated.demo.title,认证界面套件
 demo.account.description,Authworks支持的个人资料、组织、安全性和应用程序访问管理体验的无网络地图。每个目标都有明确的测试数据状态契约。
 demo.account.eyebrow,自助服务身份
@@ -1369,7 +1243,7 @@ login.mfa.emailOtpDescription,输入我们发送到您电子邮件地址的六�
 login.mfa.emailOtpDetail,通过电子邮件接收一次性验证码。
 login.mfa.emailOtpEnroll,设置电子邮件验证码
 login.mfa.emailOtpEnrollDescription,验证码将发送到您账户的电子邮件地址。
-login.mfa.emailOtpEnrollNotice,"设置电子邮件验证码，将账户邮箱用作第二因素。"
+login.mfa.emailOtpEnrollNotice,设置电子邮件验证码，将账户邮箱用作第二因素。
 login.mfa.emailOtpEnrollSent,电子邮件验证码已设置。请输入发送到您地址的代码。
 login.mfa.emailOtpEnrollTitle,设置电子邮件验证码
 login.mfa.emailOtpResent,新的验证码已发送到您的电子邮件地址。
@@ -1391,7 +1265,7 @@ login.mfa.optionalTitle,可选两步验证
 login.mfa.optionsUnavailableDescription,无法加载可用的第二因素选项。
 login.mfa.optionsUnavailableTitle,两步验证不可用
 login.mfa.passkey,通行密钥
-login.mfa.passkeyDescription,"使用通行密钥、设备屏幕锁或生物识别进行确认。"
+login.mfa.passkeyDescription,使用通行密钥、设备屏幕锁或生物识别进行确认。
 login.mfa.passkeyDetail,使用通行密钥或设备生物识别验证。
 login.mfa.passkeyEnrollmentUnavailableDescription,托管登录契约不提供通行密钥注册。
 login.mfa.passkeyEnrollmentUnavailableNotice,请在已验证的账户安全页面完成通行密钥设置，然后返回登录。
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,应用程序许可
 shell.nav.applicationConsents,应用授权
 shell.nav.applications,应用
 shell.nav.auditEvents,审计事件
-shell.nav.branding,品牌外观
 shell.nav.chooseDestination,选择目标
 shell.nav.credentialsTokens,凭据与令牌
-shell.nav.deleteAccount,删除帐户
-shell.nav.directory,目录
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,有效访问
-shell.nav.emailAddress,电子邮件地址
 shell.nav.emailOtpSignIn,电子邮件验证码登录
 shell.nav.externalIdentitySignIn,外部身份登录
 shell.nav.impersonation,身份模拟
 shell.nav.invitations,邀请
 shell.nav.linkedIdentities,关联身份
 shell.nav.loginPolicy,登录与身份
-shell.nav.loginPolicyProviders,登录与身份提供商
 shell.nav.logout,退出登录
 shell.nav.machineCredentials,机器凭据
 shell.nav.machineUsers,机器用户
-shell.nav.membershipsRoles,成员与角色
-shell.nav.mfa,多因素身份验证
 shell.nav.mfaSignIn,多因素登录
-shell.nav.myOrganizations,我的组织
 shell.nav.navigationTitle,{title} 导航
 shell.nav.oidcClients,OIDC 客户端
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,操作
-shell.nav.organization,组织
 shell.nav.organizations,组织
-shell.nav.overview,概览
 shell.nav.passkeySignIn,通行密钥登录
 shell.nav.passkeys,通行密钥
 shell.nav.password,密码
 shell.nav.passwordRecovery,密码恢复
 shell.nav.passwordSignIn,密码登录
-shell.nav.personalInformation,个人信息
 shell.nav.profile,个人资料
 shell.nav.projects,项目
 shell.nav.protocolDocuments,协议文档
-shell.nav.realm,领域
-shell.nav.realmSettings,领域设置
 shell.nav.recoveryCodes,恢复代码
-shell.nav.refreshTokens,刷新令牌
 shell.nav.registration,注册
-shell.nav.rolesGrants,角色与授权
 shell.nav.security,安全
 shell.nav.securityHistory,安全历史
 shell.nav.sessions,会话
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,管理员
 demo.admin.scenario.roles.description,组织角色与项目角色分配。
 demo.admin.scenario.roles.title,角色
 shell.nav.organizationSwitcher,组织
-admin.directory.administrators.placeholder,Realm 管理员管理即将上线。
-admin.directory.roles.placeholder,角色管理即将上线。
-admin.directory.users.placeholder,新用户目录即将上线。
-admin.organizations.configuration.branding,品牌
 admin.organizations.configuration.brandingDescription,浅色与深色、标志和法律链接，附实时预览。
-admin.organizations.configuration.domains,域名
-admin.organizations.configuration.domainsDescription,已验证域名与组织发现。
-admin.organizations.configuration.general,常规
 admin.organizations.configuration.generalDescription,组织名称、状态与危险区域。
-admin.organizations.configuration.placeholder,新组织配置即将上线。
-admin.organizations.configuration.signIn,登录与安全
 admin.organizations.configuration.signInDescription,组织登录与安全策略表单。
 admin.projects.detail.accessTab,访问
 admin.projects.detail.applicationsTab,应用
 admin.projects.detail.overviewTab,概览
-admin.projects.detail.placeholder,选项卡式项目详情即将上线。
 admin.projects.detail.rolesTab,角色
-admin.realm.overview.placeholder,合并后的 Realm 概览即将上线。
 shell.nav.configuration,配置
 shell.nav.realmAdministrators,管理员
 shell.nav.realmGroup,领域
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations

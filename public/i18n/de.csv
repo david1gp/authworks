@@ -40,7 +40,6 @@ account.access.invitationOpen,Einladung öffnen
 account.access.invitationReplay,Diese Einladung wurde bereits verwendet oder ist nicht mehr verfügbar.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,Als aktive Organisation festlegen
 account.access.membership,Mitgliedsrollen
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,Sie haben keine Berechtigung für diese Aktion.
 account.access.permissionsToggle,{count} von {source} gewährte Berechtigungen anzeigen
 account.access.roles,Rollen: {roles}
 account.access.scopes,Berechtigungen: {scopes}
-account.access.switchOrganization,Organisation wechseln
-account.access.switched,Organisationskontext zu {organization} geändert.
 account.delete.confirmLabel,Geben Sie zur Bestätigung {email} ein
 account.delete.dangerZone,Gefahrenbereich
 account.delete.dangerZoneToggle,Optionen zur Kontolöschung anzeigen
@@ -64,20 +61,17 @@ account.delete.emailMismatch,Die E-Mail-Adresse stimmt nicht überein.
 account.delete.submit,Konto dauerhaft löschen
 account.delete.title,Dieses Konto dauerhaft löschen
 account.delete.warning,Diese Aktion kann nicht rückgängig gemacht werden. Ihre Sitzungen und Zugriffe werden beendet.
-account.directory.title,Ihr Konto
 account.factors.addTotp,Authenticator hinzufügen
 account.factors.authenticator,Authenticator
 account.factors.configured,Authenticator eingerichtet
 account.factors.count,{count} Authenticatoren
 account.factors.missing,Kein Authenticator eingerichtet
-account.factors.codeCount,{count} Wiederherstellungscodes
 account.factors.confirm,Bestätigen
 account.factors.description,Prüfen Sie die für Ihr Konto verfügbaren Authentifizierungsmethoden und verwalten Sie Ihre Authenticator-App.
 account.factors.emailOtp,E-Mail-Code
 account.factors.finishTotp,Authenticator-Einrichtung abschließen
 account.factors.passkeyCount,{count} Passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Wiederherstellung
 account.factors.removeTotp,Authenticator entfernen
 account.factors.totp,Authenticator-App
 account.factors.totpSecretOnce,Fügen Sie dieses Geheimnis Ihrem Authenticator hinzu und geben Sie den sechsstelligen Code ein. Dieses Einrichtungsgeheimnis wird nur jetzt angezeigt.
@@ -91,13 +85,13 @@ account.identities.description,"Externe Konten, die mit Ihrer Authworks-Identit�
 account.identities.empty,Es sind keine externen Identitäten verknüpft
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,Konto bei {provider} verwalten ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Trennen
 account.identities.unlinkConfirm,Dieses externe Konto trennen?
 account.passkeys.add,Passkey hinzufügen
@@ -130,8 +124,6 @@ account.profile.edit,Profil bearbeiten
 account.profile.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 account.profile.email,E-Mail-Adresse
 account.profile.emailMissing,Keine E-Mail-Adresse hinterlegt
-account.profile.emailVerified,E-Mail-Adresse bestätigt
-account.profile.emailVerificationPending,E-Mail-Bestätigung ausstehend
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,Telefonnummern
-account.profile.phoneNumbersEmpty,Es sind keine Telefonnummern verfügbar.
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,7 +179,6 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,Profilbild ändern
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Bild hierher ziehen oder zum Auswählen klicken
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,Profilbild wird entfernt…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,Profilbild konnte nicht geladen werden
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Bevorzugte Sprache
 account.profile.preferredLanguage.unspecified,Nicht festgelegt
 account.profile.save,Änderungen speichern
 account.profile.saved,Ihr Profil wurde gespeichert.
-account.profile.signInDescription,Diese Angaben identifizieren Ihr Konto.
 account.profile.userName,Benutzername
 account.profile.verificationPending,Verifizierung ausstehend
 account.profile.verified,Verifiziert
@@ -214,7 +202,6 @@ account.recovery.once,Kopieren oder drucken Sie diese Codes jetzt. Sie können n
 account.recovery.remaining,{count} unbenutzte Codes verbleiben. Das Erzeugen neuer Codes macht die bisherigen ungültig.
 account.recovery.saveNow,Speichern Sie jetzt Ihre Wiederherstellungscodes
 account.recovery.saved,Ich habe diese Codes gespeichert
-account.recovery.summary,Wiederherstellungszugriff
 account.refreshTokens.active,Aktiv
 account.refreshTokens.activeShown,{count} aktive angezeigt
 account.refreshTokens.countOneShown,{count} Anwendung angezeigt
@@ -222,7 +209,6 @@ account.refreshTokens.countShown,{count} Anwendungen angezeigt
 account.refreshTokens.description,"Prüfen Sie die Anwendungen, die für dieses Konto Refresh-Tokens verwenden. Es werden nur sichere Metadaten angezeigt; der Widerruf einer Familie macht auch ihre Zugriffstoken ungültig."
 account.refreshTokens.empty,Keine Refresh-Token-Familien verfügbar
 account.refreshTokens.expired,Abgelaufen
-account.refreshTokens.expires,Läuft ab am {date}
 account.refreshTokens.lastUsed,Zuletzt verwendet am {date}
 account.refreshTokens.loadMore,Weitere Anwendungen laden
 account.refreshTokens.manage,Anwendung: {application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,Alle Familien widerrufen
 account.refreshTokens.revokeAllConfirm,Alle Refresh-Token-Familien für dieses Konto widerrufen?
 account.refreshTokens.revokeConfirm,Diese Refresh-Token-Familie und ihre Zugriffstoken widerrufen?
 account.refreshTokens.revoked,Widerrufen
-account.refreshTokens.revokedAt,Widerrufen am {date}
-account.refreshTokens.scope,Bereiche: {scope}
 account.refreshTokens.title,Refresh-Token-Familien
-account.security.label,Verwaltung der Kontosicherheit
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Verfügbar
 account.status.configured,Konfiguriert
 account.status.notConfigured,Nicht konfiguriert
 account.status.unavailable,Nicht verfügbar
-account.workspace.accessDescription,"Überprüfen Sie Ihre Organisationen, Berechtigungen und autorisierten Anwendungen."
-account.workspace.dangerDescription,Überprüfen Sie unumkehrbare Aktionen für dieses Konto.
-account.workspace.devicesDescription,"Überprüfen Sie Sicherheitsaktivitäten, angemeldete Geräte und verbundene Anwendungen."
 account.workspace.devicesTitle,Geräte und Anwendungen
-account.workspace.securityDescription,Verwalten Sie Anmeldemethoden und Wiederherstellungsoptionen.
 admin.common.confirmTitle,Diese Aktion bestätigen
-admin.common.next,Weiter
-admin.common.pagination,Seitennavigation
 admin.common.permission,"Sie haben keine Berechtigung, diese Administrationsdaten anzuzeigen."
-admin.common.previous,Zurück
 admin.events.actor,Akteur
 admin.events.aggregate,Aggregat
 admin.events.count,{count} Ereignisse
-admin.events.description,"Unveränderliche Sicherheitsaktivität für den aktuellen Realm, neueste zuerst."
 admin.events.empty,Keine Ereignisse entsprechen dem aktuellen Filter.
 admin.events.hide,Nutzdaten ausblenden
 admin.events.occurred,Aufgetreten
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"Für die Verwaltung von Maschinenbenutzern und deren Anmeldedaten ist eine stärkere, aktuellere Anmeldung erforderlich. Melden Sie sich erneut an, um fortzufahren."
 admin.machine.assuranceRequiredTitle,Stärkere Anmeldung erforderlich
 admin.machine.created,Erstellt
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,Zustimmung
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Erforderlich
 admin.oidc.clients.consentSkipped,Nicht erforderlich
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,Userinfo-Endpunkt
 admin.oidc.keys.algorithm,Algorithmus
 admin.oidc.keys.create,Schlüssel hinzufügen
 admin.oidc.keys.created,Ein neuer Signaturschlüssel wurde veröffentlicht.
-admin.oidc.keys.description,"Die Schlüssel, die Token für diesen Realm signieren. Bei der Rotation wird ein neuer Schlüssel veröffentlicht und der aktuelle außer Dienst gestellt."
 admin.oidc.keys.empty,Für diesen Realm existiert noch kein Signaturschlüssel.
 admin.oidc.keys.keyId,Schlüssel-ID
 admin.oidc.keys.privateNotice,Es werden nur öffentliche Schlüsselmetadaten angezeigt. Privates Schlüsselmaterial wird nie an den Browser gesendet.
@@ -589,35 +561,22 @@ admin.oidc.updated,Zuletzt aktualisiert
 admin.organizations.assuranceRequired,"Melden Sie sich erneut mit einer stärkeren Authentifizierungsmethode an, um diese Organisationseinstellung zu ändern."
 admin.organizations.assuranceRequiredTitle,Stärkere Anmeldung erforderlich
 admin.organizations.branding.background,Hintergrundfarbe
-admin.organizations.branding.dark,Dunkles Design
-admin.organizations.branding.description,"Farben, Logos und rechtliche Links, die auf den Anmelde- und Kontoseiten angezeigt werden."
 admin.organizations.branding.font,Textfarbe
 admin.organizations.branding.iconUrl,Icon-URL
-admin.organizations.branding.light,Helles Design
 admin.organizations.branding.logoUrl,Logo-URL
-admin.organizations.branding.preview,Vorschau
 admin.organizations.branding.primary,Primärfarbe
-admin.organizations.branding.privacyUrl,URL der Datenschutzerklärung
 admin.organizations.branding.saved,Das Branding wurde gespeichert.
-admin.organizations.branding.termsUrl,URL der Nutzungsbedingungen
 admin.organizations.branding.themeMode,Standarddesign
-admin.organizations.branding.title,Branding
 admin.organizations.branding.warn,Warnfarbe
-admin.organizations.branding.watermark,Authworks-Wasserzeichen ausblenden
 admin.organizations.detail.created,Erstellt
 admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Steuern Sie den Organisationsnamen und ihren Lebenszyklusstatus.
 admin.organizations.detail.settingsTitle,Organisationseinstellungen
 admin.organizations.detail.updated,Zuletzt aktualisiert
 admin.organizations.detailTitle,Organisationsdetails
-admin.organizations.domains.claim,Domain beanspruchen
 admin.organizations.domains.claimed,{domain} wurde beansprucht und wartet auf Verifizierung.
-admin.organizations.domains.description,"Verifizierte Domains ermöglichen es Personen, diese Organisation anhand ihrer E-Mail-Adresse zu finden."
-admin.organizations.domains.discovery,Erkennungsvorschau
-admin.organizations.domains.discoveryDescription,"Prüfen Sie, zu welcher Organisation eine Domain bei der Anmeldung derzeit aufgelöst wird."
 admin.organizations.domains.discoveryFound,{domain} wird zu {organization} aufgelöst.
 admin.organizations.domains.discoveryMissing,{domain} wird zu keiner Organisation aufgelöst.
-admin.organizations.domains.domain,Domain
 admin.organizations.domains.empty,Diese Organisation hat noch keine Domain beansprucht.
 admin.organizations.domains.invalid,Geben Sie einen gültigen Domainnamen ein.
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,Primäre Domain
 admin.organizations.domains.remove,Domain entfernen
 admin.organizations.domains.removeConfirm,Die Domain {domain} entfernen? Die Organisationserkennung dafür stoppt sofort.
 admin.organizations.domains.removed,Die Domain wurde entfernt.
-admin.organizations.domains.title,Domains und Erkennung
 admin.organizations.domains.unverified,Verifizierung ausstehend
 admin.organizations.domains.verificationRecord,Fügen Sie diesen DNS-TXT-Eintrag hinzu und verifizieren Sie dann.
 admin.organizations.domains.verified,Verifiziert
 admin.organizations.domains.verify,Domain verifizieren
 admin.organizations.domains.verifyDone,Die Domain wurde verifiziert.
-admin.organizations.invitations.create,Person einladen
-admin.organizations.invitations.description,"Laden Sie Personen per E-Mail ein und verfolgen Sie, welche Einladungen noch ausstehen."
 admin.organizations.invitations.email,E-Mail-Adresse
 admin.organizations.invitations.emailInvalid,Geben Sie eine gültige E-Mail-Adresse ein.
 admin.organizations.invitations.empty,Für diese Organisation wurden keine Einladungen versendet.
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,Abgelaufen
 admin.organizations.invitations.statusValue.pending,Ausstehend
 admin.organizations.invitations.statusValue.revoked,Widerrufen
 admin.organizations.invitations.title,Einladungen
-admin.organizations.invitations.tokenDismiss,Ich habe diesen Link gespeichert
-admin.organizations.invitations.tokenOnce,Dieser Einladungslink wird nur einmal angezeigt. Teilen Sie ihn mit der eingeladenen Person.
-admin.organizations.invitations.tokenTitle,Einladungslink
 admin.organizations.lifecycle.activate,Organisation reaktivieren
 admin.organizations.lifecycle.activateConfirm,"Diese Organisation reaktivieren? Mitglieder verlieren den Zugriff, solange sie nicht aktiv ist."
 admin.organizations.lifecycle.changed,Der Lebenszyklusstatus der Organisation wurde geändert.
@@ -665,22 +618,16 @@ admin.organizations.list.name,Organisationsname
 admin.organizations.list.nameRequired,Geben Sie einen Organisationsnamen ein.
 admin.organizations.list.search,Organisationen durchsuchen
 admin.organizations.list.title,Organisationen
-admin.organizations.memberships.add,Mitglied hinzufügen
 admin.organizations.memberships.added,Das Mitglied wurde hinzugefügt.
-admin.organizations.memberships.description,"Personen in dieser Organisation und die festen Rollen, die ihnen zugewiesen wurden."
 admin.organizations.memberships.empty,Diese Organisation hat noch keine Mitglieder.
 admin.organizations.memberships.invalid,Geben Sie eine Benutzer-ID ein und wählen Sie zwischen einer und vier Rollen.
-admin.organizations.memberships.remove,Mitglied entfernen
 admin.organizations.memberships.removeConfirm,{userId} aus dieser Organisation entfernen? Der Organisationszugriff endet sofort.
 admin.organizations.memberships.removed,Das Mitglied wurde entfernt.
 admin.organizations.memberships.roles,Rollen
-admin.organizations.memberships.rolesFixed,Rollen sind von Authworks festgelegt und können nicht umbenannt werden.
 admin.organizations.memberships.title,Mitglieder und Rollen
 admin.organizations.memberships.updated,Die Mitgliedsrollen wurden aktualisiert.
 admin.organizations.memberships.user,Benutzer
 admin.organizations.memberships.userId,Benutzer-ID
-admin.organizations.pageNext,Nächste Seite
-admin.organizations.pagePrevious,Vorherige Seite
 admin.organizations.permissionDenied,"Sie haben keine Berechtigung, diese Organisation anzuzeigen oder zu ändern."
 admin.organizations.permissionDeniedTitle,Zugriff nicht verfügbar
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,Status
 admin.organizations.statusValue.active,Aktiv
 admin.organizations.statusValue.inactive,Inaktiv
 admin.organizations.statusValue.removed,Entfernt
-admin.overview.description,"Identität, Domains und Lebenszyklus des Bereichs, den Sie verwalten."
-admin.overview.sessionTitle,Administratorsitzung
-admin.overview.title,Bereichsübersicht
 admin.projects.access.description,"Rollen, die dieser Administrator derzeit effektiv im Projekt besitzt."
 admin.projects.access.empty,Im aktuellen Organisationskontext sind keine Projektrollen wirksam.
 admin.projects.access.grantedOrganization,Gewährt über Organisation
@@ -775,17 +719,11 @@ admin.projects.applications.name,Anwendungsname
 admin.projects.applications.removeConfirm,Diese Anwendung entfernen? Dies kann nicht rückgängig gemacht werden.
 admin.projects.applications.title,Anwendungen
 admin.projects.applications.type,Anwendungstyp
-admin.projects.crossTenant,Diese Ressource gehört zu einem anderen Realm und ist hier nicht verfügbar.
 admin.projects.deleteConfirm,"Dieses Projekt löschen? Anwendungen, Rollen und Grants werden mitgelöscht."
 admin.projects.deleteConfirmAccept,Projekt löschen
 admin.projects.deleteConfirmTitle,Dieses Projekt löschen
-admin.projects.detail.authorizationRequired,Autorisierung erforderlich
 admin.projects.detail.created,Erstellt
-admin.projects.detail.identifier,Projektkennung
 admin.projects.detail.organization,Organisation
-admin.projects.detail.projectAccessRequired,Projektzugriff erforderlich
-admin.projects.detail.settingsDescription,Steuern Sie den Projektnamen und wie der Zugriff durchgesetzt wird.
-admin.projects.detail.settingsTitle,Projekteinstellungen
 admin.projects.detail.updated,Zuletzt aktualisiert
 admin.projects.detailTitle,Projektdetails
 admin.projects.grants.create,Organisationszugriff gewähren
@@ -810,7 +748,6 @@ admin.projects.list.name,Projektname
 admin.projects.list.search,Projekte durchsuchen
 admin.projects.list.title,Projekte
 admin.projects.missingId,Für dieses Ziel muss ein Projekt ausgewählt sein.
-admin.projects.permissionDenied,"Sie haben keine Berechtigung, diese Projektinformationen anzuzeigen oder zu ändern."
 admin.projects.roles.create,Rolle erstellen
 admin.projects.roles.deleteConfirm,"Diese Projektrolle löschen? Grants, die sie referenzieren, verlieren die Rolle."
 admin.projects.roles.description,"Rollen, die dieses Projekt Organisationen und ihren Mitgliedern zuweisen kann."
@@ -825,37 +762,22 @@ admin.projects.status,Status
 admin.projects.statusValue.active,Aktiv
 admin.projects.statusValue.inactive,Inaktiv
 admin.projects.statusValue.removed,Entfernt
-admin.realm.confirmLabel,Geben Sie {name} zur Bestätigung ein
 admin.realm.confirmMismatch,Der Bereichsname stimmt nicht überein.
-admin.realm.created,Erstellt
-admin.realm.dangerZone,Gefahrenbereich
 admin.realm.description,"Identitäts- und Anmeldekonfiguration für den Bereich, den Sie verwalten."
-admin.realm.disable,Bereich deaktivieren
 admin.realm.disableConfirm,Durch das Deaktivieren dieses Bereichs wird die Anmeldung für alle Anwendungen darin gestoppt. Fortfahren?
-admin.realm.disableWarning,Durch das Deaktivieren dieses Bereichs werden Anmeldung und Tokenausgabe für alle Anwendungen darin sofort gestoppt.
 admin.realm.disabled,Der Bereich wurde deaktiviert.
-admin.realm.domainRequired,Geben Sie mindestens eine Bereichsdomain ein.
 admin.realm.domains,Domains
 admin.realm.domainsHint,Trennen Sie Domains durch Kommas. Die erste Domain ist die primäre Domain.
-admin.realm.enable,Bereich aktivieren
-admin.realm.enableDescription,"Dieser Bereich ist deaktiviert. Aktivieren Sie ihn, um Anmeldung und Tokenausgabe wiederherzustellen."
 admin.realm.enabled,Der Bereich wurde aktiviert.
 admin.realm.identifier,Bereichskennung
 admin.realm.invalid,Geben Sie einen Bereichsnamen und mindestens eine Domain ein.
-admin.realm.lifecycleTitle,Bereichslebenszyklus
 admin.realm.name,Bereichsname
-admin.realm.nameRequired,Geben Sie einen Bereichsnamen ein.
 admin.realm.permissionDenied,"Sie haben keine Berechtigung, diesen Bereich zu ändern."
 admin.realm.primaryDomain,Primäre Domain
-admin.realm.save,Einstellungen speichern
 admin.realm.saved,Die Bereichseinstellungen wurden gespeichert.
-admin.realm.settingsDescription,"Ändern Sie den Bereichsnamen und die Domains, die auf diesen Bereich verweisen."
-admin.realm.settingsTitle,Allgemeine Einstellungen
 admin.realm.status,Status
 admin.realm.statusActive,Aktiv
 admin.realm.statusDisabled,Deaktiviert
-admin.realm.title,Bereichseinstellungen
-admin.realm.updated,Zuletzt aktualisiert
 admin.session.expired,Ihre Administratorsitzung ist abgelaufen
 admin.signIn.activeTitle,Administratorsitzung aktiv
 admin.signIn.credential,Bootstrap-Administratoranmeldedaten
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,Abgemeldet
 admin.signIn.subject,Subjekt
 admin.signIn.subjectType,Subjekttyp
 admin.signIn.title,Administratoranmeldung
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,Zurück zu Benutzern
 admin.users.count,{count} Benutzer
 admin.users.create,Benutzer erstellen
 admin.users.createDescription,Fügen Sie dem aktuellen Realm einen menschlichen Benutzer hinzu.
 admin.users.createSubmit,Erstellen
 admin.users.created,{userName} wurde erstellt.
 admin.users.createdAt,Erstellt
-admin.users.dangerZone,Gefahrenbereich
-admin.users.delete,Benutzer löschen
-admin.users.deleteConfirm,{userName} endgültig löschen?
 admin.users.deleteWarning,Das Löschen dieses Benutzers widerruft sofort seine Sitzungen und Zugriffe.
-admin.users.deleted,{userName} wurde gelöscht.
-admin.users.description,Menschliche Identitäten im aktuellen Realm.
 admin.users.detailTitle,Benutzerdetails
 admin.users.displayName,Anzeigename
 admin.users.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 admin.users.email,E-Mail-Adresse
-admin.users.empty,Keine Benutzer entsprechen dem aktuellen Filter.
 admin.users.firstName,Vorname
 admin.users.identifier,Benutzerkennung
 admin.users.invalid,Geben Sie eine gültige E-Mail-Adresse und einen Benutzernamen ein.
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,Inaktiv
 admin.users.lifecycle.initial,Initial
 admin.users.lifecycle.locked,Gesperrt
 admin.users.lifecycle.suspended,Ausgesetzt
-admin.users.lifecycleChanged,Der Benutzerstatus ist jetzt {state}.
-admin.users.lifecycleConfirm,{userName} auf {state} setzen?
-admin.users.lifecycleDescription,"Legen Sie fest, ob sich dieser Benutzer anmelden kann."
-admin.users.lifecycleTitle,Lebenszyklus
-admin.users.markUnverified,Als nicht verifiziert markieren
-admin.users.markVerified,Als verifiziert markieren
-admin.users.missingId,Dieser Benutzer konnte aus der Adresse nicht aufgelöst werden.
 admin.users.nickName,Spitzname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Bevorzugte Sprache
-admin.users.profileSave,Profil speichern
-admin.users.profileSaved,Das Benutzerprofil wurde gespeichert.
-admin.users.profileTitle,Profil
-admin.users.search,Benutzer durchsuchen
-admin.users.searchPlaceholder,"Nach Benutzername, E-Mail oder Kennung filtern"
 admin.users.sessions.created,Erstellt
-admin.users.sessions.description,Prüfen Sie die aktiven Sitzungen dieses Benutzers und widerrufen Sie den Zugriff von einem Gerät.
-admin.users.sessions.empty,Dieser Benutzer hat keine aktiven Sitzungen.
 admin.users.sessions.expires,Läuft ab
 admin.users.sessions.ipAddress,IP-Adresse
 admin.users.sessions.lastUsed,Zuletzt verwendet
 admin.users.sessions.method,Anmeldemethode
-admin.users.sessions.revokeConfirm,Diese Sitzung sofort widerrufen? Das Gerät wird sofort abgemeldet.
-admin.users.sessions.revoked,Die Sitzung wurde widerrufen.
-admin.users.sessions.title,Sitzungen und Geräte
 admin.users.state,Status
 admin.users.title,Benutzer
-admin.users.unverified,Nicht verifiziert
-admin.users.updated,Zuletzt aktualisiert
 admin.users.userName,Benutzername
-admin.users.verification,Verifizierung
-admin.users.verificationChanged,Der Verifizierungsstatus ist jetzt {state}.
-admin.users.verificationDescription,"Legen Sie fest, ob die E-Mail-Adresse dieses Benutzers als verifiziert gilt."
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verifiziert
 app.name,Authworks
 app.tagline,Sichere Identitätsdienste
 common.back,Zurück
@@ -963,7 +849,6 @@ common.retry,Erneut versuchen
 common.revoke,Widerrufen
 common.save,Speichern
 common.signIn,Anmelden
-common.signInWithProvider,Mit {provider} anmelden
 common.signOut,Abmelden
 common.theme.dark,Dunkel
 common.theme.light,Hell
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,Offene Einladungen: unbestätigte Einladungen 
 ui.authenticated.demo.keyboardHint,Pfeiltasten bewegen und Home und Ende springen und Enter wählt und Escape schließt.
 ui.authenticated.demo.loadingBlurb,Ladezustand: simuliert Latenz mit Platzhalterzeilen.
 ui.authenticated.demo.memberBlurb,Mitglied: meldet sich an und nutzt freigegebene Projekte ohne Verwaltung.
-ui.authenticated.demo.ownedBlurb,Eigen: nur die besitzende Organisation greift auf dieses Projekt zu.
 ui.authenticated.demo.ownerBlurb,Eigentümer: volle Kontrolle über Einstellungen und Branding und Domains und Eigentümer.
 ui.authenticated.demo.peopleBlurb,Personen: menschliche Nutzer mit Avatar und Rollenplakette und letzter Anmeldung.
 ui.authenticated.demo.profileName,Alex Morgan
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,Eigentümer
 ui.authenticated.demo.rolesBlurb,Organisationsrollen: Eigentümer bleibt ohne Eigentümerverwaltung deaktiviert.
 ui.authenticated.demo.sectionsBlurb,Bereichsvorschau: allgemeine Einstellungen und Branding und Anmeldung und Domains.
 ui.authenticated.demo.serviceBlurb,Dienstkonten: nichtmenschliche Identitäten mit Zugangsdaten.
-ui.authenticated.demo.sharedBlurb,Geteilt: eine Partnerorganisation greift über eine Freigabe zu.
 ui.authenticated.demo.sortCaption,Exakte Übereinstimmung: die Tabellen-URL unten trägt die aktive Sortierung.
 ui.authenticated.moreActions,Weitere Aktionen
 ui.authenticated.never,Nie
 ui.authenticated.search,Suchen
 ui.authenticated.sortBy,Nach {column} sortieren
-ui.authenticated.demo.actions,Zeilenmenü ausprobieren
 ui.authenticated.demo.avatarDescription,Foto mit Initialen-Fallback in festen Farbtönen.
 ui.authenticated.demo.avatarTitle,Avatar
-ui.authenticated.demo.chipsDescription,"Kompakte Pillen für Anzahlen, Kennzeichen und Kategorien."
 ui.authenticated.demo.chipsTitle,Chips
 ui.authenticated.demo.dataDescription,"Sortierbare Kopfzeilen, Zeilenlinks, Ladezustand und leerer Zustand."
 ui.authenticated.demo.dataTitle,Datentabelle
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,Nichts anzuzeigen
 ui.authenticated.demo.menuArchive,Archivieren
 ui.authenticated.demo.menuDelete,Löschen
 ui.authenticated.demo.menuRename,Umbenennen
-ui.authenticated.demo.optionDescription,"Klarsprachige Zusammenfassung, was diese Auswahl erlaubt."
 ui.authenticated.demo.optionsDescription,Auswählbare Karten für Rollen- und Optionsauswahl.
 ui.authenticated.demo.optionsTitle,Optionskarten
-ui.authenticated.demo.profileDescription,"Avatar, Titel, Untertitel, Chips, Meta und Aktionen."
-ui.authenticated.demo.profileTitle,Profilkopf
 ui.authenticated.demo.rowDelete,Zeile löschen
 ui.authenticated.demo.rowEdit,Zeile bearbeiten
 ui.authenticated.demo.searchDescription,Entprelltes Schreiben der URL-Abfrage über history.replaceState.
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,Suchfeld
 ui.authenticated.demo.skeletonDescription,Schimmerblöcke in Aufrufergröße.
 ui.authenticated.demo.skeletonTitle,Platzhalter
 ui.authenticated.demo.statHint,Über alle Organisationen
-ui.authenticated.demo.statsDescription,"Kompakte Kennzahlenkacheln, die erste verlinkt ihre Sammlung."
-ui.authenticated.demo.statsTitle,Kennzahlen
-ui.authenticated.demo.subNavDescription,"Vertikale Bereichsnavigation, mobil als Bildlaufzeile."
 ui.authenticated.demo.subNavTitle,Unternavigation
 ui.authenticated.demo.tabsDescription,Jeder Tab besitzt seine eigene URL.
 ui.authenticated.demo.tabsTitle,Tabs
 ui.authenticated.demo.timeDescription,Relativer Text mit absolutem Zeitpunkt im Titelattribut.
-ui.authenticated.demo.timeTitle,Relative Zeit
 ui.authenticated.demo.title,Authenticated UI Kit
 demo.account.description,"Erkunden Sie die von Authworks unterstützten Funktionen für Profil-, Organisations-, Sicherheits- und Anwendungszugriffsverwaltung ohne Netzwerk. Jedes Ziel verfügt über einen expliziten Fixture-Zustandsvertrag."
 demo.account.eyebrow,Self-Service-Identität
@@ -1199,7 +1073,7 @@ demo.login.group.mfa.description,"Zweitfaktor-Herausforderungen, Authenticator-R
 demo.login.group.mfa.title,Multi-Faktor-Authentifizierung
 demo.login.group.password_email.description,Passwort- und E-Mail-Code-Authentifizierung mit deterministischen lokalen Fixtures.
 demo.login.group.password_email.title,Passwort und E-Mail-Code
-demo.login.group.passwordless.description,"Passkeys und konfigurierte externe Identitätsanbieter."
+demo.login.group.passwordless.description,Passkeys und konfigurierte externe Identitätsanbieter.
 demo.login.group.passwordless.title,Passwortlos und extern
 demo.login.group.recovery.description,Passwortwiederherstellung ohne Offenlegung des Kontos anfordern und abschließen.
 demo.login.group.recovery.title,Wiederherstellung
@@ -1509,13 +1383,13 @@ login.status.unavailableTitle,Anmeldung nicht verfügbar
 login.totpEnroll.description,Fügen Sie diesen Einrichtungsschlüssel zu Ihrer Authenticator-App hinzu und geben Sie anschließend den erzeugten Code ein. Der Schlüssel wird nur jetzt angezeigt.
 login.totpEnroll.hideSetupKey,Einrichtungsschlüssel ausblenden
 login.totpEnroll.qrLabel,QR-Code zur Einrichtung der Authenticator-App
-login.totpEnroll.scanDescription,"Scannen Sie den QR-Code mit Ihrer Authenticator-App und geben Sie anschließend den angezeigten sechsstelligen Code ein."
+login.totpEnroll.scanDescription,Scannen Sie den QR-Code mit Ihrer Authenticator-App und geben Sie anschließend den angezeigten sechsstelligen Code ein.
 login.totpEnroll.setupKeyLabel,Einrichtungsschlüssel (wenn Scannen nicht möglich ist)
 login.totpEnroll.showSetupKey,Einrichtungsschlüssel anzeigen
 login.totpEnroll.start,Einrichtungsschlüssel anzeigen
 login.totpEnroll.submit,Einrichtung abschließen
 login.totpEnroll.title,Authenticator-App einrichten
-login.totpEnroll.unavailableDescription,"Die Authenticator-Einrichtung konnte hier nicht vorbereitet werden. Die Einrichtungsdaten können nach einem Neuladen nicht wiederhergestellt werden."
+login.totpEnroll.unavailableDescription,Die Authenticator-Einrichtung konnte hier nicht vorbereitet werden. Die Einrichtungsdaten können nach einem Neuladen nicht wiederhergestellt werden.
 login.verify.description,Bestätigen Sie die E-Mail-Adresse Ihres Kontos.
 login.verify.submit,E-Mail-Adresse bestätigen
 login.verify.title,E-Mail-Adresse bestätigen
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,Anwendungszustimmung
 shell.nav.applicationConsents,Anwendungszustimmungen
 shell.nav.applications,Anwendungen
 shell.nav.auditEvents,Audit-Ereignisse
-shell.nav.branding,Erscheinungsbild
 shell.nav.chooseDestination,Ziel auswählen
 shell.nav.credentialsTokens,Anmeldedaten und Token
-shell.nav.deleteAccount,Konto löschen
-shell.nav.directory,Verzeichnis
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,Effektiver Zugriff
-shell.nav.emailAddress,E-Mail-Adresse
 shell.nav.emailOtpSignIn,E-Mail-Code-Anmeldung
 shell.nav.externalIdentitySignIn,Externe Identitätsanmeldung
 shell.nav.impersonation,Identitätsübernahme
 shell.nav.invitations,Einladungen
 shell.nav.linkedIdentities,Verknüpfte Identitäten
 shell.nav.loginPolicy,Anmeldung und Identität
-shell.nav.loginPolicyProviders,Anmeldung und Identitätsanbieter
 shell.nav.logout,Abmelden
 shell.nav.machineCredentials,Maschinen-Anmeldedaten
 shell.nav.machineUsers,Maschinenbenutzer
-shell.nav.membershipsRoles,Mitglieder und Rollen
-shell.nav.mfa,Multi-Faktor-Authentifizierung
 shell.nav.mfaSignIn,Multi-Faktor-Anmeldung
-shell.nav.myOrganizations,Meine Organisationen
 shell.nav.navigationTitle,{title}-Navigation
 shell.nav.oidcClients,OIDC-Clients
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,Betrieb
-shell.nav.organization,Organisation
 shell.nav.organizations,Organisationen
-shell.nav.overview,Übersicht
 shell.nav.passkeySignIn,Passkey-Anmeldung
 shell.nav.passkeys,Passkeys für Anmeldung
 shell.nav.password,Passwort
 shell.nav.passwordRecovery,Passwortwiederherstellung
 shell.nav.passwordSignIn,Passwort-Anmeldung
-shell.nav.personalInformation,Persönliche Angaben
 shell.nav.profile,Profil
 shell.nav.projects,Projekte
 shell.nav.protocolDocuments,Protokolldokumente
-shell.nav.realm,Realm-Bereich
-shell.nav.realmSettings,Bereichseinstellungen
 shell.nav.recoveryCodes,Wiederherstellungscodes
-shell.nav.refreshTokens,Refresh-Token
 shell.nav.registration,Registrierung
-shell.nav.rolesGrants,Rollen und Berechtigungen
 shell.nav.security,Sicherheit
 shell.nav.securityHistory,Sicherheitsverlauf
 shell.nav.sessions,Sitzungen
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,Administratoren
 demo.admin.scenario.roles.description,Organisationsrollen und Projektrollenzuweisungen.
 demo.admin.scenario.roles.title,Rollen
 shell.nav.organizationSwitcher,Organisation
-admin.directory.administrators.placeholder,Realm-Administratoren folgen in Kürze.
-admin.directory.roles.placeholder,Rollenverwaltung folgt in Kürze.
-admin.directory.users.placeholder,Das neue Benutzerverzeichnis folgt in Kürze.
-admin.organizations.configuration.branding,Branding
 admin.organizations.configuration.brandingDescription,"Hell- und Dunkelmodus, Logo und rechtliche Links mit Live-Vorschau."
-admin.organizations.configuration.domains,Domains
-admin.organizations.configuration.domainsDescription,Verifizierte Domains und Organisationssuche.
-admin.organizations.configuration.general,Allgemein
 admin.organizations.configuration.generalDescription,"Organisationsname, Status und Gefahrenzone."
-admin.organizations.configuration.placeholder,Die neue Organisationskonfiguration folgt in Kürze.
-admin.organizations.configuration.signIn,Anmeldung und Sicherheit
 admin.organizations.configuration.signInDescription,Organisations-Anmelde- und Sicherheitsrichtlinien.
 admin.projects.detail.accessTab,Zugriff
 admin.projects.detail.applicationsTab,Anwendungen
 admin.projects.detail.overviewTab,Übersicht
-admin.projects.detail.placeholder,Die Projektdetails mit Tabs folgen in Kürze.
 admin.projects.detail.rolesTab,Rollen
-admin.realm.overview.placeholder,Die zusammengefasste Realm-Übersicht folgt in Kürze.
 shell.nav.configuration,Konfiguration
 shell.nav.realmAdministrators,Administratoren
 shell.nav.realmGroup,Realm-Bereich
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations

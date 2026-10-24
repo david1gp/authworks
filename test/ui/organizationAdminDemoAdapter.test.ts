@@ -1,6 +1,5 @@
 import { describe, expect, mock, test } from "bun:test"
 import * as v from "valibot"
-import type { OrganizationAdminScreen } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 
 let currentObserver: (() => void) | null = null
 
@@ -196,7 +195,7 @@ describe("organization administration page state token seeding and dismissal", (
       initialInvitationToken,
       organizationId: () => organizationId,
       reloadKey: fixtureState,
-      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
 
     expect(page.invitationToken()).toBe("demo-invitation-token-0f9c31a7e5b24d68")
@@ -247,13 +246,13 @@ describe("organization administration page state reactive cloned mutations", () 
     expect(page.notice()).toBe("organization-lifecycle")
   })
 
-  test.skip("reactively updates memberships list on role change and removal", async () => {
+  test("reactively updates memberships list on role change and removal", async () => {
     const adapter = organizationAdminDemoAdapterCreate(() => "success")
     const page = organizationAdminPageStateCreate({
       adapter,
       confirm: () => true,
       organizationId: () => organizationId,
-      screen: (() => "memberships") as unknown as () => OrganizationAdminScreen,
+      screen: () => "organization-detail",
     })
 
     await Promise.resolve()
@@ -275,13 +274,13 @@ describe("organization administration page state reactive cloned mutations", () 
     expect(page.notice()).toBe("membership-removed")
   })
 
-  test.skip("reactively updates domains, branding, and policy", async () => {
+  test("reactively updates domains, branding, and policy", async () => {
     const adapter = organizationAdminDemoAdapterCreate(() => "success")
     const page = organizationAdminPageStateCreate({
       adapter,
       confirm: () => true,
       organizationId: () => organizationId,
-      screen: (() => "domains") as unknown as () => OrganizationAdminScreen,
+      screen: () => "configuration",
     })
 
     await Promise.resolve()

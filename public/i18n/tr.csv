@@ -40,7 +40,6 @@ account.access.invitationOpen,Daveti aç
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,Etkin kuruluş yap
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,{source} tarafından verilen {count} izni göster
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
 account.delete.dangerZoneToggle,Hesap silme seçeneklerini göster
@@ -64,20 +61,17 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,Kimlik doğrulama uygulaması
 account.factors.configured,Kimlik doğrulama uygulaması yapılandırıldı
 account.factors.count,{count} kimlik doğrulama uygulaması
 account.factors.missing,Kimlik doğrulama uygulaması yapılandırılmadı
-account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
 account.factors.emailOtp,Email code
 account.factors.finishTotp,Finish authenticator setup
 account.factors.passkeyCount,{count} passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
 account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
@@ -91,13 +85,13 @@ account.identities.description,External accounts linked to your Authworks identi
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,{provider} hesabını yönet ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Bu harici hesabın bağlantısı kaldırılsın mı?
 account.passkeys.add,Add passkey
@@ -130,8 +124,6 @@ account.profile.edit,Profili düzenle
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailMissing,E-posta adresi ayarlanmadı
-account.profile.emailVerified,E-posta adresi doğrulandı
-account.profile.emailVerificationPending,E-posta doğrulaması bekleniyor
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,Telefon numaraları
-account.profile.phoneNumbersEmpty,Kullanılabilir telefon numarası yok.
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,7 +179,6 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,Profil resmini değiştir
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Bir resmi buraya sürükleyip bırakın veya göz atmak için tıklayın
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,Resim kaldırılıyor…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,Profil resmi yüklenemedi
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.preferredLanguage.unspecified,Ayarlanmadı
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
@@ -214,15 +202,13 @@ account.recovery.once,Copy or print these codes now. They cannot be displayed ag
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
 account.refreshTokens.active,Aktif
 account.refreshTokens.activeShown,{count} etkin gösteriliyor
 account.refreshTokens.countOneShown,{count} uygulama gösteriliyor
 account.refreshTokens.countShown,{count} uygulama gösteriliyor
-account.refreshTokens.description,"Bu hesap için yenileme belirteçlerini kullanan uygulamaları inceleyin. Yalnızca güvenli meta veriler gösterilir; bir ailenin iptali ilişkili erişim belirteçlerini de geçersiz kılar."
+account.refreshTokens.description,Bu hesap için yenileme belirteçlerini kullanan uygulamaları inceleyin. Yalnızca güvenli meta veriler gösterilir; bir ailenin iptali ilişkili erişim belirteçlerini de geçersiz kılar.
 account.refreshTokens.empty,Kullanılabilir yenileme belirteci ailesi yok
 account.refreshTokens.expired,Süresi doldu
-account.refreshTokens.expires,Son kullanma: {date}
 account.refreshTokens.lastUsed,Son kullanım: {date}
 account.refreshTokens.loadMore,Daha fazla uygulama yükle
 account.refreshTokens.manage,Uygulama: {application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,Tüm aileleri iptal et
 account.refreshTokens.revokeAllConfirm,Bu hesap için tüm yenileme belirteci aileleri iptal edilsin mi?
 account.refreshTokens.revokeConfirm,Bu yenileme belirteci ailesi ve erişim belirteçleri iptal edilsin mi?
 account.refreshTokens.revoked,İptal edildi
-account.refreshTokens.revokedAt,İptal zamanı: {date}
-account.refreshTokens.scope,Kapsamlar: {scope}
 account.refreshTokens.title,Yenileme belirteci aileleri
-account.security.label,Account security management
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
-account.workspace.accessDescription,"Kuruluşlarınızı, izinlerinizi ve yetkilendirilmiş uygulamaları inceleyin."
-account.workspace.dangerDescription,Bu hesap için geri alınamaz işlemleri inceleyin.
-account.workspace.devicesDescription,"Güvenlik etkinliğini, oturum açılmış cihazları ve bağlı uygulamaları inceleyin."
 account.workspace.devicesTitle,Cihazlar ve uygulamalar
-account.workspace.securityDescription,Oturum açma yöntemlerini ve kurtarma seçeneklerini yönetin.
 admin.common.confirmTitle,Bu işlemi onaylayın
-admin.common.next,İleri
-admin.common.pagination,Sayfalama
 admin.common.permission,Bu yönetim verilerini görüntüleme izniniz yok.
-admin.common.previous,Geri
 admin.events.actor,Aktör
 admin.events.aggregate,Toplam
 admin.events.count,{count} olay
-admin.events.description,"Geçerli realm için değiştirilemez güvenlik etkinliği, en yeniden başlayarak."
 admin.events.empty,Geçerli filtreyle eşleşen olay yok.
 admin.events.hide,Yükü gizle
 admin.events.occurred,Gerçekleşti
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,Makine kullanıcılarını ve kimlik bilgilerini yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.machine.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.machine.created,Oluşturuldu
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,Onay
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Gerekli
 admin.oidc.clients.consentSkipped,Gerekli değil
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,Userinfo uç noktası
 admin.oidc.keys.algorithm,Algoritma
 admin.oidc.keys.create,Anahtar ekle
 admin.oidc.keys.created,Yeni bir imzalama anahtarı yayımlandı.
-admin.oidc.keys.description,Bu alanın belirteçlerini imzalayan anahtarlar. Döndürme yeni bir anahtar yayımlar ve mevcut anahtarı kullanımdan kaldırır.
 admin.oidc.keys.empty,Bu alan için henüz imzalama anahtarı yok.
 admin.oidc.keys.keyId,Anahtar kimliği
 admin.oidc.keys.privateNotice,Yalnızca açık anahtar meta verileri gösterilir. Özel anahtar materyali tarayıcıya asla gönderilmez.
@@ -589,35 +561,22 @@ admin.oidc.updated,Son güncelleme
 admin.organizations.assuranceRequired,Bu kuruluş ayarını değiştirmek için daha güçlü bir kimlik doğrulama yöntemiyle yeniden oturum açın.
 admin.organizations.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.organizations.branding.background,Arka plan rengi
-admin.organizations.branding.dark,Koyu tema
-admin.organizations.branding.description,"Barındırılan oturum açma ve hesap ekranlarında gösterilen renkler, logolar ve yasal bağlantılar."
 admin.organizations.branding.font,Metin rengi
 admin.organizations.branding.iconUrl,Simge URL'si
-admin.organizations.branding.light,Açık tema
 admin.organizations.branding.logoUrl,Logo URL'si
-admin.organizations.branding.preview,Önizleme
 admin.organizations.branding.primary,Birincil renk
-admin.organizations.branding.privacyUrl,Gizlilik politikası URL'si
 admin.organizations.branding.saved,Marka görünümü kaydedildi.
-admin.organizations.branding.termsUrl,Hizmet şartları URL'si
 admin.organizations.branding.themeMode,Varsayılan tema
-admin.organizations.branding.title,Marka görünümü
 admin.organizations.branding.warn,Uyarı rengi
-admin.organizations.branding.watermark,Authworks filigranını gizle
 admin.organizations.detail.created,Oluşturulma
 admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Kuruluş adını ve yaşam döngüsü durumunu yönetin.
 admin.organizations.detail.settingsTitle,Kuruluş ayarları
 admin.organizations.detail.updated,Son güncelleme
 admin.organizations.detailTitle,Kuruluş ayrıntısı
-admin.organizations.domains.claim,Alan adı talep et
 admin.organizations.domains.claimed,{domain} talep edildi ve doğrulama bekliyor.
-admin.organizations.domains.description,"Doğrulanmış alan adları, kişilerin bu kuruluşu e-posta adreslerinden bulmasını sağlar."
-admin.organizations.domains.discovery,Tanıma önizlemesi
-admin.organizations.domains.discoveryDescription,Bir alan adının oturum açma sırasında şu anda hangi kuruluşa çözümlendiğini kontrol edin.
 admin.organizations.domains.discoveryFound,"{domain}, {organization} kuruluşuna çözümleniyor."
 admin.organizations.domains.discoveryMissing,{domain} herhangi bir kuruluşa çözümlenmiyor.
-admin.organizations.domains.domain,Alan adı
 admin.organizations.domains.empty,Bu kuruluş henüz bir alan adı talep etmedi.
 admin.organizations.domains.invalid,Geçerli bir alan adı girin.
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,Birincil etki alanı
 admin.organizations.domains.remove,Alan adını kaldır
 admin.organizations.domains.removeConfirm,{domain} alan adı kaldırılsın mı? Bunun için organizasyon keşfi anında durur.
 admin.organizations.domains.removed,Alan adı kaldırıldı.
-admin.organizations.domains.title,Alan adları ve tanıma
 admin.organizations.domains.unverified,Doğrulama bekleniyor
 admin.organizations.domains.verificationRecord,"Bu DNS TXT kaydını ekleyin, ardından doğrulayın."
 admin.organizations.domains.verified,Verified
 admin.organizations.domains.verify,Alan adını doğrula
 admin.organizations.domains.verifyDone,Alan adı doğrulandı.
-admin.organizations.invitations.create,Kişi davet et
-admin.organizations.invitations.description,Kişileri e-posta ile davet edin ve hangi davetlerin hâlâ beklemede olduğunu izleyin.
 admin.organizations.invitations.email,Email address
 admin.organizations.invitations.emailInvalid,Geçerli bir e-posta adresi girin.
 admin.organizations.invitations.empty,Bu kuruluş için hiç davet gönderilmedi.
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,Süresi doldu
 admin.organizations.invitations.statusValue.pending,Beklemede
 admin.organizations.invitations.statusValue.revoked,İptal edildi
 admin.organizations.invitations.title,Davetler
-admin.organizations.invitations.tokenDismiss,Bu bağlantıyı kaydettim
-admin.organizations.invitations.tokenOnce,Bu davet bağlantısı yalnızca bir kez gösterilir. Davet ettiğiniz kişiyle paylaşın.
-admin.organizations.invitations.tokenTitle,Davet bağlantısı
 admin.organizations.lifecycle.activate,Kuruluşu yeniden etkinleştir
 admin.organizations.lifecycle.activateConfirm,Bu organizasyon yeniden etkinleştirilsin mi? Etkin olana kadar üyeler erişimi kaybeder.
 admin.organizations.lifecycle.changed,Kuruluşun yaşam döngüsü durumu değiştirildi.
@@ -665,22 +618,16 @@ admin.organizations.list.name,Kuruluş adı
 admin.organizations.list.nameRequired,Bir kuruluş adı girin.
 admin.organizations.list.search,Kuruluşları ara
 admin.organizations.list.title,Kuruluşlar
-admin.organizations.memberships.add,Üye ekle
 admin.organizations.memberships.added,Üye eklendi.
-admin.organizations.memberships.description,Bu kuruluştaki kişiler ve kendilerine atanan sabit roller.
 admin.organizations.memberships.empty,Bu kuruluşun henüz üyesi yok.
 admin.organizations.memberships.invalid,Bir kullanıcı kimliği girin ve bir ile dört arasında rol seçin.
-admin.organizations.memberships.remove,Üyeyi kaldır
 admin.organizations.memberships.removeConfirm,{userId} bu organizasyondan çıkarılsın mı? Organizasyon erişimi hemen sona erer.
 admin.organizations.memberships.removed,Üye kaldırıldı.
 admin.organizations.memberships.roles,Roller
-admin.organizations.memberships.rolesFixed,Roller Authworks tarafından sabitlenmiştir ve yeniden adlandırılamaz.
 admin.organizations.memberships.title,Üyeler ve roller
 admin.organizations.memberships.updated,Üyenin rolleri güncellendi.
 admin.organizations.memberships.user,Kullanıcı
 admin.organizations.memberships.userId,Kullanıcı kimliği
-admin.organizations.pageNext,Sonraki sayfa
-admin.organizations.pagePrevious,Önceki sayfa
 admin.organizations.permissionDenied,Bu kuruluşu görüntüleme veya değiştirme izniniz yok.
 admin.organizations.permissionDeniedTitle,Erişim kullanılamıyor
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,Durum
 admin.organizations.statusValue.active,Etkin
 admin.organizations.statusValue.inactive,Etkin değil
 admin.organizations.statusValue.removed,Kaldırıldı
-admin.overview.description,"Yönettiğiniz alanın kimliği, etki alanları ve yaşam döngüsü."
-admin.overview.sessionTitle,Yönetici oturumu
-admin.overview.title,Alana genel bakış
 admin.projects.access.description,Bu yöneticinin şu anda projede fiilen sahip olduğu roller.
 admin.projects.access.empty,Geçerli kuruluş bağlamında etkin proje rolü yok.
 admin.projects.access.grantedOrganization,Kuruluş üzerinden verildi
@@ -775,17 +719,11 @@ admin.projects.applications.name,Uygulama adı
 admin.projects.applications.removeConfirm,Bu uygulama kaldırılsın mı? Bu işlem geri alınamaz.
 admin.projects.applications.title,Uygulamalar
 admin.projects.applications.type,Uygulama türü
-admin.projects.crossTenant,Bu kaynak başka bir realm'e ait ve burada kullanılamıyor.
 admin.projects.deleteConfirm,"Bu proje silinsin mi? Uygulamalar, roller ve hak atamaları onunla birlikte silinir."
 admin.projects.deleteConfirmAccept,Projeyi sil
 admin.projects.deleteConfirmTitle,Bu projeyi sil
-admin.projects.detail.authorizationRequired,Yetkilendirme gerekli
 admin.projects.detail.created,Oluşturulma
-admin.projects.detail.identifier,Proje tanımlayıcısı
 admin.projects.detail.organization,Kuruluş
-admin.projects.detail.projectAccessRequired,Proje erişimi gerekli
-admin.projects.detail.settingsDescription,Proje adını ve erişimin nasıl uygulandığını yönetin.
-admin.projects.detail.settingsTitle,Proje ayarları
 admin.projects.detail.updated,Son güncelleme
 admin.projects.detailTitle,Proje ayrıntısı
 admin.projects.grants.create,Kuruluş erişimi ver
@@ -810,7 +748,6 @@ admin.projects.list.name,Proje adı
 admin.projects.list.search,Projeleri ara
 admin.projects.list.title,Projeler
 admin.projects.missingId,Bu hedef için bir proje seçilmiş olmalıdır.
-admin.projects.permissionDenied,Bu proje bilgilerini görüntüleme veya değiştirme izniniz yok.
 admin.projects.roles.create,Rol oluştur
 admin.projects.roles.deleteConfirm,Bu proje rolü silinsin mi? Ona atıfta bulunan atamalar rolü kaybeder.
 admin.projects.roles.description,Bu projenin kuruluşlara ve üyelerine atayabileceği roller.
@@ -825,37 +762,22 @@ admin.projects.status,Durum
 admin.projects.statusValue.active,Etkin
 admin.projects.statusValue.inactive,Etkin değil
 admin.projects.statusValue.removed,Kaldırıldı
-admin.realm.confirmLabel,Onaylamak için {name} yazın
 admin.realm.confirmMismatch,Alan adı eşleşmiyor.
-admin.realm.created,Oluşturulma
-admin.realm.dangerZone,Tehlikeli bölge
 admin.realm.description,Yönettiğiniz alanın kimlik ve oturum açma yapılandırması.
-admin.realm.disable,Alanı devre dışı bırak
 admin.realm.disableConfirm,Bu alanı devre dışı bırakmak tüm uygulamaları için oturum açmayı durdurur. Devam edilsin mi?
-admin.realm.disableWarning,"Bu alanı devre dışı bırakmak, içindeki tüm uygulamalar için oturum açmayı ve belirteç verilmesini hemen durdurur."
 admin.realm.disabled,Alan devre dışı bırakıldı.
-admin.realm.domainRequired,En az bir alan etki alanı girin.
 admin.realm.domains,Etki alanları
 admin.realm.domainsHint,Etki alanlarını virgülle ayırın. İlk etki alanı birincil etki alanıdır.
-admin.realm.enable,Alanı etkinleştir
-admin.realm.enableDescription,Bu alan devre dışı. Oturum açmayı ve belirteç verilmesini geri getirmek için etkinleştirin.
 admin.realm.enabled,Alan etkinleştirildi.
 admin.realm.identifier,Alan tanımlayıcısı
 admin.realm.invalid,Bir alan adı ve en az bir etki alanı girin.
-admin.realm.lifecycleTitle,Alan yaşam döngüsü
 admin.realm.name,Alan adı
-admin.realm.nameRequired,Bir alan adı girin.
 admin.realm.permissionDenied,Bu alanı değiştirme izniniz yok.
 admin.realm.primaryDomain,Birincil etki alanı
-admin.realm.save,Ayarları kaydet
 admin.realm.saved,Alan ayarları kaydedildi.
-admin.realm.settingsDescription,Alan adını ve bu alana çözümlenen etki alanlarını değiştirin.
-admin.realm.settingsTitle,Genel ayarlar
 admin.realm.status,Durum
 admin.realm.statusActive,Etkin
 admin.realm.statusDisabled,Devre dışı
-admin.realm.title,Alan ayarları
-admin.realm.updated,Son güncelleme
 admin.session.expired,Yönetici oturumunuzun süresi doldu
 admin.signIn.activeTitle,Yönetici oturumu etkin
 admin.signIn.credential,Başlangıç yönetici kimlik bilgisi
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,Oturum kapatıldı
 admin.signIn.subject,Özne
 admin.signIn.subjectType,Özne türü
 admin.signIn.title,Yönetici oturumu açma
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,Kullanıcılara dön
 admin.users.count,{count} kullanıcı
 admin.users.create,Kullanıcı oluştur
 admin.users.createDescription,Geçerli realm'e bir insan kullanıcı ekleyin.
 admin.users.createSubmit,Oluştur
 admin.users.created,{userName} oluşturuldu.
 admin.users.createdAt,Oluşturulma
-admin.users.dangerZone,Tehlikeli bölge
-admin.users.delete,Kullanıcıyı sil
-admin.users.deleteConfirm,{userName} kalıcı olarak silinsin mi?
 admin.users.deleteWarning,Bu kullanıcıyı silmek oturumlarını ve erişimini anında iptal eder.
-admin.users.deleted,{userName} silindi.
-admin.users.description,Geçerli realm'deki insan kimlikleri.
 admin.users.detailTitle,Kullanıcı ayrıntısı
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
-admin.users.empty,Geçerli filtreyle eşleşen kullanıcı yok.
 admin.users.firstName,First name
 admin.users.identifier,Kullanıcı tanımlayıcısı
 admin.users.invalid,Geçerli bir e-posta adresi ve kullanıcı adı girin.
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,Etkin değil
 admin.users.lifecycle.initial,Başlangıç
 admin.users.lifecycle.locked,Kilitli
 admin.users.lifecycle.suspended,Askıya alındı
-admin.users.lifecycleChanged,Kullanıcı durumu artık {state}.
-admin.users.lifecycleConfirm,{userName} kullanıcısı {state} olarak ayarlansın mı?
-admin.users.lifecycleDescription,Bu kullanıcının oturum açıp açamayacağını belirleyin.
-admin.users.lifecycleTitle,Yaşam döngüsü
-admin.users.markUnverified,Doğrulanmamış olarak işaretle
-admin.users.markVerified,Doğrulanmış olarak işaretle
-admin.users.missingId,Bu kullanıcı adresten çözümlenemedi.
 admin.users.nickName,Nickname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Preferred language
-admin.users.profileSave,Profili kaydet
-admin.users.profileSaved,Kullanıcı profili kaydedildi.
-admin.users.profileTitle,Profil
-admin.users.search,Kullanıcıları ara
-admin.users.searchPlaceholder,"Kullanıcı adına, e-postaya veya tanımlayıcıya göre filtrele"
 admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
-admin.users.unverified,Doğrulanmamış
-admin.users.updated,Son güncelleme
 admin.users.userName,Username
-admin.users.verification,Doğrulama
-admin.users.verificationChanged,Doğrulama durumu artık {state}.
-admin.users.verificationDescription,Bu kullanıcının e-posta adresinin doğrulanmış sayılıp sayılmayacağını belirleyin.
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verified
 app.name,Authworks
 app.tagline,Güvenli kimlik hizmetleri
 common.back,Geri
@@ -963,7 +849,6 @@ common.retry,Tekrar deneyin
 common.revoke,Revoke
 common.save,Kaydet
 common.signIn,Giriş yap
-common.signInWithProvider,{provider} ile giriş yap
 common.signOut,Çıkış yap
 common.theme.dark,Koyu
 common.theme.light,Açık
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,Bekleyen davetler: kabul edilmemiş davetler a
 ui.authenticated.demo.keyboardHint,Oklar hareket eder ve Home ve End atlar ve Enter seçer ve Escape kapatır.
 ui.authenticated.demo.loadingBlurb,Yükleme düğmesi: iskelet satırlarla gecikmeyi canlandırır.
 ui.authenticated.demo.memberBlurb,Üye: yönetim olmadan verilen projelerde oturum açar ve kullanır.
-ui.authenticated.demo.ownedBlurb,Sahipli: yalnız sahip kuruluş bu projeye erişir.
 ui.authenticated.demo.ownerBlurb,Sahip: ayar ve marka ve alan adı ve sahiplerde tam denetim.
 ui.authenticated.demo.peopleBlurb,Kişiler: avatar ve rol ve son oturumlu insan kullanıcılar.
 ui.authenticated.demo.profileName,Alex Morgan
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,Sahip
 ui.authenticated.demo.rolesBlurb,Kuruluş rolleri: Sahip yönetimi yoksa Sahip kapalı kalır.
 ui.authenticated.demo.sectionsBlurb,Bölüm önizleme: genel ayarlar ve marka ve oturum ve alan adları.
 ui.authenticated.demo.serviceBlurb,Hizmet hesapları: kimlik bilgili insan dışı kimlikler.
-ui.authenticated.demo.sharedBlurb,Paylaşılan: ortak kuruluş tek yetkiyle erişir.
 ui.authenticated.demo.sortCaption,Tam eşleşme: aşağıdaki tablo URL etkin sıralamayı taşır.
 ui.authenticated.moreActions,Diğer işlemler
 ui.authenticated.never,Asla
 ui.authenticated.search,Ara
 ui.authenticated.sortBy,{column} ölçütüne göre sırala
-ui.authenticated.demo.actions,Satır menüsünü dene
 ui.authenticated.demo.avatarDescription,Deterministik tonlarda baş harf yedekli fotoğraf.
 ui.authenticated.demo.avatarTitle,Avatar
-ui.authenticated.demo.chipsDescription,"Sayılar, işaretler ve kategoriler için kompakt haplar."
 ui.authenticated.demo.chipsTitle,Rozetler
 ui.authenticated.demo.dataDescription,"Sıralanabilir başlıklar, satır bağlantıları, iskelet yükleme ve boş durum."
 ui.authenticated.demo.dataTitle,Veri tablosu
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,Gösterilecek öğe yok
 ui.authenticated.demo.menuArchive,Arşivle
 ui.authenticated.demo.menuDelete,Sil
 ui.authenticated.demo.menuRename,Yeniden adlandır
-ui.authenticated.demo.optionDescription,Bu seçimin neye izin verdiğinin sade özeti.
 ui.authenticated.demo.optionsDescription,Rol ve seçenek seçiciler için seçilebilir kartlar.
 ui.authenticated.demo.optionsTitle,Seçenek kartları
-ui.authenticated.demo.profileDescription,"Avatar, başlık, alt başlık, rozetler, meta ve işlemler."
-ui.authenticated.demo.profileTitle,Profil başlığı
 ui.authenticated.demo.rowDelete,Satırı sil
 ui.authenticated.demo.rowEdit,Satırı düzenle
 ui.authenticated.demo.searchDescription,history.replaceState ile gecikmeli URL sorgusu yazma.
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,Arama alanı
 ui.authenticated.demo.skeletonDescription,Arayan tarafından boyutlandırılan ışıltı blokları.
 ui.authenticated.demo.skeletonTitle,İskelet
 ui.authenticated.demo.statHint,Tüm kuruluşlarda
-ui.authenticated.demo.statsDescription,"Kompakt KPI kutuları, ilki koleksiyonuna bağlanır."
-ui.authenticated.demo.statsTitle,İstatistikler
-ui.authenticated.demo.subNavDescription,Kaydırma satırına daralan dikey bölüm gezgini.
 ui.authenticated.demo.subNavTitle,Alt gezinme
 ui.authenticated.demo.tabsDescription,Her sekmenin kendi URL adresi vardır.
 ui.authenticated.demo.tabsTitle,Sekmeler
 ui.authenticated.demo.timeDescription,Başlık özniteliğinde mutlak zamanlı göreli metin.
-ui.authenticated.demo.timeTitle,Göreli zaman
 ui.authenticated.demo.title,Kimlik doğrulamalı UI kiti
 demo.account.description,"Authworks tarafından desteklenen profil, kuruluş, güvenlik ve uygulama erişim yönetimi deneyimlerinin ağsız bir haritası. Her hedefin açık bir veri durumu sözleşmesi vardır."
 demo.account.eyebrow,Self servis kimlik
@@ -1199,7 +1073,7 @@ demo.login.group.mfa.description,"İkinci faktör zorlukları, kimlik doğrulay�
 demo.login.group.mfa.title,Çok faktörlü kimlik doğrulama
 demo.login.group.password_email.description,Belirleyici yerel verilerle şifre ve e-posta koduyla kimlik doğrulama.
 demo.login.group.password_email.title,Şifre ve e-posta kodu
-demo.login.group.passwordless.description,"Geçiş anahtarları ve yapılandırılmış harici kimlik sağlayıcıları."
+demo.login.group.passwordless.description,Geçiş anahtarları ve yapılandırılmış harici kimlik sağlayıcıları.
 demo.login.group.passwordless.title,Şifresiz ve harici
 demo.login.group.recovery.description,Hesap ifşa edilmeden şifre kurtarma isteğinde bulunun ve tamamlayın.
 demo.login.group.recovery.title,Kurtarma
@@ -1391,7 +1265,7 @@ login.mfa.optionalTitle,İsteğe bağlı iki adımlı doğrulama
 login.mfa.optionsUnavailableDescription,Kullanılabilir ikinci faktör seçenekleri yüklenemedi.
 login.mfa.optionsUnavailableTitle,İki adımlı doğrulama kullanılamıyor
 login.mfa.passkey,Geçiş anahtarı
-login.mfa.passkeyDescription,"Cihaz ekran kilidi veya biyometriyle bir geçiş anahtarı kullanarak onaylayın."
+login.mfa.passkeyDescription,Cihaz ekran kilidi veya biyometriyle bir geçiş anahtarı kullanarak onaylayın.
 login.mfa.passkeyDetail,Geçiş anahtarı veya cihaz biyometrisiyle doğrulayın.
 login.mfa.passkeyEnrollmentUnavailableDescription,Barındırılan giriş sözleşmesi geçiş anahtarı kaydını sunmuyor.
 login.mfa.passkeyEnrollmentUnavailableNotice,Geçiş anahtarı kurulumunu kimliği doğrulanmış hesap güvenliği sayfasından tamamlayıp girişe dönün.
@@ -1452,7 +1326,7 @@ login.password.signInTitle,Şifreyle giriş yap
 login.password.signingIn,Giriş yapılıyor...
 login.password.submit,Oturum aç
 login.password.title,Şifrenizi girin
-login.provider.accountNotFoundDescription,"Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil."
+login.provider.accountNotFoundDescription,Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil.
 login.provider.accountNotFoundTitle,Bağlı hesap yok
 login.provider.description,{provider} adresinden devam edecek ve işiniz bittiğinde buraya döneceksiniz.
 login.provider.failureDescription,{provider} ile giriş tamamlanamadı. Lütfen tekrar deneyin.
@@ -1524,7 +1398,7 @@ login.verify.verifiedTitle,E-posta adresi onaylandı
 login.whatsappOtp.codeDescription,{phoneNumber} numarasına WhatsApp üzerinden gönderilen kodu girin.
 login.whatsappOtp.codeError,WhatsApp kodu yanlış.
 login.whatsappOtp.codeTitle,WhatsApp doğrulama kodu
-login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz."
+login.whatsappOtp.description,Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz.
 login.whatsappOtp.differentNumber,Farklı bir numara kullan
 login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
 login.whatsappOtp.phoneInvalid,E.164 biçiminde geçerli bir telefon numarası girin.
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,Uygulama onayı
 shell.nav.applicationConsents,Uygulama onayları
 shell.nav.applications,Uygulamalar
 shell.nav.auditEvents,Denetim olayları
-shell.nav.branding,Marka görünümü
 shell.nav.chooseDestination,Bir hedef seçin
 shell.nav.credentialsTokens,Kimlik bilgileri ve belirteçler
-shell.nav.deleteAccount,Hesabı sil
-shell.nav.directory,Dizin
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,Etkin erişim
-shell.nav.emailAddress,E-posta adresi
 shell.nav.emailOtpSignIn,E-posta kodu ile giriş
 shell.nav.externalIdentitySignIn,Harici kimlik ile giriş
 shell.nav.impersonation,Kimliğe bürünme
 shell.nav.invitations,Davetler
 shell.nav.linkedIdentities,Bağlı kimlikler
 shell.nav.loginPolicy,Oturum açma ve kimlik
-shell.nav.loginPolicyProviders,Oturum açma ve kimlik sağlayıcıları
 shell.nav.logout,Oturumu kapat
 shell.nav.machineCredentials,Makine kimlik bilgileri
 shell.nav.machineUsers,Makine kullanıcıları
-shell.nav.membershipsRoles,Üyeler ve roller
-shell.nav.mfa,Çok faktörlü kimlik doğrulama
 shell.nav.mfaSignIn,Çok faktörlü giriş
-shell.nav.myOrganizations,Organizasyonlarım
 shell.nav.navigationTitle,{title} gezintisi
 shell.nav.oidcClients,OIDC istemcileri
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,İşlemler
-shell.nav.organization,Kuruluş
 shell.nav.organizations,Kuruluşlar
-shell.nav.overview,Genel bakış
 shell.nav.passkeySignIn,Geçiş anahtarı ile giriş
 shell.nav.passkeys,Geçiş anahtarları
 shell.nav.password,Şifre
 shell.nav.passwordRecovery,Parola kurtarma
 shell.nav.passwordSignIn,Şifre ile giriş
-shell.nav.personalInformation,Kişisel bilgiler
 shell.nav.profile,Profil
 shell.nav.projects,Projeler
 shell.nav.protocolDocuments,Protokol belgeleri
-shell.nav.realm,Alan
-shell.nav.realmSettings,Alan ayarları
 shell.nav.recoveryCodes,Kurtarma kodları
-shell.nav.refreshTokens,Yenileme belirteçleri
 shell.nav.registration,Kayıt
-shell.nav.rolesGrants,Roller ve yetkiler
 shell.nav.security,Güvenlik
 shell.nav.securityHistory,Güvenlik geçmişi
 shell.nav.sessions,Oturumlar
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,Yöneticiler
 demo.admin.scenario.roles.description,Kuruluş rolleri ve proje rolü atamaları.
 demo.admin.scenario.roles.title,Roller
 shell.nav.organizationSwitcher,Kuruluş
-admin.directory.administrators.placeholder,Realm yöneticisi yönetimi çok yakında.
-admin.directory.roles.placeholder,Rol yönetimi çok yakında.
-admin.directory.users.placeholder,Yeni kullanıcı dizini çok yakında.
-admin.organizations.configuration.branding,Marka
 admin.organizations.configuration.brandingDescription,"Canlı önizlemeli açık ve koyu renkler, logo ve yasal bağlantılar."
-admin.organizations.configuration.domains,Alan adları
-admin.organizations.configuration.domainsDescription,Doğrulanmış alan adları ve kuruluş bulma.
-admin.organizations.configuration.general,Genel
 admin.organizations.configuration.generalDescription,"Kuruluş adı, durumu ve tehlike bölgesi."
-admin.organizations.configuration.placeholder,Yeni kuruluş yapılandırması çok yakında.
-admin.organizations.configuration.signIn,Oturum açma ve güvenlik
 admin.organizations.configuration.signInDescription,Kuruluş oturum açma ve güvenlik formları.
 admin.projects.detail.accessTab,Erişim
 admin.projects.detail.applicationsTab,Uygulamalar
 admin.projects.detail.overviewTab,Genel bakış
-admin.projects.detail.placeholder,Sekmeli proje ayrıntısı çok yakında.
 admin.projects.detail.rolesTab,Roller
-admin.realm.overview.placeholder,Birleştirilmiş realm görünümü çok yakında.
 shell.nav.configuration,Yapılandırma
 shell.nav.realmAdministrators,Yöneticiler
 shell.nav.realmGroup,Realm grubu
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations

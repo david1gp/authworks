@@ -162,11 +162,7 @@ test("non-English catalogs contain only typed Authworks messages with matching p
 
 test("translation falls back to English and replaces both placeholder styles", () => {
   i18nStore.language.set("de")
-  i18nStore.dictionary.set({
-    "common.signInWithProvider": "Mit {provider} anmelden",
-    Continue: "Weiter",
-  })
-  expect(messageTranslate("common.signInWithProvider", { provider: "GitHub" })).toBe("Mit GitHub anmelden")
+  i18nStore.dictionary.set({ Continue: "Weiter" })
   expect(messageTranslate("common.cancel")).toBe("Cancel")
   expect(ttc("Continue")).toBe("Weiter")
   expect(translationPlaceholdersApply("{missing} [X]", ["value"])).toBe("{missing} value")
@@ -217,12 +213,6 @@ test("German login description renders translated instead of fallback English", 
     "Diese Anmeldeanfrage kann nicht abgeschlossen werden. Kehren Sie zur Anwendung zurück und versuchen Sie es erneut.",
   )
   expect(messageTranslate("login.status.unavailableTitle")).toBe("Anmeldung nicht verfügbar")
-  expect(messageTranslate("login.chooser.description", { organization: "Acme" })).toBe(
-    "Wählen Sie aus, wie Sie sich bei Acme anmelden möchten.",
-  )
-  expect(messageTranslate("login.password.description", { organization: "Acme" })).toBe(
-    "Geben Sie die Zugangsdaten für Ihr Acme-Konto ein.",
-  )
 })
 
 test("Arabic account-session labels, guard, and navigation text render translated rather than fallback English", async () => {
@@ -235,7 +225,6 @@ test("Arabic account-session labels, guard, and navigation text render translate
   i18nStore.dictionary.set(parsed.data)
 
   // Account session labels
-  expect(messageTranslate("account.security.label")).toBe("إدارة أمان الحساب")
   expect(messageTranslate("account.sessionExpired")).toBe("انتهت صلاحية جلستك")
   expect(messageTranslate("account.sessions.current")).toBe("الجلسة الحالية")
   expect(messageTranslate("account.sessions.description")).toBe(
@@ -261,14 +250,9 @@ test("Arabic account-session labels, guard, and navigation text render translate
   expect(messageTranslate("shell.guard.accessUnavailable")).toBe("الوصول غير متاح")
 
   // Navigation text by typed key
-  expect(messageTranslate("shell.nav.personalInformation")).toBe("المعلومات الشخصية")
   expect(messageTranslate("shell.nav.security")).toBe("الأمان")
   expect(messageTranslate("shell.nav.access")).toBe("الوصول")
-  expect(messageTranslate("shell.nav.realm")).toBe("النطاق")
-  expect(messageTranslate("shell.nav.directory")).toBe("الدليل")
   expect(messageTranslate("shell.nav.applications")).toBe("التطبيقات")
-  expect(messageTranslate("shell.nav.operations")).toBe("العمليات")
-  expect(messageTranslate("shell.nav.overview")).toBe("نظرة عامة")
   expect(messageTranslate("shell.nav.sessionsDevices")).toBe("الجلسات والأجهزة")
   expect(messageTranslate("login.signedIn.title")).toBe("تم تسجيل الدخول")
   expect(messageTranslate("common.signOut")).toBe("تسجيل الخروج")
@@ -289,11 +273,8 @@ test("duplicate English catalog values resolve by the intended key rather than a
 
   // Each pair shares one English source value but must translate through its own key.
   const duplicates = [
-    ["shell.nav.emailAddress", "account.profile.email"],
     ["shell.nav.password", "login.password.label"],
-    ["shell.nav.profile", "admin.users.profileTitle"],
     ["shell.nav.passkeys", "account.factors.passkeys"],
-    ["shell.nav.organization", "admin.projects.detail.organization"],
     ["shell.nav.applicationConsents", "admin.oidc.consents.title"],
   ] as const
 
@@ -303,16 +284,12 @@ test("duplicate English catalog values resolve by the intended key rather than a
     expect(messageTranslate(shellKey)).not.toBe(englishCatalog[shellKey])
   }
 
-  // "Impersonation" and "Organization" previously fell back to English through the reverse map.
+  // "Impersonation" previously fell back to English through the reverse map.
   expect(messageTranslate("shell.nav.impersonation")).toBe("Identitätsübernahme")
-  expect(messageTranslate("shell.nav.organization")).toBe("Organisation")
 
   i18nStore.language.set("en")
   i18nStore.dictionary.set({})
 })
-
-// Protocol names and proper nouns stay identical to their English source in every locale.
-const untranslatedProtocolKeys = new Set(["shell.nav.openIdConnect"])
 
 // Locale/key pairs whose correct translation is spelled exactly like the English word.
 const identicalWordTranslations = new Set([
@@ -370,12 +347,6 @@ test("every production shell, guard, confirmation and fixture catalog key is tra
       expect(translationPlaceholdersGet(translated ?? ""), `${option.code}/${key}`).toEqual(
         translationPlaceholdersGet(englishCatalog[key as keyof typeof englishCatalog]),
       )
-      if (untranslatedProtocolKeys.has(key)) {
-        expect(translated, `${option.code}/${key} is an intentional protocol name`).toBe(
-          englishCatalog[key as keyof typeof englishCatalog],
-        )
-        continue
-      }
       if (identicalWordTranslations.has(`${option.code}/${key}`)) continue
       expect(translated, `${option.code}/${key} must not be an English copy`).not.toBe(
         englishCatalog[key as keyof typeof englishCatalog],
@@ -455,11 +426,7 @@ const accountOverviewDialogKeys = [
   "account.profile.cancel",
   "account.profile.notSet",
   "account.profile.picturePreview",
-  "account.workspace.accessDescription",
-  "account.workspace.dangerDescription",
-  "account.workspace.devicesDescription",
   "account.workspace.devicesTitle",
-  "account.workspace.securityDescription",
 ] as const
 
 test("account overview and dialog labels are translated in every non-English catalog", async () => {
@@ -493,8 +460,6 @@ const accountRedesignKeys = [
   "account.profile.copied",
   "account.profile.copyFailed",
   "account.profile.emailMissing",
-  "account.profile.emailVerified",
-  "account.profile.emailVerificationPending",
   "account.profile.emailDescription",
   "account.refreshTokens.activeShown",
   "account.refreshTokens.countOneShown",

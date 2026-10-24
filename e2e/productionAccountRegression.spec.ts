@@ -1,8 +1,9 @@
-import { expect, type ConsoleMessage, type Page, type Request, type Response, type TestInfo } from "@playwright/test"
+import { type ConsoleMessage, expect, type Page, type Request, type Response, type TestInfo } from "@playwright/test"
 import { httpDiagnosticPathCreate } from "../src/platform/http/httpDiagnosticPathCreate.js"
+import { e2eTargetBaseUrlGet } from "./harness/e2eTargetBaseUrlGet.js"
 import { productionAuthTest } from "./productionAuthTest.js"
 
-const productionOrigin = "https://authworks.contentoren.de"
+const targetOrigin = e2eTargetBaseUrlGet()
 
 type ProductionAccountApiEvidence = {
   readonly path: RegExp
@@ -103,7 +104,7 @@ function productionAccountDiagnosticsCreate(page: Page) {
 
   const isApiRequest = (request: Request) => {
     if (request.resourceType() !== "fetch" && request.resourceType() !== "xhr") return false
-    return new URL(request.url()).origin === productionOrigin
+    return new URL(request.url()).origin === targetOrigin
   }
   const responseRecord = async (response: Response, responsePhase: ProductionResponseDiagnostic["phase"]) => {
     if (!isApiRequest(response.request())) return
@@ -303,7 +304,7 @@ async function productionAccountSectionVerify(
 ) {
   const message = diagnostics.failureMessage(`#${section.id}`)
   const workspaceSection = page.locator(`#${section.id}`)
-  await expect(page).toHaveURL(`${productionOrigin}/account#${section.id}`)
+  await expect(page).toHaveURL(`${targetOrigin}/account#${section.id}`)
   await expect(workspaceSection.getByRole("heading", { name: section.heading, exact: true }), message).toBeVisible()
   await expect(workspaceSection.getByText(section.content).first(), message).toBeVisible()
   await expect(page.locator('[data-content-state="loading"], [role="status"]'), message).toHaveCount(0)
@@ -335,10 +336,10 @@ productionAuthTest(
     try {
       await productionAuth.signIn(page)
       diagnostics.accountPhaseMark()
-      await expect(page).toHaveURL(`${productionOrigin}/account`)
+      await expect(page).toHaveURL(`${targetOrigin}/account`)
       const accountLoadSequenceBefore = diagnostics.responseSequenceMark()
-      await page.goto(`${productionOrigin}/account`)
-      await expect(page).toHaveURL(`${productionOrigin}/account`)
+      await page.goto(`${targetOrigin}/account`)
+      await expect(page).toHaveURL(`${targetOrigin}/account`)
 
       const navigation = page.getByRole("navigation", { name: "Account navigation" })
       await expect(navigation).toBeVisible()
@@ -356,7 +357,7 @@ productionAuthTest(
       }
 
       await page.reload()
-      await expect(page).toHaveURL(`${productionOrigin}/account#danger-zone`)
+      await expect(page).toHaveURL(`${targetOrigin}/account#danger-zone`)
       await expect(navigation.getByRole("link", { exact: true, name: "Danger zone" })).toHaveAttribute(
         "aria-current",
         "location",

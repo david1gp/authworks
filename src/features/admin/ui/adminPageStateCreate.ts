@@ -7,19 +7,14 @@ import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
-import type { User } from "../../users/public/userSchema.js"
-import type { UserState } from "../../users/public/userStateSchema.js"
-import type { UserVerificationState } from "../../users/public/userVerificationStateSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
-import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
-import { adminUserSecurityStateCreate } from "./adminUserSecurityStateCreate.js"
 import type { AdminViewStatus } from "./adminViewStatusSchema.js"
 
 type FailedResult = { readonly code?: string; readonly errorMessage: string; readonly statusCode?: number }
 
 type AdminPageStateOptions = {
-  readonly adapter: AdminAdapter & AdminUserSecurityAdapter
+  readonly adapter: AdminAdapter
   /**
    * Confirmation for every guarded action. It is answered by the shared in-app dialog rather
    * than a native prompt, so it may resolve asynchronously and the operator can always cancel.
@@ -40,19 +35,11 @@ type AdminPageStateOptions = {
 export function adminPageStateCreate(options: AdminPageStateOptions) {
   const pageSize = options.pageSize ?? 20
   const confirmAction = options.confirm
-  const userSecurity = adminUserSecurityStateCreate({
-    adapter: options.adapter,
-    confirm: confirmAction,
-    reloadKey: options.reloadKey,
-    userId: () => options.userId?.(),
-  })
   const status = createSignalObject<AdminViewStatus>(options.initialStatus ?? "loading")
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
   const validationMessage = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
-  const users = createSignalObject<readonly User[]>([])
-  const user = createSignalObject<User | undefined>(undefined)
   const events = createSignalObject<readonly TenantEvent[]>([])
   const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
@@ -65,10 +52,6 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const expandedEventId = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<readonly string[]>([])
   const nextPageToken = createSignalObject<string | undefined>(undefined)
-  const createOpen = createSignalObject(false)
-  const createEmail = createSignalObject("")
-  const createUserName = createSignalObject("")
-  const createDisplayName = createSignalObject("")
   const realmName = createSignalObject("")
   const realmDomains = createSignalObject("")
   const realmStatus = createSignalObject<RealmStatus>("active")
@@ -205,10 +188,6 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     session: session.get,
     sessions: sessions.get,
     signInSecret,
-    createDisplayName,
-    createEmail,
-    createOpen,
-    createUserName,
     error: error.get,
     events: () => {
       const term = searchTerm.get().trim().toLowerCase()
@@ -264,105 +243,6 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     reload: () => void load(),
     searchTerm,
     status: status.get,
-    user: user.get,
-    userSecurity,
-    userCreateSubmit: async (event: SubmitEvent) => {
-      event.preventDefault()
-      validationMessage.set(undefined)
-      const email = createEmail.get().trim()
-      const userName = createUserName.get().trim()
-      const displayName = createDisplayName.get().trim()
-      if (email.length < 3 || !email.includes("@") || userName.length === 0) {
-        validationMessage.set(messageTranslate("admin.users.invalid"))
-        return
-      }
-      const data = await mutate("user:create", () =>
-        options.adapter.userCreate({
-          email,
-          profile: displayName.length === 0 ? {} : { displayName },
-          userName,
-        }),
-      )
-      if (data === undefined) return
-      users.set([...users.get(), data.user])
-      createEmail.set("")
-      createUserName.set("")
-      createDisplayName.set("")
-      createOpen.set(false)
-      status.set("ready")
-      notice.set(messageTranslate("admin.users.created", { userName: data.user.userName }))
-    },
-    userDelete: async () => {
-      const current = user.get()
-      if (current === undefined) return
-      const confirmed = await confirmAction(
-        messageTranslate("admin.users.deleteConfirm", { userName: current.userName }),
-      )
-      if (confirmed !== true) return
-      const data = await mutate(`user:delete:${current.id}`, () => options.adapter.userDelete(current.id))
-      if (data === undefined) return
-      user.set(data.user)
-      status.set("deleted")
-      notice.set(messageTranslate("admin.users.deleted", { userName: current.userName }))
-    },
-    userLifecycleSet: async (state: UserState) => {
-      const current = user.get()
-      if (current === undefined) return
-      if (state === "locked" || state === "inactive" || state === "suspended") {
-        const confirmed = await confirmAction(
-          messageTranslate("admin.users.lifecycleConfirm", { state, userName: current.userName }),
-        )
-        if (confirmed !== true) return
-      }
-      const data = await mutate(`user:lifecycle:${current.id}`, () =>
-        options.adapter.userLifecycleSet(current.id, { state }),
-      )
-      if (data === undefined) return
-      user.set(data.user)
-      notice.set(messageTranslate("admin.users.lifecycleChanged", { state: data.user.state }))
-    },
-    userProfileSave: async (input: {
-      displayName: string
-      firstName: string
-      lastName: string
-      nickName: string
-      preferredLanguage: string
-    }) => {
-      const current = user.get()
-      if (current === undefined) return
-      validationMessage.set(undefined)
-      if (input.displayName.trim().length === 0) {
-        validationMessage.set(messageTranslate("admin.users.displayNameRequired"))
-        return
-      }
-      const data = await mutate(`user:profile:${current.id}`, () =>
-        options.adapter.userProfileUpdate(current.id, {
-          displayName: input.displayName.trim(),
-          firstName: input.firstName.trim() || null,
-          lastName: input.lastName.trim() || null,
-          nickName: input.nickName.trim() || null,
-          preferredLanguage: input.preferredLanguage.trim() || null,
-        }),
-      )
-      if (data === undefined) return
-      user.set(data.user)
-      notice.set(messageTranslate("admin.users.profileSaved"))
-    },
-    users: () => {
-      const term = searchTerm.get().trim().toLowerCase()
-      if (term.length === 0) return users.get()
-      return users.get().filter((item) => `${item.userName} ${item.email} ${item.id}`.toLowerCase().includes(term))
-    },
-    userVerificationSet: async (state: UserVerificationState) => {
-      const current = user.get()
-      if (current === undefined) return
-      const data = await mutate(`user:verification:${current.id}`, () =>
-        options.adapter.userVerificationSet(current.id, { state }),
-      )
-      if (data === undefined) return
-      user.set(data.user)
-      notice.set(messageTranslate("admin.users.verificationChanged", { state: data.user.verificationState }))
-    },
     validationMessage: validationMessage.get,
   }
 }

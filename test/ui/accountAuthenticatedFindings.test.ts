@@ -63,10 +63,6 @@ test("an unreachable picture URL degrades to the placeholder and recovers for a 
   })
 })
 
-test("the unavailable-picture label is a typed catalog key", () => {
-  expect(englishCatalog["account.profile.pictureUnavailable"]).toBe("Profile picture could not be loaded")
-})
-
 test("a closed select trigger keeps no aria-controls reference and restores it when reopened", () => {
   const attributes = new Map<string, string>([["aria-controls", "listbox-1"]])
   const trigger = {
@@ -97,7 +93,7 @@ test("the invitation overview owns a translated open action in every locale", as
   expect(englishCatalog["account.access.invitationOpen"]).toBe("Open invitation")
 
   const locales = ["ar", "de", "es", "fr", "hu", "it", "ja", "nl", "pl", "pt", "ru", "tr", "uk", "zh"] as const
-  for (const key of ["account.access.invitationOpen", "account.profile.pictureUnavailable"] as const) {
+  for (const key of ["account.access.invitationOpen"] as const) {
     for (const locale of locales) {
       const csv = await Bun.file(new URL(`../../public/i18n/${locale}.csv`, import.meta.url)).text()
       const line = csv.split("\n").find((entry) => entry.startsWith(`${key},`))

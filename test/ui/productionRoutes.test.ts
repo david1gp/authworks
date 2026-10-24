@@ -162,10 +162,8 @@ describe("production route contracts", () => {
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
 
-    // "Password" and "Profile" and "Email address" duplicate feature catalog values.
+    // "Password" duplicates the login feature catalog value.
     expect(englishCatalog["shell.nav.password"]).toBe(englishCatalog["login.password.label"])
-    expect(englishCatalog["shell.nav.profile"]).toBe(englishCatalog["admin.users.profileTitle"])
-    expect(englishCatalog["shell.nav.emailAddress"]).toBe(englishCatalog["account.profile.email"])
 
     const accountScreen = productionRouteContractMap.account.screens[0]
     expect(accountScreen?.key).toBe("overview")
@@ -375,18 +373,48 @@ describe("production shell state", () => {
     expect(productionShellNavigationLinkVisible({ guard: baseGuard, kind: "account", target: "admin" })).toBe(true)
     expect(
       productionShellNavigationLinkVisible({
-        guard: shellGuardCreate({ permission: "denied" }),
+        guard: shellGuardCreate({ access: { organizationRoles: [], realmAdministrator: false } }),
         kind: "account",
         target: "admin",
       }),
     ).toBe(false)
     expect(
       productionShellNavigationLinkVisible({
-        guard: shellGuardCreate({ permission: "loading" }),
+        guard: shellGuardCreate({
+          access: { organizationRoles: ["owner"], realmAdministrator: false },
+          permission: "denied",
+        }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(true)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({
+          access: { organizationRoles: ["admin"], realmAdministrator: false },
+          permission: "denied",
+        }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(true)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({
+          access: { organizationRoles: ["member"], realmAdministrator: false },
+          permission: "denied",
+        }),
         kind: "account",
         target: "admin",
       }),
     ).toBe(false)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({ access: "loading" }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(true)
     expect(
       productionShellNavigationLinkVisible({
         guard: shellGuardCreate({ realm: "missing" }),

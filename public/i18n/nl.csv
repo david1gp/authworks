@@ -40,7 +40,6 @@ account.access.invitationOpen,Uitnodiging openen
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
-account.access.makeActiveOrganization,Instellen als actieve organisatie
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
@@ -53,8 +52,6 @@ account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,Toon {count} rechten verleend door {source}
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
 account.delete.dangerZoneToggle,Opties voor accountverwijdering tonen
@@ -64,20 +61,17 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,Authenticatie-app
 account.factors.configured,Authenticatie-app ingesteld
 account.factors.count,{count} authenticatie-apps
 account.factors.missing,Geen authenticatie-app ingesteld
-account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
 account.factors.emailOtp,Email code
 account.factors.finishTotp,Finish authenticator setup
 account.factors.passkeyCount,{count} passkeys
 account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
 account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
@@ -91,13 +85,13 @@ account.identities.description,External accounts linked to your Authworks identi
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
-"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
+account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
 account.identities.linkTitle,Link an external account
 account.identities.manage,{provider}-account beheren ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
-"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
 account.identities.signInAgain,Sign in again
-"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Dit externe account ontkoppelen?
 account.passkeys.add,Add passkey
@@ -130,8 +124,6 @@ account.profile.edit,Profiel bewerken
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailMissing,Geen e-mailadres ingesteld
-account.profile.emailVerified,E-mailadres geverifieerd
-account.profile.emailVerificationPending,Verificatie van e-mailadres in behandeling
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
@@ -173,14 +165,13 @@ account.profile.phoneChange,Change phone number
 account.profile.phoneCode,Six-digit verification code
 account.profile.phoneCodeInvalid,Enter the six-digit verification code.
 account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
-account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
 account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
 account.profile.phoneNumber,Phone number
 account.profile.phoneNumbers,Telefoonnummers
-account.profile.phoneNumbersEmpty,Er zijn geen telefoonnummers beschikbaar.
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
@@ -188,7 +179,6 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
 account.profile.pictureChange,Profielfoto wijzigen
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Sleep een afbeelding hierheen of klik om te bladeren
@@ -199,13 +189,11 @@ account.profile.pictureRemoving,Afbeelding verwijderen…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUnavailable,Profielfoto kon niet worden geladen
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.preferredLanguage.unspecified,Niet ingesteld
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
@@ -214,15 +202,13 @@ account.recovery.once,Copy or print these codes now. They cannot be displayed ag
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
 account.refreshTokens.active,Actief
 account.refreshTokens.activeShown,{count} actieve weergegeven
 account.refreshTokens.countOneShown,{count} toepassing weergegeven
 account.refreshTokens.countShown,{count} toepassingen weergegeven
-account.refreshTokens.description,"Bekijk de toepassingen die vernieuwingstokens voor dit account gebruiken. Alleen veilige metagegevens worden getoond; het intrekken van een familie maakt ook de bijbehorende toegangstokens ongeldig."
+account.refreshTokens.description,Bekijk de toepassingen die vernieuwingstokens voor dit account gebruiken. Alleen veilige metagegevens worden getoond; het intrekken van een familie maakt ook de bijbehorende toegangstokens ongeldig.
 account.refreshTokens.empty,Geen families van vernieuwingstokens beschikbaar
 account.refreshTokens.expired,Verlopen
-account.refreshTokens.expires,Verloopt op {date}
 account.refreshTokens.lastUsed,Laatst gebruikt op {date}
 account.refreshTokens.loadMore,Meer toepassingen laden
 account.refreshTokens.manage,Toepassing: {application}
@@ -233,11 +219,7 @@ account.refreshTokens.revokeAll,Alle families intrekken
 account.refreshTokens.revokeAllConfirm,Alle families van vernieuwingstokens voor dit account intrekken?
 account.refreshTokens.revokeConfirm,Deze familie van vernieuwingstokens en de toegangstokens intrekken?
 account.refreshTokens.revoked,Ingetrokken
-account.refreshTokens.revokedAt,Ingetrokken op {date}
-account.refreshTokens.scope,Scopes: {scope}
 account.refreshTokens.title,Families van vernieuwingstokens
-account.security.label,Account security management
-account.security.authenticatorCount,{count} authenticators configured
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
@@ -322,20 +304,12 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
-account.workspace.accessDescription,"Bekijk je organisaties, machtigingen en geautoriseerde toepassingen."
-account.workspace.dangerDescription,Bekijk onomkeerbare acties voor dit account.
-account.workspace.devicesDescription,"Bekijk beveiligingsactiviteit, aangemelde apparaten en verbonden toepassingen."
 account.workspace.devicesTitle,Apparaten en toepassingen
-account.workspace.securityDescription,Beheer aanmeldmethoden en herstelopties.
 admin.common.confirmTitle,Deze actie bevestigen
-admin.common.next,Volgende
-admin.common.pagination,Paginering
 admin.common.permission,U hebt geen toestemming om deze beheergegevens te bekijken.
-admin.common.previous,Vorige
 admin.events.actor,Actor
 admin.events.aggregate,Aggregaat
 admin.events.count,{count} gebeurtenissen
-admin.events.description,"Onveranderlijke beveiligingsactiviteit voor het huidige realm, nieuwste eerst."
 admin.events.empty,Geen gebeurtenissen komen overeen met het huidige filter.
 admin.events.hide,Payload verbergen
 admin.events.occurred,Voorgevallen
@@ -385,7 +359,6 @@ admin.impersonation.subject,Acting as
 admin.impersonation.target,User to impersonate
 admin.impersonation.targetRequired,Choose the user you want to act as.
 admin.impersonation.title,Impersonation
-admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"Het beheren van machinegebruikers en hun referenties vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
 admin.machine.assuranceRequiredTitle,Sterkere aanmelding vereist
 admin.machine.created,Aangemaakt
@@ -479,7 +452,7 @@ admin.oidc.clients.consent,Toestemming
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Vereist
 admin.oidc.clients.consentSkipped,Niet vereist
@@ -548,7 +521,6 @@ admin.oidc.documents.userinfoEndpoint,Userinfo-eindpunt
 admin.oidc.keys.algorithm,Algoritme
 admin.oidc.keys.create,Sleutel toevoegen
 admin.oidc.keys.created,Er is een nieuwe ondertekeningssleutel gepubliceerd.
-admin.oidc.keys.description,De sleutels die tokens voor dit realm ondertekenen. Bij rotatie wordt een nieuwe sleutel gepubliceerd en de huidige buiten gebruik gesteld.
 admin.oidc.keys.empty,Er bestaan nog geen ondertekeningssleutels voor dit realm.
 admin.oidc.keys.keyId,Sleutel-ID
 admin.oidc.keys.privateNotice,Alleen metagegevens van de openbare sleutel worden getoond. Privésleutelmateriaal wordt nooit naar de browser gestuurd.
@@ -589,35 +561,22 @@ admin.oidc.updated,Laatst bijgewerkt
 admin.organizations.assuranceRequired,Log opnieuw in met een sterkere authenticatiemethode om deze organisatie-instelling te wijzigen.
 admin.organizations.assuranceRequiredTitle,Sterkere aanmelding vereist
 admin.organizations.branding.background,Achtergrondkleur
-admin.organizations.branding.dark,Donker thema
-admin.organizations.branding.description,"Kleuren, logo's en juridische links die op de gehoste inlog- en accountschermen worden getoond."
 admin.organizations.branding.font,Tekstkleur
 admin.organizations.branding.iconUrl,Icoon-URL
-admin.organizations.branding.light,Licht thema
 admin.organizations.branding.logoUrl,Logo-URL
-admin.organizations.branding.preview,Voorbeeld
 admin.organizations.branding.primary,Primaire kleur
-admin.organizations.branding.privacyUrl,URL van het privacybeleid
 admin.organizations.branding.saved,De huisstijl is opgeslagen.
-admin.organizations.branding.termsUrl,URL van de servicevoorwaarden
 admin.organizations.branding.themeMode,Standaardthema
-admin.organizations.branding.title,Huisstijl
 admin.organizations.branding.warn,Waarschuwingskleur
-admin.organizations.branding.watermark,Het Authworks-watermerk verbergen
 admin.organizations.detail.created,Aangemaakt
 admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Beheer de organisatienaam en de levenscyclusstatus.
 admin.organizations.detail.settingsTitle,Organisatie-instellingen
 admin.organizations.detail.updated,Laatst bijgewerkt
 admin.organizations.detailTitle,Organisatiedetails
-admin.organizations.domains.claim,Domein claimen
 admin.organizations.domains.claimed,{domain} is geclaimd en wacht op verificatie.
-admin.organizations.domains.description,Geverifieerde domeinen laten mensen deze organisatie vinden via hun e-mailadres.
-admin.organizations.domains.discovery,Herkenningsvoorbeeld
-admin.organizations.domains.discoveryDescription,Controleer naar welke organisatie een domein tijdens het inloggen momenteel wordt herleid.
 admin.organizations.domains.discoveryFound,{domain} wordt herleid naar {organization}.
 admin.organizations.domains.discoveryMissing,{domain} wordt niet herleid naar een organisatie.
-admin.organizations.domains.domain,Domein
 admin.organizations.domains.empty,Deze organisatie heeft nog geen domein geclaimd.
 admin.organizations.domains.invalid,Voer een geldige domeinnaam in.
 admin.organizations.domains.placeholder,example.com
@@ -625,14 +584,11 @@ admin.organizations.domains.primary,Primair domein
 admin.organizations.domains.remove,Domein verwijderen
 admin.organizations.domains.removeConfirm,Het domein {domain} verwijderen? De organisatieontdekking ervoor stopt onmiddellijk.
 admin.organizations.domains.removed,Het domein is verwijderd.
-admin.organizations.domains.title,Domeinen en herkenning
 admin.organizations.domains.unverified,In afwachting van verificatie
 admin.organizations.domains.verificationRecord,Voeg dit DNS-TXT-record toe en verifieer daarna.
 admin.organizations.domains.verified,Verified
 admin.organizations.domains.verify,Domein verifiëren
 admin.organizations.domains.verifyDone,Het domein is geverifieerd.
-admin.organizations.invitations.create,Persoon uitnodigen
-admin.organizations.invitations.description,Nodig mensen uit per e-mail en volg welke uitnodigingen nog openstaan.
 admin.organizations.invitations.email,Email address
 admin.organizations.invitations.emailInvalid,Voer een geldig e-mailadres in.
 admin.organizations.invitations.empty,Er zijn geen uitnodigingen verstuurd voor deze organisatie.
@@ -648,9 +604,6 @@ admin.organizations.invitations.statusValue.expired,Verlopen
 admin.organizations.invitations.statusValue.pending,In behandeling
 admin.organizations.invitations.statusValue.revoked,Ingetrokken
 admin.organizations.invitations.title,Uitnodigingen
-admin.organizations.invitations.tokenDismiss,Ik heb deze link opgeslagen
-admin.organizations.invitations.tokenOnce,Deze uitnodigingslink wordt één keer getoond. Deel hem met de persoon die u hebt uitgenodigd.
-admin.organizations.invitations.tokenTitle,Uitnodigingslink
 admin.organizations.lifecycle.activate,Organisatie heractiveren
 admin.organizations.lifecycle.activateConfirm,Deze organisatie opnieuw activeren? Leden hebben geen toegang zolang deze niet actief is.
 admin.organizations.lifecycle.changed,De levenscyclusstatus van de organisatie is gewijzigd.
@@ -665,22 +618,16 @@ admin.organizations.list.name,Organisatienaam
 admin.organizations.list.nameRequired,Voer een organisatienaam in.
 admin.organizations.list.search,Organisaties zoeken
 admin.organizations.list.title,Organisaties
-admin.organizations.memberships.add,Lid toevoegen
 admin.organizations.memberships.added,Het lid is toegevoegd.
-admin.organizations.memberships.description,De mensen in deze organisatie en de vaste rollen die aan hen zijn toegewezen.
 admin.organizations.memberships.empty,Deze organisatie heeft nog geen leden.
 admin.organizations.memberships.invalid,Voer een gebruikers-ID in en kies tussen één en vier rollen.
-admin.organizations.memberships.remove,Lid verwijderen
 admin.organizations.memberships.removeConfirm,{userId} uit deze organisatie verwijderen? Toegang tot de organisatie eindigt onmiddellijk.
 admin.organizations.memberships.removed,Het lid is verwijderd.
 admin.organizations.memberships.roles,Rollen
-admin.organizations.memberships.rolesFixed,Rollen worden door Authworks vastgesteld en kunnen niet worden hernoemd.
 admin.organizations.memberships.title,Leden en rollen
 admin.organizations.memberships.updated,De rollen van het lid zijn bijgewerkt.
 admin.organizations.memberships.user,Gebruiker
 admin.organizations.memberships.userId,Gebruikers-ID
-admin.organizations.pageNext,Volgende pagina
-admin.organizations.pagePrevious,Vorige pagina
 admin.organizations.permissionDenied,U hebt geen toestemming om deze organisatie te bekijken of te wijzigen.
 admin.organizations.permissionDeniedTitle,Toegang niet beschikbaar
 admin.organizations.policy.allowedFactors,Allowed MFA factors
@@ -757,9 +704,6 @@ admin.organizations.status,Status
 admin.organizations.statusValue.active,Actief
 admin.organizations.statusValue.inactive,Inactief
 admin.organizations.statusValue.removed,Verwijderd
-admin.overview.description,"Identiteit, domeinen en levenscyclus van het realm dat u beheert."
-admin.overview.sessionTitle,Beheerderssessie
-admin.overview.title,Realm-overzicht
 admin.projects.access.description,De rollen die deze beheerder op dit moment effectief in het project heeft.
 admin.projects.access.empty,Er zijn geen projectrollen effectief in de huidige organisatiecontext.
 admin.projects.access.grantedOrganization,Toegekend via organisatie
@@ -775,17 +719,11 @@ admin.projects.applications.name,Applicatienaam
 admin.projects.applications.removeConfirm,Deze toepassing verwijderen? Dit kan niet ongedaan worden gemaakt.
 admin.projects.applications.title,Applicaties
 admin.projects.applications.type,Applicatietype
-admin.projects.crossTenant,Deze resource hoort bij een ander realm en is hier niet beschikbaar.
 admin.projects.deleteConfirm,"Dit project verwijderen? Toepassingen, rollen en grants worden ermee verwijderd."
 admin.projects.deleteConfirmAccept,Project verwijderen
 admin.projects.deleteConfirmTitle,Dit project verwijderen
-admin.projects.detail.authorizationRequired,Autorisatie vereist
 admin.projects.detail.created,Aangemaakt
-admin.projects.detail.identifier,Project-identificatie
 admin.projects.detail.organization,Organisatie
-admin.projects.detail.projectAccessRequired,Projecttoegang vereist
-admin.projects.detail.settingsDescription,Beheer de projectnaam en hoe toegang wordt afgedwongen.
-admin.projects.detail.settingsTitle,Projectinstellingen
 admin.projects.detail.updated,Laatst bijgewerkt
 admin.projects.detailTitle,Projectdetails
 admin.projects.grants.create,Organisatietoegang verlenen
@@ -810,7 +748,6 @@ admin.projects.list.name,Projectnaam
 admin.projects.list.search,Projecten zoeken
 admin.projects.list.title,Projecten
 admin.projects.missingId,Er moet een project zijn geselecteerd voor deze bestemming.
-admin.projects.permissionDenied,U hebt geen toestemming om deze projectinformatie te bekijken of te wijzigen.
 admin.projects.roles.create,Rol aanmaken
 admin.projects.roles.deleteConfirm,Deze projectrol verwijderen? Grants die ernaar verwijzen verliezen de rol.
 admin.projects.roles.description,De rollen die dit project aan organisaties en hun leden kan toewijzen.
@@ -825,37 +762,22 @@ admin.projects.status,Status
 admin.projects.statusValue.active,Actief
 admin.projects.statusValue.inactive,Inactief
 admin.projects.statusValue.removed,Verwijderd
-admin.realm.confirmLabel,Voer {name} in ter bevestiging
 admin.realm.confirmMismatch,De realm-naam komt niet overeen.
-admin.realm.created,Aangemaakt
-admin.realm.dangerZone,Gevarenzone
 admin.realm.description,Identiteits- en aanmeldconfiguratie van het realm dat u beheert.
-admin.realm.disable,Realm uitschakelen
 admin.realm.disableConfirm,Het uitschakelen van dit realm stopt aanmelden voor al zijn toepassingen. Doorgaan?
-admin.realm.disableWarning,Het uitschakelen van dit realm stopt direct het aanmelden en het uitgeven van tokens voor alle toepassingen erin.
 admin.realm.disabled,Het realm is uitgeschakeld.
-admin.realm.domainRequired,Voer ten minste één realm-domein in.
 admin.realm.domains,Domeinen
 admin.realm.domainsHint,Scheid domeinen met komma's. Het eerste domein is het primaire domein.
-admin.realm.enable,Realm inschakelen
-admin.realm.enableDescription,Dit realm is uitgeschakeld. Schakel het in om aanmelden en tokenuitgifte te herstellen.
 admin.realm.enabled,Het realm is ingeschakeld.
 admin.realm.identifier,Realm-identificatie
 admin.realm.invalid,Voer een realm-naam en ten minste één domein in.
-admin.realm.lifecycleTitle,Realm-levenscyclus
 admin.realm.name,Realm-naam
-admin.realm.nameRequired,Voer een realm-naam in.
 admin.realm.permissionDenied,U hebt geen toestemming om dit realm te wijzigen.
 admin.realm.primaryDomain,Primair domein
-admin.realm.save,Instellingen opslaan
 admin.realm.saved,De realm-instellingen zijn opgeslagen.
-admin.realm.settingsDescription,Wijzig de realm-naam en de domeinen die naar dit realm verwijzen.
-admin.realm.settingsTitle,Algemene instellingen
 admin.realm.status,Status
 admin.realm.statusActive,Actief
 admin.realm.statusDisabled,Uitgeschakeld
-admin.realm.title,Realm-instellingen
-admin.realm.updated,Laatst bijgewerkt
 admin.session.expired,Uw beheerderssessie is verlopen
 admin.signIn.activeTitle,Beheerderssessie actief
 admin.signIn.credential,Bootstrap-beheerdersreferentie
@@ -869,34 +791,24 @@ admin.signIn.signedOutTitle,Afgemeld
 admin.signIn.subject,Onderwerp
 admin.signIn.subjectType,Onderwerptype
 admin.signIn.title,Beheerdersaanmelding
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
 admin.users.authentication.pending,Pending confirmation
 admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.backToDirectory,Terug naar gebruikers
 admin.users.count,{count} gebruikers
 admin.users.create,Gebruiker aanmaken
 admin.users.createDescription,Voeg een menselijke gebruiker toe aan het huidige realm.
 admin.users.createSubmit,Aanmaken
 admin.users.created,{userName} is aangemaakt.
 admin.users.createdAt,Aangemaakt
-admin.users.dangerZone,Gevarenzone
-admin.users.delete,Gebruiker verwijderen
-admin.users.deleteConfirm,{userName} definitief verwijderen?
 admin.users.deleteWarning,Het verwijderen van deze gebruiker trekt onmiddellijk hun sessies en toegang in.
-admin.users.deleted,{userName} is verwijderd.
-admin.users.description,Menselijke identiteiten in het huidige realm.
 admin.users.detailTitle,Gebruikersdetail
 admin.users.displayName,Display name
 admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
-admin.users.empty,Geen gebruikers komen overeen met het huidige filter.
 admin.users.firstName,First name
 admin.users.identifier,Gebruikers-ID
 admin.users.invalid,Voer een geldig e-mailadres en gebruikersnaam in.
@@ -907,41 +819,15 @@ admin.users.lifecycle.inactive,Inactief
 admin.users.lifecycle.initial,Initieel
 admin.users.lifecycle.locked,Vergrendeld
 admin.users.lifecycle.suspended,Opgeschort
-admin.users.lifecycleChanged,De gebruikersstatus is nu {state}.
-admin.users.lifecycleConfirm,{userName} op {state} zetten?
-admin.users.lifecycleDescription,Bepaal of deze gebruiker kan inloggen.
-admin.users.lifecycleTitle,Levenscyclus
-admin.users.markUnverified,Markeren als niet geverifieerd
-admin.users.markVerified,Markeren als geverifieerd
-admin.users.missingId,Deze gebruiker kon niet uit het adres worden herleid.
 admin.users.nickName,Nickname
-admin.users.pictureAlt,User profile picture
-admin.users.preferredLanguage,Preferred language
-admin.users.profileSave,Profiel opslaan
-admin.users.profileSaved,Het gebruikersprofiel is opgeslagen.
-admin.users.profileTitle,Profiel
-admin.users.search,Gebruikers zoeken
-admin.users.searchPlaceholder,"Filter op gebruikersnaam, e-mail of identificatie"
 admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 admin.users.state,Status
 admin.users.title,Gebruikers
-admin.users.unverified,Niet geverifieerd
-admin.users.updated,Laatst bijgewerkt
 admin.users.userName,Username
-admin.users.verification,Verificatie
-admin.users.verificationChanged,De verificatiestatus is nu {state}.
-admin.users.verificationDescription,Bepaal of het e-mailadres van deze gebruiker als geverifieerd geldt.
-admin.users.verificationTitle,Email verification
-admin.users.verified,Verified
 app.name,Authworks
 app.tagline,Veilige identiteitsdiensten
 common.back,Terug
@@ -963,7 +849,6 @@ common.retry,Opnieuw proberen
 common.revoke,Revoke
 common.save,Opslaan
 common.signIn,Inloggen
-common.signInWithProvider,Inloggen met {provider}
 common.signOut,Uitloggen
 common.theme.dark,Donker
 common.theme.light,Licht
@@ -978,7 +863,6 @@ ui.authenticated.demo.inviteBlurb,Openstaande uitnodigingen: niet-aanvaarde uitn
 ui.authenticated.demo.keyboardHint,Pijlen bewegen en Home en End springen en Enter kiest en Escape sluit.
 ui.authenticated.demo.loadingBlurb,Laadschakelaar: simuleert latentie met skeletrijen.
 ui.authenticated.demo.memberBlurb,Lid: meldt zich aan en gebruikt verleende projecten zonder beheer.
-ui.authenticated.demo.ownedBlurb,Eigen: alleen de eigen organisatie opent dit project.
 ui.authenticated.demo.ownerBlurb,Eigenaar: volledige controle over instellingen en stijl en domeinen en eigenaren.
 ui.authenticated.demo.peopleBlurb,Personen: menselijke gebruikers met avatar en rol en laatste aanmelding.
 ui.authenticated.demo.profileName,Alex Morgan
@@ -989,16 +873,13 @@ ui.authenticated.demo.roleOwner,Eigenaar
 ui.authenticated.demo.rolesBlurb,Organisatierollen: Eigenaar blijft uitgeschakeld zonder eigenaarsbeheer.
 ui.authenticated.demo.sectionsBlurb,Sectievoorbeeld: algemene instellingen en stijl en aanmelding en domeinen.
 ui.authenticated.demo.serviceBlurb,Serviceaccounts: niet-menselijke identiteiten met logingegevens.
-ui.authenticated.demo.sharedBlurb,Gedeeld: een partnerorganisatie opent via één toekenning.
 ui.authenticated.demo.sortCaption,Exacte match: de tabel-URL hieronder draagt de actieve sortering.
 ui.authenticated.moreActions,Meer acties
 ui.authenticated.never,Nooit
 ui.authenticated.search,Zoeken
 ui.authenticated.sortBy,Sorteren op {column}
-ui.authenticated.demo.actions,Probeer het rijmenu
 ui.authenticated.demo.avatarDescription,Foto met initialen-terugval in deterministische tonen.
 ui.authenticated.demo.avatarTitle,Avatar
-ui.authenticated.demo.chipsDescription,"Compacte pills voor aantallen, markeringen en categorieën."
 ui.authenticated.demo.chipsTitle,Chips
 ui.authenticated.demo.dataDescription,"Sorteerbare koppen, rijkoppelingen, skeletladen en lege staat."
 ui.authenticated.demo.dataTitle,Gegevenstabel
@@ -1008,11 +889,8 @@ ui.authenticated.demo.emptyTitle,Niets te tonen
 ui.authenticated.demo.menuArchive,Archiveren
 ui.authenticated.demo.menuDelete,Verwijderen
 ui.authenticated.demo.menuRename,Hernoemen
-ui.authenticated.demo.optionDescription,Duidelijke samenvatting van wat deze keuze toestaat.
 ui.authenticated.demo.optionsDescription,Selecteerbare kaarten voor rol- en optiekiezers.
 ui.authenticated.demo.optionsTitle,Optiekaarten
-ui.authenticated.demo.profileDescription,"Avatar, titel, ondertitel, chips, meta en acties."
-ui.authenticated.demo.profileTitle,Profielkop
 ui.authenticated.demo.rowDelete,Rij verwijderen
 ui.authenticated.demo.rowEdit,Rij bewerken
 ui.authenticated.demo.searchDescription,Debounced URL-query schrijven via history.replaceState.
@@ -1021,14 +899,10 @@ ui.authenticated.demo.searchTitle,Zoekveld
 ui.authenticated.demo.skeletonDescription,Shimmerblokken op aanroeperformaat.
 ui.authenticated.demo.skeletonTitle,Skelet
 ui.authenticated.demo.statHint,In alle organisaties
-ui.authenticated.demo.statsDescription,"Compacte KPI-tegels, de eerste linkt zijn verzameling."
-ui.authenticated.demo.statsTitle,Statistieken
-ui.authenticated.demo.subNavDescription,Verticale sectienavigatie die inklapt tot scrollrij.
 ui.authenticated.demo.subNavTitle,Subnavigatie
 ui.authenticated.demo.tabsDescription,Elke tab heeft een eigen URL.
 ui.authenticated.demo.tabsTitle,Tabs
 ui.authenticated.demo.timeDescription,Relatieve tekst met absolute tijd in het titelattribuut.
-ui.authenticated.demo.timeTitle,Relatieve tijd
 ui.authenticated.demo.title,Geverifieerde UI-kit
 demo.account.description,"Een netwerkvrije kaart van de ervaringen met profiel-, organisatie-, beveiligings- en applicatietoegangsbeheer die Authworks ondersteunt. Elke bestemming heeft een expliciet fixture-statuscontract."
 demo.account.eyebrow,Selfservice-identiteit
@@ -1199,7 +1073,7 @@ demo.login.group.mfa.description,"Tweede-factoruitdagingen, authenticatorregistr
 demo.login.group.mfa.title,Meervoudige authenticatie
 demo.login.group.password_email.description,Wachtwoord- en e-mailcode-authenticatie met deterministische lokale fixtures.
 demo.login.group.password_email.title,Wachtwoord en e-mailcode
-demo.login.group.passwordless.description,"Passkeys en geconfigureerde externe identiteitsproviders."
+demo.login.group.passwordless.description,Passkeys en geconfigureerde externe identiteitsproviders.
 demo.login.group.passwordless.title,Wachtwoordloos en extern
 demo.login.group.recovery.description,Vraag wachtwoordherstel aan en voltooi dit zonder openbaarmaking van het account.
 demo.login.group.recovery.title,Herstel
@@ -1430,7 +1304,7 @@ login.passkey.unsupported,Este navegador o dispositivo no puede usar claves de a
 login.passkey.unsupportedTitle,Passkey wordt niet ondersteund
 login.password.back,Terug naar methoden
 login.password.changeDescription,Kies una contraseña nueva antes de continuar.
-login.password.changeRequiredDescription,"Uw wachtwoord moet worden gewijzigd voordat u doorgaat."
+login.password.changeRequiredDescription,Uw wachtwoord moet worden gewijzigd voordat u doorgaat.
 login.password.changeRequiredTitle,Wachtwoord wijzigen
 login.password.changeSubmit,Wachtwoord wijzigen
 login.password.changeTitle,Actualizar uw contraseña
@@ -1438,7 +1312,7 @@ login.password.confirm,Confirmar contraseña
 login.password.current,Wachtwoord actual
 login.password.currentRequired,Voer uw huidige wachtwoord in.
 login.password.description,Voer in las credenciales de uw account de {organization}.
-login.password.expiredDescription,"Uw wachtwoord is verlopen. Stel een nieuw wachtwoord in om door te gaan."
+login.password.expiredDescription,Uw wachtwoord is verlopen. Stel een nieuw wachtwoord in om door te gaan.
 login.password.forgot,¿Olvidó uw contraseña?
 login.password.hide,Ocultar contraseña
 login.password.identifier,Nombre de usuario o e-mail electrónico
@@ -1452,7 +1326,7 @@ login.password.signInTitle,Aanmelden met wachtwoord
 login.password.signingIn,Bezig met aanmelden...
 login.password.submit,Inloggen
 login.password.title,Voer in uw contraseña
-login.provider.accountNotFoundDescription,"Er is geen Authworks-account gekoppeld aan dit {provider}-account. Accountkoppeling en zelfregistratie zijn nog niet ingeschakeld."
+login.provider.accountNotFoundDescription,Er is geen Authworks-account gekoppeld aan dit {provider}-account. Accountkoppeling en zelfregistratie zijn nog niet ingeschakeld.
 login.provider.accountNotFoundTitle,Geen gekoppeld account
 login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
 login.provider.failureDescription,Aanmelden met {provider} is niet voltooid. Probeer het opnieuw.
@@ -1469,7 +1343,7 @@ login.recovery.back,Terug naar aanmelden
 login.recovery.checkingLink,Resetlink controleren...
 login.recovery.choosePasswordTitle,Kies een nieuw wachtwoord
 login.recovery.completeDescription,Inloggen con uw nueva contraseña
-login.recovery.completeDescriptionReference,"Meld u aan met uw nieuwe wachtwoord om door te gaan."
+login.recovery.completeDescriptionReference,Meld u aan met uw nieuwe wachtwoord om door te gaan.
 login.recovery.completeTitle,Wachtwoord actualizada
 login.recovery.completeTitleReference,Uw wachtwoord is gewijzigd
 login.recovery.description,Voer in uw e-mail electrónico y le enviaremos instrucciones de recuperación si existe una account.
@@ -1552,50 +1426,31 @@ shell.nav.applicationConsent,Toestemming voor toepassing
 shell.nav.applicationConsents,Toepassingstoestemmingen
 shell.nav.applications,Applicaties
 shell.nav.auditEvents,Auditgebeurtenissen
-shell.nav.branding,Huisstijl
 shell.nav.chooseDestination,Kies een bestemming
 shell.nav.credentialsTokens,Referenties en tokens
-shell.nav.deleteAccount,Account verwijderen
-shell.nav.directory,Gebruikersoverzicht
-shell.nav.effectiveAccess,Effective access
-shell.nav.effectiveAccess,Effectieve toegang
-shell.nav.emailAddress,Adres de e-mail
 shell.nav.emailOtpSignIn,Inloggen met e-mailcode
 shell.nav.externalIdentitySignIn,Inloggen met externe identiteit
 shell.nav.impersonation,Imitatie
 shell.nav.invitations,Uitnodigingen
 shell.nav.linkedIdentities,Gekoppelde identiteiten
 shell.nav.loginPolicy,Inloggen en identiteit
-shell.nav.loginPolicyProviders,Inloggen en identiteitsproviders
 shell.nav.logout,Uitloggen
 shell.nav.machineCredentials,Machine-inloggegevens
 shell.nav.machineUsers,Machinegebruikers
-shell.nav.membershipsRoles,Leden en rollen
-shell.nav.mfa,Multi-factor authenticatie
 shell.nav.mfaSignIn,Multi-factor inloggen
-shell.nav.myOrganizations,Mijn organisaties
 shell.nav.navigationTitle,{title}-navigatie
 shell.nav.oidcClients,OIDC-clients
-shell.nav.openIdConnect,OpenID Connect
-shell.nav.operations,Bewerkingen
-shell.nav.organization,Organisatie
 shell.nav.organizations,Organisaties
-shell.nav.overview,Overzicht
 shell.nav.passkeySignIn,Inloggen met passkey
 shell.nav.passkeys,Toegangssleutels
 shell.nav.password,Wachtwoord
 shell.nav.passwordRecovery,Wachtwoordherstel
 shell.nav.passwordSignIn,Inloggen met wachtwoord
-shell.nav.personalInformation,Persoonlijke gegevens
 shell.nav.profile,Profiel
 shell.nav.projects,Projecten
 shell.nav.protocolDocuments,Protocoldocumenten
-shell.nav.realm,Domein
-shell.nav.realmSettings,Realm-instellingen
 shell.nav.recoveryCodes,Herstelcodes
-shell.nav.refreshTokens,Vernieuwingstokens
 shell.nav.registration,Registratie
-shell.nav.rolesGrants,Rollen en toewijzingen
 shell.nav.security,Beveiliging
 shell.nav.securityHistory,Beveiligingsgeschiedenis
 shell.nav.sessions,Sessies
@@ -1609,24 +1464,13 @@ demo.admin.scenario.realm_administrators.title,Beheerders
 demo.admin.scenario.roles.description,Organisatierollen en projectroltoewijzingen.
 demo.admin.scenario.roles.title,Rollen
 shell.nav.organizationSwitcher,Organisatie
-admin.directory.administrators.placeholder,Realmbeheer volgt binnenkort.
-admin.directory.roles.placeholder,Rolbeheer volgt binnenkort.
-admin.directory.users.placeholder,De nieuwe gebruikersdirectory volgt binnenkort.
-admin.organizations.configuration.branding,Huisstijl
 admin.organizations.configuration.brandingDescription,"Lichte en donkere kleuren, logo en juridische links met livevoorbeeld."
-admin.organizations.configuration.domains,Domeinen
-admin.organizations.configuration.domainsDescription,Geverifieerde domeinen en organisatiedetectie.
-admin.organizations.configuration.general,Algemeen
 admin.organizations.configuration.generalDescription,"Naam, status en gevarenzone van de organisatie."
-admin.organizations.configuration.placeholder,De nieuwe organisatieconfiguratie volgt binnenkort.
-admin.organizations.configuration.signIn,Aanmelden en beveiliging
 admin.organizations.configuration.signInDescription,Aanmeld- en beveiligingsformulieren van de organisatie.
 admin.projects.detail.accessTab,Toegang
 admin.projects.detail.applicationsTab,Applicaties
 admin.projects.detail.overviewTab,Overzicht
-admin.projects.detail.placeholder,Het projectdetail met tabbladen volgt binnenkort.
 admin.projects.detail.rolesTab,Rollen
-admin.realm.overview.placeholder,Het samengevoegde realmoverzicht volgt binnenkort.
 shell.nav.configuration,Configuratie
 shell.nav.realmAdministrators,Beheerders
 shell.nav.realmGroup,Realmgroep
@@ -1649,9 +1493,9 @@ demo.consent.redirectDescription,"After approval, you will return to {redirectUr
 demo.consent.redirectUri,Redirect URI
 demo.consent.requestDescription,{application} is requesting access to your account.
 demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
 demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations
