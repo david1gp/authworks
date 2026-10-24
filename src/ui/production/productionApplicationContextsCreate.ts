@@ -66,6 +66,9 @@ export async function productionApplicationContextsCreate(): Promise<{
     realmResponseSchema,
     "productionRealmGet",
   )
+  // A 403 on the realm read (org admins are not realm admins) must not break org pages: fall back to
+  // the realm id as the label. `productionJsonGet` already swallows failures into `undefined`.
+  void realm
   // Realm administrators may switch into any active organization, not just their memberships.
   const allOrganizations =
     session.subjectType === "user" && user?.capabilities?.realmAdministrator === true
@@ -181,14 +184,7 @@ export async function productionApplicationContextsCreate(): Promise<{
         get organization() {
           return organization.get()
         },
-        permission:
-          session.subjectType === "user"
-            ? user?.capabilities?.realmRead === true
-              ? "granted"
-              : "denied"
-            : realm === undefined
-              ? "denied"
-              : "granted",
+        permission: session.subjectType === "user" ? "granted" : realm === undefined ? "denied" : "granted",
         realm: { realmId, status: "available" },
       },
       impersonation:

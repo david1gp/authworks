@@ -75,6 +75,26 @@ export function organizationAdminPageStateCreate(options: {
     error.set(failure.errorMessage)
     status.set(organizationAdminFailureStatusSelect(failure))
   }
+  const configurationUnavailableNoticeSet = () => {
+    if (notice.get() === undefined) notice.set("configuration-partial")
+  }
+  // Partial-failure helper for the configuration screen. Essential reads fail the page;
+  // non-essential reads (realm default policy, provider list) degrade to empty data with a
+  // section-level notice. The supplemental result runs outside the essential await chain so a
+  // slow or failing optional read can never delay or break the page.
+  const configurationSupplementalLoad = (configurationId: string) => {
+    void Promise.all([options.adapter.loginPolicyGet(""), options.adapter.providerList(configurationId)]).then(
+      ([realmPolicyResult, providerList]) => {
+        if (!realmPolicyResult.success || !providerList.success) {
+          providers.set(providerList.success ? [...providerList.data.items] : [])
+          configurationUnavailableNoticeSet()
+          return
+        }
+        realmPolicy.set(realmPolicyResult.data.policy)
+        providers.set([...providerList.data.items])
+      },
+    )
+  }
   const collectionStatus = (length: number) => status.set(length === 0 ? "empty" : "ready")
   const pageToken = () => pageTokens.get().at(-1)
 
@@ -109,28 +129,23 @@ export function organizationAdminPageStateCreate(options: {
         error.set(messageTranslate("admin.common.permission"))
         return status.set("error")
       }
-      const [detail, brandingResult, policyResult, realmPolicyResult, domainList, providerList] = await Promise.all([
+      const [detail, brandingResult, policyResult, domainList] = await Promise.all([
         options.adapter.organizationGet(configurationId),
         options.adapter.brandingGet(configurationId),
         options.adapter.loginPolicyGet(configurationId),
-        options.adapter.loginPolicyGet(""),
         options.adapter.domainList(configurationId),
-        options.adapter.providerList(configurationId),
       ])
       if (!detail.success) return fail(detail)
       if (!brandingResult.success) return fail(brandingResult)
       if (!policyResult.success) return fail(policyResult)
-      if (!realmPolicyResult.success) return fail(realmPolicyResult)
       if (!domainList.success) return fail(domainList)
-      if (!providerList.success) return fail(providerList)
       organization.set(detail.data.organization)
       branding.set(brandingResult.data.branding)
       policy.set(policyResult.data.policy)
-      realmPolicy.set(realmPolicyResult.data.policy)
       overrides.set(policyResult.data.overrides)
       domains.set([...domainList.data.items])
       nextPageToken.set(domainList.data.nextPageToken)
-      providers.set([...providerList.data.items])
+      configurationSupplementalLoad(configurationId)
       return status.set("ready")
     }
     if (screen === "login-policy") {
@@ -143,7 +158,14 @@ export function organizationAdminPageStateCreate(options: {
       ])
       if (!policyResult.success) return fail(policyResult)
       if (!realmPolicyResult.success) return fail(realmPolicyResult)
-      if (!providerList.success) return fail(providerList)
+      if (!providerList.success) {
+        policy.set(policyResult.data.policy)
+        realmPolicy.set(realmPolicyResult.data.policy)
+        overrides.set(policyResult.data.overrides)
+        providers.set([])
+        configurationUnavailableNoticeSet()
+        return status.set("ready")
+      }
       policy.set(policyResult.data.policy)
       realmPolicy.set(realmPolicyResult.data.policy)
       overrides.set(policyResult.data.overrides)

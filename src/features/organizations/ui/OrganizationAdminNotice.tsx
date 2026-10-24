@@ -20,6 +20,7 @@ const noticeKeys = {
   "provider-disabled": "admin.organizations.providers.disabled",
   "provider-secret-rotated": "admin.organizations.providers.secretRotated",
   "provider-updated": "admin.organizations.providers.updated",
+  "configuration-partial": "admin.configuration.partialUnavailable",
 } as const satisfies Readonly<Record<string, MessageKey>>
 
 /** Announces the outcome of the most recent organization administration mutation. */

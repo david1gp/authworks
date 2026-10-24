@@ -8,15 +8,17 @@ import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { organizationContextAuthorize } from "../../organizations/actions/organizationContextAuthorize.js"
+import { organizationRepositoryCreate } from "../../organizations/persistence/organizationRepositoryCreate.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { sessionReturnPathValidate } from "../../sessions/domain/sessionReturnPathValidate.js"
+import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
-import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
@@ -33,8 +35,8 @@ import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityPr
 import { externalIdentityProviderPortCreate } from "../domain/externalIdentityProviderPortCreate.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
-import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIdentityLinkCompleteRequestSchema.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
+import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIdentityLinkCompleteRequestSchema.js"
 import { externalIdentityProviderCreateRequestSchema } from "../public/externalIdentityProviderCreateRequestSchema.js"
 import { externalIdentityProviderUpdateRequestSchema } from "../public/externalIdentityProviderUpdateRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
@@ -172,11 +174,35 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     (context) => {
       const actor = context.get("authorizationActor") as AuthorizationActorContext | undefined
       if (actor !== undefined) {
+        const realmId = context.req.param("realmId")
+        const requestedOrganizationId = context.req.query("organizationId")
+        if (requestedOrganizationId !== undefined && requestedOrganizationId.length > 0) {
+          const tenantAllowed = externalIdentityOrganizationProviderListAuthorize({
+            actor,
+            database: options.database,
+            organizationId: requestedOrganizationId,
+            realmId,
+          })
+          if (!tenantAllowed.success) return externalIdentityErrorResponseCreate(context, tenantAllowed)
+          const query = listQueryFromSearchParams(context.req.query())
+          if (!query.success) return externalIdentityErrorResponseCreate(context, query)
+          return externalIdentityResultResponseCreate(
+            context,
+            externalIdentityProviderList({
+              administration: true,
+              database: options.database,
+              includeDisabled: true,
+              organizationId: requestedOrganizationId,
+              query: query.data,
+              realmId,
+            }),
+          )
+        }
         const authorized = realmAdministratorContextAuthorize({
           actor,
           database: options.database,
           permission: authorizationPermissionDefinitions.realmRead,
-          realmId: context.req.param("realmId"),
+          realmId,
         })
         if (!authorized.success) return externalIdentityErrorResponseCreate(context, authorized)
         const query = listQueryFromSearchParams(context.req.query())
@@ -187,8 +213,8 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
             administration: true,
             database: options.database,
             includeDisabled: true,
-            realmId: context.req.param("realmId"),
-            organizationId: context.req.query("organizationId"),
+            realmId,
+            organizationId: requestedOrganizationId,
             query: query.data,
           }),
         )
@@ -696,6 +722,55 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   })
 
   return app
+}
+
+/**
+ * Authorizes an organization-scoped provider listing: an active owner/admin of the given organization
+ * may read the external identity providers available to it. Realm-wide listings stay realm-admin only.
+ */
+function externalIdentityOrganizationProviderListAuthorize(options: {
+  readonly actor: AuthorizationActorContext
+  readonly database: StorageDatabase
+  readonly organizationId: string
+  readonly realmId: string
+}): Result<void> {
+  const op = "externalIdentityOrganizationProviderListAuthorize"
+  if (options.actor.realmId !== options.realmId)
+    return {
+      code: "external-identities.forbidden",
+      errorMessage: "The actor is not available in this tenant context.",
+      op,
+      success: false as const,
+    }
+  if (options.actor.kind !== "user" && options.actor.kind !== "bootstrap_admin")
+    return {
+      code: "external-identities.forbidden",
+      errorMessage: "The actor is not authorized to list providers for this organization.",
+      op,
+      success: false as const,
+    }
+  if (options.actor.kind === "bootstrap_admin") return { data: undefined, success: true as const }
+  const repository = organizationRepositoryCreate(options.database.db)
+  const organization = repository.organizationGet(options.organizationId)
+  if (!organization.success) return organization
+  if (
+    organization.data === null ||
+    organization.data.realmId !== options.realmId ||
+    organization.data.status !== "active"
+  )
+    return {
+      code: "external-identities.not-found",
+      errorMessage: "The organization was not found.",
+      op,
+      success: false as const,
+    }
+  return organizationContextAuthorize({
+    context: { actor: options.actor, actorId: options.actor.actorId, kind: "tenant", realmId: options.realmId },
+    database: options.database,
+    organization: organization.data,
+    repository,
+    requiredPermission: "organization.read",
+  })
 }
 
 type ExternalIdentityServerEnv = {

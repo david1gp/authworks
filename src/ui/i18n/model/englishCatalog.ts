@@ -1847,6 +1847,8 @@ export const englishCatalog = {
   "admin.configuration.deactivate": "Deactivate organization",
   "admin.configuration.reactivate": "Reactivate organization",
   "admin.configuration.remove": "Remove organization",
+  "admin.configuration.partialUnavailable":
+    "Some optional sections are unavailable with your permissions. The rest of the configuration loaded normally.",
   "admin.configuration.typeName": "Type the organization name to confirm",
   "admin.configuration.typeNameInvalid": "The typed name does not match the organization name.",
   "admin.configuration.copy": "Copy",
