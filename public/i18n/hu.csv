@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Másodlagos azonosítók támogatáshoz és 
 admin.configuration.metaTitle,Szervezet adatai
 admin.configuration.nameDescription,"Megjelenik a bejelentkezéskor, a meghívókban és az adminisztrációban."
 admin.configuration.nameTitle,Szervezet neve
+admin.configuration.partialUnavailable,Néhány opcionális rész a jogosultságaiddal nem érhető el. A konfiguráció többi része rendben betöltődött.
 admin.configuration.previewDark,Sötét
 admin.configuration.previewDescription,Az aktuális űrlapértékek alapján megjelenítve.
 admin.configuration.previewEmail,nev@pelda.hu

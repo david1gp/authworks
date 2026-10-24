@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Identifiants secondaires pour l'assistance e
 admin.configuration.metaTitle,Détails de l'organisation
 admin.configuration.nameDescription,"Affiché dans la connexion, les invitations et l'administration."
 admin.configuration.nameTitle,Nom de l'organisation
+admin.configuration.partialUnavailable,Certaines sections facultatives ne sont pas disponibles avec vos autorisations. Le reste de la configuration a été chargé normalement.
 admin.configuration.previewDark,Sombre
 admin.configuration.previewDescription,Généré à partir des valeurs actuelles du formulaire.
 admin.configuration.previewEmail,nom@exemple.fr

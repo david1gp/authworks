@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Destek ve hata ayıklama için ikincil tanı
 admin.configuration.metaTitle,Kuruluş ayrıntıları
 admin.configuration.nameDescription,"Oturum açma, davetler ve yönetim ekranlarında gösterilir."
 admin.configuration.nameTitle,Kuruluş adı
+admin.configuration.partialUnavailable,Bazı isteğe bağlı bölümler yetkilerinizle kullanılamıyor. Yapılandırmanın geri kalanı normal şekilde yüklendi.
 admin.configuration.previewDark,Koyu
 admin.configuration.previewDescription,Geçerli form değerlerinden oluşturulur.
 admin.configuration.previewEmail,ad@ornek.com

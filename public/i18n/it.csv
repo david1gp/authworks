@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Identificatori secondari per supporto e debu
 admin.configuration.metaTitle,Dettagli dell'organizzazione
 admin.configuration.nameDescription,"Mostrato in accesso, inviti e amministrazione."
 admin.configuration.nameTitle,Nome dell'organizzazione
+admin.configuration.partialUnavailable,Alcune sezioni facoltative non sono disponibili con i tuoi permessi. Il resto della configurazione è stato caricato normalmente.
 admin.configuration.previewDark,Scuro
 admin.configuration.previewDescription,Generata dai valori attuali del modulo.
 admin.configuration.previewEmail,nome@esempio.it

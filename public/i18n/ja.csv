@@ -343,6 +343,7 @@ admin.configuration.metaDescription,サポートとデバッグ用の補助識�
 admin.configuration.metaTitle,組織の詳細
 admin.configuration.nameDescription,サインイン、招待、管理画面全体に表示されます。
 admin.configuration.nameTitle,組織名
+admin.configuration.partialUnavailable,一部のオプションのセクションは、現在の権限では利用できません。その他の設定は正常に読み込まれました。
 admin.configuration.previewDark,ダーク
 admin.configuration.previewDescription,現在のフォーム値から描画されます。
 admin.configuration.previewEmail,taro.yamada@example.com

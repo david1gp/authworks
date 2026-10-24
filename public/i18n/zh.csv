@@ -343,6 +343,7 @@ admin.configuration.metaDescription,用于支持与调试的辅助标识。
 admin.configuration.metaTitle,组织详情
 admin.configuration.nameDescription,显示在登录页、邀请函与整个后台管理中。
 admin.configuration.nameTitle,组织名称
+admin.configuration.partialUnavailable,以您当前的权限，部分可选部分不可用。其余配置已正常加载。
 admin.configuration.previewDark,深色
 admin.configuration.previewDescription,根据当前表单值渲染。
 admin.configuration.previewEmail,zhang.san@example.com

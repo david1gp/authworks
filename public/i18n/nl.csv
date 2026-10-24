@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Secundaire ID's voor ondersteuning en foutop
 admin.configuration.metaTitle,Organisatiedetails
 admin.configuration.nameDescription,"Getoond bij aanmelding, uitnodigingen en in het beheer."
 admin.configuration.nameTitle,Organisatienaam
+admin.configuration.partialUnavailable,Sommige optionele onderdelen zijn met je rechten niet beschikbaar. De rest van de configuratie is normaal geladen.
 admin.configuration.previewDark,Donker
 admin.configuration.previewDescription,Weergegeven op basis van de huidige formulierwaarden.
 admin.configuration.previewEmail,naam@voorbeeld.nl

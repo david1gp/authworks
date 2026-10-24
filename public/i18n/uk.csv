@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Додаткові ідентифікато�
 admin.configuration.metaTitle,Відомості про організацію
 admin.configuration.nameDescription,"Показується під час входу, у запрошеннях та адмініструванні."
 admin.configuration.nameTitle,Назва організації
+admin.configuration.partialUnavailable,Деякі додаткові розділи недоступні з вашими правами. Решта конфігурації завантажилася як зазвичай.
 admin.configuration.previewDark,Темна
 admin.configuration.previewDescription,Малюється з поточних значень форми.
 admin.configuration.previewEmail,ivan@example.com

@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Dodatkowe identyfikatory do celów pomocy te
 admin.configuration.metaTitle,Szczegóły organizacji
 admin.configuration.nameDescription,"Wyświetlana przy logowaniu, w zaproszeniach i w panelu administracyjnym."
 admin.configuration.nameTitle,Nazwa organizacji
+admin.configuration.partialUnavailable,Niektóre opcjonalne sekcje są niedostępne przy Twoich uprawnieniach. Pozostała część konfiguracji wczytała się normalnie.
 admin.configuration.previewDark,Ciemny
 admin.configuration.previewDescription,Renderowany na podstawie bieżących wartości formularza.
 admin.configuration.previewEmail,jan@przyklad.pl

@@ -343,6 +343,7 @@ admin.configuration.metaDescription,معرّفات ثانوية للدعم وت�
 admin.configuration.metaTitle,تفاصيل المؤسسة
 admin.configuration.nameDescription,يُعرض عند تسجيل الدخول وفي الدعوات ولوحة الإدارة.
 admin.configuration.nameTitle,اسم المؤسسة
+admin.configuration.partialUnavailable,بعض الأقسام الاختيارية غير متاحة بصلاحياتك. تم تحميل باقي الإعدادات بشكل طبيعي.
 admin.configuration.previewDark,داكنة
 admin.configuration.previewDescription,تُعرض من قيم النموذج الحالية.
 admin.configuration.previewEmail,ivan@example.com

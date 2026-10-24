@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Zusätzliche Kennungen für Support und Fehl
 admin.configuration.metaTitle,Organisationsdetails
 admin.configuration.nameDescription,"Wird bei Anmeldung, Einladungen und in der Verwaltung angezeigt."
 admin.configuration.nameTitle,Organisationsname
+admin.configuration.partialUnavailable,Einige optionale Bereiche sind mit deinen Berechtigungen nicht verfügbar. Die übrige Konfiguration wurde normal geladen.
 admin.configuration.previewDark,Dunkel
 admin.configuration.previewDescription,Wird aus den aktuellen Formularwerten gerendert.
 admin.configuration.previewEmail,name@beispiel.de

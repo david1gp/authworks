@@ -343,6 +343,7 @@ admin.configuration.metaDescription,Identificadores secundarios para soporte y d
 admin.configuration.metaTitle,Datos de la organización
 admin.configuration.nameDescription,"Se muestra en el inicio de sesión, las invitaciones y la administración."
 admin.configuration.nameTitle,Nombre de la organización
+admin.configuration.partialUnavailable,Algunas secciones opcionales no están disponibles con tus permisos. El resto de la configuración se cargó con normalidad.
 admin.configuration.previewDark,Oscuro
 admin.configuration.previewDescription,Generado a partir de los valores actuales del formulario.
 admin.configuration.previewEmail,nombre@ejemplo.es
