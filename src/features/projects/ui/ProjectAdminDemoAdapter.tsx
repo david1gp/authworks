@@ -13,7 +13,7 @@ export function ProjectAdminDemoAdapter(props: { readonly projectId?: string; re
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
       <AuthenticatedPageHeader
-        description={state.scenarioDescription()}
+        description={messageTranslate("demo.admin.scenario.projects.description")}
         eyebrow={messageTranslate("demo.fixture.preview")}
         meta={
           <>
@@ -21,7 +21,7 @@ export function ProjectAdminDemoAdapter(props: { readonly projectId?: string; re
             <DemoFixtureStateSelector options={state.stateOptions()} />
           </>
         }
-        title={state.scenarioTitle()}
+        title={messageTranslate("demo.admin.scenario.projects.title")}
       />
       <ProjectAdminScreenView state={state} />
     </div>

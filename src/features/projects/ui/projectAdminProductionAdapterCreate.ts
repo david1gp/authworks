@@ -72,6 +72,23 @@ export function projectAdminProductionAdapterCreate(options: {
         (client) => client.projects.projectTenantApplicationUpdate(realm(), projectId, applicationId, input),
         (data) => data.application,
       ),
+    assignmentCreate: (projectId, input) =>
+      mutate(
+        (client) => client.projects.projectTenantUserAssignmentCreate(realm(), projectId, input),
+        (data) => data.assignment,
+      ),
+    assignmentList: (projectId, pageToken) =>
+      api().projects.projectTenantUserAssignmentList(realm(), projectId, listQuery(pageToken)),
+    assignmentRemove: (projectId, assignmentId) =>
+      mutate(
+        (client) => client.projects.projectTenantUserAssignmentRemove(realm(), projectId, assignmentId),
+        (data) => ({ removed: data.removed }) as const,
+      ),
+    assignmentUpdate: (projectId, assignmentId, input) =>
+      mutate(
+        (client) => client.projects.projectTenantUserAssignmentUpdate(realm(), projectId, assignmentId, input),
+        (data) => data.assignment,
+      ),
     grantCreate: (projectId, input) =>
       mutate(
         (client) => client.projects.projectTenantGrantCreate(realm(), projectId, input),
@@ -128,7 +145,13 @@ export function projectAdminProductionAdapterCreate(options: {
         (client) => client.projects.projectTenantLifecycleSet(realm(), projectId, input),
         (data) => data.project,
       ),
-    projectList: (pageToken) => api().projects.projectTenantList(realm(), listQuery(pageToken)),
+    projectList: (query) => {
+      const pageQuery = query?.pageToken === undefined ? { pageSize } : { pageSize, pageToken: query.pageToken }
+      return api().projects.projectTenantList(
+        realm(),
+        query?.organizationId === undefined ? pageQuery : { ...pageQuery, organizationId: query.organizationId },
+      )
+    },
     projectUpdate: (projectId, input) =>
       mutate(
         (client) => client.projects.projectTenantUpdate(realm(), projectId, input),

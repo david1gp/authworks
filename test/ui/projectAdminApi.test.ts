@@ -27,22 +27,42 @@ describe("project administration production adapter", () => {
     await adapter.applicationList(projectId)
     await adapter.grantList(projectId)
     await adapter.roleList(projectId)
+    await adapter.assignmentList(projectId)
 
     expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
       `/realms/${realmId}/projects`,
       `/realms/${realmId}/projects/${projectId}/applications`,
       `/realms/${realmId}/projects/${projectId}/grants`,
       `/realms/${realmId}/projects/${projectId}/roles`,
+      `/realms/${realmId}/projects/${projectId}/assignments`,
     ])
     for (const request of requests) expect(request.init?.credentials).toBe("same-origin")
     // Never the operator-only /system/** surface.
     expect(requests.every((request) => !request.url.includes("/system/"))).toBe(true)
   })
 
+  test("forwards the active organization filter", async () => {
+    const { requests } = adapterCreate(() => Response.json({ items: [] }))
+    const filtered = projectAdminProductionAdapterCreate({
+      baseUrl: "https://auth.example",
+      csrfToken: () => "csrf-fixture",
+      fetch: async (input) => {
+        requests.push({ url: String(input) })
+        return Response.json({ items: [] })
+      },
+      realmId: () => realmId,
+    })
+
+    await filtered.projectList({ organizationId: "01900000-0000-7000-8000-000000000011" })
+
+    const url = new URL(requests[0]?.url ?? "")
+    expect(url.searchParams.get("organizationId")).toBe("01900000-0000-7000-8000-000000000011")
+  })
+
   test("requests a bounded page size and forwards the page token", async () => {
     const { adapter, requests } = adapterCreate(() => Response.json({ items: [] }))
 
-    await adapter.projectList("page-2")
+    await adapter.projectList({ pageToken: "page-2" })
 
     const url = new URL(requests[0]?.url ?? "")
     expect(url.searchParams.get("pageSize")).toBe("25")

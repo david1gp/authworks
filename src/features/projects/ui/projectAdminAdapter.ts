@@ -20,6 +20,16 @@ import type { ProjectRole } from "../public/projectRoleSchema.js"
 import type { ProjectRoleUpdateRequest } from "../public/projectRoleUpdateRequestSchema.js"
 import type { Project } from "../public/projectSchema.js"
 import type { ProjectUpdateRequest } from "../public/projectUpdateRequestSchema.js"
+import type { ProjectUserAssignmentCreateRequest } from "../public/projectUserAssignmentCreateRequestSchema.js"
+import type { ProjectUserAssignmentListResponse } from "../public/projectUserAssignmentListResponseSchema.js"
+import type { ProjectUserAssignment } from "../public/projectUserAssignmentSchema.js"
+import type { ProjectUserAssignmentUpdateRequest } from "../public/projectUserAssignmentUpdateRequestSchema.js"
+
+/** List query for the project directory; the active organization scopes owned and shared projects. */
+export type ProjectAdminProjectListQuery = {
+  readonly organizationId?: string
+  readonly pageToken?: string
+}
 
 /**
  * The single boundary that separates the shared stateless project administration
@@ -41,6 +51,17 @@ export type ProjectAdminAdapter = {
     applicationId: string,
     input: ProjectApplicationUpdateRequest,
   ) => Promise<Result<ProjectApplication>>
+  readonly assignmentCreate: (
+    projectId: string,
+    input: ProjectUserAssignmentCreateRequest,
+  ) => Promise<Result<ProjectUserAssignment>>
+  readonly assignmentList: (projectId: string, pageToken?: string) => Promise<Result<ProjectUserAssignmentListResponse>>
+  readonly assignmentRemove: (projectId: string, assignmentId: string) => Promise<Result<{ readonly removed: boolean }>>
+  readonly assignmentUpdate: (
+    projectId: string,
+    assignmentId: string,
+    input: ProjectUserAssignmentUpdateRequest,
+  ) => Promise<Result<ProjectUserAssignment>>
   readonly grantCreate: (projectId: string, input: ProjectGrantCreateRequest) => Promise<Result<ProjectGrant>>
   readonly grantDelete: (projectId: string, grantId: string) => Promise<Result<{ readonly deleted: true }>>
   readonly grantLifecycleSet: (
@@ -61,7 +82,7 @@ export type ProjectAdminAdapter = {
   readonly projectDelete: (projectId: string) => Promise<Result<{ readonly deleted: true }>>
   readonly projectGet: (projectId: string) => Promise<Result<Project>>
   readonly projectLifecycleSet: (projectId: string, input: ProjectLifecycleRequest) => Promise<Result<Project>>
-  readonly projectList: (pageToken?: string) => Promise<Result<ProjectListResponse>>
+  readonly projectList: (query?: ProjectAdminProjectListQuery) => Promise<Result<ProjectListResponse>>
   readonly projectUpdate: (projectId: string, input: ProjectUpdateRequest) => Promise<Result<Project>>
   readonly roleCreate: (projectId: string, input: ProjectRoleCreateRequest) => Promise<Result<ProjectRole>>
   readonly roleDelete: (projectId: string, roleId: string) => Promise<Result<{ readonly deleted: true }>>

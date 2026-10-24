@@ -27,6 +27,7 @@ const pageWithRecordedPrompt = () => {
       requests.push(request)
       return false
     },
+    organizationId: () => "01900000-0000-7000-8000-000000000011",
     projectId: () => projectId,
     screen: () => "project-detail",
   })

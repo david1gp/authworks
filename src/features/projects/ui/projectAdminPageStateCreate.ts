@@ -4,21 +4,24 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ConfirmRequest } from "../../../ui/confirm/confirmStateCreate.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import type { ProjectAccessResponse } from "../public/projectAccessResponseSchema.js"
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
+import type { ProjectListItem } from "../public/projectListItemSchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
 import type { Project } from "../public/projectSchema.js"
+import type { ProjectUserAssignment } from "../public/projectUserAssignmentSchema.js"
 import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 import type { ProjectAdminScreen } from "./projectAdminScreenSchema.js"
 import type { ProjectAdminStatus } from "./projectAdminStatusSchema.js"
 
-type Organization = { readonly id: string; readonly name: string }
+type ProjectAdminOrganization = { readonly id: string; readonly name: string }
 type FailedResult = { readonly code?: string; readonly errorMessage: string; readonly statusCode?: number }
 
 type ProjectAdminPageStateCreateOptions = {
   readonly adapter: ProjectAdminAdapter
   readonly confirm: (request: ConfirmRequest) => boolean | Promise<boolean>
-  readonly organizationId?: () => string | undefined
+  readonly organizationId: () => string | undefined
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
 }
@@ -33,15 +36,14 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
-  const projects = createSignalObject<readonly Project[]>([])
+  const projects = createSignalObject<readonly ProjectListItem[]>([])
   const project = createSignalObject<Project | undefined>(undefined)
   const applications = createSignalObject<readonly ProjectApplication[]>([])
+  const assignments = createSignalObject<readonly ProjectUserAssignment[]>([])
   const grants = createSignalObject<readonly ProjectGrant[]>([])
   const roles = createSignalObject<readonly ProjectRole[]>([])
-  const organizations = createSignalObject<readonly Organization[]>([])
-  const access = createSignalObject<{ readonly grantedOrganizationId?: string; readonly roleKeys: readonly string[] }>({
-    roleKeys: [],
-  })
+  const organizations = createSignalObject<readonly ProjectAdminOrganization[]>([])
+  const access = createSignalObject<ProjectAccessResponse | undefined>(undefined)
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<readonly string[]>([])
 
@@ -61,7 +63,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
 
     if (screen === "projects") {
       const [listed, organizationList] = await Promise.all([
-        adapter.projectList(pageTokens.get().at(-1)),
+        adapter.projectList({ organizationId: options.organizationId(), pageToken: pageTokens.get().at(-1) }),
         adapter.organizations(),
       ])
       if (!listed.success) return fail(listed)
@@ -76,16 +78,29 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return status.set("error")
     }
 
-    const [current, roleList, organizationList] = await Promise.all([
-      adapter.projectGet(currentProjectId),
-      adapter.roleList(currentProjectId),
-      adapter.organizations(),
-    ])
+    const [current, applicationList, assignmentList, grantList, roleList, accessCheck, organizationList] =
+      await Promise.all([
+        adapter.projectGet(currentProjectId),
+        adapter.applicationList(currentProjectId),
+        adapter.assignmentList(currentProjectId),
+        adapter.grantList(currentProjectId),
+        adapter.roleList(currentProjectId),
+        adapter.projectAccessCheck(currentProjectId),
+        adapter.organizations(),
+      ])
     if (!current.success) return fail(current)
+    if (!applicationList.success) return fail(applicationList)
+    if (!assignmentList.success) return fail(assignmentList)
+    if (!grantList.success) return fail(grantList)
     if (!roleList.success) return fail(roleList)
+    if (!accessCheck.success) return fail(accessCheck)
     if (organizationList.success) organizations.set(organizationList.data)
     project.set(current.data)
+    applications.set(applicationList.data.items)
+    assignments.set(assignmentList.data.items)
+    grants.set(grantList.data.items)
     roles.set(roleList.data.items)
+    access.set(accessCheck.data)
     status.set("ready")
   }
 
@@ -114,7 +129,13 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     return result.data
   }
 
-  createEffect(on(() => `${options.screen()}:${options.projectId() ?? ""}:${pageTokens.get().length}`, load))
+  createEffect(
+    on(
+      () =>
+        `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}`,
+      load,
+    ),
+  )
 
   return {
     access: access.get,
@@ -142,6 +163,35 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       notice.set(updated.name)
     },
     applications: applications.get,
+    assignmentCreate: async (projectId: string, userId: string, roleKeys: readonly string[]) => {
+      const created = await mutate("assignment:create", () =>
+        adapter.assignmentCreate(projectId, { roleKeys: [...roleKeys], userId }),
+      )
+      if (created === undefined) return false
+      assignments.set([...assignments.get(), created])
+      notice.set(created.userId)
+      status.set("ready")
+      return true
+    },
+    assignmentRemove: async (projectId: string, assignmentId: string) => {
+      if (!(await confirmed("admin.projects.assignments.removeConfirm"))) return
+      const removed = await mutate(`assignment:${assignmentId}`, () =>
+        adapter.assignmentRemove(projectId, assignmentId),
+      )
+      if (removed === undefined) return
+      assignments.set(assignments.get().filter((item) => item.id !== assignmentId))
+      notice.set(assignmentId)
+    },
+    assignmentUpdate: async (projectId: string, assignmentId: string, roleKeys: readonly string[]) => {
+      const updated = await mutate(`assignment:${assignmentId}`, () =>
+        adapter.assignmentUpdate(projectId, assignmentId, { roleKeys: [...roleKeys] }),
+      )
+      if (updated === undefined) return false
+      assignments.set(assignments.get().map((item) => (item.id === assignmentId ? updated : item)))
+      notice.set(updated.userId)
+      return true
+    },
+    assignments: assignments.get,
     error: error.get,
     grantCreate: async (projectId: string, grantedOrganizationId: string, roleKeys: readonly string[]) => {
       const created = await mutate("grant:create", () =>
@@ -221,6 +271,11 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       project.set(updated)
       projects.set(projects.get().map((item) => (item.id === projectId ? { ...updated } : item)))
       notice.set(updated.name)
+    },
+    projectOwned: () => {
+      const current = project.get()
+      if (current === undefined) return true
+      return current.organizationId === options.organizationId()
     },
     projects: projects.get,
     projectUpdate: async (

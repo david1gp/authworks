@@ -23,4 +23,15 @@ export const demoAdminProjectGrants: ProjectGrant[] = [
     status: "inactive",
     updatedAt: 1_755_696_000_000,
   },
+  {
+    createdAt: 1_754_486_400_000,
+    grantedOrganizationId: "01900000-0000-7000-8000-000000000011",
+    id: "01900000-0000-7000-8000-000000000063",
+    realmId: "01900000-0000-7000-8000-000000000001",
+    organizationId: "01900000-0000-7000-8000-000000000012",
+    projectId: "01900000-0000-7000-8000-000000000032",
+    roleKeys: ["support"],
+    status: "active",
+    updatedAt: 1_755_609_600_000,
+  },
 ] satisfies ProjectGrant[]

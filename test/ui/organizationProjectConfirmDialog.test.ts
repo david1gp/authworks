@@ -60,6 +60,7 @@ const projectPageCreate = (
       calls,
     ),
     confirm,
+    organizationId: () => organizationId,
     projectId: () => projectId,
     screen: () => "project-detail",
   })

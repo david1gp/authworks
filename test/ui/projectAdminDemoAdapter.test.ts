@@ -23,11 +23,28 @@ describe("project administration demo adapter", () => {
     const applications = await adapter.applicationList(projectId)
     const grants = await adapter.grantList(projectId)
     const roles = await adapter.roleList(projectId)
+    const assignments = await adapter.assignmentList(projectId)
 
     expect(projects.success && projects.data.items.length).toBeGreaterThan(0)
     expect(applications.success && applications.data.items.length).toBeGreaterThan(0)
     expect(grants.success && grants.data.items.length).toBeGreaterThan(0)
     expect(roles.success && roles.data.items.length).toBeGreaterThan(0)
+    expect(assignments.success && assignments.data.items.length).toBeGreaterThan(0)
+  })
+
+  test("carries role and application counts and scopes projects to the active organization", async () => {
+    const adapter = projectAdminDemoAdapterCreate(() => "success")
+
+    const projects = await adapter.projectList()
+    expect(projects.success && projects.data.items.every((item) => typeof item.roleCount === "number")).toBe(true)
+    expect(projects.success && projects.data.items.every((item) => typeof item.applicationCount === "number")).toBe(
+      true,
+    )
+
+    const owned = await adapter.projectList({ organizationId: "01900000-0000-7000-8000-000000000011" })
+    const shared = await adapter.projectList({ organizationId: "01900000-0000-7000-8000-000000000012" })
+    expect(owned.success && owned.data.items.length).toBeGreaterThan(0)
+    expect(shared.success && shared.data.items.map((item) => item.id)).toContain("01900000-0000-7000-8000-000000000032")
   })
 
   test("returns empty collections for the empty state", async () => {
@@ -77,6 +94,21 @@ describe("project administration demo adapter", () => {
     expect(application.success && application.data.status).toBe("active")
     expect(grant.success && grant.data.roleKeys).toEqual(["reader"])
     expect(role.success && role.data.key).toBe("auditor")
+
+    const assignment = await adapter.assignmentCreate(projectId, {
+      roleKeys: ["reader"],
+      userId: "01900000-0000-7000-8000-000000000101",
+    })
+    expect(assignment.success).toBe(true)
+    if (!assignment.success) return
+    expect(assignment.data.roleKeys).toEqual(["reader"])
+
+    const updated = await adapter.assignmentUpdate(projectId, assignment.data.id, { roleKeys: ["admin"] })
+    expect(updated.success && updated.data.roleKeys).toEqual(["admin"])
+
+    await adapter.assignmentRemove(projectId, assignment.data.id)
+    const removed = await adapter.assignmentList(projectId)
+    expect(removed.success && removed.data.items.every((item) => item.id !== assignment.data.id)).toBe(true)
 
     const listed = await adapter.applicationList(projectId)
     expect(listed.success && listed.data.items.some((item) => item.name === "Demo App")).toBe(true)

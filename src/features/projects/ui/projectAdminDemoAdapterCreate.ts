@@ -4,6 +4,7 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import { authorizationFixedRoleDefinitions } from "../../authorization/domain/authorizationFixedRoleDefinitions.js"
 import { demoAdminOrganizations } from "../../demo/demoAdminOrganizations.js"
 import { demoAdminProjectApplications } from "../../demo/demoAdminProjectApplications.js"
+import { demoAdminProjectAssignments } from "../../demo/demoAdminProjectAssignments.js"
 import { demoAdminProjectGrants } from "../../demo/demoAdminProjectGrants.js"
 import { demoAdminProjectRoles } from "../../demo/demoAdminProjectRoles.js"
 import { demoAdminProjects } from "../../demo/demoAdminProjects.js"
@@ -14,6 +15,7 @@ import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
 import type { Project } from "../public/projectSchema.js"
+import type { ProjectUserAssignment } from "../public/projectUserAssignmentSchema.js"
 import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 
 const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
@@ -27,6 +29,7 @@ export function projectAdminDemoAdapterCreate(fixtureState: () => DemoFixtureSta
   const projects = [...demoAdminProjects]
   const applications = [...demoAdminProjectApplications]
   const grants = [...demoAdminProjectGrants]
+  const assignments: ProjectUserAssignment[] = demoAdminProjectAssignments.map((assignment) => ({ ...assignment }))
   const roles = [...demoAdminProjectRoles]
   const timestamp = 1_755_782_400_000
 
@@ -93,6 +96,41 @@ export function projectAdminDemoAdapterCreate(fixtureState: () => DemoFixtureSta
           return resultErrorCodedCreate("projectAdminDemo", "The application was not found.", "projects.not-found")
         const updated = { ...existing, name: input.name ?? existing.name, updatedAt: timestamp }
         applications[index] = updated
+        return resultCreate(updated)
+      }),
+    assignmentCreate: (projectId, input) =>
+      gate(() => {
+        const assignment: ProjectUserAssignment = {
+          createdAt: timestamp,
+          id: demoResourceIdGenerate(),
+          projectId,
+          realmId: demoRealmId,
+          roleKeys: input.roleKeys === undefined ? [] : [...input.roleKeys],
+          updatedAt: timestamp,
+          userId: input.userId,
+        }
+        assignments.push(assignment)
+        return resultCreate(assignment)
+      }),
+    assignmentList: (projectId) => collection(assignments.filter((item) => item.projectId === projectId)),
+    assignmentRemove: (_projectId, assignmentId) =>
+      gate(() => {
+        const index = assignments.findIndex((item) => item.id === assignmentId)
+        if (index >= 0) assignments.splice(index, 1)
+        return resultCreate({ removed: true } as const)
+      }),
+    assignmentUpdate: (_projectId, assignmentId, input) =>
+      gate(() => {
+        const index = assignments.findIndex((item) => item.id === assignmentId)
+        const existing = assignments[index]
+        if (existing === undefined)
+          return resultErrorCodedCreate("projectAdminDemo", "The user assignment was not found.", "projects.not-found")
+        const updated: ProjectUserAssignment = {
+          ...existing,
+          roleKeys: input.roleKeys === undefined ? existing.roleKeys : [...input.roleKeys],
+          updatedAt: timestamp,
+        }
+        assignments[index] = updated
         return resultCreate(updated)
       }),
     grantCreate: (projectId, input) =>
@@ -194,7 +232,28 @@ export function projectAdminDemoAdapterCreate(fixtureState: () => DemoFixtureSta
         projects[index] = updated
         return resultCreate(updated)
       }),
-    projectList: () => collection(projects),
+    projectList: (query) => {
+      const grantedProjectIds = new Set(
+        grants
+          .filter(
+            (grant) => query?.organizationId !== undefined && grant.grantedOrganizationId === query.organizationId,
+          )
+          .map((grant) => grant.projectId),
+      )
+      const items = projects
+        .filter(
+          (project) =>
+            query?.organizationId === undefined ||
+            project.organizationId === query.organizationId ||
+            grantedProjectIds.has(project.id),
+        )
+        .map((project) => ({
+          ...project,
+          applicationCount: applications.filter((application) => application.projectId === project.id).length,
+          roleCount: roles.filter((role) => role.projectId === project.id).length,
+        }))
+      return collection(items)
+    },
     projectUpdate: (projectId, input) =>
       gate(() => {
         const index = projects.findIndex((item) => item.id === projectId)

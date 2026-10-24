@@ -28,6 +28,7 @@ const stateCreate = (failure: ReturnType<typeof resultErrorCreate>) =>
       projectGet: async () => failure,
     },
     confirm: () => true,
+    organizationId: () => "01900000-0000-7000-8000-000000000011",
     projectId: () => projectId,
     screen: () => "project-detail",
   })

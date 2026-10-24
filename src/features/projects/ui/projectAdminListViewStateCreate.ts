@@ -1,21 +1,22 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { projectCreateRequestSchema } from "../public/projectCreateRequestSchema.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
-/** View state for the project directory: search, create dialog, and navigation. */
+/** View state for the project directory: debounced search, create dialog, and navigation. */
 export function projectAdminListViewStateCreate(options: {
   readonly createOpen: () => boolean
   readonly createOpenSet: (open: boolean) => void
-  readonly organizationIdInitial: () => string
+  readonly organizationId: () => string | undefined
   readonly page: ProjectAdminPageState
-  readonly projectOpen: (projectId: string) => void
   readonly search: () => string
   readonly searchSet: (value: string) => void
+  readonly withActor: (href: string) => string
 }) {
   const name = createSignalObject("")
-  const organizationId = createSignalObject(options.organizationIdInitial())
+  const organizationId = createSignalObject(options.organizationId() ?? "")
   const formError = createSignalObject<string | undefined>(undefined)
 
   const filteredProjects = () => {
@@ -23,9 +24,13 @@ export function projectAdminListViewStateCreate(options: {
     if (term.length === 0) return options.page.projects()
     return options.page.projects().filter((project) => `${project.name} ${project.id}`.toLowerCase().includes(term))
   }
+  const searchInput = (value: string) => {
+    options.searchSet(value)
+    authenticatedUrlSearchParamWrite("q", value)
+  }
   const createSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
-    const selectedOrganization = organizationId.get() || (options.page.organizations()[0]?.id ?? "")
+    const selectedOrganization = organizationId.get() || (options.organizationId() ?? "")
     const parsed = v.safeParse(projectCreateRequestSchema, {
       name: name.get(),
       organizationId: selectedOrganization,
@@ -53,8 +58,9 @@ export function projectAdminListViewStateCreate(options: {
     name,
     organizationId,
     page: options.page,
-    projectOpen: options.projectOpen,
+    projectHref: (projectId: string) => options.withActor(`projects/${projectId}`),
     search: options.search,
+    searchInput,
     searchSet: options.searchSet,
   }
 }

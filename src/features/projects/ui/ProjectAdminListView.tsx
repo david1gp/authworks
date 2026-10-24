@@ -1,44 +1,99 @@
-import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
-import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { For, Show } from "solid-js"
+import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedDataTable } from "../../../ui/authenticated/AuthenticatedDataTable.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
-import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
-import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
+import { AuthenticatedSearchField } from "../../../ui/authenticated/AuthenticatedSearchField.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSkeleton } from "../../../ui/authenticated/AuthenticatedSkeleton.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
-import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
+import type { AuthenticatedDataTableColumn } from "../../../ui/authenticated/authenticatedDataTableColumn.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProjectAdminStateBoundary } from "./ProjectAdminStateBoundary.js"
+import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import type { ProjectListItem } from "../public/projectListItemSchema.js"
 import type { projectAdminListViewStateCreate } from "./projectAdminListViewStateCreate.js"
 import { projectAdminStatusTone } from "./projectAdminStatusTone.js"
 
+/** Project directory: header, create dialog, search, and the data table. */
 export function ProjectAdminListView(props: { readonly state: ReturnType<typeof projectAdminListViewStateCreate> }) {
   const state = props.state
+  const columns: AuthenticatedDataTableColumn<ProjectListItem>[] = [
+    {
+      cell: (project) => (
+        <span class="grid min-w-0">
+          <span class="truncate font-medium">{project.name}</span>
+          <span class="truncate text-xs text-muted-foreground">
+            {state.page.organizationName(project.organizationId)}
+          </span>
+        </span>
+      ),
+      header: messageTranslate("admin.projects.list.name"),
+      key: "name",
+    },
+    {
+      cell: (project) => (
+        <AuthenticatedChip
+          label={messageTranslate(
+            project.organizationId === state.page.organizations()[0]?.id
+              ? "admin.projects.detail.owned"
+              : "admin.projects.detail.shared",
+          )}
+          tone={project.organizationId === state.page.organizations()[0]?.id ? "accent" : "neutral"}
+        />
+      ),
+      header: messageTranslate("admin.projects.detail.organization"),
+      key: "ownership",
+    },
+    {
+      cell: (project) => <span class="tabular-nums">{project.roleCount ?? 0}</span>,
+      header: messageTranslate("admin.projects.list.roles"),
+      key: "roles",
+    },
+    {
+      cell: (project) => <span class="tabular-nums">{project.applicationCount ?? 0}</span>,
+      header: messageTranslate("admin.projects.list.applications"),
+      key: "applications",
+    },
+    {
+      cell: (project) => (
+        <AuthenticatedStatus
+          label={messageTranslate(`admin.projects.statusValue.${project.status}`)}
+          tone={projectAdminStatusTone(project.status)}
+        />
+      ),
+      header: messageTranslate("admin.projects.status"),
+      key: "status",
+    },
+    {
+      cell: (project) => <AuthenticatedRelativeTime value={project.createdAt} />,
+      header: messageTranslate("admin.projects.detail.created"),
+      key: "created",
+    },
+  ]
+
   return (
-    <section aria-label={messageTranslate("admin.projects.list.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <AuthenticatedToolbar
+    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <AuthenticatedPageHeader
         actions={
           <AuthenticatedDialog
             description={messageTranslate("admin.projects.list.description")}
             onOpenChange={state.createOpenSet}
             open={state.createOpen()}
             title={messageTranslate("admin.projects.list.create")}
-            triggerLabel={messageTranslate("admin.projects.list.create")}
             triggerIcon={mdiPlus}
+            triggerLabel={messageTranslate("admin.projects.list.create")}
             variant="filledBlue"
           >
-            <form class="grid gap-4" onSubmit={state.createSubmit}>
+            <form class="grid gap-4" onSubmit={(event) => void state.createSubmit(event)}>
               <div class="grid gap-1.5">
                 <Label class="text-[0.8125rem] font-medium" for="project-name">
                   {messageTranslate("admin.projects.list.name")}
@@ -49,150 +104,96 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
                   value={state.name.get()}
                 />
               </div>
-              <div class="grid gap-1.5">
-                <Label class="text-[0.8125rem] font-medium" for="project-organization">
-                  {messageTranslate("admin.projects.detail.organization")}
-                </Label>
-                <AuthenticatedSelect
-                  getOptions={() => state.page.organizations().map((organization) => organization.id)}
-                  id="project-organization"
-                  valueSignal={state.organizationId}
-                  valueText={(id) => state.page.organizationName(id)}
-                />
-              </div>
+              <Show when={state.page.organizations().length > 1}>
+                <div class="grid gap-1.5">
+                  <Label class="text-[0.8125rem] font-medium" for="project-organization">
+                    {messageTranslate("admin.projects.detail.organization")}
+                  </Label>
+                  <AuthenticatedSelect
+                    getOptions={() => state.page.organizations().map((organization) => organization.id)}
+                    id="project-organization"
+                    valueSignal={state.organizationId}
+                    valueText={(id) => state.page.organizationName(id)}
+                  />
+                </div>
+              </Show>
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
               <div class="flex justify-end gap-2">
-                <AuthenticatedButton
-                  disabled={state.page.pendingId() !== undefined}
-                  icon={mdiContentSave}
-                  type="submit"
-                  variant="filledBlue"
-                >
-                  {messageTranslate("common.save")}
+                <AuthenticatedButton type="submit" variant="filledBlue">
+                  {messageTranslate("admin.projects.list.create")}
                 </AuthenticatedButton>
               </div>
             </form>
           </AuthenticatedDialog>
         }
+        description={messageTranslate("admin.projects.list.subtitle")}
+        title={messageTranslate("admin.projects.list.title")}
+      />
+
+      <AuthenticatedToolbar
         label={messageTranslate("admin.projects.list.title")}
+        summary={messageTranslate("admin.projects.list.subtitle")}
       >
-        <Label class="sr-only" for="project-search">
-          {messageTranslate("admin.projects.list.search")}
-        </Label>
-        <AuthenticatedInput
-          class="w-full sm:max-w-xs"
-          id="project-search"
-          onInput={(event) => state.searchSet(event.currentTarget.value)}
+        <AuthenticatedSearchField
+          onInput={state.searchInput}
           placeholder={messageTranslate("admin.projects.list.search")}
           value={state.search()}
         />
       </AuthenticatedToolbar>
 
-      <ProjectAdminStateBoundary
-        emptyDetail={messageTranslate("admin.projects.list.empty")}
-        error={state.page.error()}
-        onRetry={state.page.reload}
-        status={state.page.status()}
-      >
-        <AuthenticatedSection>
-          <AuthenticatedRecordList label={messageTranslate("admin.projects.list.title")}>
-            <For each={state.filteredProjects()}>
-              {(project) => (
-                <AuthenticatedRecordItem
-                  fields={[
-                    {
-                      label: messageTranslate("admin.projects.detail.organization"),
-                      value: state.page.organizationName(project.organizationId),
-                    },
-                    {
-                      label: messageTranslate("admin.projects.detail.updated"),
-                      value: localeDateFormat(project.updatedAt, { dateStyle: "medium" }),
-                    },
-                  ]}
-                  status={
-                    <AuthenticatedStatus
-                      label={messageTranslate(`admin.projects.statusValue.${project.status}`)}
-                      tone={projectAdminStatusTone(project.status)}
-                    />
-                  }
-                  title={
-                    <button
-                      class="text-left font-medium text-accent hover:underline"
-                      onClick={() => state.projectOpen(project.id)}
-                      type="button"
-                    >
-                      {project.name}
-                      <Icon class="ml-1 inline size-4" path={mdiArrowRight} />
-                    </button>
-                  }
-                />
-              )}
-            </For>
-          </AuthenticatedRecordList>
-
-          <Table
-            aria-label={messageTranslate("admin.projects.list.title")}
-            class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+      <Show
+        when={state.page.status() === "ready" || state.page.status() === "empty"}
+        fallback={
+          <Show
+            when={state.page.status() === "loading"}
+            fallback={
+              <ProductionStatePanel
+                detail={state.page.error()}
+                onRetry={state.page.status() === "error" ? state.page.reload : undefined}
+                state={
+                  state.page.status() === "permission-denied" || state.page.status() === "cross-tenant"
+                    ? "inaccessible"
+                    : "error"
+                }
+                title={messageTranslate("admin.projects.list.title")}
+              />
+            }
           >
-            <TableHeader class={authenticatedTableClasses.header}>
-              <TableRow>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.projects.list.name")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.projects.detail.organization")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.projects.status")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.projects.detail.updated")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <For each={state.filteredProjects()}>
-                {(project) => (
-                  <TableRow class={authenticatedTableClasses.row}>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      <button
-                        class="text-left font-medium text-accent hover:underline"
-                        onClick={() => state.projectOpen(project.id)}
-                        type="button"
-                      >
-                        {project.name}
-                        <Icon class="ml-1 inline size-4" path={mdiArrowRight} />
-                      </button>
-                    </TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      {state.page.organizationName(project.organizationId)}
-                    </TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      <AuthenticatedStatus
-                        label={messageTranslate(`admin.projects.statusValue.${project.status}`)}
-                        tone={projectAdminStatusTone(project.status)}
-                      />
-                    </TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      {localeDateFormat(project.updatedAt, { dateStyle: "medium" })}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </For>
-            </TableBody>
-          </Table>
-
-          <AuthenticatedPagination
-            nextAvailable={state.page.hasNextPage()}
-            onNext={state.page.pageNext}
-            onPrevious={state.page.pagePrevious}
-            previousAvailable={state.page.hasPreviousPage()}
-          />
-        </AuthenticatedSection>
-      </ProjectAdminStateBoundary>
-    </section>
+            <AuthenticatedSection>
+              <div class="grid gap-2 p-5">
+                <AuthenticatedSkeleton class="h-9 w-48" />
+                <AuthenticatedSkeleton />
+                <AuthenticatedSkeleton />
+                <AuthenticatedSkeleton />
+              </div>
+            </AuthenticatedSection>
+          </Show>
+        }
+      >
+        <Show
+          when={state.filteredProjects().length > 0}
+          fallback={
+            <AuthenticatedSection>
+              <AuthenticatedEmptyState
+                description={messageTranslate("admin.projects.list.emptyDetail")}
+                title={messageTranslate("admin.projects.list.empty")}
+              />
+            </AuthenticatedSection>
+          }
+        >
+          <AuthenticatedSection>
+            <AuthenticatedDataTable
+              caption={messageTranslate("admin.projects.list.title")}
+              columns={columns}
+              rowHref={(project) => state.projectHref(project.id)}
+              rowKey={(project) => project.id}
+              rows={state.filteredProjects()}
+            />
+          </AuthenticatedSection>
+        </Show>
+      </Show>
+    </div>
   )
 }
