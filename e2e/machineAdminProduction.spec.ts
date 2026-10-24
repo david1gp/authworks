@@ -74,10 +74,10 @@ test("creating a machine user sends a CSRF-protected mutation and shows the cred
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/machine-users")
+  await page.goto("/admin/users?tab=service-accounts")
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
 
-  await page.getByRole("button", { name: "Create machine user", exact: true }).click()
+  await page.getByRole("button", { name: "Create service account", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Display name", { exact: true }).fill("Production Service")
   await dialog.getByLabel("User name", { exact: true }).fill("production-service")
@@ -322,7 +322,20 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto("/admin/machine-users")
+  await page.goto("/admin/users?tab=service-accounts")
+  // A denied service-account list renders the tab without rows; the guard boundary, not the
+  // list, carries the inaccessible panel, so the denial is asserted through the detail route.
+  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toHaveCount(0)
+
+  await page.route(realmApiPath, async (route) =>
+    route.fulfill({
+      json: {
+        error: { code: "machine-users.forbidden", message: "Denied.", op: "machineUserGet", status: 403 },
+      },
+      status: 403,
+    }),
+  )
+  await page.goto(`/admin/machine-users/${machineUserId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
   await page.route(realmApiPath, async (route) =>

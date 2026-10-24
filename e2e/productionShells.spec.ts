@@ -82,7 +82,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(`**/realms/${realmId}/me`, (route) =>
     route.fulfill({
       json: {
-        capabilities: { realmRead: true },
+        capabilities: { realmAdministrator: true, realmRead: true },
         user: {
           createdAt: 1_700_000_000_000,
           email: "user@customer.example",
@@ -98,7 +98,33 @@ test.beforeEach(async ({ page }) => {
       },
     }),
   )
-  await page.route(`**/realms/${realmId}/me/organizations`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/organizations`, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            membership: {
+              createdAt: 1_700_000_000_000,
+              id: "01900000-0000-7000-8000-0000000000c1",
+              organizationId: "01900000-0000-7000-8000-000000000002",
+              realmId,
+              roles: ["owner"],
+              updatedAt: 1_700_000_000_000,
+              userId: "01900000-0000-7000-8000-0000000000b1",
+            },
+            organization: {
+              createdAt: 1_700_000_000_000,
+              id: "01900000-0000-7000-8000-000000000002",
+              name: "Customer identity",
+              realmId,
+              status: "active",
+              updatedAt: 1_700_000_000_000,
+            },
+          },
+        ],
+      },
+    }),
+  )
   await page.route(`**/realms/${realmId}`, (route) => route.fulfill({ json: realm }))
   await page.route(`**/realms/${realmId}/me/sessions`, (route) => route.fulfill({ json: { items: [] } }))
   await page.route(`**/realms/${realmId}/passkeys`, (route) => route.fulfill({ json: { items: [] } }))
@@ -134,24 +160,25 @@ test("production focus and authenticated shells render without network adapters"
 
   await page.goto("/account#devices-applications")
   const accountSection = page.locator("#devices-applications")
-  await expect(
-    accountSection.getByRole("heading", { name: /Sessions and devices.*Applications/, exact: true }),
-  ).toBeVisible()
-  const navigation = page.locator("header").first().getByRole("navigation", { name: "Account navigation" })
-  await expect(navigation).toBeVisible()
-  for (const [label, href] of [
-    ["Profile", "#profile"],
-    ["Security", "#security"],
-    ["Sessions and devices", "#devices-applications"],
-    ["Access", "#access"],
-    ["Danger zone", "#danger-zone"],
+  await expect(accountSection.getByRole("heading", { name: "Devices and applications", exact: true })).toBeVisible()
+  // The account workspace renders its sections inline; the section shortcut links live on the
+  // section headings as stable-anchor permalinks. The toolbar keeps language and sign-out inline
+  // with the profile header.
+  const toolbar = page.locator("[data-account-toolbar]")
+  await expect(toolbar.getByRole("combobox", { name: "Language", exact: true })).toBeVisible()
+  await expect(toolbar.getByRole("link", { name: "Sign out", exact: true })).toBeVisible()
+  for (const [id, label] of [
+    ["profile", "Profile"],
+    ["security", "Security"],
+    ["devices-applications", "Devices and applications"],
+    ["access", "Access"],
+    ["danger-zone", "Danger zone"],
   ] as const) {
-    const link = navigation.getByRole("link", { name: label, exact: true })
-    await expect(link.locator("svg")).toHaveCount(1)
-    await expect(link).toHaveAttribute("href", href)
+    const permalink = page.locator(`#${id}`).getByRole("link", { name: label, exact: true })
+    await expect(permalink).toBeVisible()
+    await expect(permalink).toHaveAttribute("href", `#${id}`)
   }
-  // The account navbar scrolls with the page rather than sticking to the top.
-  await expect(page.locator("header").first()).toHaveCSS("position", "static")
+  // The account header scrolls with the page rather than sticking to the top.
   // The product has a single realm, so the shell no longer renders a realm chooser. The organization
   // control only appears when the signed-in user actually belongs to more than one organization.
   await expect(page.getByLabel("Realm")).toHaveCount(0)
@@ -164,7 +191,11 @@ test("production focus and authenticated shells render without network adapters"
 
   await page.goto("/admin/users/user-42")
   await expect(page.getByRole("heading", { name: "User detail", exact: true })).toBeVisible()
-  await expect(page.getByRole("link", { name: "Users", exact: true })).toHaveAttribute("aria-current", "page")
+  await expect(
+    page
+      .getByRole("navigation", { name: "User detail navigation", exact: true })
+      .getByRole("link", { name: "Users", exact: true }),
+  ).toHaveAttribute("aria-current", "page")
 })
 
 test("unauthenticated protected routes redirect to login with their destination preserved", async ({ page }) => {
@@ -176,18 +207,17 @@ test("unauthenticated protected routes redirect to login with their destination 
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
 })
 
-test("account workspace exposes section navigation in the primary navbar row on mobile", async ({ page }) => {
+test("account workspace exposes its sections and toolbar controls on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/account")
 
-  const header = page.locator("header").first()
-  const navigation = header.getByRole("navigation", { name: "Account navigation" })
-  await expect(header).toHaveCSS("position", "static")
-  await expect(navigation).toBeVisible()
-  await expect(navigation.getByRole("link", { name: "Profile", exact: true })).toBeVisible()
-  await expect(navigation.getByRole("link", { name: "Danger zone", exact: true })).toBeVisible()
-  // Only the primary row renders the account sections; the duplicate secondary row is gone.
-  await expect(page.getByRole("navigation", { name: "Account navigation" })).toHaveCount(1)
+  const toolbar = page.locator("[data-account-toolbar]")
+  await expect(toolbar.getByRole("combobox", { name: "Language", exact: true })).toBeVisible()
+  await expect(toolbar.getByRole("link", { name: "Sign out", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Profile", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Danger zone", exact: true })).toBeVisible()
+  // The account workspace renders sections inline without a contextual sidebar.
+  await expect(page.locator("aside")).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Open sidebar" })).toHaveCount(0)
 })
 
@@ -197,6 +227,7 @@ test("account section headings are clickable permalinks to their stable anchors"
   for (const [id, name] of [
     ["profile", "Profile"],
     ["security", "Security"],
+    ["devices-applications", "Devices and applications"],
     ["access", "Access"],
     ["danger-zone", "Danger zone"],
   ] as const) {
@@ -212,21 +243,16 @@ test("account workspace keeps identity details consolidated and targets sections
   await page.goto("/account#profile")
 
   const profileSection = page.locator("#profile")
-  const activeProfileLink = page.getByRole("navigation", { name: "Account navigation" }).getByRole("link", {
-    name: "Profile",
-    exact: true,
-  })
-
-  await expect(activeProfileLink).toHaveAttribute("aria-current", "location")
-  await expect(profileSection.getByRole("heading", { name: "Personal information", exact: true })).toBeVisible()
+  const profilePermalink = profileSection.getByRole("link", { name: "Profile", exact: true })
+  await expect(profilePermalink).toHaveAttribute("href", "#profile")
   await expect(profileSection.getByText("@customer-user")).toBeVisible()
-  await expect(profileSection.getByText("user@customer.example", { exact: true })).toBeVisible()
+  await expect(profileSection.getByText("user@customer.example", { exact: true }).first()).toBeVisible()
   await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
   await expect(page.locator("aside")).toHaveCount(0)
 
   await page.goto("/account#devices-applications")
   await expect(
-    page.locator("#devices-applications").getByRole("heading", { name: /Sessions and devices.*Applications/ }),
+    page.locator("#devices-applications").getByRole("heading", { name: "Devices and applications" }),
   ).toBeVisible()
 })
 
@@ -238,7 +264,6 @@ test("account workspace uses full-width content without a contextual sidebar", a
   await expect(page.locator("aside")).toHaveCount(0)
   await expect(content).toHaveCSS("margin-left", "0px")
   await expect(page.getByRole("button", { name: "Close sidebar" })).toHaveCount(0)
-  await expect(page.locator("header").first()).toHaveCSS("position", "static")
 })
 
 test("representative production login, account, and administration views have no serious axe violations", async ({
@@ -251,6 +276,7 @@ test("representative production login, account, and administration views have no
     await page.setViewportSize(viewport)
     for (const path of ["/login/password", "/account", "/admin"]) {
       await page.goto(path)
+      if (path === "/admin") await expect(page).toHaveURL(/\/admin\/users$/)
       await expect(page.locator("main")).toBeVisible()
       const accessibility = await new AxeBuilder({ page }).analyze()
       expect(

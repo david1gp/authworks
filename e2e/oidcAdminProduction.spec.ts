@@ -9,10 +9,13 @@ const keyId = "018f0000-0000-7000-8000-000000000061"
 const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
 
 const client = {
+  accessTokenRoleAssertion: false,
+  additionalOrigins: [],
   allowedScopes: ["openid", "profile", "email"],
   clientType: "confidential",
   createdAt: 1,
   id: clientId,
+  idTokenUserinfoAssertion: false,
   name: "Acme Web Portal",
   postLogoutRedirectUris: [],
   realmId,
@@ -57,7 +60,8 @@ test("the production client list reads the realm-scoped tenant API", async ({ pa
   await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     requested.push(pathname)
-    if (pathname.endsWith("/oidc/clients")) return route.fulfill({ json: { items: [client] } })
+    if (pathname.endsWith("/oidc/clients") || pathname.endsWith("/oidc/clients/"))
+      return route.fulfill({ json: { items: [client] } })
     return route.fulfill({ json: { items: [] } })
   })
 
@@ -77,13 +81,15 @@ test("registering a client sends a CSRF-protected mutation and shows the secret 
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
-    if (pathname.endsWith("/oidc/clients") && request.method() === "POST") {
-      createHadCsrf = request.headers()["x-csrf-token"] !== undefined
-      return route.fulfill({
-        json: { client: { ...client, name: "Production Client" }, clientSecret: "p".repeat(43) },
-      })
+    if (pathname.endsWith("/oidc/clients") || pathname.endsWith("/oidc/clients/")) {
+      if (request.method() === "POST") {
+        createHadCsrf = request.headers()["x-csrf-token"] !== undefined
+        return route.fulfill({
+          json: { client: { ...client, name: "Production Client" }, clientSecret: "p".repeat(43) },
+        })
+      }
+      return route.fulfill({ json: { items: [client] } })
     }
-    if (pathname.endsWith("/oidc/clients")) return route.fulfill({ json: { items: [client] } })
     return route.fulfill({ json: { items: [] } })
   })
 
@@ -172,7 +178,8 @@ test("consent revocation posts to the subject's tenant path", async ({ page }) =
       return route.fulfill({ json: { revoked: true } })
     }
     if (pathname.endsWith("/users")) return route.fulfill({ json: { items: [user] } })
-    if (pathname.endsWith("/oidc/clients")) return route.fulfill({ json: { items: [client] } })
+    if (pathname.endsWith("/oidc/clients") || pathname.endsWith("/oidc/clients/"))
+      return route.fulfill({ json: { items: [client] } })
     if (pathname.includes("/oidc/consents/"))
       return route.fulfill({
         json: {

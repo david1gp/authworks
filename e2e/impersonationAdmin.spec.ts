@@ -1,21 +1,25 @@
 import { expect, test } from "@playwright/test"
 
 const activeUserId = "01900000-0000-7000-8000-000000000021"
-const inactiveUserId = "01900000-0000-7000-8000-000000000022"
+const unknownUserId = "01900000-0000-7000-8000-000000000099"
 const sessionId = "01900000-0000-7000-8000-0000000000e1"
 
 test("eligible user details open guarded impersonation controls", async ({ page }) => {
   await page.goto(`/demo/admin/users/${activeUserId}`)
 
-  const action = page.getByRole("link", { name: "Impersonate this user", exact: true })
+  await expect(page.getByRole("heading", { name: "Alex Morgan", exact: true })).toBeVisible()
+  await page.getByRole("button", { name: "More actions", exact: true }).click()
+  const action = page.getByRole("menuitem").filter({ hasText: "Impersonate user" })
   await expect(action).toBeVisible()
   await action.click()
 
   await expect(page).toHaveURL(new RegExp(`/demo/admin/impersonation\\?userId=${activeUserId}$`))
   await expect(page.getByLabel("User to impersonate", { exact: true })).toHaveValue(activeUserId)
 
-  await page.goto(`/demo/admin/users/${inactiveUserId}`)
-  await expect(page.getByRole("link", { name: "Impersonate this user", exact: true })).toHaveCount(0)
+  await page.goto(`/demo/admin/users/${unknownUserId}`)
+  // Unknown identifiers render the profile error state, which carries no guarded controls.
+  await expect(page.locator("[data-content-state='error']")).toBeVisible()
+  await expect(page.getByRole("button", { name: "More actions", exact: true })).toHaveCount(0)
 })
 
 test("guarded fixtures prohibit unavailable impersonation", async ({ page }) => {

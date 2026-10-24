@@ -225,18 +225,25 @@ for (const path of ["/demo/admin/oidc-clients", "/demo/admin/signing-keys", "/de
   })
 }
 
-test("OIDC destinations are reachable from the demo directory", async ({ page }) => {
-  await page.goto("/demo/admin")
+test("OIDC destinations are reachable from the realm navigation group", async ({ page }) => {
+  await page.goto("/demo/admin/users")
 
-  const group = page.getByLabel("OpenID Connect")
-  await expect(group.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
-  for (const title of [
-    "OIDC clients",
-    "OIDC client settings",
-    "Signing keys",
-    "Application consents",
-    "Protocol documents",
-  ]) {
-    await expect(group.getByRole("heading", { name: title, exact: true })).toBeVisible()
+  const navigation = page.getByRole("navigation", { name: "Administration", exact: true })
+  const realmGroup = navigation.getByRole("button", { name: "Realm", exact: true })
+  // The realm destinations live in a collapsed group for realm administrators.
+  if ((await realmGroup.getAttribute("aria-expanded")) !== "true") await realmGroup.click()
+  for (const [name, href] of [
+    ["OIDC clients", "/demo/admin/oidc-clients"],
+    ["Signing keys", "/demo/admin/signing-keys"],
+    ["Application consents", "/demo/admin/oidc-consents"],
+    ["Protocol documents", "/demo/admin/protocol-documents"],
+  ] as const) {
+    const link = navigation.getByRole("link", { name, exact: true })
+    await expect(link).toBeVisible()
+    await expect(link).toHaveAttribute("href", href)
   }
+
+  await navigation.getByRole("link", { name: "OIDC clients", exact: true }).click()
+  await expect(page).toHaveURL(/\/demo\/admin\/oidc-clients$/)
+  await expect(page.getByRole("heading", { level: 1, name: "OIDC clients", exact: true })).toBeVisible()
 })

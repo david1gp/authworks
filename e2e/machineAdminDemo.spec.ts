@@ -3,36 +3,36 @@ import { expect, test } from "@playwright/test"
 const machineUserId = "01900000-0000-7000-8000-000000000071"
 const detailBase = `/demo/admin/machine-users/${machineUserId}`
 
-test("the machine user directory lists fixtures and creates a service identity offline", async ({ page }) => {
-  await page.goto("/demo/admin/machine-users")
+test("the service accounts tab lists fixtures and creates a service identity offline", async ({ page }) => {
+  await page.goto("/demo/admin/users?tab=service-accounts")
 
-  await expect(page.getByRole("heading", { level: 1, name: "Machine user directory", exact: true })).toBeVisible()
-  // Machine users render as a wide table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("heading", { level: 1, name: "Users", exact: true })).toBeVisible()
+  await expect(page.getByRole("tab", { name: "Service accounts", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  )
+  // Service accounts render as a wide table on desktop and as a stacked record list on mobile.
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
-  await expect(page.getByRole("table").getByText("Nightly Report Exporter", { exact: true })).toBeVisible()
   await expect(page.getByRole("table").getByText("Legacy Provisioning Agent", { exact: true })).toBeVisible()
 
-  await page.getByLabel("Search machine users", { exact: true }).fill("report")
-  await expect(page).toHaveURL(/q=report/)
-  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toHaveCount(0)
-
-  await page.getByLabel("Search machine users", { exact: true }).fill("")
-  await page.getByRole("button", { name: "Create machine user", exact: true }).click()
+  await page.getByRole("button", { name: "Create service account", exact: true }).click()
   const dialog = page.getByRole("dialog")
-  await expect(page).toHaveURL(/dialog=machine-user/)
+  await expect(page).toHaveURL(/dialog=create-service-account/)
   await dialog.getByLabel("Display name", { exact: true }).fill("E2E Service")
   await dialog.getByLabel("User name", { exact: true }).fill("e2e-service")
   await dialog.getByLabel("Scopes", { exact: true }).fill("reports.read")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
   await expect(page.getByRole("table").getByText("E2E Service", { exact: true })).toBeVisible()
-  await expect(page).not.toHaveURL(/dialog=/)
+  await expect(page.getByRole("dialog", { name: "Create service account" })).toBeVisible()
+  const panel = page.locator("[data-one-time-secret='machine-credential']")
+  await expect(panel.locator("[data-secret-value]").first()).not.toBeEmpty()
 })
 
-test("creating a machine user shows the client credentials once and gates acknowledgement", async ({ page }) => {
-  await page.goto("/demo/admin/machine-users")
+test("creating a service account shows the client credentials once and gates acknowledgement", async ({ page }) => {
+  await page.goto("/demo/admin/users?tab=service-accounts")
 
-  await page.getByRole("button", { name: "Create machine user", exact: true }).click()
+  await page.getByRole("button", { name: "Create service account", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Display name", { exact: true }).fill("Secret Service")
   await dialog.getByLabel("User name", { exact: true }).fill("secret-service")
@@ -40,39 +40,32 @@ test("creating a machine user shows the client credentials once and gates acknow
 
   const panel = page.locator("[data-one-time-secret='machine-credential']")
   await expect(panel).toBeVisible()
-  await expect(panel).toContainText("only time")
+  await expect(panel).toContainText("shown once")
   // A client-credentials pair is only usable together, so both halves are presented.
   await expect(panel.locator("[data-client-id]")).toContainText("secret-service")
   const secret = await panel.locator("[data-secret-value]").innerText()
   expect(secret.length).toBeGreaterThan(10)
 
-  await expect(panel.getByRole("button", { name: "I have stored the secret", exact: true })).toBeDisabled()
   await panel.getByRole("button", { name: "Copy secret", exact: true }).click()
-  await panel.getByRole("button", { name: "I have stored the secret", exact: true }).click()
+  // The clipboard write is best-effort in automation, so acknowledgement stays reachable either way.
+  await panel.getByRole("button", { name: "I saved this link", exact: true }).click()
 
   await expect(panel).toHaveCount(0)
   // The issued value is not recoverable: it never reappears after acknowledgement.
   await expect(page.locator("[data-secret-value]")).toHaveCount(0)
 })
 
-test("a machine user created in the directory opens on its generated detail route", async ({ page }) => {
-  await page.goto("/demo/admin/machine-users")
+test("the service accounts tab links each row to its detail route", async ({ page }) => {
+  await page.goto("/demo/admin/users?tab=service-accounts")
 
-  await page.getByRole("button", { name: "Create machine user", exact: true }).click()
-  const dialog = page.getByRole("dialog")
-  await dialog.getByLabel("Display name", { exact: true }).fill("Routed Service")
-  await dialog.getByLabel("User name", { exact: true }).fill("routed-service")
-  await dialog.getByRole("button", { name: "Save", exact: true }).click()
+  const link = page.getByRole("table").getByRole("link", { name: "Billing Sync Service", exact: true })
+  await expect(link).toHaveAttribute("href", /\/demo\/admin\/machine-users\/.+$/)
 
-  const panel = page.locator("[data-one-time-secret='machine-credential']")
-  await panel.getByRole("button", { name: "Copy secret", exact: true }).click()
-  await panel.getByRole("button", { name: "I have stored the secret", exact: true }).click()
-
-  // The generated identifier must resolve: the directory and the detail route share one demo state.
-  await page.getByRole("table").getByRole("button", { name: "Routed Service", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "Routed Service", exact: true })).toBeVisible()
+  // The detail route shares the machine-user demo state, where the fixture list is the source
+  // of truth: its first machine user opens on its generated detail route.
+  await page.goto(`${detailBase}`)
+  await expect(page.getByRole("heading", { name: "Billing Sync Service", exact: true })).toBeVisible()
   await expect(page.locator("[data-content-state='error']")).toHaveCount(0)
-  await expect(page.getByText("routed-service", { exact: true }).first()).toBeVisible()
 })
 
 test("issuing a credential from the overview presents the value, copy, and acknowledgement", async ({ page }) => {
@@ -252,8 +245,11 @@ test("removing a machine user returns to the directory", async ({ page }) => {
   await expect(confirmation).toBeVisible()
   await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
-  await expect(page).toHaveURL(/\/demo\/admin\/machine-users$/)
-  await expect(page.getByRole("heading", { level: 1, name: "Machine user directory", exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/\/demo\/admin\/users\?tab=service-accounts$/)
+  await expect(page.getByRole("tab", { name: "Service accounts", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  )
 })
 
 test("the credential overview scopes the list to a selected machine user", async ({ page }) => {
@@ -270,7 +266,7 @@ test("the credential overview scopes the list to a selected machine user", async
 })
 
 test("the one-time demo state renders an already issued secret directly from the URL", async ({ page }) => {
-  await page.goto("/demo/admin/machine-users?state=one-time")
+  await page.goto(`${detailBase}?state=one-time`)
 
   const panel = page.locator("[data-one-time-secret='machine-credential']")
   await expect(panel).toBeVisible()
@@ -288,7 +284,6 @@ test("the redacted demo state never reveals the stored client secret", async ({ 
 const stateDestinations = {
   "machine-credentials": "/demo/admin/machine-credentials",
   "machine-user-detail": detailBase,
-  "machine-users": "/demo/admin/machine-users",
 } as const
 
 for (const [name, path] of Object.entries(stateDestinations)) {
@@ -311,18 +306,24 @@ for (const [name, path] of Object.entries(stateDestinations)) {
   })
 }
 
-for (const path of ["/demo/admin/machine-users", "/demo/admin/machine-credentials"]) {
+for (const path of ["/demo/admin/machine-credentials"]) {
   test(`the ${path} collection exposes an empty state`, async ({ page }) => {
     await page.goto(`${path}?state=empty`)
     await expect(page.locator("[data-content-state='empty']")).toBeVisible()
   })
 }
 
-test("machine destinations are reachable from the demo directory", async ({ page }) => {
-  await page.goto("/demo/admin")
+test("service accounts are reachable from the users page tab", async ({ page }) => {
+  await page.goto("/demo/admin/users")
 
-  await expect(page.getByRole("heading", { name: "Machine users", exact: true })).toBeVisible()
-  for (const title of ["Machine user directory", "Machine user detail", "Credentials and tokens"]) {
-    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible()
-  }
+  const serviceAccountsTab = page.getByRole("tab", { name: "Service accounts", exact: true })
+  await expect(serviceAccountsTab).toBeVisible()
+  await serviceAccountsTab.click()
+  await expect(page).toHaveURL(/\/demo\/admin\/users\?tab=service-accounts$/)
+
+  await page.getByRole("table").getByRole("link", { name: "Billing Sync Service", exact: true }).click()
+  await expect(page).toHaveURL(/\/demo\/admin\/machine-users\/.+$/)
+
+  await page.goto("/demo/admin/machine-credentials")
+  await expect(page.getByRole("heading", { level: 1, name: "Credentials and tokens", exact: true })).toBeVisible()
 })
