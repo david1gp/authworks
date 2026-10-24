@@ -3,7 +3,7 @@ import { accountSecurityProductionStateCreate } from "./accountSecurityProductio
 import { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function accountWorkspaceProductionAdapterStateCreate(realmId: () => string) {
-  const profile = accountProductionAdapterStateCreate(() => "email", { realmId: realmId() })
+  const profile = accountProductionAdapterStateCreate(() => "overview", { realmId: realmId() })
   const security = accountSecurityProductionStateCreate({
     onIdentityLinked: () => void profile.load(true),
     realmId,

@@ -3,6 +3,10 @@ import { createRoot } from "solid-js"
 
 mock.module("@solidjs/router", () => ({
   useLocation: () => ({ hash: "", pathname: "/account", search: "" }),
+  // Bun keeps the first router mock of a test run, so this mock has to carry every export the
+  // account modules import. Without `useNavigate` the linked identities and recovery codes
+  // modules fail to link in the same process.
+  useNavigate: () => () => undefined,
 }))
 
 import { accountSectionNavStateCreate } from "../../src/features/account/ui/accountSectionNavStateCreate.js"
@@ -34,12 +38,46 @@ describe("account workspace", () => {
 
     expect(disclosure).toContain('readonly variant: "card"')
     expect(disclosure).toContain("readonly icon: string")
+    expect(disclosure).toContain('readonly iconTone?: "accent" | "danger"')
+    expect(disclosure).toContain("readonly statusTone?:")
     expect(disclosure).toContain("{props.summary}")
     expect(disclosure).toContain("{value()}")
     expect(disclosure).toContain("{status()}")
     expect(disclosure).toContain("group-open:rotate-180")
+    expect(disclosure).toContain("group/summary")
+    // The summary carries only the named group; the plain `group` stays on the details element so
+    // the chevron rotation still reads the open state of its parent details.
+    expect(disclosure).not.toContain("group group/summary")
+    expect(disclosure).toContain("<AccountCardIcon")
+    expect(disclosure).toContain("rounded-full px-2 py-0.5 text-2xs font-medium")
+    expect(disclosure).not.toContain("statusIcon")
+    // The subject icon is a bare large glyph; only the chevron keeps the small accent icon.
+    expect(disclosure).not.toContain('class="size-5 text-accent"')
     expect(workspace).toContain("scroll-mt-24 gap-3 sm:gap-4")
     expect(workspace).toContain("gap-6 pb-8 sm:gap-8")
+  })
+
+  test("renders the bare card icon with a status badge that overlaps its corner", async () => {
+    const cardIcon = await Bun.file(
+      new URL("../../src/features/account/ui/AccountCardIcon.tsx", import.meta.url),
+    ).text()
+
+    expect(cardIcon).toContain("relative inline-flex shrink-0")
+    expect(cardIcon).not.toContain("size-11")
+    expect(cardIcon).not.toContain("rounded-xl")
+    expect(cardIcon).not.toContain("bg-accent-soft")
+    expect(cardIcon).not.toContain("bg-danger-soft")
+    expect(cardIcon).toContain("text-accent")
+    expect(cardIcon).toContain("text-danger")
+    expect(cardIcon).toContain('class="size-8 sm:size-9"')
+    expect(cardIcon).toContain("absolute -right-1 -bottom-1")
+    expect(cardIcon).toContain('class="size-4.5 text-danger"')
+    expect(cardIcon).toContain('class="size-4.5 text-success"')
+    expect(cardIcon).toContain("ring-2 ring-surface")
+    // The badge cut-out follows the summary hover background through the named group.
+    expect(cardIcon).toContain("group-hover/summary:bg-surface-hover")
+    expect(cardIcon).toContain("mdiCheckCircle")
+    expect(cardIcon).toContain("mdiAlertCircle")
   })
 
   test("creates account section navigation items targeting workspace section anchors", () => {
@@ -141,11 +179,13 @@ describe("account workspace", () => {
 
     expect(source).toContain("const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)")
     expect(source).toContain("securityProgress={state.securityProgress}")
-    expect(source).toContain(
-      '<AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />',
-    )
+    // The profile slot mounts one overview adapter. The email and phone cards live inside it, so
+    // a second adapter would duplicate them and mount a second confirmation dialog.
+    expect(source.match(/<AccountProductionAdapter kind="overview"/g)).toHaveLength(1)
+    expect(source).not.toContain('kind="email"')
+    expect(source).not.toContain("renderConfirmation")
     expect(source).toContain("state={state.security}")
-    expect(stateSource).toContain('accountProductionAdapterStateCreate(() => "email"')
+    expect(stateSource).toContain('accountProductionAdapterStateCreate(() => "overview"')
     expect(stateSource).toContain("accountSecurityProgressStateCreate({")
     expect(stateSource).toContain("methods: security.methods")
     expect(stateSource).toContain("passkeyCount: () => security.passkeys().length")
@@ -165,6 +205,10 @@ describe("account workspace", () => {
     expect(screen).toContain("<AccountWorkspaceDemoAdapter />")
     expect(demoWorkspace).toContain("<AccountWorkspace")
     expect(demoWorkspace).toContain('kind="overview"')
+    // The demo workspace mounts one profile adapter; the contact cards are part of it.
+    expect(demoWorkspace.match(/kind="overview"/g)).toHaveLength(1)
+    expect(demoWorkspace).not.toContain('kind="email"')
+    expect(demoWorkspace).not.toContain("renderConfirmation")
     expect(demoWorkspace).toContain('screen="overview"')
     expect(demoWorkspace).toContain('screen="organizations"')
     expect(demoWorkspace).toContain('screen="consents"')
@@ -247,8 +291,17 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain('value={state.personalSummary() || messageTranslate("account.profile.notSet")}')
+    // The personal card spans the two-column overview row at lg and one of three at xl, so it
+    // never stretches its siblings open.
+    expect(source).toContain("lg:col-span-2 xl:col-span-1")
+    expect(source).not.toContain('class="h-full"')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(source.indexOf("account.profile.personalDescription"))
     expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
+    // The overview card spans two columns at lg and one of three at xl, so its field list
+    // uses three columns at lg and returns to two at xl. The standalone profile page keeps
+    // the full-width three-column field list.
+    expect(source).toContain('props.kind === "overview"')
+    expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2")
     expect(source).toContain("<dl")
     expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
     expect(source).toContain("onOpenChange={props.onProfileDialogOpenChange}")
@@ -266,6 +319,18 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
+    // The strip is a two-column grid: the picture sits top-right, and the MFA row spans both
+    // columns below it on mobile before it returns to the left column from sm up.
+    expect(overview).toContain("grid-cols-[minmax(0,1fr)_auto]")
+    expect(overview).toContain(
+      "col-span-2 row-start-2 min-w-0 border-t border-line-subtle pt-2 sm:col-span-1 sm:col-start-1",
+    )
+    expect(overview).toContain("col-start-2 row-start-1 shrink-0 self-start")
+    expect(overview).not.toContain("lg:border-l")
+    expect(overview).not.toContain("xl:grid-cols-2")
+    expect(overview.indexOf("col-start-1 row-start-1 grid min-w-0 gap-1")).toBeLessThan(
+      overview.indexOf("<AccountProfilePictureField"),
+    )
     expect(progress).toContain("href={item.href}")
     expect(progress).toContain("mdiCheckCircleOutline")
     expect(progress).toContain("mdiAlertCircleOutline")
@@ -274,6 +339,10 @@ describe("account workspace", () => {
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
     expect(progress).toContain('role="progressbar"')
+    // Below sm the summary wraps into label plus chevron on the first line and bar plus count
+    // on the second; from sm up it stays a single line.
+    expect(progress).toContain("flex-wrap")
+    expect(progress).toContain("sm:flex-nowrap")
 
     // The removed nickname helper copy must not come back.
     expect(source).not.toContain("nickNameHint")
@@ -369,9 +438,12 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('summary={messageTranslate("account.factors.authenticator")}')
     expect(source).toContain(
-      'status={messageTranslate(state.enrolled() ? "account.factors.configured" : "account.factors.missing")}',
+      'status={messageTranslate(state.enrolled() ? "account.status.configured" : "account.status.notConfigured")}',
     )
-    expect(source).toContain("statusIcon={state.enrolled() ? mdiCheckCircleOutline : mdiAlertCircleOutline}")
+    expect(source).toContain('statusTone={state.enrolled() ? "success" : "danger"}')
+    expect(source).not.toContain("statusIcon")
+    expect(source).not.toContain("mdiCheckCircleOutline")
+    expect(source).not.toContain("mdiAlertCircleOutline")
     expect(source).toContain('value={messageTranslate("account.factors.count", { count: state.enrollments().length })}')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(source.indexOf("account.factors.description"))
     expect(source).toContain("<For each={state.enrollments()}>")
@@ -397,8 +469,8 @@ describe("account workspace", () => {
     expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(3)
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
     expect(catalog).toContain('"account.factors.authenticator": "Authenticator"')
-    expect(catalog).toContain('"account.factors.configured": "Authenticator configured"')
-    expect(catalog).toContain('"account.factors.missing": "Authenticator missing"')
+    expect(catalog).toContain('"account.status.configured": "Configured"')
+    expect(catalog).toContain('"account.status.notConfigured": "Not configured"')
   })
 
   test("keeps security data and actions inside five management cards", async () => {
@@ -490,6 +562,11 @@ describe("account workspace", () => {
     // The phone section is no longer a second, separately placed block further down the page.
     expect(profile.match(/<AccountProfilePhoneSection/g)).toHaveLength(1)
     expect(profile).not.toContain("AccountSplitColumns")
+    // The workspace overview shares one row between personal information, email addresses, and
+    // phone numbers; the contact cards are rendered there exactly once. The personal card
+    // spans two columns at lg and one of three at xl, and no card stretches its siblings.
+    expect(profile).toContain("lg:grid-cols-2 lg:items-start xl:grid-cols-3")
+    expect(profile.match(/<AccountEmailAddressView/g)).toHaveLength(1)
 
     for (const name of ["AccountEmailAddressView", "AccountProfilePhoneSection"]) {
       const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
@@ -504,7 +581,19 @@ describe("account workspace", () => {
       // No always-visible add form outside the dialog.
       expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
       expect(source).not.toContain("<ProductionStatePanel")
+      // Closed cards keep their natural height so opening one never stretches its siblings.
+      expect(source).not.toContain('class="h-full"')
     }
+  })
+
+  test("loads the email address list for the page kinds that show the email card", async () => {
+    const state = await Bun.file(
+      new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
+    ).text()
+
+    // The overview row shows the email card, so its state loads the address list too.
+    expect(state).toContain('loadKind === "email" || loadKind === "overview"')
+    expect(state).toContain("options.adapter.emailAddressList()")
   })
 
   test("removes the contact-method filler empty-state copy from the catalog", async () => {
@@ -714,6 +803,7 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain("icon={mdiAccountRemoveOutline}")
+    expect(source).toContain('iconTone="danger"')
     expect(source).toContain('statusTone="danger"')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(
       source.indexOf('messageTranslate("account.delete.warning")'),

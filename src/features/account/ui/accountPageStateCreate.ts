@@ -203,7 +203,9 @@ export function accountPageStateCreate(options: {
     if (loadGenerationSnapshot !== loadGeneration) return
     if (!userResult.success) return resultFail(userResult)
     userApply(userResult.data.user)
-    if (loadKind === "email") {
+    // The email card is part of the standalone email page and of the workspace overview, so both
+    // page kinds load the address list; the standalone profile page never shows it.
+    if (loadKind === "email" || loadKind === "overview") {
       const addressResult = await options.adapter.emailAddressList()
       if (loadGenerationSnapshot !== loadGeneration) return
       if (!addressResult.success) return resultFail(addressResult)

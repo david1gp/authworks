@@ -15,14 +15,14 @@ const credential = (id: string): PasskeyCredential => ({
   transports: ["internal"],
 })
 
-test("passkey card summary reflects the current count without mutating credentials", () => {
+test("passkey card summary reflects the current count and alerts while no passkey is configured", () => {
   createRoot((dispose) => {
     const passkeys = createSignalObject<PasskeyCredential[]>([])
     const state = accountPasskeysSectionStateCreate(passkeys.get)
 
     expect(state.summaryValue()).toBe("0 passkeys configured")
     expect(state.summaryStatus()).toBe("Not configured")
-    expect(state.summaryTone()).toBe("neutral")
+    expect(state.summaryTone()).toBe("danger")
     passkeys.set([credential("one"), credential("two")])
     expect(state.summaryValue()).toBe("2 passkeys configured")
     expect(state.summaryStatus()).toBe("Configured")

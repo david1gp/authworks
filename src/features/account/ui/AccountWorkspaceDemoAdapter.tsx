@@ -1,10 +1,10 @@
 import { AccountAccessDemoAdapter } from "./AccountAccessDemoAdapter.js"
 import { AccountDemoAdapter } from "./AccountDemoAdapter.js"
 import { AccountSecurityDemoAdapter } from "./AccountSecurityDemoAdapter.js"
-import { AccountWorkspaceToolbar } from "./AccountWorkspaceToolbar.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
 import { AccountWorkspaceDevicesApplications } from "./AccountWorkspaceDevicesApplications.js"
+import { AccountWorkspaceToolbar } from "./AccountWorkspaceToolbar.js"
 import { accountWorkspaceDemoAdapterStateCreate } from "./accountWorkspaceDemoAdapterStateCreate.js"
 
 export function AccountWorkspaceDemoAdapter() {
@@ -31,22 +31,13 @@ export function AccountWorkspaceDemoAdapter() {
         />
       }
       profile={
-        <>
-          <AccountDemoAdapter
-            kind="overview"
-            path="/demo/account"
-            securityProgress={state.securityProgress}
-            showFixtureHeader={false}
-            state={state.profile}
-          />
-          <AccountDemoAdapter
-            kind="email"
-            path="/demo/account"
-            renderConfirmation={false}
-            showFixtureHeader={false}
-            state={state.profile}
-          />
-        </>
+        <AccountDemoAdapter
+          kind="overview"
+          path="/demo/account"
+          securityProgress={state.securityProgress}
+          showFixtureHeader={false}
+          state={state.profile}
+        />
       }
       security={
         <AccountSecurityDemoAdapter

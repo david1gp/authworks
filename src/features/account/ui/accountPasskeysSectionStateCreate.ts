@@ -29,7 +29,7 @@ export function accountPasskeysSectionStateCreate(passkeys: Accessor<readonly Pa
     dialogOpen,
     dialogOpenChange,
     summaryStatus: () => messageTranslate(count() > 0 ? "account.status.configured" : "account.status.notConfigured"),
-    summaryTone: () => (count() > 0 ? ("success" as const) : ("neutral" as const)),
+    summaryTone: () => (count() > 0 ? ("success" as const) : ("danger" as const)),
     summaryValue: () => messageTranslate("account.securityOverview.passkeyCount", { count: count() }),
   }
 }

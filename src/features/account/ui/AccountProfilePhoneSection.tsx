@@ -35,7 +35,6 @@ export function AccountProfilePhoneSection(props: {
 }) {
   return (
     <AccountDisclosure
-      class="h-full"
       icon={mdiPhoneOutline}
       status={messageTranslate(
         !props.phoneNumber

@@ -105,7 +105,7 @@ function fixtureCreate(initialSearch = "?fixture=empty") {
   }
 }
 
-test("linked identity summary updates its count and status without changing account data", () => {
+test("linked identity summary updates its count, status, and alert tone without changing account data", () => {
   createRoot((dispose) => {
     const fixture = fixtureCreate()
     expect(fixture.state.summaryValue()).toBe("2 linked identities")
@@ -114,7 +114,7 @@ test("linked identity summary updates its count and status without changing acco
     fixture.identities.set([])
     expect(fixture.state.summaryValue()).toBe("0 linked identities")
     expect(fixture.state.summaryStatus()).toBe("Not configured")
-    expect(fixture.state.summaryTone()).toBe("neutral")
+    expect(fixture.state.summaryTone()).toBe("danger")
     expect(fixture.linkConfirm).not.toHaveBeenCalled()
     expect(fixture.linkCancel).not.toHaveBeenCalled()
     dispose()

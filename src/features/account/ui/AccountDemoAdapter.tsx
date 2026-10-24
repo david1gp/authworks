@@ -1,9 +1,9 @@
 import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoScenarioPlaceholderStateCreate } from "../../demo/ui/demoScenarioPlaceholderStateCreate.js"
-import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
 import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
@@ -17,7 +17,6 @@ export function AccountDemoAdapter(props: {
   readonly onPasswordChanged?: () => void
   readonly path: string
   readonly passwordActionOnly?: boolean
-  readonly renderConfirmation?: boolean
   readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly showFixtureHeader?: boolean
   readonly state?: ReturnType<typeof accountDemoAdapterStateCreate>
@@ -141,9 +140,7 @@ export function AccountDemoAdapter(props: {
           />
         </Match>
       </Switch>
-      {props.renderConfirmation === false ? null : (
-        <ConfirmDialog state={page.confirmation} titleKey="account.confirmTitle" />
-      )}
+      <ConfirmDialog state={page.confirmation} titleKey="account.confirmTitle" />
     </div>
   )
 }

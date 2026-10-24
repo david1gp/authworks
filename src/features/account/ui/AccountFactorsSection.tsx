@@ -1,8 +1,6 @@
-import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
@@ -27,8 +25,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
     <AccountDisclosure
       class="h-full"
       icon={mdiCellphoneKey}
-      status={messageTranslate(state.enrolled() ? "account.factors.configured" : "account.factors.missing")}
-      statusIcon={state.enrolled() ? mdiCheckCircleOutline : mdiAlertCircleOutline}
+      status={messageTranslate(state.enrolled() ? "account.status.configured" : "account.status.notConfigured")}
       statusTone={state.enrolled() ? "success" : "danger"}
       summary={messageTranslate("account.factors.authenticator")}
       value={messageTranslate("account.factors.count", { count: state.enrollments().length })}

@@ -3,6 +3,7 @@ import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { AccountCardIcon } from "./AccountCardIcon.js"
 
 /**
  * Collapsed-by-default account disclosure. The card variant keeps a subject's icon, current value,
@@ -18,17 +19,17 @@ export function AccountDisclosure(
     | {
         readonly variant?: undefined
         readonly icon?: never
+        readonly iconTone?: never
         readonly value?: never
         readonly status?: never
-        readonly statusIcon?: never
         readonly statusTone?: never
       }
     | {
         readonly variant: "card"
         readonly icon: string
+        readonly iconTone?: "accent" | "danger"
         readonly value?: string
         readonly status?: string
-        readonly statusIcon?: string
         readonly statusTone?: "danger" | "neutral" | "success"
       }
   ),
@@ -51,32 +52,36 @@ export function AccountDisclosure(
         }
       >
         {(icon) => (
-          <summary class="grid min-h-16 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-panel px-4 py-3 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent [&::-webkit-details-marker]:hidden sm:px-5">
-            <Icon aria-hidden="true" class="size-5 text-accent" path={icon()} />
+          <summary class="group/summary grid min-h-20 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-panel px-4 py-3.5 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent [&::-webkit-details-marker]:hidden sm:px-5 sm:py-4">
+            <AccountCardIcon
+              badge={
+                props.iconTone === "danger" || !props.statusTone || props.statusTone === "neutral"
+                  ? undefined
+                  : props.statusTone
+              }
+              path={icon()}
+              tone={props.iconTone ?? "accent"}
+            />
             <span class="grid min-w-0 gap-0.5">
               <span class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
-                <span class="min-w-0 break-words text-sm font-semibold tracking-tight">{props.summary}</span>
+                <span class="min-w-0 break-words text-base font-semibold tracking-tight">{props.summary}</span>
                 <Show when={props.status}>
                   {(status) => (
                     <span
-                      class="text-xs font-medium"
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-medium"
                       classList={{
-                        "inline-flex items-center gap-1": !!props.statusIcon,
-                        "text-danger": props.statusTone === "danger",
-                        "text-success": props.statusTone === "success",
-                        "text-muted-foreground": !props.statusTone || props.statusTone === "neutral",
+                        "bg-success-soft text-success": props.statusTone === "success",
+                        "bg-danger-soft text-danger": props.statusTone === "danger",
+                        "bg-muted text-muted-foreground": !props.statusTone || props.statusTone === "neutral",
                       }}
                     >
-                      <Show when={props.statusIcon}>
-                        {(statusIcon) => <Icon aria-hidden="true" class="size-3.5 shrink-0" path={statusIcon()} />}
-                      </Show>
                       {status()}
                     </span>
                   )}
                 </Show>
               </span>
               <Show when={props.value}>
-                {(value) => <span class="min-w-0 break-words text-xs text-muted-foreground">{value()}</span>}
+                {(value) => <span class="min-w-0 break-words text-sm text-muted-foreground">{value()}</span>}
               </Show>
             </span>
             <Icon

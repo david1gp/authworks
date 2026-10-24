@@ -1,5 +1,6 @@
 import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiChevronRight } from "@adaptive-ds/mdi/mdiChevronRight.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For } from "solid-js"
@@ -8,64 +9,65 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 /**
- * Expandable recovery/MFA overview inside the profile card. The summary keeps the progress bar;
- * each overview row is an anchor link jumping to the matching card inside the security section.
+ * Subtle dense recovery/MFA overview inside the profile card. The one-line summary keeps
+ * the progress bar; each overview row is an anchor link jumping to the matching card
+ * inside the security section.
  */
 export function AccountSecurityProgress(props: {
   readonly state: ReturnType<typeof accountSecurityProgressStateCreate>
 }) {
   return (
-    <details
-      class="group/progress grid min-w-0 gap-0 rounded-control border border-line-subtle"
-      data-account-security-progress
-    >
-      <summary class="grid min-w-0 cursor-pointer list-none gap-2 px-3 py-2.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
-        <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
-          <h2 class="flex min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight">
-            <Icon class="size-4 text-accent" path={mdiShieldKeyOutline} />
-            <span class="truncate">{messageTranslate("account.security.recoveryMfa")}</span>
-          </h2>
-          <span class="shrink-0 text-xs font-semibold tabular-nums text-foreground">{props.state.text()}</span>
-        </div>
-        <div
-          aria-label={props.state.accessibleLabel()}
-          aria-valuemax={5}
-          aria-valuemin={0}
-          aria-valuenow={props.state.configuredCount()}
-          class="h-2 w-full min-w-0 overflow-hidden rounded-full bg-muted ring-1 ring-inset ring-line-subtle"
-          role="progressbar"
-        >
+    <details class="group/progress min-w-0" data-account-security-progress>
+      <summary class="-mx-2 flex min-w-0 cursor-pointer list-none flex-wrap items-center gap-2.5 rounded-control px-2 py-1.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex-nowrap [&::-webkit-details-marker]:hidden">
+        <h2 class="order-1 flex min-w-0 flex-1 items-center gap-1.5 text-xs font-medium text-muted-foreground sm:flex-none">
+          <Icon class="size-4 shrink-0 text-accent" path={mdiShieldKeyOutline} />
+          <span class="truncate">{messageTranslate("account.security.recoveryMfa")}</span>
+        </h2>
+        <div class="order-3 flex w-full min-w-0 items-center gap-2.5 sm:w-auto sm:flex-1">
           <div
-            aria-hidden="true"
-            class="h-full rounded-full bg-accent transition-[width] duration-500 ease-out motion-reduce:transition-none"
-            style={{ width: props.state.width() }}
-          />
+            aria-label={props.state.accessibleLabel()}
+            aria-valuemax={5}
+            aria-valuemin={0}
+            aria-valuenow={props.state.configuredCount()}
+            class="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+          >
+            <div
+              aria-hidden="true"
+              class="h-full rounded-full bg-accent transition-[width] duration-500 ease-out motion-reduce:transition-none"
+              style={{ width: props.state.width() }}
+            />
+          </div>
+          <span class="shrink-0 text-xs tabular-nums text-muted-foreground">{props.state.text()}</span>
         </div>
+        <Icon
+          aria-hidden="true"
+          class="order-2 size-4 shrink-0 text-muted-foreground transition-transform group-open/progress:rotate-180 sm:order-4"
+          path={mdiChevronDown}
+        />
       </summary>
-      <ul class="grid min-w-0 divide-y divide-line-subtle border-t border-line-subtle">
+      <ul class="mt-1 grid min-w-0 gap-x-4 sm:grid-cols-2">
         <For each={props.state.items()}>
           {(item) => (
             <li class="min-w-0">
               <a
-                class="flex min-w-0 items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                class="flex min-w-0 items-center gap-2 rounded-control px-2 py-1.5 text-xs transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 href={item.href}
+                title={item.detail}
               >
                 <Icon
                   aria-hidden="true"
-                  class={item.configured ? "size-6 shrink-0 text-success" : "size-6 shrink-0 text-danger"}
+                  class={item.configured ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-danger"}
                   path={item.configured ? mdiCheckCircleOutline : mdiAlertCircleOutline}
                 />
-                <span class="grid min-w-0 flex-1">
-                  <span class="block text-xs font-semibold text-muted-foreground">{item.label}</span>
-                  <span class="block break-words text-sm font-medium">{item.detail}</span>
+                <span class="inline-flex min-w-0 flex-1 items-baseline gap-1 truncate">
+                  <span class="shrink-0 font-medium text-foreground">{item.label}</span>
+                  <span class="min-w-0 flex-1 truncate text-muted-foreground">{item.detail}</span>
                 </span>
-                <span
-                  class="shrink-0 text-xs font-medium"
-                  classList={{ "text-success": item.configured, "text-danger": !item.configured }}
-                >
+                <span class="sr-only">
                   {messageTranslate(item.configured ? "account.status.configured" : "account.status.notConfigured")}
                 </span>
-                <Icon aria-hidden="true" class="size-4 shrink-0 text-accent" path={mdiChevronRight} />
+                <Icon aria-hidden="true" class="size-3.5 shrink-0 text-muted-foreground" path={mdiChevronRight} />
               </a>
             </li>
           )}

@@ -122,6 +122,10 @@ describe("account organization switch state", () => {
           user,
         } satisfies UserCurrentResponse)
       }
+      if (pathname === `/realms/${realmId}/me/emails`) {
+        // The overview page shows the email card, so it loads the address list like the email page.
+        return Response.json({ items: [] })
+      }
       if (pathname === `/realms/${realmId}/me/organizations`) {
         requests.organizations += 1
         return Response.json({ items: organizations })

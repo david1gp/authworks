@@ -36,17 +36,8 @@ export function AccountProfileIdentityStrip(props: {
 
   return (
     <div class="rounded-panel border border-line bg-surface p-4 sm:p-5">
-      <div class="flex items-start gap-3 sm:items-center sm:gap-5">
-        <div class="shrink-0">
-          <AccountProfilePictureField
-            errorMessage={props.pictureErrorMessage}
-            onRemove={props.onPictureRemove}
-            onUpload={props.onPictureUpload}
-            status={props.pictureStatus}
-            url={props.pictureUrl}
-          />
-        </div>
-        <div class="grid min-w-0 flex-1 gap-1">
+      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 sm:gap-x-6">
+        <div class="col-start-1 row-start-1 grid min-w-0 gap-1">
           <div class="flex min-w-0 items-center gap-1.5 text-lg font-semibold">
             <Icon
               aria-label={messageTranslate("account.profile.displayName")}
@@ -140,12 +131,27 @@ export function AccountProfileIdentityStrip(props: {
             </div>
           </div>
         </div>
-      </div>
-      {props.securityProgress ? (
-        <div class="mt-4">
-          <AccountSecurityProgress state={props.securityProgress} />
+        {props.securityProgress ? (
+          <div class="col-span-2 row-start-2 min-w-0 border-t border-line-subtle pt-2 sm:col-span-1 sm:col-start-1">
+            <AccountSecurityProgress state={props.securityProgress} />
+          </div>
+        ) : null}
+        <div
+          class="col-start-2 row-start-1 shrink-0 self-start"
+          classList={{
+            "sm:row-span-2": Boolean(props.securityProgress),
+            "sm:self-center": Boolean(props.securityProgress),
+          }}
+        >
+          <AccountProfilePictureField
+            errorMessage={props.pictureErrorMessage}
+            onRemove={props.onPictureRemove}
+            onUpload={props.onPictureUpload}
+            status={props.pictureStatus}
+            url={props.pictureUrl}
+          />
         </div>
-      ) : null}
+      </div>
     </div>
   )
 }

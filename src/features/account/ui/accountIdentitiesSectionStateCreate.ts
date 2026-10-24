@@ -3,8 +3,8 @@ import { type Accessor, createEffect, on } from "solid-js"
 import * as v from "valibot"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import {
-  externalIdentitySchema,
   type ExternalIdentity,
+  externalIdentitySchema,
 } from "../../externalIdentities/public/externalIdentitySchema.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
@@ -127,7 +127,7 @@ export function accountIdentitiesSectionStateCreate(security: Accessor<IdentityS
     linkProviderLabel: () =>
       providerLabel(security().identityLinkProvider()) ?? messageTranslate("account.identities.externalAccount"),
     summaryStatus: () => messageTranslate(count() > 0 ? "account.status.configured" : "account.status.notConfigured"),
-    summaryTone: () => (count() > 0 ? ("success" as const) : ("neutral" as const)),
+    summaryTone: () => (count() > 0 ? ("success" as const) : ("danger" as const)),
     summaryValue: () => messageTranslate("account.security.identityCount", { count: count() }),
   }
 }
