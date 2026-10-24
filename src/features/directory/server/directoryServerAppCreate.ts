@@ -190,14 +190,14 @@ function directoryRealmAdministratorCheck(
 }
 
 function directoryListQueryRead(requestUrl: string): Result<DirectoryUserListQuery> {
-  const parsed = listQueryFromSearchParams(new URL(requestUrl).searchParams)
+  const searchParams = new URL(requestUrl).searchParams
+  const roleParam = searchParams.get("role")
+  const parsed = listQueryFromSearchParams(searchParams)
   if (!parsed.success)
     return resultErrorCodedCreate("directoryListQueryRead", "The directory list query is invalid.", "directory.invalid")
   const query = v.safeParse(directoryUserListQuerySchema, {
     ...parsed.data,
-    ...(new URL(requestUrl).searchParams.get("role") === null
-      ? {}
-      : { role: new URL(requestUrl).searchParams.get("role") }),
+    ...(roleParam === null ? {} : { role: roleParam }),
   })
   if (!query.success)
     return resultErrorCodedCreate("directoryListQueryRead", "The directory list query is invalid.", "directory.invalid")

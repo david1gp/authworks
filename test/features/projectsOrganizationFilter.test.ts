@@ -246,6 +246,47 @@ test("tenant project list keeps authorization filtering when an organization fil
   })
 })
 
+test("tenant project list route accepts the organizationId query parameter", async () => {
+  await withDatabase(async (database) => {
+    const system = realmSystemContextCreate()
+    const domain = "project-organization-route.example.com"
+    const realm = await createRealm(database, domain)
+    const owned = organizationCreate({ context: system, database, input: { name: "Owned" }, realmId: realm.id })
+    expect(owned.success).toBe(true)
+    if (!owned.success) return
+    const other = organizationCreate({ context: system, database, input: { name: "Other" }, realmId: realm.id })
+    expect(other.success).toBe(true)
+    if (!other.success) return
+    const created = projectCreate({
+      context: system,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Route project",
+        organizationId: owned.data.organization.id,
+        projectAccessRequired: false,
+      },
+      realmId: realm.id,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+
+    const app = projectServerAppCreate({ database, publicOrigin: `https://${domain}`, systemSecret: "filter-secret" })
+    const systemList = await app.request(
+      `https://${domain}/system/realms/${realm.id}/projects?organizationId=${owned.data.organization.id}&pageSize=100`,
+      { headers: { authorization: "Bearer filter-secret" } },
+    )
+    expect(systemList.status).toBe(200)
+    const systemBody = (await systemList.json()) as { items: { id: string }[] }
+    expect(systemBody.items.map((item) => item.id)).toEqual([created.data.project.id])
+
+    const systemInvalid = await app.request(
+      `https://${domain}/system/realms/${realm.id}/projects?organizationId=not-an-id`,
+      { headers: { authorization: "Bearer filter-secret" } },
+    )
+    expect(systemInvalid.status).toBe(400)
+  })
+})
 test("projectUserAssignmentListByUser returns assignments across projects with role display names", async () => {
   await withDatabase(async (database) => {
     const system = realmSystemContextCreate()

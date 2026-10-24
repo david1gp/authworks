@@ -261,6 +261,15 @@ test("organization member cannot reach directory routes and cross-organization o
       headers: { authorization: `Bearer ${ownerToken}` },
     })
     expect(realmResponse.status).toBe(403)
+    const roleResponse = await app.request(
+      `https://${domain}/realms/${realmId}/organizations/${organizationA.id}/users?role=member`,
+      {
+        headers: { authorization: `Bearer ${ownerToken}` },
+      },
+    )
+    expect(roleResponse.status).toBe(200)
+    const roleBody = (await roleResponse.json()) as { items: { user: { id: string } }[] }
+    expect(roleBody.items.map((item) => item.user.id)).toEqual([memberAId])
   })
 })
 

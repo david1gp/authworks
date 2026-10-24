@@ -227,13 +227,6 @@ export const productionRouteContractMap = {
         title: "shell.nav.projects",
       },
       {
-        contracts: ["projects.list", "projects.create"],
-        guard: { ...organizationAdminGuard, organization: "not-required" },
-        key: "projects",
-        path: "/admin/projects",
-        title: "shell.nav.projects",
-      },
-      {
         contracts: ["projects.get", "projects.update", "projects.delete"],
         guard: { ...organizationAdminGuard, organization: "not-required" },
         key: "project-detail",

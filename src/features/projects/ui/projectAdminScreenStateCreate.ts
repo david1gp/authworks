@@ -106,6 +106,7 @@ export function projectAdminScreenStateCreate(options: {
     confirmState,
     detail,
     list: projectAdminListViewStateCreate({
+      basePath: options.basePath,
       createOpen: dialogOpen("create-project"),
       createOpenSet: dialogOpenSet("create-project"),
       organizationId: options.organizationId,
