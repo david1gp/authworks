@@ -1,7 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -10,12 +9,13 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { ProjectListItem } from "../public/projectListItemSchema.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly query?: ListQuery
+  readonly query?: ProjectListQuery
   readonly realmId: string
   readonly organizationId?: string
 }
@@ -39,9 +39,15 @@ export function projectList(options: ProjectListOptions): Result<{ items: Projec
     if (!grants.success) return grants
     for (const grant of grants.data) grantedProjectIds.add(grant.projectId)
   }
+  const status = options.query?.status ?? "active"
+  const search = options.query?.search?.trim().toLowerCase()
   const views: { project: ProjectListItem }[] = []
   for (const project of rows.data) {
-    if (project.status !== "active") continue
+    if (project.status === "removed") continue
+    if (status !== "all" && project.status !== status) continue
+    if (search !== undefined && search.length > 0) {
+      if (!`${project.name} ${project.id}`.toLowerCase().includes(search)) continue
+    }
     if (
       options.organizationId !== undefined &&
       project.organizationId !== options.organizationId &&

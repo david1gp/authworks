@@ -112,14 +112,14 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
     const searchParams = new URL(context.req.url).searchParams
     const query = listQueryFromSearchParams(searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
-    const organizationIdParam = searchParams.get("organizationId")
-    const filter =
-      organizationIdParam === null
-        ? v.safeParse(projectListQuerySchema, {})
-        : v.safeParse(projectListQuerySchema, { organizationId: organizationIdParam })
+    const filter = v.safeParse(projectListQuerySchema, {
+      ...query.data,
+      ...(searchParams.get("organizationId") === null ? {} : { organizationId: searchParams.get("organizationId") }),
+      ...(searchParams.get("status") === null ? {} : { status: searchParams.get("status") }),
+    })
     if (!filter.success)
       return projectErrorResponseCreate(context, {
-        errorMessage: "The organization filter is invalid.",
+        errorMessage: "The project filter is invalid.",
         op: "projectList",
       })
     return projectResultResponseCreate(
@@ -127,7 +127,7 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
       projectList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        query: query.data,
+        query: filter.output,
         realmId: projectParamGet(context, "realmId"),
         ...(filter.output.organizationId === undefined ? {} : { organizationId: filter.output.organizationId }),
       }),
