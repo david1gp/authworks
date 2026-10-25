@@ -23,7 +23,7 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
       variant="card"
     >
       <div class="grid gap-3">
-        <p class="text-xs text-muted-foreground">{messageTranslate("account.factors.description")}</p>
+        <p class="text-xs text-muted-foreground">{messageTranslate("account.recovery.description")}</p>
         <AccountSecurityStatus
           configured={state.remaining() > 0}
           detail={state.backupDetail()}

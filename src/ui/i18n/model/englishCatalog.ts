@@ -1,6 +1,7 @@
 /** Stable message keys introduced with the shared i18n foundation. */
 export const englishCatalog = {
   "account.access.accepted": "Invitation accepted",
+  "account.access.acceptedDetail": "You are now a member of this organization.",
   "account.access.active": "Active organization",
   "account.access.consentCount": "{count} application consents",
   "account.access.consentCountOne": "{count} application consent",
@@ -13,6 +14,7 @@ export const englishCatalog = {
   "account.access.consentUpdated": "Updated {date}",
   "account.access.created": "Granted {date}",
   "account.access.declined": "Invitation declined",
+  "account.access.declinedDetail": "You declined this invitation.",
   "account.access.email": "Email",
   "account.access.effectiveDescription":
     "Review the active organizations, projects, roles, and permissions available to this account.",
@@ -201,6 +203,8 @@ export const englishCatalog = {
   "account.profile.userName": "Username",
   "account.profile.verificationPending": "Verification pending",
   "account.profile.verified": "Verified",
+  "account.recovery.description":
+    "Generate single-use backup codes to sign in when your other methods are unavailable.",
   "account.recovery.generate": "Generate new codes",
   "account.recovery.once": "Copy or print these codes now. They cannot be displayed again.",
   "account.recovery.remaining": "{count} unused codes remain. Generating new codes invalidates the previous set.",

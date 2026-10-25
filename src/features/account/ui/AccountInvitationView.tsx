@@ -29,6 +29,9 @@ export function AccountInvitationView(props: {
       when={props.status !== "accepted" && props.status !== "declined"}
       fallback={
         <ProductionStatePanel
+          detail={messageTranslate(
+            props.status === "accepted" ? "account.access.acceptedDetail" : "account.access.declinedDetail",
+          )}
           state="empty"
           title={messageTranslate(props.status === "accepted" ? "account.access.accepted" : "account.access.declined")}
         />

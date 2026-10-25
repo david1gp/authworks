@@ -4,6 +4,7 @@ account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
 account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,Invitation accepted
+account.access.acceptedDetail,この組織のメンバーになりました。
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
 account.access.consentCount,アプリへの同意 {count} 件
@@ -16,6 +17,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.declinedDetail,この招待を辞退しました。
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveEmpty,This account has no active organization or project access.
@@ -197,6 +199,7 @@ account.profile.saved,Your profile was saved.
 account.profile.userName,Username
 account.profile.verificationPending,Verification pending
 account.profile.verified,Verified
+account.recovery.description,他の方法が使えないときにサインインするための使い捨てバックアップコードを生成します。
 account.recovery.generate,Generate new codes
 account.recovery.once,Copy or print these codes now. They cannot be displayed again.
 account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.

@@ -4,6 +4,7 @@ account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
 account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,تم قبول الدعوة
+account.access.acceptedDetail,أنت الآن عضو في هذه المنظمة.
 account.access.active,المنظمة النشطة
 account.access.consentCount,{count} أذونات وصول للتطبيقات
 account.access.consentCountOne,{count} إذن وصول لتطبيق
@@ -16,6 +17,7 @@ account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطب
 account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
 account.access.declined,تم رفض الدعوة
+account.access.declinedDetail,لقد رفضت هذه الدعوة.
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveEmpty,This account has no active organization or project access.
@@ -197,6 +199,7 @@ account.profile.saved,تم حفظ ملفك الشخصي.
 account.profile.userName,اسم المستخدم
 account.profile.verificationPending,التحقق معلق
 account.profile.verified,تم التحقق
+account.recovery.description,أنشئ رموزًا احتياطية تُستخدم لمرة واحدة لتسجيل الدخول عندما تكون وسائلك الأخرى غير متاحة.
 account.recovery.generate,إنشاء رموز جديدة
 account.recovery.once,انسخ أو اطبع هذه الرموز الآن. لا يمكن عرضها مرة أخرى.
 account.recovery.remaining,تبقى {count} من الرموز غير المستخدمة. يؤدي إنشاء رموز جديدة إلى إبطال المجموعة السابقة.

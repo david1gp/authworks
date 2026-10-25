@@ -4,6 +4,7 @@ account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
 account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,Einladung angenommen
+account.access.acceptedDetail,Sie sind jetzt Mitglied dieser Organisation.
 account.access.active,Aktive Organisation
 account.access.consentCount,{count} Anwendungsfreigaben
 account.access.consentCountOne,{count} Anwendungsfreigabe
@@ -16,6 +17,7 @@ account.access.consentRevokeConfirm,Zugriff für {clientId} widerrufen?
 account.access.consentRevoked,Der Anwendungszugriff wurde widerrufen.
 account.access.created,Erteilt am {date}
 account.access.declined,Einladung abgelehnt
+account.access.declinedDetail,Sie haben diese Einladung abgelehnt.
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
 account.access.effectiveEmpty,This account has no active organization or project access.
@@ -197,6 +199,7 @@ account.profile.saved,Ihr Profil wurde gespeichert.
 account.profile.userName,Benutzername
 account.profile.verificationPending,Verifizierung ausstehend
 account.profile.verified,Verifiziert
+account.recovery.description,"Erstellen Sie Einmal-Backup-Codes für die Anmeldung, falls Ihre anderen Methoden nicht verfügbar sind."
 account.recovery.generate,Neue Codes erzeugen
 account.recovery.once,Kopieren oder drucken Sie diese Codes jetzt. Sie können nicht erneut angezeigt werden.
 account.recovery.remaining,{count} unbenutzte Codes verbleiben. Das Erzeugen neuer Codes macht die bisherigen ungültig.
