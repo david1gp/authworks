@@ -180,12 +180,16 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await expect(page.getByText("The user profile was saved.", { exact: true })).toBeVisible()
     // Deletion is offered behind the "More actions" overflow menu (covered in the
     // impersonation spec); the delete dialog itself is URL-driven, so open it directly.
+    // The dialog opens from the SPA query state, so wait only for the navigation to commit:
+    // holding for a full load event flakes when the dev server is busy.
     const deleteOpen = async () => {
-      await page.goto(`${userPath}?dialog=delete`)
+      await page.goto(`${userPath}?dialog=delete`, { waitUntil: "commit" })
     }
     const deleteConfirmation = page.getByRole("dialog", { name: "Delete this user" })
     await deleteOpen()
-    await expect(deleteConfirmation).toBeVisible()
+    // The dialog opens after the app boots on the fresh document; allow a full minute so a
+    // transiently stalled dev server does not flake the run (a broken dialog still fails here).
+    await expect(deleteConfirmation).toBeVisible({ timeout: 60_000 })
     await page.keyboard.press("Escape")
     await expect(deleteConfirmation).toHaveCount(0)
     expect(deleteRequestUrls).toHaveLength(0)

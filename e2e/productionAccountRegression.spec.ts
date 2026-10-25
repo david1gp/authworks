@@ -12,9 +12,10 @@ type ProductionAccountApiEvidence = {
 type ProductionAccountSection = {
   readonly apiEvidence: readonly ProductionAccountApiEvidence[]
   readonly content: string | RegExp
+  /** Collapsed disclosure summary holding the content; clicked open before asserting. */
+  readonly disclosure?: string
   readonly heading: string
   readonly id: string
-  readonly label: string
 }
 
 const accountSections: readonly ProductionAccountSection[] = [
@@ -23,7 +24,6 @@ const accountSections: readonly ProductionAccountSection[] = [
     content: "Personal information",
     heading: "Profile",
     id: "profile",
-    label: "Profile",
   },
   {
     apiEvidence: [
@@ -35,31 +35,30 @@ const accountSections: readonly ProductionAccountSection[] = [
       { path: /\/me\/security-history$/ },
     ],
     content: "Change password",
+    disclosure: "Password",
     heading: "Security",
     id: "security",
-    label: "Security",
   },
   {
     apiEvidence: [{ path: /\/me\/sessions$/ }, { path: /\/me\/refresh-tokens$/ }, { path: /\/me\/consents$/ }],
     content: "Review devices where your account is signed in and revoke any session you do not recognize.",
-    heading: "Recent security activity · Sessions and devices · Applications",
+    disclosure: "Sessions and devices",
+    heading: "Devices and applications",
     id: "devices-applications",
-    label: "Sessions and devices",
   },
   {
     apiEvidence: [{ path: /\/me\/organizations$/ }, { path: /\/me\/effective-access$/ }],
     content:
       "Select an organization to view its membership and access. Viewing an organization does not change your active organization.",
+    disclosure: "Organizations",
     heading: "Access",
     id: "access",
-    label: "Access",
   },
   {
     apiEvidence: [{ path: /\/me$/ }],
     content: "Permanently delete this account",
     heading: "Danger zone",
     id: "danger-zone",
-    label: "Danger zone",
   },
 ]
 
@@ -283,7 +282,7 @@ function productionAccountInvalidResponseDiagnosticCreate(
 }
 
 function productionAccountNativeNetworkErrorStatusGet(value: string): number | undefined {
-  const match = /^Failed to load resource: the server responded with a status of (\d+) \(\)$/.exec(value)
+  const match = /^Failed to load resource: the server responded with a status of (\d+) \(.*\)$/.exec(value)
   if (match === null) return undefined
   const status = Number(match[1])
   return Number.isSafeInteger(status) ? status : undefined
@@ -307,7 +306,8 @@ async function productionAccountSectionVerify(
   await expect(page).toHaveURL(`${targetOrigin}/account#${section.id}`)
   await expect(workspaceSection.getByRole("heading", { name: section.heading, exact: true }), message).toBeVisible()
   await expect(workspaceSection.getByText(section.content).first(), message).toBeVisible()
-  await expect(page.locator('[data-content-state="loading"], [role="status"]'), message).toHaveCount(0)
+  // Copy buttons render empty polite live regions; only real loading states must be gone.
+  await expect(page.locator('[data-content-state="loading"]'), message).toHaveCount(0)
   await diagnostics.flush()
   const responses = diagnostics.responsesSince(responseSequenceBefore)
 
@@ -341,27 +341,28 @@ productionAuthTest(
       await page.goto(`${targetOrigin}/account`)
       await expect(page).toHaveURL(`${targetOrigin}/account`)
 
-      const navigation = page.getByRole("navigation", { name: "Account navigation" })
-      await expect(navigation).toBeVisible()
-      await expect(page.locator("header").first()).toHaveCSS("position", "static")
+      // The reworked workspace renders its sections inline: no contextual sidebar and no shell header.
+      await expect(page.locator("aside")).toHaveCount(0)
+      await expect(page.locator("header")).toHaveCount(0)
       await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
       await diagnostics.flush()
 
       for (const section of accountSections) {
-        const link = navigation.getByRole("link", { exact: true, name: section.label })
-        await expect(link).toBeVisible()
-        await expect(link).toHaveAttribute("href", `#${section.id}`)
-        await link.click()
-        await expect(link).toHaveAttribute("aria-current", "location")
+        const workspaceSection = page.locator(`#${section.id}`)
+        const permalink = workspaceSection.getByRole("link", { exact: true, name: section.heading })
+        await expect(permalink).toHaveAttribute("href", `#${section.id}`)
+        await permalink.click()
+        // Section bodies render inside collapsed disclosures; open the holding one first.
+        if (section.disclosure !== undefined)
+          await workspaceSection.locator("summary", { hasText: section.disclosure }).click()
         await productionAccountSectionVerify(page, diagnostics, section, accountLoadSequenceBefore)
       }
 
       await page.reload()
       await expect(page).toHaveURL(`${targetOrigin}/account#danger-zone`)
-      await expect(navigation.getByRole("link", { exact: true, name: "Danger zone" })).toHaveAttribute(
-        "aria-current",
-        "location",
-      )
+      await expect(
+        page.locator("#danger-zone").getByRole("heading", { name: "Danger zone", exact: true }),
+      ).toBeVisible()
     } finally {
       await diagnostics.attach(testInfo)
     }

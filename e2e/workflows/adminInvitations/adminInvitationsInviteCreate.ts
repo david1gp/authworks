@@ -16,6 +16,10 @@ export async function adminInvitationsInviteCreate(setup: AdminInvitationsSetup)
   await expect(page.getByRole("tab", { name: "Pending invitations" })).toHaveAttribute("aria-selected", "true")
 
   const pendingRow = page.locator("table tbody tr", { hasText: setup.inviteeEmail })
+  // The list loads after navigation; wait for it to settle (row or empty state) before deciding.
+  await expect(
+    pendingRow.first().or(page.getByText("No invitations have been sent for this organization.", { exact: true })),
+  ).toBeVisible()
   if ((await pendingRow.count()) > 0) {
     await pendingRow.first().getByRole("button", { name: "Revoke invitation" }).click()
     await page.getByRole("button", { name: "Continue", exact: true }).click()

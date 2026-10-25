@@ -16,8 +16,11 @@ export async function adminInvitationsInviteRevoke(setup: AdminInvitationsSetup)
   // invite-create is idempotent, so on resume the invitee row may already be revoked:
   // only a row with a pending action needs revoking; a revoked row ends the step.
   const inviteeRow = () => page.locator("table tbody tr", { hasText: setup.inviteeEmail }).first()
+  // The list loads after navigation; the row always exists here (invite-create ran first),
+  // so wait for it instead of racing the load with an immediate count.
+  await expect(inviteeRow()).toBeVisible()
   const pendingAction = () => inviteeRow().getByRole("button", { name: "Revoke invitation" })
-  if ((await inviteeRow().count()) > 0 && (await pendingAction().count()) > 0) {
+  if ((await pendingAction().count()) > 0) {
     await pendingAction().click()
     await page.getByRole("button", { name: "Continue", exact: true }).click()
   }
