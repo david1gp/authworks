@@ -18,6 +18,8 @@ const oidcMultichatClientConfiguration = {
     redirectUris: [
       "http://127.0.0.1:3007/login/authworks/callback",
       "https://preview.multichat.leonardomora.de/login/authworks/callback",
+      "https://preview.multichat.wonder1.de/login/authworks/callback",
+      "https://multichat.wonder1.de/login/authworks/callback",
     ],
   },
   production: {

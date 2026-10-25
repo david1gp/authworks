@@ -12,12 +12,16 @@ import { realmApiClientCreate } from "../../src/features/realms/client/realmApiC
 
 const systemSecret = "project-boundary-production-system-secret-0001"
 const productionOrigin = "https://authworks.contentoren.de"
+const legacyDevelopmentHostSuffix = ".leonardomora.de"
+const migratedDevelopmentHostSuffix = ".wonder1.de"
+const migratedDevelopmentAliasMinimum = 6
 
 const expectedRedirectUris: Record<string, { development: string[]; production: string[] }> = {
   archive: {
     development: [
       "http://127.0.0.1:3243/api/auth/authworks/callback",
       "https://archive-api.leonardomora.de/api/auth/authworks/callback",
+      "https://archive-api.wonder1.de/api/auth/authworks/callback",
     ],
     production: ["https://archive-api.contentoren.de/api/auth/authworks/callback"],
   },
@@ -36,6 +40,8 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     development: [
       "http://127.0.0.1:3134/login/authworks/callback",
       "https://coachingcompany.leonardomora.de/login/authworks/callback",
+      "https://coachingcompany.wonder1.de/login/authworks/callback",
+      "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
     ],
     production: ["https://coachingcompany.contentoren.de/login/authworks/callback"],
   },
@@ -47,13 +53,18 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     production: ["https://crm.contentoren.de/auth/authworks/callback"],
   },
   eventoren: {
-    development: ["https://eventoren.leonardomora.de/login/authworks/callback"],
+    development: [
+      "https://eventoren.leonardomora.de/login/authworks/callback",
+      "https://eventoren.wonder1.de/login/authworks/callback",
+    ],
     production: ["https://eventoren.de/login/authworks/callback"],
   },
   filmschauspielschule: {
     development: [
       "http://127.0.0.1:3132/login/authworks/callback",
       "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
+      "https://filmschauspielschule.wonder1.de/login/authworks/callback",
+      "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
     ],
     production: ["https://filmschauspielschule.contentoren.de/login/authworks/callback"],
   },
@@ -61,6 +72,7 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     development: [
       "http://127.0.0.1:3053/login/authworks/callback",
       "https://semesterkur.leonardomora.de/login/authworks/callback",
+      "https://semesterkur.wonder1.de/login/authworks/callback",
     ],
     production: ["https://semesterkur.com/login/authworks/callback"],
   },
@@ -68,6 +80,7 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     development: [
       "http://127.0.0.1:3016/login/authworks/callback",
       "https://solid-convex.leonardomora.de/login/authworks/callback",
+      "https://solid-convex.wonder1.de/login/authworks/callback",
     ],
     production: ["https://solid-convex.contentoren.de/login/authworks/callback"],
   },
@@ -142,6 +155,26 @@ test("project production and development boundaries register the fixed confident
     }
   } finally {
     await fixture.close()
+  }
+})
+
+test("migrated development callbacks keep their same-prefix wonder1.de alias", () => {
+  const entries = Object.values(oidcProjectBoundaryRegistry)
+  const migratedAliases = entries.flatMap((entry) =>
+    entry.developmentRedirectUris
+      .filter((uri) => uri.includes(migratedDevelopmentHostSuffix))
+      .map((alias) => ({ alias, slug: entry.slug })),
+  )
+  expect(migratedAliases.length).toBeGreaterThanOrEqual(migratedDevelopmentAliasMinimum)
+  for (const entry of entries) {
+    for (const legacy of entry.developmentRedirectUris.filter((uri) => uri.includes(legacyDevelopmentHostSuffix))) {
+      const alias = legacy.replace(legacyDevelopmentHostSuffix, migratedDevelopmentHostSuffix)
+      const developmentRedirectUris = oidcProjectBoundaryRegistry[entry.slug]?.developmentRedirectUris ?? []
+      expect(developmentRedirectUris).toContain(legacy)
+      expect(developmentRedirectUris).toContain(alias)
+      expect(developmentRedirectUris.indexOf(legacy)).toBeLessThan(developmentRedirectUris.indexOf(alias))
+    }
+    expect(entry.productionRedirectUris.some((uri) => uri.includes(migratedDevelopmentHostSuffix))).toBe(false)
   }
 })
 

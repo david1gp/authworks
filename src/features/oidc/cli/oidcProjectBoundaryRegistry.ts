@@ -10,6 +10,9 @@ export type OidcProjectBoundaryConfig = {
   readonly adoptSharedClientByRedirectUri?: true
 }
 
+// Development callbacks keep the legacy `leonardomora.de` host next to its
+// same-prefix `wonder1.de` alias. The ensure commands overwrite the client
+// redirect URIs with these lists, so a live-only alias would be erased again.
 const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
   {
     slug: "eventoren",
@@ -17,7 +20,10 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     productionName: "Eventoren production",
     developmentName: "Eventoren development",
     productionRedirectUris: ["https://eventoren.de/login/authworks/callback"],
-    developmentRedirectUris: ["https://eventoren.leonardomora.de/login/authworks/callback"],
+    developmentRedirectUris: [
+      "https://eventoren.leonardomora.de/login/authworks/callback",
+      "https://eventoren.wonder1.de/login/authworks/callback",
+    ],
   },
   {
     slug: "solid-convex",
@@ -28,6 +34,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3016/login/authworks/callback",
       "https://solid-convex.leonardomora.de/login/authworks/callback",
+      "https://solid-convex.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -39,6 +46,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3053/login/authworks/callback",
       "https://semesterkur.leonardomora.de/login/authworks/callback",
+      "https://semesterkur.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -50,6 +58,8 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3134/login/authworks/callback",
       "https://coachingcompany.leonardomora.de/login/authworks/callback",
+      "https://coachingcompany.wonder1.de/login/authworks/callback",
+      "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -61,6 +71,8 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3132/login/authworks/callback",
       "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
+      "https://filmschauspielschule.wonder1.de/login/authworks/callback",
+      "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -107,6 +119,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3243/api/auth/authworks/callback",
       "https://archive-api.leonardomora.de/api/auth/authworks/callback",
+      "https://archive-api.wonder1.de/api/auth/authworks/callback",
     ],
   },
 ]

@@ -48,6 +48,8 @@ test("Multichat production and development clients are separate fixed confidenti
     expect(developmentClient?.redirectUris).toEqual([
       "http://127.0.0.1:3007/login/authworks/callback",
       "https://preview.multichat.leonardomora.de/login/authworks/callback",
+      "https://preview.multichat.wonder1.de/login/authworks/callback",
+      "https://multichat.wonder1.de/login/authworks/callback",
     ])
     expect(productionClient?.allowedScopes).toEqual([
       "openid",
