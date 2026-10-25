@@ -1,6 +1,6 @@
 # Admin rework — org-owner first
 
-Status: in progress
+Status: complete (2026-10-25)
 
 ## Goal
 
@@ -278,14 +278,34 @@ E2E and release
 18b. [x] Cleanup (depends 7): stale/own test data purge via service user + verification, stale checkpoint removal.
 19. [x] Workflows `adminOrgOwner`, `adminMemberDenied`.
 20. [x] Workflows `adminOrgAdminLimits`, `adminRealmAdministrator`, `adminInvitations`.
-21. [ ] Full `test:e2e:dev` green incl. resume + cleanup verification.
-22. [ ] Commit, push, `prodctl deploy authworks`, health check.
-23. [ ] Provision production service user, write `.env.production`.
-24. [ ] Full `test:e2e` (production) green; verify fresh run, failure/resume, cleanup.
+21. [x] Full `test:e2e:dev` green incl. resume + cleanup verification.
+22. [x] Commit, push, `prodctl deploy authworks`, health check.
+23. [x] Provision production service user, write `.env.production`.
+24. [x] Full `test:e2e` (production) green; verify fresh run, failure/resume, cleanup.
 
 ## Current context
 
-- Subagent model: `multisub/muse-spark-1.3-contributor` (the `go/` provider hit its usage limit).
+- Done 2026-10-25: tasks 21-24. `test:e2e:dev` fully green incl. fault-injection resume + cleanup; `bun run check`
+  green (1359 unit tests, typecheck, format, build); production `test:e2e` fully green.
+- Production at `9a008db` (`https://authworks.contentoren.de`, `/health` ok); `main == origin/main`. Finishing
+  commits: `8c53530`, `01d6c3d`, `446765b`, `ad71645`, `cee50e9`, `2751c6d`, `21ec13d`, `c0f122e`, `eceeb12`,
+  `266f35a`, `58e822f`, `f49d969`, `89b4188`, `f9957f5`, `298eada`, `9a008db`.
+- `prodctl` bridge installed (`authworks-e2e-service-ensure`; `~/.local/bin/prodctl` identical to
+  `prodctl/client/prodctl`). Production service user provisioned; credentials in `.env.production` (mode 0600).
+- Production validation: fresh run completed via resume; fault injection after `adminOrgOwner/users-list` paused
+  keeping data; resume completed and cleanup purged everything; leftover probes `0` users/orgs/projects matching
+  `^e2e-aw-\d{12}-[a-z0-9]{6}-`.
+- Production-validation fixes (both with regression tests): provisioning now reads the password policy via
+  `passwordPolicySystemGet` on `/system/realms/:realmId/password-policy` (`58e822f`); `sessionIssue` mirrors the
+  org-switch realm-admin exception so realm admins without org membership can sign in (`89b4188`).
+- Production DB backups before each deploy (root-owned; restore as root):
+  `/home/authworks/.local/share/authworks/authworks.sqlite.bak-20261025T073007Z`,
+  `.bak-20261025T073920Z`, `.bak-20261025T085112Z`.
+- Repo dir `/home/david/adaptive/authworks` is mode `755` (was `775`; the `prodctl` credential handoff refuses
+  group-writable dirs).
+- Known flake: `e2e/task17Production.spec.ts:28` intermittently times out inside full orchestrated runs (page-load /
+  delete-dialog; passes in isolation and on resume retry; seen in dev and production). If it recurs: Vite /
+  browser-stall instrumentation, not longer waits.
 - Agents' scratch files: `/home/david/adaptive/.authworks-work/` (`/tmp` was wiped once by a server restart).
 - E2E: `bun run test:e2e` (production) / `bun run test:e2e:dev`; `scripts/e2eRun.ts --target <t> [--fresh]
   [--only <suite>]`; registry `e2e/harness/e2eSuiteRegistryList.ts`; per-target run lock; dev server only stopped by
@@ -294,8 +314,9 @@ E2E and release
   `<stateDir>/dev/` (DB, system secret, `env.json`). Service user `authworks-e2e-service` (realm admin + owner of
   "Authworks Dev"), member `e2e-dev-member`. `login.localhost` is seeded as the dev org's verified domain via
   system-only `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`.
-- Production service-user bridge prepared in `~/leo/contentoren-server` commit `9e9022c` (not pushed, not
-  installed): install `./prodctl/deploy.sh apply` (root), then `prodctl authworks-e2e-service-ensure` writes
-  `AUTHWORKS_E2E_SERVICE_*` into `.env.production`. Requires the new authworks build deployed first.
-- Production still on `1bb6b27`; local `main` is ahead of `origin/main`.
-- Known gap: `/account` renders without the shell header, so the Admin pill isn't visible there.
+- Open gaps (from the handoff, still open): `/account` renders without the shell header (Admin pill invisible
+  there); `AuthenticatedActionMenu` items announced as "close" (corvu `Popover.Close`); authorization widenings to
+  confirm with the user (organization-roles readable by any signed-in realm user; realm default login policy +
+  org-scoped external IdPs readable by org owners/admins); coarse route-guard permission is "granted" for every
+  signed-in user (real gate is per-screen access + backend); `>24h` cleanup branch covered only by unit test; old
+  stashes `stash@{0..5}` and worktrees `wt-base`/`wt-head` still exist (user to decide).
