@@ -124,7 +124,7 @@ export function AuthenticatedDataTable<T>(props: {
       when={state.showEmpty()}
       fallback={
         <div class={classMerge("overflow-x-auto", props.class)}>
-          <table class={authenticatedTableClasses.table}>
+          <table class={classMerge("w-full", authenticatedTableClasses.table)}>
             <caption class="sr-only">{props.caption}</caption>
             <thead class={classMerge(authenticatedTableClasses.header, "[&_th]:sticky [&_th]:top-0")}>
               <tr>

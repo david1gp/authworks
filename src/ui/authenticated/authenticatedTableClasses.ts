@@ -6,7 +6,7 @@ export const authenticatedTableClasses = {
   /** Right-aligned trailing action cell. */
   action: "w-0 whitespace-nowrap py-2 ps-2 pe-5 text-end",
   cell: "px-3 py-3 align-middle first:ps-5 last:pe-5",
-  head: "h-10 px-3 text-start text-xs font-medium text-muted-foreground first:ps-5 last:pe-5",
+  head: "h-10 whitespace-nowrap px-3 text-start text-xs font-medium text-muted-foreground first:ps-5 last:pe-5",
   header: "bg-muted/70 [&_tr]:border-line",
   /** Monospace, truncating cell for identifiers and other long technical values. */
   identifier:
