@@ -9,7 +9,7 @@ import { organizationConfigurationSectionSelect } from "./organizationConfigurat
 export function OrganizationConfigurationProductionAdapter(props: { readonly section?: string }) {
   const session = productionSessionContextGet()
   const screen = organizationAdminProductionStateCreate({
-    organizationId: undefined,
+    organizationId: () => undefined,
     screen: () => "configuration",
   })
   const section = () => organizationConfigurationSectionSelect(props.section)

@@ -248,6 +248,7 @@ export const productionRouteContractMap = {
         contracts: ["realms.get", "realms.update"],
         guard: { ...realmAdminGuard },
         key: "realm",
+        ownsPageHeader: true,
         path: "/admin/realm",
         title: "shell.nav.realmOverviewSettings",
       },

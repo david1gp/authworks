@@ -8,7 +8,7 @@ import { organizationAdminScreenStateCreate } from "./organizationAdminScreenSta
 
 /** Binds the organization administration screens to realm-scoped browser clients. */
 export function organizationAdminProductionStateCreate(options: {
-  readonly organizationId?: string
+  readonly organizationId: () => string | undefined
   readonly screen: () => OrganizationAdminScreen
 }) {
   const session = productionSessionContextGet()
@@ -22,7 +22,8 @@ export function organizationAdminProductionStateCreate(options: {
     // Production routes render through catch-all `/admin/*adminPath` entries, so `useParams`
     // carries no `:organizationId`; prefer the explicit prop, which the route resolves from
     // its own path contract (same pattern as the machine-user and project screens).
-    if (options.organizationId !== undefined) return options.organizationId
+    const fromRoute = options.organizationId()
+    if (fromRoute !== undefined) return fromRoute
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : ""
   }

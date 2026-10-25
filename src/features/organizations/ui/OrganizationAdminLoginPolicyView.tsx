@@ -147,7 +147,12 @@ export function OrganizationAdminLoginPolicyView(props: {
                         type="checkbox"
                       />
                       <span class="min-w-0">{messageTranslate(field.labelKey)}</span>
-                      <Show when={props.overrides[field.key] === undefined || props.overrides[field.key] === null}>
+                      <Show
+                        when={
+                          props.policyScope === "organization" &&
+                          (props.overrides[field.key] === undefined || props.overrides[field.key] === null)
+                        }
+                      >
                         <span class="col-start-2">
                           <AuthenticatedStatus
                             label={messageTranslate("admin.organizations.policy.inherited")}
