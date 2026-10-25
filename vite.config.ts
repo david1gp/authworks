@@ -1,10 +1,6 @@
-import { resolve } from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig, loadEnv } from "vite"
 import solid from "vite-plugin-solid"
-
-const solidUiRoot = resolve(import.meta.dirname, "ui")
-const dependenciesRoot = resolve(import.meta.dirname, "node_modules")
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "")
@@ -13,35 +9,9 @@ export default defineConfig(({ mode }) => {
   // Vite forwards browser console output to the terminal automatically when it detects an AI agent,
   // which floods E2E logs with expected diagnostics. Keep it opt-in.
   const forwardConsole = env.AUTHWORKS_UI_FORWARD_CONSOLE === "1"
-  const solidRuntime = mode === "development" ? "solid-js/dist/dev.js" : "solid-js/dist/solid.js"
-  const solidStoreRuntime = mode === "development" ? "solid-js/store/dist/dev.js" : "solid-js/store/dist/store.js"
 
   return {
     plugins: [solid(), tailwindcss()],
-    resolve: {
-      alias: [
-        { find: "#ui", replacement: solidUiRoot },
-        {
-          find: "@adaptive-ds/solid-ui/static/badge/Badge",
-          replacement: resolve(solidUiRoot, "static/badge/Badge.tsx"),
-        },
-        {
-          find: "@adaptive-ds/solid-ui/static/badge/badgeCva",
-          replacement: resolve(solidUiRoot, "static/badge/badgeCva.tsx"),
-        },
-        {
-          find: "@adaptive-ds/solid-ui/utils/createSignalObject",
-          replacement: resolve(solidUiRoot, "utils/createSignalObject.ts"),
-        },
-        { find: /^solid-js$/, replacement: resolve(dependenciesRoot, solidRuntime) },
-        { find: /^solid-js\/dist\/solid\.js$/, replacement: resolve(dependenciesRoot, solidRuntime) },
-        { find: /^solid-js\/web$/, replacement: resolve(dependenciesRoot, "solid-js/web/dist/web.js") },
-        { find: /^solid-js\/store$/, replacement: resolve(dependenciesRoot, solidStoreRuntime) },
-        { find: /^@corvu\/popover$/, replacement: resolve(dependenciesRoot, "@corvu/popover") },
-        { find: /^valibot$/, replacement: resolve(dependenciesRoot, "valibot") },
-        { find: "cn", replacement: resolve(dependenciesRoot, "cn") },
-      ],
-    },
     server: {
       forwardConsole,
       port: uiPort,
