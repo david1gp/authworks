@@ -1953,3 +1953,42 @@ test("password CLI exposes authentication commands without opening SQLite", asyn
   expect(await helpProcess.exited).toBe(0)
   expect(helpOutput).toContain("Password authentication")
 })
+
+test("password policy system reads succeed on origins whose host serves no realm", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "authworks.contentoren.example.com")
+    const app = passwordServerAppCreate({ database, systemSecret: "system-secret" })
+    const client = passwordApiClientCreate({
+      baseUrl: "http://127.0.0.1:8302",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      systemToken: "system-secret",
+    })
+    const tenant = await client.passwordPolicyGet(realm.id)
+    expect(tenant.success).toBe(false)
+    if (tenant.success) return
+    expect("code" in tenant ? tenant.code : undefined).toBe("realms.not-found")
+
+    const system = await client.passwordPolicySystemGet(realm.id)
+    expect(system).toEqual({
+      data: {
+        policy: {
+          lockoutDurationMs: 900000,
+          maximumAttempts: 5,
+          minimumLength: 12,
+          requireLowercase: false,
+          requireNumber: false,
+          requireSymbol: false,
+          requireUppercase: false,
+        },
+      },
+      success: true,
+    })
+
+    const unauthorized = await passwordApiClientCreate({
+      baseUrl: "http://127.0.0.1:8302",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      systemToken: "wrong-secret",
+    }).passwordPolicySystemGet(realm.id)
+    expect(unauthorized.success).toBe(false)
+  })
+})
