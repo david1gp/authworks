@@ -126,6 +126,22 @@ export function directoryUserProfilePageStateCreate(
     return result.data
   }
 
+  /**
+   * Success check for `Result<void>` mutations, whose successful data is `undefined` and must
+   * not read as failure (user deletion, realm-admin changes, session revocation).
+   */
+  const mutateVoid = async (id: string, operation: () => Promise<Result<void>>): Promise<boolean> => {
+    pendingId.set(id)
+    error.set(undefined)
+    const result = await operation()
+    pendingId.set(undefined)
+    if (!result.success) {
+      fail(result)
+      return false
+    }
+    return true
+  }
+
   createEffect(
     on(
       () => `${options.userId() ?? ""}:${options.realmId()}:${options.organizationId()}:${options.reloadKey?.() ?? ""}`,
@@ -240,8 +256,7 @@ export function directoryUserProfilePageStateCreate(
         formError.set(messageTranslate("admin.userProfile.deleteConfirmMismatch"))
         return false
       }
-      const removed = await mutate(`user:delete:${userId}`, () => adapter.userDelete(userId))
-      if (removed === undefined) return false
+      if (!(await mutateVoid(`user:delete:${userId}`, () => adapter.userDelete(userId)))) return false
       notice.set(messageTranslate("admin.userProfile.deleted", { userName: user.userName }))
       return true
     },
@@ -400,8 +415,7 @@ export function directoryUserProfilePageStateCreate(
         message: messageTranslate("admin.userProfile.makeRealmAdminConfirm", { userName: user.userName }),
       })
       if (!accepted) return
-      const granted = await mutate(`realm-admin:grant:${userId}`, () => adapter.realmAdministratorGrant(userId))
-      if (granted === undefined) return
+      if (!(await mutateVoid(`realm-admin:grant:${userId}`, () => adapter.realmAdministratorGrant(userId)))) return
       notice.set(messageTranslate("admin.userProfile.makeRealmAdminDone", { userName: user.userName }))
       await profileReload()
     },
@@ -413,8 +427,7 @@ export function directoryUserProfilePageStateCreate(
         message: messageTranslate("admin.userProfile.removeRealmAdminConfirm", { userName: user.userName }),
       })
       if (!accepted) return
-      const revoked = await mutate(`realm-admin:revoke:${userId}`, () => adapter.realmAdministratorRevoke(userId))
-      if (revoked === undefined) return
+      if (!(await mutateVoid(`realm-admin:revoke:${userId}`, () => adapter.realmAdministratorRevoke(userId)))) return
       notice.set(messageTranslate("admin.userProfile.removeRealmAdminDone", { userName: user.userName }))
       await profileReload()
     },
@@ -431,8 +444,7 @@ export function directoryUserProfilePageStateCreate(
         message: messageTranslate("admin.userProfile.sessionsRevokeConfirm"),
       })
       if (!accepted) return
-      const revoked = await mutate(`session:revoke:${sessionId}`, () => adapter.sessionRevoke(userId, sessionId))
-      if (revoked === undefined) return
+      if (!(await mutateVoid(`session:revoke:${sessionId}`, () => adapter.sessionRevoke(userId, sessionId)))) return
       sessions.set(sessions.get().filter((session) => session.id !== sessionId))
       sessionsStatus.set(sessions.get().length === 0 ? "empty" : "ready")
       notice.set(messageTranslate("admin.userProfile.sessionsRevoked"))
@@ -445,8 +457,7 @@ export function directoryUserProfilePageStateCreate(
         message: messageTranslate("admin.userProfile.revokeAllConfirm", { userName: user.userName }),
       })
       if (!accepted) return
-      const revoked = await mutate(`session:revoke-all:${userId}`, () => adapter.sessionRevokeAll(userId))
-      if (revoked === undefined) return
+      if (!(await mutateVoid(`session:revoke-all:${userId}`, () => adapter.sessionRevokeAll(userId)))) return
       sessions.set([])
       sessionsStatus.set("empty")
       notice.set(messageTranslate("admin.userProfile.revokeAllDone"))

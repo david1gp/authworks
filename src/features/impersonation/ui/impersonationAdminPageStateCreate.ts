@@ -64,6 +64,13 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     const current = await adapter.eligibilityGet()
     if (!current.success) return fail(current)
     eligibility.set(current.data)
+    // Guards resolve from eligibility alone: a denied or un-stepped-up actor never
+    // reaches the candidate/organization lists, which they are not allowed to read.
+    if (current.data.nested) return status.set("nested-rejected")
+    if (!current.data.permitted) {
+      if (current.data.assurance !== "multi_factor") return status.set("assurance-required")
+      return status.set("permission-denied")
+    }
     const [listed, organizationsListed, activeSession] = await Promise.all([
       adapter.userList(),
       adapter.organizationList(),
@@ -79,12 +86,6 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     if (preselected !== undefined && preselected.length > 0) targetUserId.set(preselected)
     else if (targetUserId.get().length === 0) targetUserId.set(listed.data[0]?.id ?? "")
     if (options.endedSeed?.() === true) notice.set(messageTranslate("admin.impersonation.endedNotice"))
-    // A nested attempt is narrated rather than rendered as a generic failure.
-    if (current.data.nested) return status.set("nested-rejected")
-    if (!current.data.permitted) {
-      if (current.data.assurance !== "multi_factor") return status.set("assurance-required")
-      return status.set("permission-denied")
-    }
     status.set("ready")
   }
 

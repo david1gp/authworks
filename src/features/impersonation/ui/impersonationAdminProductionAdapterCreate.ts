@@ -1,6 +1,7 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { DirectoryUser } from "../../directory/public/directoryUserSchema.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { User } from "../../users/public/userSchema.js"
@@ -24,6 +25,8 @@ export function impersonationAdminProductionAdapterCreate(options: {
   readonly baseUrl: string
   readonly csrfToken?: () => string | undefined
   readonly fetch?: (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+  /** The active organization. Org owners/admins list candidates from its directory. */
+  readonly organizationId?: () => string
   readonly realmId: () => string
 }): ImpersonationAdminAdapter {
   const apiCreate = (csrfToken?: string) =>
@@ -129,10 +132,43 @@ export function impersonationAdminProductionAdapterCreate(options: {
     userList: async () => {
       const realmId = realm()
       if (realmId.length === 0) return missingRealm("impersonationAdminUserList")
+      // The realm-wide user list is realm-admin only. Org owners/admins still impersonate
+      // members of the orgs they administer, so candidates come from the org-scoped
+      // directory of the active organization (bootstrap admins keep the realm scope).
+      const organization = options.organizationId?.()
+      if (organization !== undefined && organization.length > 0) {
+        const directory = await api().directory.directoryOrganizationUserList(realmId, organization, {
+          pageSize,
+        })
+        if (!directory.success) return directory
+        return resultCreate(directory.data.items.map((entry) => impersonationDirectoryUserMap(realmId, entry.user)))
+      }
       const result = await api().users.userTenantList(realmId, { pageSize })
       if (!result.success) return result
       const users: readonly User[] = result.data.items
       return resultCreate(users)
     },
+  }
+}
+
+/**
+ * Directory entries carry a slim user view; the impersonation form reads the same label
+ * fields from the full user shape, so candidates are mapped back onto it.
+ */
+function impersonationDirectoryUserMap(realmId: string, user: DirectoryUser): User {
+  return {
+    createdAt: user.createdAt,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    id: user.id,
+    ...(user.lastSignInAt === undefined ? {} : { lastSignInAt: user.lastSignInAt }),
+    profile: {
+      ...(user.displayName === undefined ? {} : { displayName: user.displayName }),
+    },
+    realmId,
+    state: user.state,
+    updatedAt: user.createdAt,
+    userName: user.userName,
+    verificationState: user.verificationState,
   }
 }

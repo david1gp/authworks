@@ -1,3 +1,4 @@
+import { directoryApiClientCreate } from "../../directory/client/directoryApiClientCreate.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
 import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCreate.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
@@ -21,6 +22,7 @@ export function impersonationAdminApiCreate(options: {
   }
 
   return {
+    directory: directoryApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     impersonation: impersonationApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     organizations: organizationApiClientCreate({
       baseUrl: options.baseUrl,

@@ -27,9 +27,18 @@ export function impersonationAdminProductionStateCreate() {
 
   // The same localized dialog as the demo answers the destructive end action.
   const confirmState = confirmStateCreate()
+  // Non-realm-admins browse candidates through the org-scoped directory; realm admins
+  // and bootstrap sessions keep the realm-wide list (empty org falls back to realm scope).
+  const organizationId = () => {
+    const access = session.guard.access
+    if (access === "loading" || access.realmAdministrator) return ""
+    const organization = session.guard.organization
+    return typeof organization === "object" ? organization.organizationId : ""
+  }
   const page = impersonationAdminPageStateCreate({
     adapter: impersonationAdminProductionAdapterCreate({
       baseUrl,
+      organizationId,
       realmId: realmId.get,
     }),
     confirm: confirmState.confirm,
