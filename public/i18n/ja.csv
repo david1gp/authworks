@@ -506,7 +506,6 @@ admin.machine.users.title,マシンユーザー
 admin.machine.users.userName,ユーザー名
 admin.machine.users.userNameHint,クライアント資格情報を交換するときのクライアント ID として使用されます。
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,管理
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。

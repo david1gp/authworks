@@ -506,7 +506,6 @@ admin.machine.users.title,Machinegebruikers
 admin.machine.users.userName,Gebruikersnaam
 admin.machine.users.userNameHint,Wordt gebruikt als client-ID bij het inwisselen van clientreferenties.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Beheer
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Het beheren van OpenID Connect-instellingen vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."

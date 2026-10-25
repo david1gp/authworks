@@ -2,15 +2,12 @@ import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
-import { mdiMenuClose } from "@adaptive-ds/mdi/mdiMenuClose.js"
 import { A, useLocation, useNavigate } from "@solidjs/router"
 import { createEffect, For, type JSX, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
-import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedBrandMark } from "../../../ui/authenticated/AuthenticatedBrandMark.js"
-import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedThemeToggle } from "../../../ui/authenticated/AuthenticatedThemeToggle.js"
 import { authenticatedNavigationClasses } from "../../../ui/authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
@@ -24,6 +21,21 @@ function adminDemoHrefFor(access: () => string, href: string): string {
   return current === "realm-admin" ? href : `${href}?as=${current}`
 }
 
+function AdminDemoSidebarToggle(props: { readonly state: ReturnType<typeof adminDemoAppStateCreate> }) {
+  return (
+    <SidebarToggle
+      {...props.state.sidebar}
+      class={authenticatedNavigationClasses.sidebarToggle}
+      iconClass="size-4.5 rtl:-scale-x-100"
+      iconDesktopOpen={mdiDockLeft}
+      iconDesktopClose={mdiDockLeft}
+      iconMobileOpen={mdiMenu}
+      iconMobileClose={mdiMenu}
+      variant="ghost"
+    />
+  )
+}
+
 function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof adminDemoAppStateCreate> }) {
   const hrefFor = (href: string) => adminDemoHrefFor(state.access, href)
   return (
@@ -33,6 +45,9 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
         <A class={authenticatedNavigationClasses.brandLink} href="/demo/admin" onClick={state.destinationSelect}>
           {messageTranslate("app.name")}
         </A>
+        <Show when={state.collapseVisible()}>
+          <AdminDemoSidebarToggle state={state} />
+        </Show>
       </div>
       <nav aria-label={messageTranslate("admin.navigation.label")} class={authenticatedNavigationClasses.nav}>
         <A
@@ -80,7 +95,7 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
                   />
                 </button>
                 <Show when={state.groupOpen(group)}>
-                  <div class="grid">
+                  <div class="grid ps-2">
                     <For each={group.items}>
                       {(item) => (
                         <A
@@ -102,15 +117,10 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
         </For>
       </nav>
       <div class={authenticatedNavigationClasses.footer}>
-        <AuthenticatedButton
-          class={authenticatedNavigationClasses.footerButton}
-          icon={mdiMenuClose}
-          size="sm"
-          variant="ghost"
-          onClick={state.hideSidebar}
-        >
-          {messageTranslate("admin.navigation.hide")}
-        </AuthenticatedButton>
+        <div class={authenticatedNavigationClasses.footerPreferences}>
+          <LanguageSelector class="authenticated-language-selector min-w-0" />
+          <AuthenticatedThemeToggle />
+        </div>
       </div>
     </div>
   )
@@ -160,36 +170,15 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
         class="min-h-dvh transition-[margin] [&_section>*]:min-w-0"
         classList={{ [authenticatedNavigationClasses.contentOffset]: state.sidebar.openDesktop.get() }}
       >
-        <header class={authenticatedNavigationClasses.header}>
-          <div class={authenticatedNavigationClasses.headerStart}>
-            <SidebarToggle
-              {...state.sidebar}
-              class={authenticatedNavigationClasses.sidebarToggle}
-              iconClass="size-4.5 rtl:-scale-x-100"
-              iconDesktopOpen={mdiDockLeft}
-              iconDesktopClose={mdiDockLeft}
-              iconMobileOpen={mdiMenu}
-              iconMobileClose={mdiMenu}
-              variant="ghost"
-            />
-            <Show when={state.showHeaderBrand()}>
-              <A class={authenticatedNavigationClasses.headerBrand} href="/demo/admin">
-                <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
-                <span class={`${authenticatedNavigationClasses.brandLink} sr-only sm:not-sr-only`}>
-                  {messageTranslate("app.name")}
-                </span>
-              </A>
-            </Show>
-          </div>
-          <div class={authenticatedNavigationClasses.headerEnd}>
-            <A class={`${authenticatedNavigationClasses.headerLink} hidden sm:inline`} href="/demo">
-              {messageTranslate("demo.nav.label")}
+        <Show when={state.topBarVisible()}>
+          <div class={authenticatedNavigationClasses.topBar}>
+            <AdminDemoSidebarToggle state={state} />
+            <A class={authenticatedNavigationClasses.headerBrand} href="/demo/admin">
+              <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
+              <span class={authenticatedNavigationClasses.brandLink}>{messageTranslate("app.name")}</span>
             </A>
-            <LanguageSelector class="authenticated-language-selector" />
-            <AuthenticatedThemeToggle class="hidden sm:inline-flex" />
-            <ThemeButton class="size-8 shrink-0 p-0 sm:hidden" />
           </div>
-        </header>
+        </Show>
         <div class={authenticatedNavigationClasses.content}>{props.children}</div>
       </main>
     </div>

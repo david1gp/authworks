@@ -506,7 +506,6 @@ admin.machine.users.title,Makine kullanıcıları
 admin.machine.users.userName,Kullanıcı adı
 admin.machine.users.userNameHint,İstemci kimlik bilgileri değiştirilirken istemci kimliği olarak kullanılır.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Yönetim
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect ayarlarını yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.

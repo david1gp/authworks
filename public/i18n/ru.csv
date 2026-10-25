@@ -506,7 +506,6 @@ admin.machine.users.title,Машинные пользователи
 admin.machine.users.userName,Имя пользователя
 admin.machine.users.userNameHint,Используется как идентификатор клиента при обмене учётных данных клиента.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Администрирование
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Для управления настройками OpenID Connect требуется более надёжный и недавний вход. Войдите снова, чтобы продолжить."

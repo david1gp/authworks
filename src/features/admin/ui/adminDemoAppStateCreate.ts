@@ -201,16 +201,16 @@ export function adminDemoAppStateCreate() {
 
   return {
     access,
+    collapseVisible: () => !sidebar.isMobile.get(),
     destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
     groupOpen,
     groupToggle,
     groupLabel: (group: AdminDemoNavGroup) =>
       group.label === "Realm" ? messageTranslate("shell.nav.realmGroup") : (group.label ?? ""),
-    hideSidebar: () => sidebar.openDesktop.set(false),
     isActive: (href: string) =>
       location.pathname === href || (href !== "/demo/admin" && location.pathname.startsWith(`${href}/`)),
     navigationGroups: translatedGroups,
-    showHeaderBrand: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
     sidebar,
+    topBarVisible: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
   }
 }

@@ -506,7 +506,6 @@ admin.machine.users.title,机器用户
 admin.machine.users.userName,用户名
 admin.machine.users.userNameHint,在交换客户端凭据时用作客户端 ID。
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,管理
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,管理 OpenID Connect 设置需要更强、更近期的登录。请重新登录以继续。

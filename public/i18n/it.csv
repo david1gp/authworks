@@ -506,7 +506,6 @@ admin.machine.users.title,Utenti macchina
 admin.machine.users.userName,Nome utente
 admin.machine.users.userNameHint,Usato come ID client durante lo scambio delle credenziali client.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Amministrazione
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,La gestione delle impostazioni OpenID Connect richiede un accesso più forte e più recente. Accedi di nuovo per continuare.

@@ -470,7 +470,6 @@ export const englishCatalog = {
   "admin.machine.users.userName": "User name",
   "admin.machine.users.userNameHint": "Used as the client ID when exchanging client credentials.",
   "admin.navigation.description": "Choose an administration resource",
-  "admin.navigation.hide": "Hide sidebar",
   "admin.navigation.label": "Administration",
   "admin.navigation.title": "Administration navigation",
   "admin.oidc.assuranceRequired":

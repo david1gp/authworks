@@ -126,20 +126,15 @@ describe("account workspace", () => {
     }
   })
 
-  test("renders the account section links in the primary navbar row without a secondary row", async () => {
+  test("keeps the account workspace free of shell chrome and section navigation", async () => {
     const shell = await Bun.file(
       new URL("../../src/ui/production/ProductionAuthenticatedShell.tsx", import.meta.url),
     ).text()
 
     expect(shell).not.toContain("AccountSectionNav")
-    expect(shell).toContain("state.accountSections()")
-    expect(shell).toContain("state.isAccountSectionActive(item.id)")
-    // The links live inside the sticky header's primary row, not in a separate sticky nav below it.
-    expect(shell).not.toContain("sticky top-12")
-    expect(shell.indexOf("state.accountSections()")).toBeLessThan(shell.indexOf("</header>"))
-    // The account shell hides the whole top navbar; the language/theme/sign-out toolbar lives
-    // inline with the Profile header inside the workspace so it aligns with the content below.
-    expect(shell).toContain('when={props.kind !== "account"}')
+    // The account shell renders no top bar; the language/theme/sign-out toolbar lives inline with
+    // the Profile header inside the workspace so it aligns with the content below.
+    expect(shell).toContain('when={props.kind !== "account" && state.topBarVisible()}')
     expect(shell).not.toContain("data-account-toolbar")
 
     const workspace = await Bun.file(
@@ -159,14 +154,6 @@ describe("account workspace", () => {
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSectionNav.tsx", import.meta.url)).exists(),
     ).toBe(false)
-  })
-
-  test("tracks fragment navigation through the router location", async () => {
-    const shellState = await Bun.file(
-      new URL("../../src/ui/production/productionAuthenticatedShellStateCreate.ts", import.meta.url),
-    ).text()
-
-    expect(shellState).toContain("accountSectionNavStateCreate(() => location.hash)")
   })
 
   test("shares profile and overview security state across the composed account page", async () => {

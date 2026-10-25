@@ -506,7 +506,6 @@ admin.machine.users.title,Gépi felhasználók
 admin.machine.users.userName,Felhasználónév
 admin.machine.users.userNameHint,Ügyfélazonosítóként használatos az ügyfél-hitelesítő adatok cseréjekor.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Adminisztráció
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Az OpenID Connect beállítások kezeléséhez erősebb és frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra.

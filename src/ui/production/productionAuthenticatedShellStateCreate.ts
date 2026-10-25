@@ -2,7 +2,6 @@ import { useLocation } from "@solidjs/router"
 import * as v from "valibot"
 import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.jsx"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import { accountSectionNavStateCreate } from "../../features/account/ui/accountSectionNavStateCreate.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { authenticatedSidebarDestinationSelect } from "../authenticated/authenticatedSidebarDestinationSelect.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
@@ -38,7 +37,6 @@ export function productionAuthenticatedShellStateCreate(
   const location = useLocation()
   const session = productionSessionContextGet()
   const sidebar = createSidebarState()
-  const accountSections = accountSectionNavStateCreate(() => location.hash)
   const organizationError = createSignalObject<string | undefined>(undefined)
   const organizationPending = createSignalObject(false)
   const realmGroupManual = createSignalObject<boolean | undefined>(undefined)
@@ -92,7 +90,6 @@ export function productionAuthenticatedShellStateCreate(
   }
 
   return {
-    accountSections: accountSections.items,
     actorInitial: () => session.actorLabel.trim().slice(0, 1).toUpperCase(),
     contentClass: () =>
       kind() !== "account" && sidebar.openDesktop.get() ? authenticatedNavigationClasses.contentOffset : "",
@@ -100,11 +97,9 @@ export function productionAuthenticatedShellStateCreate(
     groups,
     groupOpen,
     groupToggle,
-    // The account shell scrolls its navbar away so the profile columns get the full viewport
-    // height; contextual shells keep the sticky bar above the sidebar overlay.
-    headerPositionClass: () => (kind() === "account" ? "" : "sticky top-0 z-30"),
+    /** The rail's own collapse control is only meaningful on desktop; mobile uses the top bar. */
+    collapseVisible: () => !sidebar.isMobile.get(),
     homeHref: () => (kind() === "admin" ? "/admin/users" : "/account"),
-    isAccountSectionActive: accountSections.isActive,
     isActive: (href: string) => productionNavigationItemActive(href, location.pathname),
     isContextual: () => kind() !== "account",
     organizationChange: (event: Event & { readonly currentTarget: HTMLSelectElement }) => {
@@ -123,12 +118,11 @@ export function productionAuthenticatedShellStateCreate(
     organizationSwitchable: () => kind() !== "account" && session.organizations.length > 1,
     showAccountNavigation: () =>
       productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "account" }),
-    showAdminNavigation: () =>
-      productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "admin" }),
-    showHeaderBrand: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
     session,
     sidebar,
     signOutHref: "/login/logout",
+    /** Slim top bar carrying the sidebar toggle; hidden while the desktop rail is open. */
+    topBarVisible: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
     title: () => messageTranslate("shell.nav.navigationTitle", { title: messageTranslate(title()) }),
   }
 }

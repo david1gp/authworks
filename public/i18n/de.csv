@@ -506,7 +506,6 @@ admin.machine.users.title,Maschinenbenutzer
 admin.machine.users.userName,Benutzername
 admin.machine.users.userNameHint,Wird beim Austausch von Client-Anmeldedaten als Client-ID verwendet.
 admin.navigation.description,Choose an administration resource
-admin.navigation.hide,Hide sidebar
 admin.navigation.label,Administration
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Für die Verwaltung der OpenID-Connect-Einstellungen ist eine stärkere, aktuellere Anmeldung erforderlich. Melden Sie sich erneut an, um fortzufahren."

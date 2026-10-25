@@ -506,7 +506,6 @@ admin.machine.users.title,مستخدمو الأجهزة
 admin.machine.users.userName,اسم المستخدم
 admin.machine.users.userNameHint,يُستخدم كمعرّف عميل عند استبدال بيانات اعتماد العميل.
 admin.navigation.description,اختر مورداً إدارياً
-admin.navigation.hide,إخفاء الشريط الجانبي
 admin.navigation.label,الإدارة
 admin.navigation.title,التنقل في الإدارة
 admin.oidc.assuranceRequired,تتطلب إدارة إعدادات OpenID Connect تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
