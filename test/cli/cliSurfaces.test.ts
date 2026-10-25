@@ -14,6 +14,9 @@ type CliRun = {
 
 const featureRoutes = [
   "realms",
+  "account",
+  "directory",
+  "events",
   "email-otp",
   "external-identities",
   "organizations",

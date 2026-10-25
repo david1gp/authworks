@@ -4,7 +4,10 @@ import { buildApplication, buildRouteMap, help, run, version } from "@stricli/co
 import { authworksVersionMetadataRender } from "../authworksVersionMetadataRender.js"
 import { connectionProfilesCliCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCommands.js"
 import { connectionProfilesCliCredentialsCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCredentialsCommands.js"
+import { accountCliCommands } from "../features/account/cli/accountCliCommands.js"
+import { directoryCliCommands } from "../features/directory/cli/directoryCliCommands.js"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
+import { eventCliCommands } from "../features/events/cli/eventCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
 import { impersonationCliCommands } from "../features/impersonation/cli/impersonationCliCommands.js"
 import { machineUserCliCommands } from "../features/machineUsers/cli/machineUserCliCommands.js"
@@ -30,6 +33,9 @@ const cliApplication = buildApplication(
       profile: connectionProfilesCliCommands,
       credentials: connectionProfilesCliCredentialsCommands,
       realms: realmCliCommands,
+      account: accountCliCommands,
+      directory: directoryCliCommands,
+      events: eventCliCommands,
       emailOtp: emailOtpCliCommands,
       externalIdentities: externalIdentityCliCommands,
       externalIdentity: externalIdentityCliCommands,
