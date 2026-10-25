@@ -147,15 +147,263 @@ const mfaRecoveryCommand = buildCommand({
   docs: { brief: "Generate single-use recovery codes" },
 })
 
+const mfaTotpRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { enrollmentId?: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaTotpEnrollmentRemove(realmId, {
+        enrollmentId: flags.enrollmentId,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      enrollmentId: { ...mfaTextFlag("TOTP enrollment ID"), optional: true as const },
+    },
+  },
+  docs: { brief: "Remove a TOTP enrollment" },
+})
+
+const mfaTotpRenameCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { enrollmentId: string; label: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaTotpEnrollmentRename(realmId, flags.enrollmentId, {
+        label: flags.label,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      enrollmentId: mfaTextFlag("TOTP enrollment ID"),
+      label: mfaTextFlag("Authenticator label"),
+    },
+  },
+  docs: { brief: "Rename a TOTP enrollment" },
+})
+
+const mfaTotpVerifyCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { code: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(this, await mfaCliClientCreate(connection.data, this, flags).mfaTotpVerify(realmId, flags.code), [
+      connection.data.token,
+      flags.systemToken,
+      this.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    ])
+  },
+  parameters: {
+    flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag(), code: mfaTextFlag("TOTP code") },
+  },
+  docs: { brief: "Verify a TOTP code" },
+})
+
+const mfaStepUpStartCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(this, await mfaCliClientCreate(connection.data, this, flags).mfaStepUpStart(realmId), [
+      connection.data.token,
+      flags.systemToken,
+      this.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    ])
+  },
+  parameters: { flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag() } },
+  docs: { brief: "Start MFA step-up authentication" },
+})
+
+const mfaStepUpCompleteCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MfaRealmFlags & { challengeToken: string; code: string; factor?: "totp" | "email_otp" | "passkey" },
+  ) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaStepUpComplete(realmId, {
+        code: flags.code,
+        ...(flags.factor === undefined ? {} : { factor: flags.factor }),
+        token: flags.challengeToken,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET, flags.challengeToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      challengeToken: mfaTextFlag("MFA challenge token"),
+      code: mfaTextFlag("MFA code"),
+      factor: { ...mfaFactorFlag(), optional: true as const },
+    },
+  },
+  docs: { brief: "Complete MFA step-up authentication" },
+})
+
+const mfaChallengeCompleteCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MfaRealmFlags & { challengeToken: string; code: string; factor?: "totp" | "email_otp" | "passkey" },
+  ) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaChallengeComplete(realmId, {
+        code: flags.code,
+        ...(flags.factor === undefined ? {} : { factor: flags.factor }),
+        token: flags.challengeToken,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET, flags.challengeToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      challengeToken: mfaTextFlag("MFA challenge token"),
+      code: mfaTextFlag("MFA code"),
+      factor: { ...mfaFactorFlag(), optional: true as const },
+    },
+  },
+  docs: { brief: "Complete an MFA challenge" },
+})
+
+const mfaChallengeFactorSelectCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MfaRealmFlags & { challengeToken: string; factor: "totp" | "email_otp" | "passkey" },
+  ) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaChallengeFactorSelect(realmId, {
+        factor: flags.factor,
+        token: flags.challengeToken,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET, flags.challengeToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      challengeToken: mfaTextFlag("MFA challenge token"),
+      factor: mfaFactorFlag(),
+    },
+  },
+  docs: { brief: "Select an MFA challenge factor" },
+})
+
+const mfaEmailOtpStartCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { challengeToken: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaEmailOtpStart(realmId, {
+        token: flags.challengeToken,
+      }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET, flags.challengeToken],
+    )
+  },
+  parameters: {
+    flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag(), challengeToken: mfaTextFlag("MFA challenge token") },
+  },
+  docs: { brief: "Start MFA email OTP delivery for a challenge" },
+})
+
+const mfaRecoveryVerifyCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { code: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaRecoveryCodeVerify(realmId, flags.code),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
+    )
+  },
+  parameters: {
+    flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag(), code: mfaTextFlag("Recovery code") },
+  },
+  docs: { brief: "Verify a recovery code" },
+})
+
 export const mfaCliCommands = buildRouteMap({
   routes: {
     confirm: mfaConfirmCommand,
     enroll: mfaEnrollCommand,
+    totpRemove: mfaTotpRemoveCommand,
+    totpRename: mfaTotpRenameCommand,
+    totpVerify: mfaTotpVerifyCommand,
+    stepUpStart: mfaStepUpStartCommand,
+    stepUpComplete: mfaStepUpCompleteCommand,
+    challengeComplete: mfaChallengeCompleteCommand,
+    challengeFactorSelect: mfaChallengeFactorSelectCommand,
+    emailOtpStart: mfaEmailOtpStartCommand,
     policy: buildRouteMap({
       routes: { get: mfaPolicyGetCommand, set: mfaPolicySetCommand },
       docs: { brief: "Manage MFA policy" },
     }),
     recovery: mfaRecoveryCommand,
+    recoveryVerify: mfaRecoveryVerifyCommand,
   },
   docs: { brief: "Manage multi-factor authentication" },
 })
@@ -241,5 +489,13 @@ function mfaModeFlag() {
     kind: "parsed" as const,
     parse: (value: string) => value as "disabled" | "optional" | "required",
     placeholder: "MODE",
+  }
+}
+function mfaFactorFlag() {
+  return {
+    brief: "MFA factor",
+    kind: "parsed" as const,
+    parse: (value: string) => value as "totp" | "email_otp" | "passkey",
+    placeholder: "FACTOR",
   }
 }

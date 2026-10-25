@@ -721,6 +721,287 @@ const oidcConsentRevokeCommand = buildCommand({
   docs: { brief: "Revoke a persisted OIDC consent" },
 })
 
+const oidcClientLifecycleSetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcClientFlags & { status: "active" | "inactive" | "removed" }) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcClientLifecycleSet(realmId, flags.clientId, {
+        status: flags.status,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      clientId: oidcIdFlag("Client UUID"),
+      status: {
+        brief: "Client lifecycle status",
+        kind: "parsed" as const,
+        parse: (value: string) => value as "active" | "inactive" | "removed",
+        placeholder: "STATUS",
+      },
+    },
+  },
+  docs: { brief: "Set an OIDC client lifecycle status" },
+})
+
+const oidcClientSecretRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcClientFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcClientSecretRevoke(realmId, flags.clientId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
+  },
+  docs: { brief: "Revoke an OIDC client secret" },
+})
+
+const oidcSigningKeyLifecycleSetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags & { signingKeyId: string; status: "retired" }) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcSigningKeyLifecycleSet(realmId, flags.signingKeyId, {
+        status: flags.status,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      signingKeyId: oidcIdFlag("Signing key UUID"),
+      status: {
+        brief: "Signing key lifecycle status",
+        kind: "parsed" as const,
+        parse: (value: string) => value as "retired",
+        placeholder: "STATUS",
+      },
+    },
+  },
+  docs: { brief: "Set an OIDC signing key lifecycle status" },
+})
+
+const oidcSigningKeyEnsureActiveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcSigningKeyEnsureActive(realmId), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
+  docs: { brief: "Ensure one active OIDC signing key without rotating" },
+})
+
+const oidcConsentMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcListRealmFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcConsentMeList(realmId, oidcListQueryCreate(flags)),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
+  docs: { brief: "List the current user OIDC consents" },
+})
+
+const oidcConsentMeRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags & { clientId: string }) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcConsentMeRevoke(realmId, {
+        client_id: flags.clientId,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
+  },
+  docs: { brief: "Revoke a current user OIDC consent" },
+})
+
+const oidcRefreshTokenMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcListRealmFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcRefreshTokenMeList(realmId, oidcListQueryCreate(flags)),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
+  docs: { brief: "List the current user OIDC refresh tokens" },
+})
+
+const oidcRefreshTokenMeRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags & { familyId: string }) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcRefreshTokenMeRevoke(realmId, flags.familyId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), familyId: oidcIdFlag("Refresh token family UUID") },
+  },
+  docs: { brief: "Revoke a current user OIDC refresh token family" },
+})
+
+const oidcRefreshTokenMeRevokeAllCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcRefreshTokenMeRevokeAll(realmId), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
+  docs: { brief: "Revoke all current user OIDC refresh tokens" },
+})
+
+const oidcDiscoveryGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcCliFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcDiscoveryGet(), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: { flags: { ...oidcCommonFlags() } },
+  docs: { brief: "Read the OIDC discovery document" },
+})
+
+const oidcJwksGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcCliFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcJwksGet(), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: { flags: { ...oidcCommonFlags() } },
+  docs: { brief: "Read the OIDC JSON Web Key Set" },
+})
+
+const oidcTokenRevokeCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: OidcCliFlags & {
+      revokedToken: string
+      clientId?: string
+      clientSecret?: string
+      tokenTypeHint?: "access_token" | "refresh_token"
+    },
+  ) {
+    const connection = await oidcCliConnectionResolve(this, flags, false)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcTokenRevoke({
+        ...(flags.clientId === undefined ? {} : { client_id: flags.clientId }),
+        ...(flags.clientSecret === undefined ? {} : { client_secret: flags.clientSecret }),
+        token: flags.revokedToken,
+        ...(flags.tokenTypeHint === undefined ? {} : { token_type_hint: flags.tokenTypeHint }),
+      }),
+      [connection.data.token, connection.data.systemToken, flags.revokedToken, flags.clientSecret],
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      revokedToken: oidcTextFlag("Token value to revoke"),
+      clientId: { ...oidcIdFlag("Client UUID"), optional: true as const },
+      clientSecret: { ...oidcTextFlag("Client secret"), optional: true as const },
+      tokenTypeHint: {
+        brief: "Token type hint",
+        kind: "parsed" as const,
+        optional: true as const,
+        parse: (value: string) => value as "access_token" | "refresh_token",
+        placeholder: "TYPE",
+      },
+    },
+  },
+  docs: { brief: "Revoke an OIDC access or refresh token" },
+})
+
 const oidcLogoutCommand = buildCommand({
   async func(
     this: ApplicationContext,
@@ -795,13 +1076,25 @@ export const oidcCliCommands = buildRouteMap({
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
     clientUpdate: oidcClientUpdateCommand,
+    clientLifecycleSet: oidcClientLifecycleSetCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,
+    clientSecretRevoke: oidcClientSecretRevokeCommand,
     keyCreate: oidcSigningKeyCreateCommand,
     keyList: oidcSigningKeyListCommand,
     keyRetire: oidcSigningKeyRetireCommand,
+    keyLifecycleSet: oidcSigningKeyLifecycleSetCommand,
+    keyEnsureActive: oidcSigningKeyEnsureActiveCommand,
     productionSigningKeyEnsure: oidcProductionSigningKeyEnsureCommand,
     consentList: oidcConsentListCommand,
     consentRevoke: oidcConsentRevokeCommand,
+    consentMeList: oidcConsentMeListCommand,
+    consentMeRevoke: oidcConsentMeRevokeCommand,
+    refreshTokenMeList: oidcRefreshTokenMeListCommand,
+    refreshTokenMeRevoke: oidcRefreshTokenMeRevokeCommand,
+    refreshTokenMeRevokeAll: oidcRefreshTokenMeRevokeAllCommand,
+    discoveryGet: oidcDiscoveryGetCommand,
+    jwksGet: oidcJwksGetCommand,
+    tokenRevoke: oidcTokenRevokeCommand,
     logout: oidcLogoutCommand,
   },
   docs: { brief: "OIDC client and signing-key administration" },
