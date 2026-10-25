@@ -9,64 +9,85 @@ const viewports = [
 test("account destructive actions require keyboard-operable confirmation", async ({ page }) => {
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
-    await page.goto("/demo/account/consents")
-    const consent = page.getByRole("button", { name: "Revoke", exact: true }).first()
+    const consentOpen = async () => {
+      await page.goto("/demo/account/consents")
+      await page.locator("summary").filter({ hasText: "Application consents" }).click()
+      const item = page.getByRole("list", { name: "Application consents" }).getByRole("button").first()
+      await item.focus()
+      await page.keyboard.press("Enter")
+      const dialog = page.getByRole("dialog")
+      await expect(dialog.getByRole("heading", { name: "Application consent: analytics-dashboard" })).toBeVisible()
+      return dialog
+    }
 
-    page.once("dialog", async (dialog) => {
-      expect(dialog.message()).toBe("Revoke access for analytics-dashboard?")
-      await dialog.dismiss()
-    })
-    await consent.focus()
-    await page.keyboard.press("Enter")
-    await expect(page.getByRole("heading", { name: "analytics-dashboard" })).toBeVisible()
+    await (await consentOpen()).getByRole("button", { name: "Revoke", exact: true }).click()
+    await expect(page.getByRole("alertdialog")).toBeVisible()
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("alertdialog")).toHaveCount(0)
+    await expect(page.getByText("analytics-dashboard", { exact: true }).first()).toBeVisible()
 
-    page.once("dialog", (dialog) => void dialog.accept())
-    await consent.press("Enter")
-    await expect(page.getByRole("heading", { name: "analytics-dashboard" })).toHaveCount(0)
+    await (await consentOpen()).getByRole("button", { name: "Revoke", exact: true }).click()
+    await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+    await expect(
+      page.getByRole("list", { name: "Application consents" }).getByRole("button", { name: /analytics-dashboard/ }),
+    ).toHaveCount(0)
 
-    await page.goto("/demo/account/sessions")
-    const session = page.getByRole("button", { name: "Revoke session", exact: true })
-    page.once("dialog", async (dialog) => {
-      expect(dialog.message()).toBe("Revoke this session immediately?")
-      await dialog.dismiss()
-    })
-    await session.focus()
-    await page.keyboard.press("Enter")
+    const sessionOpen = async () => {
+      await page.goto("/demo/account/sessions")
+      await page.locator("summary").filter({ hasText: "Sessions and devices" }).click()
+      const item = page
+        .getByRole("list", { name: "Sessions and devices" })
+        .getByRole("button", { name: /Safari on iPhone/ })
+      await item.focus()
+      await page.keyboard.press("Enter")
+      return page.getByRole("dialog")
+    }
+
+    await (await sessionOpen()).getByRole("button", { name: "Revoke session", exact: true }).click()
+    await expect(page.getByRole("alertdialog")).toBeVisible()
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("alertdialog")).toHaveCount(0)
     await expect(page.getByText("Safari on iPhone", { exact: true })).toBeVisible()
 
-    page.once("dialog", (dialog) => void dialog.accept())
-    await session.press("Enter")
+    await (await sessionOpen()).getByRole("button", { name: "Revoke session", exact: true }).click()
+    await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
     await expect(page.getByText("Safari on iPhone", { exact: true })).toHaveCount(0)
   }
 })
 
 test("account identity unlink and invitation decline confirmations guard fixture mutations", async ({ page }) => {
-  await page.goto("/demo/account/identities")
-  const identity = page.getByRole("button", { name: "Unlink", exact: true }).first()
+  const identityOpen = async () => {
+    await page.goto("/demo/account/identities")
+    await page.locator("summary").filter({ hasText: "Linked identities" }).click()
+    await page.getByRole("list", { name: "Linked identities" }).getByRole("button").first().click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("heading", { name: /Manage GitHub/ })).toBeVisible()
+    return dialog
+  }
 
-  page.once("dialog", async (dialog) => {
-    expect(dialog.message()).toBe("Unlink this external account?")
-    await dialog.dismiss()
-  })
-  await identity.click()
-  await expect(page.getByRole("heading", { name: "github", exact: true })).toBeVisible()
+  await (await identityOpen()).getByRole("button", { name: "Unlink", exact: true }).click()
+  await expect(page.getByRole("alertdialog")).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(page.getByRole("alertdialog")).toHaveCount(0)
+  await expect(
+    page.getByRole("list", { name: "Linked identities" }).getByRole("button", { name: /GitHub/ }),
+  ).toHaveCount(1)
 
-  page.once("dialog", (dialog) => void dialog.accept())
-  await identity.click()
-  await expect(page.getByRole("heading", { name: "github", exact: true })).toHaveCount(0)
+  await (await identityOpen()).getByRole("button", { name: "Unlink", exact: true }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(page.getByRole("heading", { name: /Manage GitHub/ })).toHaveCount(0)
 
   await page.goto("/demo/invitations/accept?state=success")
   const decline = page.getByRole("button", { name: "Decline", exact: true })
 
-  page.once("dialog", async (dialog) => {
-    expect(dialog.message()).toBe("Decline this invitation?")
-    await dialog.dismiss()
-  })
   await decline.click()
+  await expect(page.getByRole("alertdialog")).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(page.getByRole("alertdialog")).toHaveCount(0)
   await expect(decline).toBeVisible()
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await decline.click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Invitation declined", exact: true })).toBeVisible()
 })
 
@@ -80,8 +101,10 @@ test("password and consent controls meet text contrast at desktop and mobile siz
     await expect(elementContrastRatioGet(page.locator("main > p"))).resolves.toBeGreaterThanOrEqual(4.5)
 
     await page.goto("/demo/account/consents")
+    await page.locator("summary").filter({ hasText: "Application consents" }).click()
+    await page.getByRole("list", { name: "Application consents" }).getByRole("button").first().click()
     await expect(
-      elementContrastRatioGet(page.getByRole("button", { name: "Revoke", exact: true }).first()),
+      elementContrastRatioGet(page.getByRole("dialog").getByRole("button", { name: "Revoke", exact: true })),
     ).resolves.toBeGreaterThanOrEqual(4.5)
   }
 })
@@ -118,17 +141,20 @@ test("Arabic consent is translated, RTL, and usable at desktop and mobile sizes"
 
     await expect(page.locator("html")).toHaveAttribute("lang", "ar")
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl")
+    await page.locator("summary").first().click()
     await expect(page.getByText("التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.", { exact: true })).toBeVisible()
-    await expect(page.getByText(/الأذونات: openid, profile, email/)).toBeVisible()
-    const revoke = page.getByRole("button", { name: "إبطال", exact: true }).first()
+    await page.getByRole("list", { name: "أذونات وصول التطبيقات" }).getByRole("button").first().press("Enter")
+    const consentDialog = page.getByRole("dialog")
+    await expect(consentDialog).toBeVisible()
+    await expect(consentDialog.getByText(/الأذونات: openid, profile, email/)).toBeVisible()
+    const revoke = consentDialog.getByRole("button", { name: "إبطال", exact: true })
     await expect(elementContrastRatioGet(revoke)).resolves.toBeGreaterThanOrEqual(4.5)
 
-    page.once("dialog", async (dialog) => {
-      expect(dialog.message()).toBe("هل تريد إلغاء وصول التطبيق analytics-dashboard؟")
-      await dialog.dismiss()
-    })
-    await revoke.press("Enter")
-    await expect(page.getByRole("heading", { name: "analytics-dashboard" })).toBeVisible()
+    await revoke.click()
+    await expect(page.getByRole("alertdialog")).toContainText("هل تريد إلغاء وصول التطبيق analytics-dashboard؟")
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("alertdialog")).toHaveCount(0)
+    await expect(consentDialog).toBeVisible()
     const accessibility = await new AxeBuilder({ page }).analyze()
     expect(
       accessibility.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical"),
@@ -140,15 +166,19 @@ test("Arabic consent is translated, RTL, and usable at desktop and mobile sizes"
 })
 
 test("the invitations demo follows the canonical route family and keeps demo navigation isolated", async ({ page }) => {
-  await page.goto("/demo/account")
-  const invitationLink = page.getByRole("link", { name: "My invitations", exact: true })
-  await expect(invitationLink).toHaveAttribute("href", "/demo/invitations")
+  await page.goto("/demo/invitations")
+  await expect(page.getByRole("heading", { name: "My invitations", exact: true })).toBeVisible()
+  const invitationLink = page.getByRole("link", { name: "Open invitation", exact: true })
+  await expect(invitationLink).toHaveAttribute("href", "/demo/invitations/accept")
   await invitationLink.click()
-  await expect(page).toHaveURL(/\/demo\/invitations$/)
+  await expect(page).toHaveURL(/\/demo\/invitations\/accept$/)
 
-  const organizationsLink = page.getByRole("link", { name: "Switch organization", exact: true })
+  await page.goto("/demo/invitations")
+  const organizationsLink = page.getByRole("link", { name: "Organizations", exact: true })
   await expect(organizationsLink).toHaveAttribute("href", "/demo/account/organizations")
   await organizationsLink.click()
+  await expect(page).toHaveURL(/\/demo\/account\/organizations$/)
+  await page.locator("summary").filter({ hasText: "Organizations" }).click()
   await expect(page.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
 })
 

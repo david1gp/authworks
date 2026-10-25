@@ -40,15 +40,17 @@ test("redesigned panels never repeat the page heading as a panel heading", async
 test("account email addresses stay fully readable beside their actions at 390px", async ({ page }) => {
   await page.setViewportSize({ height: 844, width: 390 })
   await page.goto("/demo/account/email")
+  await page.locator("summary").filter({ hasText: "Email addresses" }).click()
   const addresses = page.getByRole("list", { name: "Email addresses" }).getByRole("listitem")
   await expect(addresses.first()).toBeVisible()
 
   for (const address of await addresses.all()) {
-    const email = address.locator("span").first()
-    const clipped = await email.evaluate((element) => element.scrollWidth > element.clientWidth + 1)
-    expect(clipped, await email.innerText()).toBe(false)
+    const trigger = address.getByRole("button").first()
+    const clipped = await trigger.evaluate((element) => element.scrollWidth > element.clientWidth + 1)
+    expect(clipped, await trigger.innerText()).toBe(false)
   }
-  await expect(page.getByRole("button", { name: "Remove", exact: true }).first()).toBeVisible()
+  await addresses.first().getByRole("button").first().click()
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(
     true,
   )
