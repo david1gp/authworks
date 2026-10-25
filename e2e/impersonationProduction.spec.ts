@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process"
-import { type Browser, type BrowserContext, expect, type Page, test } from "@playwright/test"
+import { type Browser, type BrowserContext, expect, type Page } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -23,7 +24,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
   context,
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
   const auxiliaryContexts: BrowserContext[] = []

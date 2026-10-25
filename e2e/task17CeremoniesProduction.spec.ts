@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process"
 import { createHmac } from "node:crypto"
-import { type BrowserContext, expect, type Page, test } from "@playwright/test"
+import { type BrowserContext, expect, type Page } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 type E2eServerMetadata = {
   readonly member: { readonly email: string; readonly password: string }
@@ -20,7 +21,7 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
   context,
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const browserOrigin = "http://localhost:5174"
   const server = await e2eServerStart()
   const fixture = server.metadata

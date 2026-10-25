@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process"
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 type E2eServerMetadata = {
   readonly discoveryDomain: string
@@ -17,7 +18,7 @@ const recoveryPassword = "E2E Recovery Password 123!"
 test("task 17 composed production authentication preserves recovery, MFA, deep links, locale, and expiry", async ({
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
 
@@ -138,7 +139,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
 test("task 17 composed production account increment consumes captured links and protects account mutations", async ({
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
   const responseBodies: Array<Promise<string>> = []

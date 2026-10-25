@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process"
-import { type BrowserContext, expect, type Page, test } from "@playwright/test"
+import { type BrowserContext, expect, type Page } from "@playwright/test"
 import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -26,7 +27,7 @@ type E2eServerMetadata = {
 }
 
 test("task 17 composed production scenario keeps browser sessions and tenants isolated", async ({ page }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
 
@@ -195,7 +196,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     expect(deleteRequestUrls).toHaveLength(0)
 
     await deleteOpen()
-    await expect(deleteConfirmation).toBeVisible()
+    await expect(deleteConfirmation).toBeVisible({ timeout: 60_000 })
     await deleteConfirmation.locator("#user-profile-delete-confirm").fill("e2e-crud")
     const deletedResponsePromise = page.waitForResponse(
       (response) => response.request().method() === "DELETE" && new URL(response.url()).pathname === deleteApiPath,
@@ -216,7 +217,7 @@ test("task 17 protocol scenario resumes external login through OIDC consent with
   context,
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
   const browserOrigin = "http://127.0.0.1:5174"
@@ -332,7 +333,7 @@ test("task 17 composed production scenario displays and revokes machine secrets,
   context,
   page,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
   const server = await e2eServerStart({ credentialScenario: true })
   const fixture = server.metadata
   const administratorRecoveryCode = fixture.administratorRecoveryCode

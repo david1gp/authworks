@@ -1,5 +1,6 @@
-import { expect, type Page, type Route, test } from "@playwright/test"
+import { expect, type Page, type Route } from "@playwright/test"
 import { accountPictureFileFixture } from "./accountPictureFileFixture.js"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
@@ -99,7 +100,7 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await passwordDialogTrigger.click()
   const passwordDialog = page.getByRole("dialog", { name: "Change password" })
   const currentPassword = passwordDialog.getByLabel("Current password")
-  const passwordDialogClose = passwordDialog.getByRole("button", { name: "close", exact: true })
+  const passwordDialogClose = passwordDialog.getByRole("button", { name: "Close", exact: true })
   await expect(passwordDialogClose).toBeFocused()
   await passwordDialogClose.press("Escape")
   await expect(passwordDialog).toHaveCount(0)
