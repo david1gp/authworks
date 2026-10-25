@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,通过组织授予
 admin.projects.access.organizationDescription,可访问此项目的组织及其获得的角色。
 admin.projects.access.organizationTitle,组织访问权限
 admin.projects.access.permissionDescription,固定角色及其权限由 Authworks 定义，无法编辑。
+admin.projects.access.permissions,权限
 admin.projects.access.permissionTitle,固定角色与权限
 admin.projects.access.roleKeys,有效的项目角色
 admin.projects.access.selectRoles,选择角色

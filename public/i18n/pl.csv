@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Przyznane przez organizację
 admin.projects.access.organizationDescription,"Organizacje mające dostęp do tego projektu oraz role, które otrzymują."
 admin.projects.access.organizationTitle,Dostęp organizacji
 admin.projects.access.permissionDescription,Stałe role i ich uprawnienia są definiowane przez Authworks i nie można ich edytować.
+admin.projects.access.permissions,Uprawnienia
 admin.projects.access.permissionTitle,Stałe role i uprawnienia
 admin.projects.access.roleKeys,Efektywne role projektu
 admin.projects.access.selectRoles,Wybierz role

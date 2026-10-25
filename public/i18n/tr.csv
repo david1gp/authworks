@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Kuruluş üzerinden verildi
 admin.projects.access.organizationDescription,Bu projeye erişimi olan kuruluşlar ve aldıkları roller.
 admin.projects.access.organizationTitle,Kuruluş erişimi
 admin.projects.access.permissionDescription,Sabit roller ve izinleri Authworks tarafından tanımlanır ve düzenlenemez.
+admin.projects.access.permissions,İzinler
 admin.projects.access.permissionTitle,Sabit roller ve izinler
 admin.projects.access.roleKeys,Etkin proje rolleri
 admin.projects.access.selectRoles,Rolleri seçin

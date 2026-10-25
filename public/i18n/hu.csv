@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Szervezeten keresztül megadva
 admin.projects.access.organizationDescription,A projekthez hozzáféréssel rendelkező szervezetek és a nekik adott szerepkörök.
 admin.projects.access.organizationTitle,Szervezeti hozzáférés
 admin.projects.access.permissionDescription,"A rögzített szerepköröket és jogosultságaikat az Authworks határozza meg, és nem szerkeszthetők."
+admin.projects.access.permissions,Engedélyek
 admin.projects.access.permissionTitle,Rögzített szerepkörök és jogosultságok
 admin.projects.access.roleKeys,Tényleges projektszerepkörök
 admin.projects.access.selectRoles,Szerepkörök kiválasztása

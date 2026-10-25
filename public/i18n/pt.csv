@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Concedido através da organização
 admin.projects.access.organizationDescription,Organizações com acesso a este projeto e as funções que recebem.
 admin.projects.access.organizationTitle,Acesso das organizações
 admin.projects.access.permissionDescription,As funções fixas e as suas permissões são definidas pelo Authworks e não podem ser editadas.
+admin.projects.access.permissions,Permissões
 admin.projects.access.permissionTitle,Funções e permissões fixas
 admin.projects.access.roleKeys,Funções de projeto efetivas
 admin.projects.access.selectRoles,Escolher funções

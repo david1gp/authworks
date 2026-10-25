@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,مُمنَح عبر المؤسسة
 admin.projects.access.organizationDescription,المؤسسات التي لديها حق الوصول إلى هذا المشروع والأدوار التي تحصل عليها.
 admin.projects.access.organizationTitle,وصول المؤسسات
 admin.projects.access.permissionDescription,تُحدَّد الأدوار الثابتة وأذوناتها بواسطة Authworks ولا يمكن تعديلها.
+admin.projects.access.permissions,الأذونات
 admin.projects.access.permissionTitle,الأدوار والأذونات الثابتة
 admin.projects.access.roleKeys,أدوار المشروع الفعلية
 admin.projects.access.selectRoles,اختر الأدوار

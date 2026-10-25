@@ -118,7 +118,7 @@ export function ProjectDetailAccessTab(props: {
           <For each={assignment.roleKeys}>{(roleKey) => <AuthenticatedChip label={roleKey} tone="accent" />}</For>
         </span>
       ),
-      header: messageTranslate("admin.projects.assignments.user"),
+      header: messageTranslate("admin.projects.grants.roleKeys"),
       key: "roles",
     },
   ]
@@ -144,10 +144,6 @@ export function ProjectDetailAccessTab(props: {
 
   return (
     <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <Show when={state.page.notice()}>
-        {(name) => <AuthenticatedNotice message={messageTranslate("admin.projects.saved", { name: name() })} />}
-      </Show>
-
       <AuthenticatedSection
         actions={
           <Show when={props.owned}>
@@ -361,7 +357,7 @@ export function ProjectDetailAccessTab(props: {
             },
             {
               cell: (role) => (role.permissions.length === 0 ? "—" : role.permissions.join(", ")),
-              header: messageTranslate("admin.projects.access.permissionTitle"),
+              header: messageTranslate("admin.projects.access.permissions"),
               key: "permissions",
             },
           ]}

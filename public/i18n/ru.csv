@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Предоставлено через 
 admin.projects.access.organizationDescription,"Организации с доступом к этому проекту и роли, которые они получают."
 admin.projects.access.organizationTitle,Доступ организаций
 admin.projects.access.permissionDescription,Фиксированные роли и их разрешения определяются Authworks и не могут быть изменены.
+admin.projects.access.permissions,Разрешения
 admin.projects.access.permissionTitle,Фиксированные роли и разрешения
 admin.projects.access.roleKeys,Действующие роли проекта
 admin.projects.access.selectRoles,Выберите роли

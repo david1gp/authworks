@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Toegekend via organisatie
 admin.projects.access.organizationDescription,Organisaties met toegang tot dit project en de rollen die ze krijgen.
 admin.projects.access.organizationTitle,Organisatietoegang
 admin.projects.access.permissionDescription,Vaste rollen en hun rechten worden door Authworks bepaald en kunnen niet worden bewerkt.
+admin.projects.access.permissions,Machtigingen
 admin.projects.access.permissionTitle,Vaste rollen en rechten
 admin.projects.access.roleKeys,Effectieve projectrollen
 admin.projects.access.selectRoles,Rollen kiezen

@@ -46,10 +46,6 @@ export function ProjectDetailRolesTab(props: {
 
   return (
     <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <Show when={state.page.notice()}>
-        {(name) => <AuthenticatedNotice message={messageTranslate("admin.projects.saved", { name: name() })} />}
-      </Show>
-
       <AuthenticatedSection
         actions={
           <Show when={props.owned}>

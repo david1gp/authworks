@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,Accordé via l'organisation
 admin.projects.access.organizationDescription,Organisations ayant accès à ce projet et rôles qu'elles reçoivent.
 admin.projects.access.organizationTitle,Accès des organisations
 admin.projects.access.permissionDescription,Les rôles fixes et leurs permissions sont définis par Authworks et ne peuvent pas être modifiés.
+admin.projects.access.permissions,Autorisations
 admin.projects.access.permissionTitle,Rôles et permissions fixes
 admin.projects.access.roleKeys,Rôles de projet effectifs
 admin.projects.access.selectRoles,Choisir les rôles

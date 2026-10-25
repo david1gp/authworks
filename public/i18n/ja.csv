@@ -792,6 +792,7 @@ admin.projects.access.grantedOrganization,組織を通じて付与
 admin.projects.access.organizationDescription,このプロジェクトにアクセスできる組織と、付与されるロールの一覧です。
 admin.projects.access.organizationTitle,組織のアクセス
 admin.projects.access.permissionDescription,固定ロールとその権限は Authworks によって定義されており、編集できません。
+admin.projects.access.permissions,権限
 admin.projects.access.permissionTitle,固定ロールと権限
 admin.projects.access.roleKeys,実効プロジェクトロール
 admin.projects.access.selectRoles,ロールを選択

@@ -799,6 +799,7 @@ export const englishCatalog = {
   "admin.projects.access.permissionDescription":
     "Fixed roles and their permissions are defined by Authworks and cannot be edited.",
   "admin.projects.access.permissionTitle": "Fixed roles and permissions",
+  "admin.projects.access.permissions": "Permissions",
   "admin.projects.access.roleKeys": "Effective project roles",
   "admin.projects.access.selectRoles": "Choose roles",
   "admin.projects.access.title": "Effective access",

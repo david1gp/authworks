@@ -3,7 +3,6 @@ import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
-import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -18,10 +17,6 @@ export function ProjectDetailOverviewTab(props: {
   const state = props.state
   return (
     <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <Show when={state.page.notice()}>
-        {(name) => <AuthenticatedNotice message={messageTranslate("admin.projects.saved", { name: name() })} />}
-      </Show>
-
       <AuthenticatedSection
         description={messageTranslate("admin.projects.overview.settingsDescription")}
         title={messageTranslate("admin.projects.overview.settingsTitle")}
