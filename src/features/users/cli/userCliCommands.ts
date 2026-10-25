@@ -191,14 +191,495 @@ const userDeleteCommand = buildCommand({
   docs: { brief: "Delete a user account" },
 })
 
+const userMeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { ifModifiedSince?: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeGet(
+        realmId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), ifModifiedSince: ifModifiedSinceFlag() },
+  },
+  docs: { brief: "Read the current user" },
+})
+
+const userMeDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userMeDelete(realmId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
+  docs: { brief: "Delete the current user account" },
+})
+
+const userMeProfileCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { displayName?: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeProfileUpdate(realmId, { displayName: flags.displayName }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), displayName: optionalTextFlag("Display name") },
+  },
+  docs: { brief: "Update the current user profile" },
+})
+
+const userMeAuthMethodsCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userMeAuthenticationMethodsGet(realmId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
+  docs: { brief: "Read the current user authentication methods" },
+})
+
+const userEmailsListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userMeEmailAddressList(realmId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
+  docs: { brief: "List the current user email addresses" },
+})
+
+const userEmailsAddStartCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { email: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailAddressAddStart(realmId, { email: flags.email }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), email: textFlag("Email address") },
+  },
+  docs: { brief: "Start adding an email address to the current user" },
+})
+
+const userEmailsAddResendCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { challengeId: string; email: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailAddressAddResend(realmId, {
+        challengeId: flags.challengeId,
+        email: flags.email,
+      }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      challengeId: textFlag("Email challenge UUID"),
+      email: textFlag("Email address"),
+    },
+  },
+  docs: { brief: "Resend an email address verification code" },
+})
+
+const userEmailsAddVerifyCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: UserCliFlags & { challengeId: string; realmId?: string; verificationToken: string },
+  ) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailAddressAddVerify(realmId, {
+        challengeId: flags.challengeId,
+        token: flags.verificationToken,
+      }),
+      [connection.token, connection.systemToken, flags.verificationToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      challengeId: textFlag("Email challenge UUID"),
+      verificationToken: textFlag("Verification token"),
+    },
+  },
+  docs: { brief: "Verify an added email address" },
+})
+
+const userEmailsPrimarySetCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: UserCliFlags & { emailId: string; expectedVersion?: number; realmId?: string },
+  ) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailAddressPrimarySet(
+        realmId,
+        flags.emailId,
+        flags.expectedVersion === undefined ? {} : { expectedVersion: flags.expectedVersion },
+      ),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      emailId: textFlag("Email address UUID"),
+      expectedVersion: optionalNumberFlag("Expected email list version"),
+    },
+  },
+  docs: { brief: "Set the primary email address" },
+})
+
+const userEmailsRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { emailId: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userMeEmailAddressRemove(realmId, flags.emailId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), emailId: textFlag("Email address UUID") },
+  },
+  docs: { brief: "Remove an email address from the current user" },
+})
+
+const userEmailChangeStartCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { email: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailChangeStart(realmId, { email: flags.email }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), email: textFlag("New email address") },
+  },
+  docs: { brief: "Start changing the current user email address" },
+})
+
+const userEmailChangeResendCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { challengeId: string; email: string; realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailChangeResend(realmId, {
+        challengeId: flags.challengeId,
+        email: flags.email,
+      }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      challengeId: textFlag("Email challenge UUID"),
+      email: textFlag("Email address"),
+    },
+  },
+  docs: { brief: "Resend an email change verification code" },
+})
+
+const userEmailChangeVerifyCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: UserCliFlags & { challengeId: string; realmId?: string; verificationToken: string },
+  ) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userMeEmailChangeVerify(realmId, {
+        challengeId: flags.challengeId,
+        token: flags.verificationToken,
+      }),
+      [connection.token, connection.systemToken, flags.verificationToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      challengeId: textFlag("Email challenge UUID"),
+      verificationToken: textFlag("Verification token"),
+    },
+  },
+  docs: { brief: "Verify a current user email change" },
+})
+
+const userTenantListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserListCliFlags & { realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantList(realmId, userListQueryCreate(flags)),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...userCommonFlags(), ...userListFlags(), realmId: userRealmIdFlag() } },
+  docs: { brief: "List tenant users" },
+})
+
+const userTenantGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userTenantGet(realmId, flags.userId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
+  docs: { brief: "Get a tenant user" },
+})
+
+const userTenantCreateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: UserCliFlags & { displayName?: string; email: string; realmId?: string; userName: string },
+  ) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantCreate(realmId, {
+        email: flags.email,
+        profile: { displayName: flags.displayName },
+        userName: flags.userName,
+      }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userName: textFlag("User name"),
+      email: textFlag("Email address"),
+      displayName: optionalTextFlag("Display name"),
+    },
+  },
+  docs: { brief: "Create a tenant user" },
+})
+
+const userTenantProfileCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & { displayName?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantProfileUpdate(realmId, flags.userId, {
+        displayName: flags.displayName,
+      }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      displayName: optionalTextFlag("Display name"),
+    },
+  },
+  docs: { brief: "Update a tenant user profile" },
+})
+
+const userTenantLifecycleCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: UserIdCliFlags & { state: "active" | "inactive" | "initial" | "locked" | "suspended" },
+  ) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantLifecycleSet(realmId, flags.userId, { state: flags.state }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      state: userStateFlag(),
+    },
+  },
+  docs: { brief: "Change a tenant user lifecycle state" },
+})
+
+const userTenantVerifyCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & { state: "unverified" | "verified" }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantVerificationSet(realmId, flags.userId, { state: flags.state }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      state: userVerificationStateFlag(),
+    },
+  },
+  docs: { brief: "Change a tenant user email verification state" },
+})
+
+const userTenantAuthMethodsCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantAuthenticationMethodsGet(realmId, flags.userId),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
+  docs: { brief: "Read a tenant user authentication methods" },
+})
+
+const userTenantDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userTenantDelete(realmId, flags.userId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
+  docs: { brief: "Delete a tenant user" },
+})
+
+const userTenantPurgeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userTenantPurge(realmId, flags.userId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
+  docs: { brief: "Purge a tenant user" },
+})
+
 export const userCliCommands = buildRouteMap({
   routes: {
     create: userCreateCommand,
     delete: userDeleteCommand,
+    emailChangeResend: userEmailChangeResendCommand,
+    emailChangeStart: userEmailChangeStartCommand,
+    emailChangeVerify: userEmailChangeVerifyCommand,
+    emailsAddResend: userEmailsAddResendCommand,
+    emailsAddStart: userEmailsAddStartCommand,
+    emailsAddVerify: userEmailsAddVerifyCommand,
+    emailsList: userEmailsListCommand,
+    emailsPrimarySet: userEmailsPrimarySetCommand,
+    emailsRemove: userEmailsRemoveCommand,
     get: userGetCommand,
     list: userListCommand,
     lifecycle: userLifecycleCommand,
+    me: userMeCommand,
+    meAuthMethods: userMeAuthMethodsCommand,
+    meDelete: userMeDeleteCommand,
+    meProfile: userMeProfileCommand,
     profile: userProfileCommand,
+    tenantAuthMethods: userTenantAuthMethodsCommand,
+    tenantCreate: userTenantCreateCommand,
+    tenantDelete: userTenantDeleteCommand,
+    tenantGet: userTenantGetCommand,
+    tenantLifecycle: userTenantLifecycleCommand,
+    tenantList: userTenantListCommand,
+    tenantProfile: userTenantProfileCommand,
+    tenantPurge: userTenantPurgeCommand,
+    tenantVerify: userTenantVerifyCommand,
     verify: userVerifyCommand,
   },
   docs: { brief: "User administration" },
@@ -363,6 +844,16 @@ function ifModifiedSinceFlag() {
     optional: true as const,
     parse: (value: string) => value,
     placeholder: "HTTP-DATE",
+  }
+}
+
+function optionalNumberFlag(brief: string) {
+  return {
+    brief,
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => Number(value),
+    placeholder: "NUMBER",
   }
 }
 

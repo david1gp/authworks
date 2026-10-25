@@ -103,14 +103,133 @@ const sessionRevokeAllCommand = buildCommand({
   docs: { brief: "Revoke all sessions" },
 })
 
+const sessionMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionMeList(resolved.realmId, sessionListQueryCreate(flags)),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
+  docs: { brief: "List the current user sessions" },
+})
+
+const sessionMeRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string }) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionMeRevoke(resolved.realmId, flags.sessionId),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
+  docs: { brief: "Revoke one of the current user sessions" },
+})
+
+const sessionMeRevokeAllCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionMeRevokeAll(resolved.realmId),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: sessionCommonFlags() },
+  docs: { brief: "Revoke all of the current user sessions" },
+})
+
+const sessionUserListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags & { userId: string }) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionUserList(
+        resolved.realmId,
+        flags.userId,
+        sessionListQueryCreate(flags),
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags(), userId: userIdFlag() } },
+  docs: { brief: "List a user sessions" },
+})
+
+const sessionUserRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string; userId: string }) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionUserRevoke(
+        resolved.realmId,
+        flags.userId,
+        flags.sessionId,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), userId: userIdFlag(), sessionId: sessionIdFlag() } },
+  docs: { brief: "Revoke one user session" },
+})
+
+const sessionRecentResumeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { organizationId?: string; sessionId: string }) {
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionRecentResume(resolved.realmId, {
+        sessionId: flags.sessionId,
+        ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
+      }),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag(), organizationId: optionalOrganizationIdFlag() },
+  },
+  docs: { brief: "Resume a recent session" },
+})
+
+const sessionBootstrapSignInCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { secret: string }) {
+    const { secret, ...connectionFlags } = flags
+    const resolved = await sessionCliConnectionResolve(this, connectionFlags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionBootstrapAdminSignIn(resolved.realmId, { secret }),
+      [resolved.connection.token, secret],
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), secret: secretFlag() } },
+  docs: { brief: "Sign in as the bootstrap administrator" },
+})
+
 export const sessionCliCommands = buildRouteMap({
   routes: {
+    bootstrapSignIn: sessionBootstrapSignInCommand,
     current: sessionCurrentCommand,
     list: sessionListCommand,
+    meList: sessionMeListCommand,
+    meRevoke: sessionMeRevokeCommand,
+    meRevokeAll: sessionMeRevokeAllCommand,
     recent: sessionRecentCommand,
+    recentResume: sessionRecentResumeCommand,
     revoke: sessionRevokeCommand,
     revokeAll: sessionRevokeAllCommand,
     rotate: sessionRotateCommand,
+    userList: sessionUserListCommand,
+    userRevoke: sessionUserRevokeCommand,
   },
   docs: { brief: "Manage sessions" },
 })
@@ -225,6 +344,29 @@ function realmIdFlag() {
 
 function sessionIdFlag() {
   return { brief: "Session UUID", kind: "parsed" as const, parse: (value: string) => value, placeholder: "SESSION_ID" }
+}
+
+function userIdFlag() {
+  return { brief: "User UUID", kind: "parsed" as const, parse: (value: string) => value, placeholder: "USER_ID" }
+}
+
+function optionalOrganizationIdFlag() {
+  return {
+    brief: "Organization UUID",
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value,
+    placeholder: "ORGANIZATION_ID",
+  }
+}
+
+function secretFlag() {
+  return {
+    brief: "Bootstrap administrator secret",
+    kind: "parsed" as const,
+    parse: (value: string) => value,
+    placeholder: "SECRET",
+  }
 }
 
 function booleanFlag() {
