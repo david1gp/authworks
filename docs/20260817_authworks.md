@@ -67,6 +67,7 @@ Build `/home/david/adaptive/authworks` as an alpha identity platform covering al
 - [x] 24. Update focused browser coverage and run the complete repository check for the account UI changes.
 - [x] 25. Redesign `/account#security` as four seamless responsive management cards, remove the redundant authentication-method summary, integrate prominent configured/missing states, move authenticator enrollment into a dialog, and add configured-method progress.
 - [x] 26. Verify the redesigned security section at desktop/mobile widths, including dialogs, progress semantics, accessibility, and existing security actions.
+- [x] 27. Expose a stateless MCP endpoint (`POST /mcp`, `?realmId=` with Host fallback, Bearer machine credential) with read/write tools that inherit the credential permissions.
 
 ## Paths
 

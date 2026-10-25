@@ -235,6 +235,24 @@ AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","sess
 bun test test/integration/wahaLive.test.ts
 ```
 
+## MCP
+
+The server exposes a stateless Model Context Protocol endpoint at `POST /mcp`.
+The realm resolves from the `?realmId=` query parameter, falling back to the
+request `Host` tenant mapping. Every request needs a machine credential as a
+`Bearer` token (`Authorization: Bearer <api-key-or-personal-access-token>`);
+missing or invalid credentials return `401`.
+
+Read tools: `ping`, `server-info`, `realm-get`, `user-list`, `user-get`,
+`organization-list`, `organization-get`, `project-list`, `project-get`,
+`machine-user-list`, `machine-user-get`, `event-list`. Write tools:
+`user-create`, `user-profile-update`, `user-lifecycle-set`,
+`organization-create`, `organization-update`, `project-create`,
+`project-update`, `machine-user-create`, `machine-user-lifecycle-set`,
+`machine-credential-issue`, `machine-credential-revoke`. Every tool runs with
+the calling credential's actor and scopes, so each tool inherits exactly the
+permissions of that credential and nothing more.
+
 ## CLI connection profiles
 
 The CLI can keep local connection profiles for switching between Authworks servers, identities, realms, and
