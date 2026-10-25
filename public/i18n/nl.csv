@@ -686,6 +686,7 @@ admin.organizations.list.empty,Er bestaan nog geen organisaties in dit realm.
 admin.organizations.list.name,Organisatienaam
 admin.organizations.list.nameRequired,Voer een organisatienaam in.
 admin.organizations.list.search,Organisaties zoeken
+admin.organizations.list.statusAll,Alle statussen
 admin.organizations.list.title,Organisaties
 admin.organizations.memberships.added,Het lid is toegevoegd.
 admin.organizations.memberships.empty,Deze organisatie heeft nog geen leden.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,Voer een projectnaam in en kies een organisatie.
 admin.projects.list.name,Projectnaam
 admin.projects.list.roles,Rollen
 admin.projects.list.search,Projecten zoeken
+admin.projects.list.statusAll,Alle statussen
 admin.projects.list.subtitle,Eigen en gedeelde projecten van de actieve organisatie.
 admin.projects.list.title,Projecten
 admin.projects.missingId,Er moet een project zijn geselecteerd voor deze bestemming.

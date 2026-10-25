@@ -1,11 +1,11 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { projectCreateRequestSchema } from "../public/projectCreateRequestSchema.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
-/** View state for the project directory: debounced search, create dialog, and navigation. */
+/** View state for the project directory: debounced search, status filter, create dialog, and navigation. */
 export function projectAdminListViewStateCreate(options: {
   readonly basePath: string
   readonly createOpen: () => boolean
@@ -14,21 +14,17 @@ export function projectAdminListViewStateCreate(options: {
   readonly page: ProjectAdminPageState
   readonly search: () => string
   readonly searchSet: (value: string) => void
+  readonly statusFilter: () => NonNullable<ProjectListQuery["status"]>
+  readonly statusFilterSet: (value: string) => void
   readonly withActor: (href: string) => string
 }) {
   const name = createSignalObject("")
   const organizationId = createSignalObject(options.organizationId() ?? "")
   const formError = createSignalObject<string | undefined>(undefined)
 
-  const filteredProjects = () => {
-    const term = options.search().trim().toLowerCase()
-    if (term.length === 0) return options.page.projects()
-    return options.page.projects().filter((project) => `${project.name} ${project.id}`.toLowerCase().includes(term))
-  }
-  const searchInput = (value: string) => {
-    options.searchSet(value)
-    authenticatedUrlSearchParamWrite("q", value)
-  }
+  // Projects arrive server-filtered by search and status; the view renders the loaded page as-is.
+  const filteredProjects = () => options.page.projects()
+  const searchInput = (value: string) => options.searchSet(value)
   const createSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
     const selectedOrganization = organizationId.get() || (options.organizationId() ?? "")
@@ -63,5 +59,7 @@ export function projectAdminListViewStateCreate(options: {
     search: options.search,
     searchInput,
     searchSet: options.searchSet,
+    statusFilter: options.statusFilter,
+    statusFilterSet: options.statusFilterSet,
   }
 }

@@ -8,6 +8,7 @@ import type { ProjectAccessResponse } from "../public/projectAccessResponseSchem
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import type { ProjectListItem } from "../public/projectListItemSchema.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
 import type { Project } from "../public/projectSchema.js"
 import type { ProjectUserAssignment } from "../public/projectUserAssignmentSchema.js"
@@ -21,6 +22,8 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 type ProjectAdminPageStateCreateOptions = {
   readonly adapter: ProjectAdminAdapter
   readonly confirm: (request: ConfirmRequest) => boolean | Promise<boolean>
+  readonly listSearch?: () => string
+  readonly listStatus?: () => ProjectListQuery["status"]
   readonly organizationId: () => string | undefined
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
@@ -62,8 +65,15 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     const currentProjectId = options.projectId()
 
     if (screen === "projects") {
+      const search = options.listSearch?.().trim() ?? ""
+      const pageToken = pageTokens.get().at(-1)
       const [listed, organizationList] = await Promise.all([
-        adapter.projectList({ organizationId: options.organizationId(), pageToken: pageTokens.get().at(-1) }),
+        adapter.projectList({
+          organizationId: options.organizationId(),
+          ...(search.length === 0 ? {} : { search }),
+          ...(options.listStatus?.() === undefined ? {} : { status: options.listStatus?.() }),
+          ...(pageToken === undefined ? {} : { pageToken }),
+        }),
         adapter.organizations(),
       ])
       if (!listed.success) return fail(listed)
@@ -129,11 +139,24 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     return result.data
   }
 
+  // A new search or status filter always restarts from the first page; otherwise the
+  // cursor of the previous filter would page through the new result set.
+  const listSignature = () => `${options.listSearch?.() ?? ""}:${options.listStatus?.() ?? ""}`
+  const appliedListSignature = createSignalObject("")
   createEffect(
     on(
       () =>
-        `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}`,
-      load,
+        `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}:${listSignature()}`,
+      () => {
+        if (options.screen() === "projects" && appliedListSignature.get() !== listSignature()) {
+          appliedListSignature.set(listSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
+        }
+        void load()
+      },
     ),
   )
 

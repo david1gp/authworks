@@ -9,6 +9,8 @@ import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { organizationAdminDemoAdapterCreate } from "./organizationAdminDemoAdapterCreate.js"
 import { organizationAdminInvitationAcknowledgementStore } from "./organizationAdminInvitationAcknowledgementStore.js"
+import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
+import { organizationAdminListStatusSelect } from "./organizationAdminListStatusSelect.js"
 import { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
 import { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
@@ -37,6 +39,8 @@ export function organizationAdminDemoStateCreate(screen: () => OrganizationAdmin
     adapter,
     confirm: confirmState.confirm,
     initialInvitationToken,
+    listSearch: () => organizationAdminListSearchSelect(location.search),
+    listStatus: () => organizationAdminListStatusSelect(location.search),
     onInvitationTokenDismiss: () => {
       if (fixtureState() === "one-time") {
         organizationAdminInvitationAcknowledgementStore.acknowledge(

@@ -686,6 +686,7 @@ admin.organizations.list.empty,このレルムにはまだ組織がありませ�
 admin.organizations.list.name,組織名
 admin.organizations.list.nameRequired,組織名を入力してください。
 admin.organizations.list.search,組織を検索
+admin.organizations.list.statusAll,すべてのステータス
 admin.organizations.list.title,組織
 admin.organizations.memberships.added,メンバーを追加しました。
 admin.organizations.memberships.empty,この組織にはまだメンバーがいません。
@@ -860,6 +861,7 @@ admin.projects.list.invalid,プロジェクト名を入力し、組織を選択�
 admin.projects.list.name,プロジェクト名
 admin.projects.list.roles,ロール
 admin.projects.list.search,プロジェクトを検索
+admin.projects.list.statusAll,すべてのステータス
 admin.projects.list.subtitle,アクティブな組織が所有・共有しているプロジェクト。
 admin.projects.list.title,プロジェクト
 admin.projects.missingId,この宛先にはプロジェクトの選択が必要です。

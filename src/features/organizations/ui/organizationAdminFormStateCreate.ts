@@ -17,7 +17,6 @@ const emailSchema = v.pipe(v.string(), v.email())
 export function organizationAdminFormStateCreate() {
   const createName = createSignalObject("")
   const detailName = createSignalObject("")
-  const search = createSignalObject("")
   const validationMessage = createSignalObject<string | undefined>(undefined)
   const membershipUserId = createSignalObject("")
   const membershipRoles = createSignalObject<OrganizationRoleId[]>(["member"])
@@ -132,7 +131,6 @@ export function organizationAdminFormStateCreate() {
     providerSecrets,
     providerSecretSet: (providerId: string, value: string) =>
       providerSecrets.set({ ...providerSecrets.get(), [providerId]: value }),
-    search,
     validateDomainClaim: () =>
       v.safeParse(organizationDomainClaimRequestSchema, {
         domain: claimDomain.get(),

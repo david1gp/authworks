@@ -686,6 +686,7 @@ admin.organizations.list.empty,У цьому realm ще немає органі�
 admin.organizations.list.name,Назва організації
 admin.organizations.list.nameRequired,Введіть назву організації.
 admin.organizations.list.search,Пошук організацій
+admin.organizations.list.statusAll,Усі статуси
 admin.organizations.list.title,Організації
 admin.organizations.memberships.added,Учасника додано.
 admin.organizations.memberships.empty,У цій організації ще немає учасників.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,Введіть назву проєкту та виб
 admin.projects.list.name,Назва проєкту
 admin.projects.list.roles,Ролі
 admin.projects.list.search,Пошук проєктів
+admin.projects.list.statusAll,Усі статуси
 admin.projects.list.subtitle,Власні та спільні проєкти активної організації.
 admin.projects.list.title,Проєкти
 admin.projects.missingId,Для цього розділу потрібно вибрати проєкт.

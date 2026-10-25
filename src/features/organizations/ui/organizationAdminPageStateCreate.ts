@@ -11,6 +11,7 @@ import type { OrganizationInvitation } from "../public/organizationInvitationSch
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
@@ -47,6 +48,8 @@ export function organizationAdminPageStateCreate(options: {
   readonly adapter: OrganizationAdminAdapter
   readonly confirm?: (message: string) => boolean | Promise<boolean>
   readonly initialInvitationToken?: () => string | undefined
+  readonly listSearch?: () => string
+  readonly listStatus?: () => OrganizationListQuery["status"]
   readonly onInvitationTokenDismiss?: () => void
   readonly organizationId: () => string
   readonly reloadKey?: () => string
@@ -110,7 +113,13 @@ export function organizationAdminPageStateCreate(options: {
     const organizationId = options.organizationId()
 
     if (screen === "organizations") {
-      const result = await options.adapter.organizationList({ pageToken: pageToken() })
+      const search = options.listSearch?.().trim() ?? ""
+      const token = pageToken()
+      const result = await options.adapter.organizationList({
+        ...(search.length === 0 ? {} : { search }),
+        ...(options.listStatus?.() === undefined ? {} : { status: options.listStatus?.() }),
+        ...(token === undefined ? {} : { pageToken: token }),
+      })
       if (!result.success) return fail(result)
       organizations.set([...result.data.items])
       nextPageToken.set(result.data.nextPageToken)
@@ -197,10 +206,22 @@ export function organizationAdminPageStateCreate(options: {
     return result.data
   }
 
+  // A new search or status filter always restarts from the first page; otherwise the
+  // cursor of the previous filter would page through the new result set.
+  const listSignature = () => `${options.listSearch?.() ?? ""}:${options.listStatus?.() ?? ""}`
+  const appliedListSignature = createSignalObject("")
   createEffect(
     on(
-      () => `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}`,
+      () =>
+        `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}:${listSignature()}`,
       () => {
+        if (options.screen() === "organizations" && appliedListSignature.get() !== listSignature()) {
+          appliedListSignature.set(listSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
+        }
         invitationToken.set(options.initialInvitationToken?.())
         void load()
       },

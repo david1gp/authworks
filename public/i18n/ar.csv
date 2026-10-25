@@ -686,6 +686,7 @@ admin.organizations.list.empty,لا توجد مؤسسات في هذا النطا
 admin.organizations.list.name,اسم المؤسسة
 admin.organizations.list.nameRequired,أدخل اسم المنظمة.
 admin.organizations.list.search,البحث في المؤسسات
+admin.organizations.list.statusAll,كل الحالات
 admin.organizations.list.title,المؤسسات
 admin.organizations.memberships.added,تمت إضافة العضو.
 admin.organizations.memberships.empty,لا يوجد أعضاء في هذه المؤسسة بعد.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,أدخل اسم المشروع واختر منظمة
 admin.projects.list.name,اسم المشروع
 admin.projects.list.roles,الأدوار
 admin.projects.list.search,البحث في المشاريع
+admin.projects.list.statusAll,كل الحالات
 admin.projects.list.subtitle,مشاريع المؤسسة النشطة المملوكة والمشتركة.
 admin.projects.list.title,المشاريع
 admin.projects.missingId,يجب اختيار مشروع لهذه الوجهة.

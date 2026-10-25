@@ -1,5 +1,6 @@
 import type { Result } from "#result"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { ExternalIdentityProviderCreateRequest } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
 import type { ExternalIdentityProviderListResponse } from "../../externalIdentities/public/externalIdentityProviderListResponseSchema.js"
 import type { ExternalIdentityProviderResponse } from "../../externalIdentities/public/externalIdentityProviderResponseSchema.js"
@@ -85,7 +86,7 @@ export type OrganizationAdminAdapter = {
     organizationId: string,
     input: OrganizationLifecycleRequest,
   ) => Promise<Result<OrganizationResponse>>
-  readonly organizationList: (query?: ListQuery) => Promise<Result<OrganizationListResponse>>
+  readonly organizationList: (query?: OrganizationListQuery) => Promise<Result<OrganizationListResponse>>
   readonly organizationUpdate: (
     organizationId: string,
     input: { readonly name: string },

@@ -240,13 +240,21 @@ export function projectAdminDemoAdapterCreate(fixtureState: () => DemoFixtureSta
           )
           .map((grant) => grant.projectId),
       )
+      const status = query?.status ?? "active"
+      const search = query?.search?.trim().toLowerCase()
       const items = projects
-        .filter(
-          (project) =>
+        .filter((project) => {
+          if (project.status === "removed") return false
+          if (status !== "all" && project.status !== status) return false
+          if (search !== undefined && search.length > 0) {
+            if (!`${project.name} ${project.id}`.toLowerCase().includes(search)) return false
+          }
+          return (
             query?.organizationId === undefined ||
             project.organizationId === query.organizationId ||
-            grantedProjectIds.has(project.id),
-        )
+            grantedProjectIds.has(project.id)
+          )
+        })
         .map((project) => ({
           ...project,
           applicationCount: applications.filter((application) => application.projectId === project.id).length,

@@ -2,6 +2,7 @@ import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import { externalIdentityApiClientCreate } from "../../externalIdentities/client/externalIdentityApiClientCreate.js"
 import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
@@ -135,7 +136,7 @@ export function organizationAdminApiCreate(options: {
       write((clients) =>
         clients.organizations.organizationTenantLifecycleSet(options.realmId(), organizationId, input),
       ),
-    organizationList: (query?: ListQuery) =>
+    organizationList: (query?: OrganizationListQuery) =>
       readClients().organizations.organizationTenantList(options.realmId(), query),
     organizationUpdate: (organizationId, input) =>
       write((clients) => clients.organizations.organizationTenantUpdate(options.realmId(), organizationId, input)),

@@ -1,8 +1,11 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { createEffect, on } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
+import { organizationAdminListStatusSelect } from "./organizationAdminListStatusSelect.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
@@ -51,14 +54,12 @@ export function organizationAdminScreenStateCreate(options: {
     navigate(`${location.pathname}${search ? `?${search}` : ""}`, { replace: true })
     form.validationMessage.set(undefined)
   }
-  const searchSet = (value: string) => {
-    form.search.set(value)
-    if (typeof window === "undefined") return
-    const url = new URL(window.location.href)
-    if (value) url.searchParams.set("q", value)
-    else url.searchParams.delete("q")
-    window.history.replaceState({}, "", url)
-  }
+  // Search and status live in the URL so the server-filtered directory survives reloads
+  // and deep links. Writes are debounced, so every keystroke never becomes a request.
+  const search = () => organizationAdminListSearchSelect(location.search)
+  const searchSet = (value: string) => authenticatedUrlSearchParamWrite("q", value)
+  const statusFilter = () => organizationAdminListStatusSelect(location.search)
+  const statusFilterSet = (value: string) => authenticatedUrlSearchParamWrite("status", value)
   const branding = () => form.branding.get() ?? options.page.branding()
   const policyDraft = () => policyDraftSignal.get() ?? options.page.policy()
   const passwordPolicyDraft = () => passwordPolicyDraftSignal.get() ?? options.page.passwordPolicy()
@@ -143,13 +144,6 @@ export function organizationAdminScreenStateCreate(options: {
             : messageTranslate("admin.organizations.domains.discoveryMissing", { domain }),
         )
       })()
-    },
-    filteredOrganizations: () => {
-      const value = form.search.get().toLowerCase()
-      if (!value) return options.page.organizations()
-      return options.page
-        .organizations()
-        .filter((organization) => `${organization.name} ${organization.id}`.toLowerCase().includes(value))
     },
     form,
     invitationCreateSubmit: (event: SubmitEvent) => {
@@ -265,7 +259,10 @@ export function organizationAdminScreenStateCreate(options: {
       if (!form.validateOrganizationName(name)) return
       void options.page.organizationRename(name)
     },
+    search,
     searchSet,
     securityPolicy,
+    statusFilter,
+    statusFilterSet,
   }
 }

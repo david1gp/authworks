@@ -686,6 +686,7 @@ admin.organizations.list.empty,Bu realm'de henüz kuruluş yok.
 admin.organizations.list.name,Kuruluş adı
 admin.organizations.list.nameRequired,Bir kuruluş adı girin.
 admin.organizations.list.search,Kuruluşları ara
+admin.organizations.list.statusAll,Tüm durumlar
 admin.organizations.list.title,Kuruluşlar
 admin.organizations.memberships.added,Üye eklendi.
 admin.organizations.memberships.empty,Bu kuruluşun henüz üyesi yok.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,Bir proje adı girin ve bir kuruluş seçin.
 admin.projects.list.name,Proje adı
 admin.projects.list.roles,Roller
 admin.projects.list.search,Projeleri ara
+admin.projects.list.statusAll,Tüm durumlar
 admin.projects.list.subtitle,Etkin kuruluşun kendisine ait ve paylaşılan projeleri.
 admin.projects.list.title,Projeler
 admin.projects.missingId,Bu hedef için bir proje seçilmiş olmalıdır.

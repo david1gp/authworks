@@ -133,11 +133,24 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
       />
 
       <AuthenticatedToolbar label={messageTranslate("admin.projects.list.title")}>
-        <AuthenticatedSearchField
-          onInput={state.searchInput}
-          placeholder={messageTranslate("admin.projects.list.search")}
-          value={state.search()}
-        />
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <AuthenticatedSearchField
+            onInput={state.searchInput}
+            placeholder={messageTranslate("admin.projects.list.search")}
+            value={state.search()}
+          />
+          <AuthenticatedSelect
+            aria-label={messageTranslate("admin.projects.status")}
+            getOptions={() => ["active", "inactive", "all"]}
+            id="project-status"
+            valueSignal={{ get: state.statusFilter, set: state.statusFilterSet }}
+            valueText={(value) =>
+              value === "all"
+                ? messageTranslate("admin.projects.list.statusAll")
+                : messageTranslate(`admin.projects.statusValue.${value as "active" | "inactive"}`)
+            }
+          />
+        </div>
       </AuthenticatedToolbar>
 
       <Show

@@ -1,7 +1,9 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
+import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 import { projectAdminApplicationsTabStateCreate } from "./projectAdminApplicationsTabStateCreate.js"
 import { projectAdminDetailViewStateCreate } from "./projectAdminDetailViewStateCreate.js"
 import { projectAdminListViewStateCreate } from "./projectAdminListViewStateCreate.js"
@@ -54,9 +56,20 @@ export function projectAdminScreenStateCreate(options: {
   }
   const search = () => new URLSearchParams(location.search).get("q") ?? ""
 
+  // Search and status live in the URL so the server-filtered directory survives reloads
+  // and deep links. Writes are debounced, so every keystroke never becomes a request.
+  const searchSet = (value: string) => authenticatedUrlSearchParamWrite("q", value)
+  const statusFilter = (): NonNullable<ProjectListQuery["status"]> => {
+    const raw = new URLSearchParams(location.search).get("status")
+    return raw === "inactive" || raw === "all" ? raw : "active"
+  }
+  const statusFilterSet = (value: string) => authenticatedUrlSearchParamWrite("status", value)
+
   const page = projectAdminPageStateCreate({
     adapter: options.adapter,
     confirm: confirmState.confirm,
+    listSearch: search,
+    listStatus: statusFilter,
     organizationId: options.organizationId,
     projectId: options.projectId,
     screen: options.screen,
@@ -112,13 +125,9 @@ export function projectAdminScreenStateCreate(options: {
       organizationId: options.organizationId,
       page,
       search,
-      searchSet: (value: string) => {
-        const params = new URLSearchParams(location.search)
-        if (value.length === 0) params.delete("q")
-        else params.set("q", value)
-        const encoded = params.toString()
-        navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
-      },
+      searchSet,
+      statusFilter,
+      statusFilterSet,
       withActor: options.withActor,
     }),
     organizationId: options.organizationId,

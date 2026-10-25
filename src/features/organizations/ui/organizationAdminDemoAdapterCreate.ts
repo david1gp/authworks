@@ -273,7 +273,21 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         found.updatedAt = now
         return { organization: { ...found } }
       }),
-    organizationList: () => guard("organizationAdminDemoOrganizationList", () => listOf(organizations)),
+    organizationList: (query) =>
+      guard("organizationAdminDemoOrganizationList", () => {
+        const status = query?.status ?? "all"
+        const search = query?.search?.trim().toLowerCase()
+        return listOf(
+          organizations.filter((organization) => {
+            if (organization.status === "removed") return false
+            if (status !== "all" && organization.status !== status) return false
+            if (search !== undefined && search.length > 0) {
+              if (!`${organization.name} ${organization.id}`.toLowerCase().includes(search)) return false
+            }
+            return true
+          }),
+        )
+      }),
     organizationUpdate: (organizationId, input) =>
       guard("organizationAdminDemoOrganizationUpdate", () => {
         const found = organizations.find((item) => item.id === organizationId) ?? organizations[0]!

@@ -12,6 +12,7 @@ import { AuthenticatedPagination } from "../../../ui/authenticated/Authenticated
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -37,13 +38,16 @@ export function OrganizationAdminListView(props: {
   readonly onPreviousPage: () => void
   readonly onRetry: () => void
   readonly onSearchInput: (value: string) => void
+  readonly onStatusInput: (value: string) => void
   readonly organizations: readonly Organization[]
   readonly pendingId?: string
   readonly previousPageAvailable: boolean
   readonly search: string
   readonly status: OrganizationAdminStatus
+  readonly statusFilter: string
   readonly validationMessage?: string
 }) {
+  const statusOptions = () => ["active", "inactive", "all"]
   return (
     <section aria-label={messageTranslate("admin.organizations.list.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
@@ -86,16 +90,32 @@ export function OrganizationAdminListView(props: {
         }
         label={messageTranslate("admin.organizations.list.title")}
       >
-        <Label class="sr-only" for="organization-search">
-          {messageTranslate("admin.organizations.list.search")}
-        </Label>
-        <AuthenticatedInput
-          class="w-full sm:w-72"
-          id="organization-search"
-          onInput={(event) => props.onSearchInput(event.currentTarget.value)}
-          placeholder={messageTranslate("admin.organizations.list.search")}
-          value={props.search}
-        />
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Label class="sr-only" for="organization-search">
+            {messageTranslate("admin.organizations.list.search")}
+          </Label>
+          <AuthenticatedInput
+            class="w-full sm:w-72"
+            id="organization-search"
+            onInput={(event) => props.onSearchInput(event.currentTarget.value)}
+            placeholder={messageTranslate("admin.organizations.list.search")}
+            value={props.search}
+          />
+          <Label class="sr-only" for="organization-status">
+            {messageTranslate("admin.organizations.status")}
+          </Label>
+          <AuthenticatedSelect
+            aria-label={messageTranslate("admin.organizations.status")}
+            getOptions={statusOptions}
+            id="organization-status"
+            valueSignal={{ get: () => props.statusFilter, set: props.onStatusInput }}
+            valueText={(value) =>
+              value === "all"
+                ? messageTranslate("admin.organizations.list.statusAll")
+                : messageTranslate(`admin.organizations.statusValue.${value as "active" | "inactive"}`)
+            }
+          />
+        </div>
       </AuthenticatedToolbar>
 
       <OrganizationAdminNotice notice={props.notice} />

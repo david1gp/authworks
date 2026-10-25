@@ -147,10 +147,12 @@ export function projectAdminProductionAdapterCreate(options: {
       ),
     projectList: (query) => {
       const pageQuery = query?.pageToken === undefined ? { pageSize } : { pageSize, pageToken: query.pageToken }
-      return api().projects.projectTenantList(
-        realm(),
-        query?.organizationId === undefined ? pageQuery : { ...pageQuery, organizationId: query.organizationId },
-      )
+      return api().projects.projectTenantList(realm(), {
+        ...pageQuery,
+        ...(query?.organizationId === undefined ? {} : { organizationId: query.organizationId }),
+        ...(query?.search === undefined || query.search.trim().length === 0 ? {} : { search: query.search }),
+        ...(query?.status === undefined ? {} : { status: query.status }),
+      })
     },
     projectUpdate: (projectId, input) =>
       mutate(

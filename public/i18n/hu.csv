@@ -686,6 +686,7 @@ admin.organizations.list.empty,Ebben a realmben még nincs szervezet.
 admin.organizations.list.name,Szervezet neve
 admin.organizations.list.nameRequired,Adjon meg egy szervezetnevet.
 admin.organizations.list.search,Szervezetek keresése
+admin.organizations.list.statusAll,Összes állapot
 admin.organizations.list.title,Szervezetek
 admin.organizations.memberships.added,A tag hozzáadva.
 admin.organizations.memberships.empty,Ennek a szervezetnek még nincsenek tagjai.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,"Adjon meg egy projektnevet, és válasszon szerveze
 admin.projects.list.name,Projekt neve
 admin.projects.list.roles,Szerepkörök
 admin.projects.list.search,Projektek keresése
+admin.projects.list.statusAll,Összes állapot
 admin.projects.list.subtitle,Az aktív szervezet saját és megosztott projektjei.
 admin.projects.list.title,Projektek
 admin.projects.missingId,Ehhez a célhoz ki kell választani egy projektet.

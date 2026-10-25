@@ -686,6 +686,7 @@ admin.organizations.list.empty,Ainda não existe nenhuma organização neste rea
 admin.organizations.list.name,Nome da organização
 admin.organizations.list.nameRequired,Introduza um nome de organização.
 admin.organizations.list.search,Procurar organizações
+admin.organizations.list.statusAll,Todos os status
 admin.organizations.list.title,Organizações
 admin.organizations.memberships.added,O membro foi adicionado.
 admin.organizations.memberships.empty,Esta organização ainda não tem membros.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,Introduza um nome de projeto e escolha uma organiza�
 admin.projects.list.name,Nome do projeto
 admin.projects.list.roles,Funções
 admin.projects.list.search,Procurar projetos
+admin.projects.list.statusAll,Todos os status
 admin.projects.list.subtitle,Projetos próprios e partilhados da organização ativa.
 admin.projects.list.title,Projetos
 admin.projects.missingId,Um projeto tem de estar selecionado para este destino.

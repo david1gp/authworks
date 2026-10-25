@@ -24,11 +24,14 @@ import type { ProjectUserAssignmentCreateRequest } from "../public/projectUserAs
 import type { ProjectUserAssignmentListResponse } from "../public/projectUserAssignmentListResponseSchema.js"
 import type { ProjectUserAssignment } from "../public/projectUserAssignmentSchema.js"
 import type { ProjectUserAssignmentUpdateRequest } from "../public/projectUserAssignmentUpdateRequestSchema.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 
 /** List query for the project directory; the active organization scopes owned and shared projects. */
 export type ProjectAdminProjectListQuery = {
   readonly organizationId?: string
-  readonly pageToken?: string
+  readonly pageToken?: ProjectListQuery["pageToken"]
+  readonly search?: ProjectListQuery["search"]
+  readonly status?: ProjectListQuery["status"]
 }
 
 /**

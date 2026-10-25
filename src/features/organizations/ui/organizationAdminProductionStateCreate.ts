@@ -2,6 +2,8 @@ import { useLocation } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { organizationAdminApiCreate } from "./organizationAdminApiCreate.js"
+import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
+import { organizationAdminListStatusSelect } from "./organizationAdminListStatusSelect.js"
 import { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
 import { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
@@ -33,6 +35,8 @@ export function organizationAdminProductionStateCreate(options: {
   const page = organizationAdminPageStateCreate({
     adapter,
     confirm: confirmState.confirm,
+    listSearch: () => organizationAdminListSearchSelect(location.search),
+    listStatus: () => organizationAdminListStatusSelect(location.search),
     organizationId,
     screen: options.screen,
   })

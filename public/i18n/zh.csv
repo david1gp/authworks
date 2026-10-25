@@ -686,6 +686,7 @@ admin.organizations.list.empty,此领域中尚不存在任何组织。
 admin.organizations.list.name,组织名称
 admin.organizations.list.nameRequired,请输入组织名称。
 admin.organizations.list.search,搜索组织
+admin.organizations.list.statusAll,所有状态
 admin.organizations.list.title,组织
 admin.organizations.memberships.added,成员已添加。
 admin.organizations.memberships.empty,此组织尚无成员。
@@ -860,6 +861,7 @@ admin.projects.list.invalid,请输入项目名称并选择组织。
 admin.projects.list.name,项目名称
 admin.projects.list.roles,角色
 admin.projects.list.search,搜索项目
+admin.projects.list.statusAll,所有状态
 admin.projects.list.subtitle,当前组织拥有和共享的项目。
 admin.projects.list.title,项目
 admin.projects.missingId,此目的地必须选择一个项目。

@@ -29,11 +29,13 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             onPreviousPage={state.page.previousPageOpen}
             onRetry={state.page.reload}
             onSearchInput={state.searchSet}
-            organizations={state.filteredOrganizations()}
+            onStatusInput={state.statusFilterSet}
+            organizations={state.page.organizations()}
             pendingId={state.page.pendingId?.()}
             previousPageAvailable={state.page.previousPageAvailable()}
-            search={state.form.search.get()}
+            search={state.search()}
             status={state.page.status()}
+            statusFilter={state.statusFilter()}
             validationMessage={state.form.validationMessage.get()}
           />
         </Match>

@@ -686,6 +686,7 @@ admin.organizations.list.empty,В этом realm ещё нет организа�
 admin.organizations.list.name,Название организации
 admin.organizations.list.nameRequired,Введите название организации.
 admin.organizations.list.search,Поиск организаций
+admin.organizations.list.statusAll,Все статусы
 admin.organizations.list.title,Организации
 admin.organizations.memberships.added,Участник добавлен.
 admin.organizations.memberships.empty,В этой организации пока нет участников.
@@ -860,6 +861,7 @@ admin.projects.list.invalid,Введите название проекта и в
 admin.projects.list.name,Название проекта
 admin.projects.list.roles,Роли
 admin.projects.list.search,Поиск проектов
+admin.projects.list.statusAll,Все статусы
 admin.projects.list.subtitle,Собственные и общие проекты активной организации.
 admin.projects.list.title,Проекты
 admin.projects.missingId,Для этого раздела необходимо выбрать проект.
