@@ -18,6 +18,7 @@ import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.j
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedSidebarDestinationSelect } from "../../../ui/authenticated/authenticatedSidebarDestinationSelect.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { productionNavigationActiveHrefSelect } from "../../../ui/production/productionNavigationActiveHrefSelect.js"
 import { productionShellAccessPermits } from "../../../ui/production/productionShellAccessPermits.js"
 import { productionShellAccessResolve } from "../../../ui/production/productionShellAccessResolve.js"
 
@@ -186,10 +187,16 @@ export function adminDemoAppStateCreate() {
       .filter((group) => group.items.length > 0)
       .filter((group) => group.access === undefined || productionShellAccessPermits(group.access, shellAccess()))
 
+  const activeHref = () =>
+    productionNavigationActiveHrefSelect(
+      translatedGroups().flatMap((group) => group.items.map((item) => item.href)),
+      location.pathname,
+    )
+
   const groupOpen = (group: AdminDemoNavGroup) => {
     if (group.collapsible !== true) return true
     if (realmGroupManual.get() !== undefined) return realmGroupManual.get() as boolean
-    if (group.items.some((item) => item.href === location.pathname)) return true
+    if (group.items.some((item) => item.href === activeHref())) return true
     return demoRealmGroupOpenStoredGet()
   }
 
@@ -207,8 +214,8 @@ export function adminDemoAppStateCreate() {
     groupToggle,
     groupLabel: (group: AdminDemoNavGroup) =>
       group.label === "Realm" ? messageTranslate("shell.nav.realmGroup") : (group.label ?? ""),
-    isActive: (href: string) =>
-      location.pathname === href || (href !== "/demo/admin" && location.pathname.startsWith(`${href}/`)),
+    /** Only the most specific destination is highlighted, so `/realm/administrators` does not also light up `/realm`. */
+    isActive: (href: string) => activeHref() === href,
     navigationGroups: translatedGroups,
     sidebar,
     topBarVisible: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),

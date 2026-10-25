@@ -11,6 +11,7 @@ import { projectAdminScreenSchema } from "../../src/features/projects/ui/project
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
 import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
+import { productionNavigationActiveHrefSelect } from "../../src/ui/production/productionNavigationActiveHrefSelect.js"
 import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
@@ -383,6 +384,16 @@ describe("production shell state", () => {
     expect(productionNavigationItemActive("/account", "/account")).toBe(true)
     expect(productionNavigationItemActive("/account", "/admin")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/legacy")).toBe(false)
+  })
+
+  test("highlights only the most specific sidebar destination for a nested path", () => {
+    const hrefs = productionShellNavigationGroups.admin.flatMap((group) => group.items.map((item) => item.href))
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/realm/administrators")).toBe(
+      "/admin/realm/administrators",
+    )
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/realm")).toBe("/admin/realm")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/users/user-42")).toBe("/admin/users")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/machine-credentials")).toBeUndefined()
   })
 
   test("shows administration for an active realm session and always returns to account from admin", () => {

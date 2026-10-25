@@ -120,8 +120,8 @@ function ProductionSidebarFooter(props: { readonly state: ProductionAuthenticate
 function ProductionContextualNavigation(props: { readonly state: ProductionAuthenticatedShellState }) {
   const navigationLink = (item: ProductionNavigationItem) => (
     <A
-      aria-current={props.state.isActive(item.href) ? "page" : undefined}
-      class={authenticatedNavigationLinkClassGet(props.state.isActive(item.href))}
+      aria-current={props.state.isItemActive(item.href) ? "page" : undefined}
+      class={authenticatedNavigationLinkClassGet(props.state.isItemActive(item.href))}
       href={item.href}
       onClick={props.state.destinationSelect}
     >

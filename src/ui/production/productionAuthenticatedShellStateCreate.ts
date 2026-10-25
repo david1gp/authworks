@@ -7,6 +7,7 @@ import { authenticatedSidebarDestinationSelect } from "../authenticated/authenti
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
+import { productionNavigationActiveHrefSelect } from "./productionNavigationActiveHrefSelect.js"
 import { productionNavigationItemActive } from "./productionNavigationItemActive.js"
 import { productionSessionContextGet } from "./productionSessionContextGet.js"
 import { productionShellAccessPermits } from "./productionShellAccessPermits.js"
@@ -76,6 +77,12 @@ export function productionAuthenticatedShellStateCreate(
     return visible
   }
 
+  const activeHref = () =>
+    productionNavigationActiveHrefSelect(
+      groups().flatMap((group) => group.items.map((item) => item.href)),
+      location.pathname,
+    )
+
   const groupOpen = (group: Pick<ProductionNavigationGroup, "collapsible" | "items" | "rememberKey">) => {
     if (group.collapsible !== true) return true
     if (realmGroupManual.get() !== undefined) return realmGroupManual.get() as boolean
@@ -100,7 +107,10 @@ export function productionAuthenticatedShellStateCreate(
     /** The rail's own collapse control is only meaningful on desktop; mobile uses the top bar. */
     collapseVisible: () => !sidebar.isMobile.get(),
     homeHref: () => (kind() === "admin" ? "/admin/users" : "/account"),
+    /** Exact-or-nested match, used for destinations outside the grouped navigation (the account link). */
     isActive: (href: string) => productionNavigationItemActive(href, location.pathname),
+    /** Only the most specific grouped destination is highlighted. */
+    isItemActive: (href: string) => activeHref() === href,
     isContextual: () => kind() !== "account",
     organizationChange: (event: Event & { readonly currentTarget: HTMLSelectElement }) => {
       if (organizationPending.get() || session.organizationSwitchPending()) return
