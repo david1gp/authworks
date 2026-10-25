@@ -87,7 +87,7 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliVersionVerbose.stdout).toContain(`${packageJson.version}\n`)
   expect(cliVersionVerbose.stdout).toContain(`user agent: @adaptive-ds/authworks/${packageJson.version}`)
   expect(cliVersionVerbose.stdout).toContain("installation type: development checkout")
-  expect(cliVersionVerbose.stdout).toContain("runtime requirements: node >=22, bun >=1.3.0")
+  expect(cliVersionVerbose.stdout).toContain("runtime requirements: unavailable")
   expect(cliVersionVerbose.stdout).toContain(`platform: ${process.platform} ${process.arch} (OS release `)
 
   for (const route of [

@@ -100,6 +100,12 @@ test("every API client publishes its complete method set", () => {
   const options = { baseUrl: "https://identity.example.test" }
   expect(Object.keys(realms.realmApiClientCreate(options))).toEqual([
     "realmBootstrapAdminCreate",
+    "realmAdministratorList",
+    "realmAdministratorGrant",
+    "realmAdministratorRevoke",
+    "realmTenantAdministratorList",
+    "realmTenantAdministratorGrant",
+    "realmTenantAdministratorRevoke",
     "realmCreate",
     "realmGet",
     "realmList",
@@ -107,7 +113,7 @@ test("every API client publishes its complete method set", () => {
     "realmTenantUpdate",
     "realmUpdate",
   ])
-  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(57)
+  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(59)
   expect(Object.keys(users.userApiClientCreate(options))).toEqual([
     "userCreate",
     "userGet",
@@ -138,9 +144,11 @@ test("every API client publishes its complete method set", () => {
     "userTenantLifecycleSet",
     "userTenantVerificationSet",
     "userTenantDelete",
+    "userTenantPurge",
     "userMeDelete",
   ])
   expect(Object.keys(passwords.passwordApiClientCreate(options))).toEqual([
+    "passwordUserTenantSet",
     "passwordCredentialReplace",
     "passwordRegister",
     "passwordLogin",
@@ -193,7 +201,7 @@ test("every API client publishes its complete method set", () => {
   ])
   expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(21)
-  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(42)
+  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(43)
   expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(16)
   expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
   expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)

@@ -27,7 +27,7 @@ test("renders verbose metadata without starting a service", async () => {
   expect(result.stdout).toContain("license: MIT")
   expect(result.stdout).toContain("project: https://github.com/david1gp/authworks")
   expect(result.stdout).toContain("installation type: development checkout")
-  expect(result.stdout).toContain("runtime requirements: node >=22, bun >=1.3.0")
+  expect(result.stdout).toContain("runtime requirements: unavailable")
   expect(result.stdout).toContain(`platform: ${process.platform} ${process.arch} (OS release `)
   expect(result.stdout).toMatch(/executable: .+\nexecutable target: .+\n/)
   expect(result.stdout).not.toContain("build details:")

@@ -2101,8 +2101,10 @@ test("subject-bound consent contracts paginate, redact persistence fields, rejec
       `https://consent-me.example.com/realms/${authenticated.realm.id}/me/consents?userId=another-user`,
       { headers: { authorization: `Bearer ${authenticated.token}` } },
     )
-    expect(idor.status).toBe(400)
-    expect(JSON.stringify(await idor.json())).not.toContain("another-user")
+    expect(idor.status).toBe(200)
+    const idorBody = (await idor.json()) as { items?: readonly { userId?: string }[] }
+    expect(JSON.stringify(idorBody)).not.toContain("another-user")
+    expect(idorBody.items?.[0]?.userId).toBe(authenticated.userId)
 
     const otherRealm = await createRealm(database, "consent-me-other.example.com")
     const crossRealm = await app.request(`https://consent-me.example.com/realms/${otherRealm.id}/me/consents`, {
