@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "")
   const apiPort = Number(env.AUTHWORKS_PORT ?? env.PORT ?? 3000)
   const uiPort = Number(env.UI_PORT ?? 5173)
+  // Vite forwards browser console output to the terminal automatically when it detects an AI agent,
+  // which floods E2E logs with expected diagnostics. Keep it opt-in.
+  const forwardConsole = env.AUTHWORKS_UI_FORWARD_CONSOLE === "1"
   const solidRuntime = mode === "development" ? "solid-js/dist/dev.js" : "solid-js/dist/solid.js"
   const solidStoreRuntime = mode === "development" ? "solid-js/store/dist/dev.js" : "solid-js/store/dist/store.js"
 
@@ -40,6 +43,7 @@ export default defineConfig(({ mode }) => {
       ],
     },
     server: {
+      forwardConsole,
       port: uiPort,
       strictPort: true,
       proxy: {

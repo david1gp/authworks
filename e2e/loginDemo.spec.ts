@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
 import { demoLoginScenarioGroups } from "../src/features/demo/demoLoginScenarioGroups.js"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 const demoDestinations = demoLoginScenarioGroups.flatMap((group) => group.scenarios)
 const loginRouteReadyTimeout = 15_000

@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
 // Payloads must satisfy the public UUIDv7-shaped resource identifier schema.

@@ -1,6 +1,7 @@
 import type { Page, Route } from "@playwright/test"
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
 import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const organizationId = "018f0000-0000-7000-8000-000000000002"

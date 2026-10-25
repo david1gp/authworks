@@ -1,5 +1,6 @@
 import { AxeBuilder } from "@axe-core/playwright"
-import { expect, type Locator, test } from "@playwright/test"
+import { expect, type Locator } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 const viewports = [
   { height: 720, name: "desktop", width: 1280 },

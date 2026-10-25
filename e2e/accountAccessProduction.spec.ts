@@ -1,7 +1,8 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import type { AccountEffectiveAccessEntry } from "../src/features/account/public/accountEffectiveAccessEntrySchema.js"
 import type { OrganizationMe } from "../src/features/organizations/public/organizationMeSchema.js"
 import type { OrganizationRoles } from "../src/features/organizations/public/organizationRolesSchema.js"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"

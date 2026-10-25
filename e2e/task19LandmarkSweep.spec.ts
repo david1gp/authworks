@@ -1,5 +1,6 @@
 import { AxeBuilder } from "@axe-core/playwright"
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 /** The routes the dedicated sweep reported duplicate landmark names on. */
 const routes = [

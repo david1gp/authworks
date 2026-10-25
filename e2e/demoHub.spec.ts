@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 test("the demo hub navigates to login, account, administration, and email previews", async ({ page }) => {
   await page.goto("/demo")

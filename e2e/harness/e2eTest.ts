@@ -1,4 +1,5 @@
-import { test as base, type Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
+import { e2eBrowserConsoleTest as base } from "./e2eBrowserConsoleTest.js"
 
 type E2ePageErrorFixtures = {
   readonly pageErrors: Error[]

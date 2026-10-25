@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 const clientId = "01900000-0000-7000-8000-000000000041"
 const clientBase = `/demo/admin/oidc-clients/${clientId}`
