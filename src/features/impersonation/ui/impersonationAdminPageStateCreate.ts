@@ -66,7 +66,14 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     eligibility.set(current.data)
     // Guards resolve from eligibility alone: a denied or un-stepped-up actor never
     // reaches the candidate/organization lists, which they are not allowed to read.
-    if (current.data.nested) return status.set("nested-rejected")
+    if (current.data.nested) {
+      // A nested attempt only happens inside an impersonation, so the active session
+      // still loads and its banner stays visible in this guarded state.
+      const nestedSession = await adapter.activeGet()
+      if (!nestedSession.success) return fail(nestedSession)
+      active.set(nestedSession.data)
+      return status.set("nested-rejected")
+    }
     if (!current.data.permitted) {
       if (current.data.assurance !== "multi_factor") return status.set("assurance-required")
       return status.set("permission-denied")
