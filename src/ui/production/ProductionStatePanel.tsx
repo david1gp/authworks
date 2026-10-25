@@ -1,6 +1,7 @@
 import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiInboxOutline } from "@adaptive-ds/mdi/mdiInboxOutline.js"
 import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
+import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
@@ -13,6 +14,7 @@ export function ProductionStatePanel(props: {
   readonly compact?: boolean
   readonly detail?: string
   readonly onRetry?: () => void
+  readonly onSignInAgain?: () => void
   readonly state: "empty" | "error" | "inaccessible" | "loading"
   readonly title?: string
 }) {
@@ -71,6 +73,11 @@ export function ProductionStatePanel(props: {
       {props.state === "error" && props.onRetry ? (
         <AuthenticatedButton class="mt-4" icon={mdiRefresh} onClick={props.onRetry} variant="outline">
           {messageTranslate("common.retry")}
+        </AuthenticatedButton>
+      ) : null}
+      {props.state !== "loading" && props.onSignInAgain ? (
+        <AuthenticatedButton class="mt-4" icon={mdiLogin} onClick={props.onSignInAgain} variant="outline">
+          {messageTranslate("account.identities.signInAgain")}
         </AuthenticatedButton>
       ) : null}
     </section>

@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { authenticatedSignInAgainNavigate } from "../../../ui/authenticated/authenticatedSignInAgainNavigate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
@@ -27,6 +28,7 @@ export function OrganizationAdminState(props: {
                   : props.error
           }
           onRetry={props.status === "error" ? props.onRetry : undefined}
+          onSignInAgain={props.status === "assurance-required" ? authenticatedSignInAgainNavigate : undefined}
           state={
             props.status === "loading"
               ? "loading"

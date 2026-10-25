@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { authenticatedSignInAgainNavigate } from "../../../ui/authenticated/authenticatedSignInAgainNavigate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OidcAdminStatus } from "./oidcAdminStatusSchema.js"
@@ -43,6 +44,7 @@ export function OidcAdminStateBoundary(props: {
         <ProductionStatePanel
           detail={detail()}
           onRetry={props.status === "error" ? props.onRetry : undefined}
+          onSignInAgain={props.status === "assurance-required" ? authenticatedSignInAgainNavigate : undefined}
           state={panelState()}
           title={title()}
         />
