@@ -25,7 +25,7 @@ export function AuthenticatedStatTile(props: {
   )
   return (
     <Show
-      when={typeof props.href === "string" && props.href.length > 0}
+      when={props.href}
       fallback={
         <div class={classMerge("rounded-panel border border-line bg-surface p-4 shadow-panel", props.class)}>
           {body}
@@ -39,7 +39,7 @@ export function AuthenticatedStatTile(props: {
             "block rounded-panel border border-line bg-surface p-4 shadow-panel transition-colors hover:border-line-strong hover:bg-surface-hover",
             props.class,
           )}
-          href={String(href())}
+          href={href()}
         >
           {body}
         </A>

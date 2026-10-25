@@ -68,7 +68,7 @@ function AuthenticatedDataTableBodyRow<T>(props: {
         {(column) => (
           <td class={classMerge(authenticatedTableClasses.cell, column.class, column.align === "end" && "text-end")}>
             <Show
-              when={typeof props.rowHref === "string" && props.rowHref.length > 0}
+              when={props.rowHref}
               fallback={
                 <Show when={props.onRowClick !== undefined} fallback={column.cell(props.row)}>
                   <button
@@ -82,7 +82,7 @@ function AuthenticatedDataTableBodyRow<T>(props: {
               }
             >
               {(href) => (
-                <A class="block rounded-sm" href={String(href())}>
+                <A class="block rounded-sm" href={href()}>
                   {column.cell(props.row)}
                 </A>
               )}
