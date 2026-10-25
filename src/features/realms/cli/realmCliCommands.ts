@@ -201,6 +201,114 @@ const realmAdministratorCommand = (action: "list" | "grant" | "revoke") =>
     docs: { brief: `Realm administrators ${action}` },
   })
 
+const realmGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: RealmCliFlags & { readonly realmId?: string }) {
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    const result = await realmCliClientCreate(connection).realmGet(realmId)
+    realmCliResultWrite(this, result, [connection.token])
+  },
+  parameters: {
+    flags: {
+      ...connectionProfileCliCentralFlags(),
+      realmId: {
+        brief: "Realm UUID",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "REALM_ID",
+      },
+      server: {
+        brief: "Authworks server URL",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "URL",
+      },
+      token: {
+        brief: "System Bearer [REDACTED]",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "TOKEN",
+      },
+    },
+  },
+  docs: { brief: "Get a realm" },
+})
+
+type RealmUpdateCliFlags = RealmCliFlags & {
+  readonly realmId?: string
+  readonly name?: string
+  readonly domain?: string
+  readonly status?: "active" | "disabled"
+}
+
+const realmUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: RealmUpdateCliFlags) {
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    const result = await realmCliClientCreate(connection).realmUpdate(realmId, {
+      ...(flags.name === undefined ? {} : { name: flags.name }),
+      ...(flags.domain === undefined ? {} : { domain: flags.domain }),
+      ...(flags.status === undefined ? {} : { status: flags.status }),
+    })
+    realmCliResultWrite(this, result, [connection.token])
+  },
+  parameters: {
+    flags: {
+      ...connectionProfileCliCentralFlags(),
+      realmId: {
+        brief: "Realm UUID",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "REALM_ID",
+      },
+      server: {
+        brief: "Authworks server URL",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "URL",
+      },
+      token: {
+        brief: "System Bearer [REDACTED]",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "TOKEN",
+      },
+      name: {
+        brief: "Realm display name",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "NAME",
+      },
+      domain: {
+        brief: "Primary realm domain",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "DOMAIN",
+      },
+      status: {
+        brief: "Realm status",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value as "active" | "disabled",
+        placeholder: "STATUS",
+      },
+    },
+  },
+  docs: { brief: "Update a realm" },
+})
+
 export const realmCliCommands = buildRouteMap({
   routes: {
     administrators: buildRouteMap({
@@ -213,7 +321,9 @@ export const realmCliCommands = buildRouteMap({
     }),
     bootstrapAdmin: realmBootstrapCommand,
     create: realmCreateCommand,
+    get: realmGetCommand,
     list: realmListCommand,
+    update: realmUpdateCommand,
   },
   docs: { brief: "Realm administration" },
 })

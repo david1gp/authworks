@@ -630,11 +630,169 @@ const organizationSwitchCommand = buildCommand({
   docs: { brief: "Switch the active organization" },
 })
 
+const organizationMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationListCliFlags & { realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationMeList(
+        resolved.realmId,
+        organizationListQueryCreate(flags),
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags(), realmId: realmIdFlag() } },
+  docs: { brief: "List my organizations" },
+})
+
+const organizationBrandingGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationGetCliFlags) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationBrandingGet(
+        ids.realmId,
+        ids.organizationId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
+  },
+  docs: { brief: "Get organization branding metadata" },
+})
+
+const organizationDomainRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationDomainRemove(
+        ids.realmId,
+        ids.organizationId,
+        flags.domain,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      domain: textFlag("Organization domain"),
+    },
+  },
+  docs: { brief: "Remove an organization domain" },
+})
+
+const organizationDomainDiscoverCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { domain: string }) {
+    const connection = await organizationCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(connection).organizationDomainDiscover(flags.domain),
+      [connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), domain: textFlag("Organization domain") },
+  },
+  docs: { brief: "Discover organizations for a domain" },
+})
+
+const organizationInvitationMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationListCliFlags & { realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationInvitationMeList(
+        resolved.realmId,
+        organizationListQueryCreate(flags),
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags(), realmId: realmIdFlag() } },
+  docs: { brief: "List my organization invitations" },
+})
+
+const organizationInvitationMeAcceptCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { invitationToken: string; realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationInvitationMeAccept(resolved.realmId, {
+        token: flags.invitationToken,
+      }),
+      [flags.invitationToken, resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), invitationToken: textFlag("Invitation token") },
+  },
+  docs: { brief: "Accept my organization invitation" },
+})
+
+const organizationInvitationMeDeclineCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { invitationToken: string; realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationInvitationMeDecline(resolved.realmId, {
+        token: flags.invitationToken,
+      }),
+      [flags.invitationToken, resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), invitationToken: textFlag("Invitation token") },
+  },
+  docs: { brief: "Decline my organization invitation" },
+})
+
+const organizationMeSwitchCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { organizationId?: string; realmId?: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationMeSwitch(ids.realmId, {
+        organizationId: ids.organizationId,
+      }),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
+  },
+  docs: { brief: "Switch my active organization" },
+})
+
 export const organizationCliCommands = buildRouteMap({
   routes: {
     create: organizationCreateCommand,
     get: organizationGetCommand,
     list: organizationListCommand,
+    meList: organizationMeListCommand,
     memberAdd: organizationMemberAddCommand,
     memberList: organizationMemberListCommand,
     memberRemove: organizationMemberRemoveCommand,
@@ -643,14 +801,21 @@ export const organizationCliCommands = buildRouteMap({
     invitationCreate: organizationInvitationCreateCommand,
     invitationDecline: organizationInvitationDeclineCommand,
     invitationList: organizationInvitationListCommand,
+    invitationMeAccept: organizationInvitationMeAcceptCommand,
+    invitationMeDecline: organizationInvitationMeDeclineCommand,
+    invitationMeList: organizationInvitationMeListCommand,
     invitationRevoke: organizationInvitationRevokeCommand,
     roles: organizationRolesCommand,
     switch: organizationSwitchCommand,
+    meSwitch: organizationMeSwitchCommand,
     lifecycle: organizationLifecycleCommand,
     update: organizationUpdateCommand,
+    brandingGet: organizationBrandingGetCommand,
     brandingSet: organizationBrandingSetCommand,
     domainClaim: organizationDomainClaimCommand,
+    domainDiscover: organizationDomainDiscoverCommand,
     domainList: organizationDomainListCommand,
+    domainRemove: organizationDomainRemoveCommand,
     domainVerify: organizationDomainVerifyCommand,
     loginPolicySet: organizationLoginPolicySetCommand,
     loginPolicyGet: organizationLoginPolicyGetCommand,
