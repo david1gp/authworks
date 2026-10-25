@@ -159,6 +159,7 @@ test("every API client publishes its complete method set", () => {
     "passwordChange",
     "passwordMeChange",
     "passwordPolicyGet",
+    "passwordPolicySystemGet",
     "passwordPolicyTenantGet",
     "passwordPolicyTenantSet",
     "passwordPolicySet",
