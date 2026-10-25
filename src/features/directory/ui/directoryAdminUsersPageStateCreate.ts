@@ -225,7 +225,11 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       const created = await mutate("invitation:create", () =>
         adapter.invitationCreate({ email, roles: [...input.roles] }),
       )
-      if (created === undefined) return
+      if (created === undefined) {
+        // The page-level error is invisible inside the dialog; mirror it into the dialog channel.
+        validationMessage.set(error.get() ?? messageTranslate("common.error"))
+        return
+      }
       invitationToken.set(created.token)
       notice.set(messageTranslate("admin.users.inviteSent"))
       await load()
@@ -273,7 +277,11 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
         userName,
       }
       const created = await mutate("service-account:create", () => adapter.serviceAccountCreate(request))
-      if (created === undefined) return false
+      if (created === undefined) {
+        // The page-level error is invisible inside the dialog; mirror it into the dialog channel.
+        validationMessage.set(error.get() ?? messageTranslate("common.error"))
+        return false
+      }
       serviceAccounts.set([...serviceAccounts.get(), created.machineUser])
       status.set("ready")
       notice.set(messageTranslate("admin.users.serviceAccountCreated"))
@@ -316,7 +324,11 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
           userName,
         }),
       )
-      if (created === undefined) return
+      if (created === undefined) {
+        // The page-level error is invisible inside the dialog; mirror it into the dialog channel.
+        validationMessage.set(error.get() ?? messageTranslate("common.error"))
+        return
+      }
       createdUser.set(created.user)
       notice.set(messageTranslate("admin.users.created", { userName: created.user.userName }))
       await load()

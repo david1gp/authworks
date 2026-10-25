@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Felhasználónév
 admin.users.directoryServiceAccountUserNameHint,Ügyfél ID-ként használatos az ügyfél-hitelesítő adatok cseréjekor.
 admin.users.directoryStatus,Állapot
 admin.users.directorySubtitle,{count} személy
+admin.users.directorySubtitleOne,1 fő
+admin.users.directorySubtitleInvitations,{count} meghívó
+admin.users.directorySubtitleInvitationsOne,1 meghívó
+admin.users.directorySubtitleServiceAccounts,{count} szolgáltatásfiók
+admin.users.directorySubtitleServiceAccountsOne,1 szolgáltatásfiók
 admin.users.directoryTabInvitations,Függőben lévő meghívók
 admin.users.directoryTabPeople,Személyek
 admin.users.directoryTabServiceAccounts,Szolgáltatásfiókok

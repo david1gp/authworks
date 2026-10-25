@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Gebruikersnaam
 admin.users.directoryServiceAccountUserNameHint,Gebruikt als client-ID bij het uitwisselen van clientreferenties.
 admin.users.directoryStatus,Gebruikersstatus
 admin.users.directorySubtitle,{count} personen
+admin.users.directorySubtitleOne,1 persoon
+admin.users.directorySubtitleInvitations,{count} uitnodigingen
+admin.users.directorySubtitleInvitationsOne,1 uitnodiging
+admin.users.directorySubtitleServiceAccounts,{count} serviceaccounts
+admin.users.directorySubtitleServiceAccountsOne,1 serviceaccount
 admin.users.directoryTabInvitations,Openstaande uitnodigingen
 admin.users.directoryTabPeople,Personen
 admin.users.directoryTabServiceAccounts,Serviceaccounts

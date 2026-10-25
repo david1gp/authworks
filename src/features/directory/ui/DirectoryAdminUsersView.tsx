@@ -36,12 +36,8 @@ import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
-
-const directoryRoleMessageKey = (role: OrganizationRoleId): MessageKey =>
-  `admin.users.directoryRole${role[0]?.toUpperCase()}${role.slice(1)}` as MessageKey
-
 import { machineUserStatusTone } from "../../machineUsers/ui/machineUserStatusTone.js"
+import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import { organizationAdminInvitationStatusTone } from "../../organizations/ui/organizationAdminInvitationStatusTone.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryAdminTab } from "./directoryAdminTabSchema.js"
@@ -49,6 +45,9 @@ import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
 import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialogsStateCreate.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
+import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
+
+const directoryRoleMessageKey = (role: OrganizationRoleId): MessageKey => directoryRoleLabelKeyGet(role)
 
 export type DirectoryAdminUsersViewState = {
   readonly basePath: string
@@ -132,14 +131,33 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
   }
 
   const roleCounts = () => page().summary()?.roles
-  const subtitle = () =>
+  const subtitleCount = () =>
     activeTab() === "people"
-      ? messageTranslate("admin.users.directorySubtitle", {
-          count: page().summary() === undefined ? page().people().length : (page().summary()?.total ?? 0),
-        })
+      ? page().summary() === undefined
+        ? page().people().length
+        : (page().summary()?.total ?? 0)
       : activeTab() === "service-accounts"
-        ? messageTranslate("admin.users.directorySubtitle", { count: page().serviceAccounts().length })
-        : messageTranslate("admin.users.directorySubtitle", { count: page().invitations().length })
+        ? page().serviceAccounts().length
+        : page().invitations().length
+  const subtitle = () => {
+    const count = subtitleCount()
+    if (count === 1)
+      return messageTranslate(
+        activeTab() === "people"
+          ? "admin.users.directorySubtitleOne"
+          : activeTab() === "service-accounts"
+            ? "admin.users.directorySubtitleServiceAccountsOne"
+            : "admin.users.directorySubtitleInvitationsOne",
+      )
+    return messageTranslate(
+      activeTab() === "people"
+        ? "admin.users.directorySubtitle"
+        : activeTab() === "service-accounts"
+          ? "admin.users.directorySubtitleServiceAccounts"
+          : "admin.users.directorySubtitleInvitations",
+      { count },
+    )
+  }
 
   const sortActive = (): AuthenticatedDataTableSort => {
     const parsed = query()
@@ -652,7 +670,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                   fields={[
                     {
                       label: messageTranslate("admin.organizations.memberships.roles"),
-                      value: invitation.roles.join(", "),
+                      value: invitation.roles.map((role) => messageTranslate(directoryRoleMessageKey(role))).join(", "),
                     },
                     {
                       label: messageTranslate("admin.organizations.invitations.expires"),
@@ -702,7 +720,9 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                 {(invitation) => (
                   <TableRow class={authenticatedTableClasses.row}>
                     <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{invitation.email}</TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>{invitation.roles.join(", ")}</TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      {invitation.roles.map((role) => messageTranslate(directoryRoleMessageKey(role))).join(", ")}
+                    </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
                       <AuthenticatedStatus
                         label={messageTranslate(`admin.organizations.invitations.statusValue.${invitation.status}`)}
@@ -847,7 +867,7 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
         </Show>
         <Show when={dialogs().copyFailed()}>
           <span class="text-xs font-medium text-danger" role="alert">
-            {messageTranslate("admin.users.directoryServiceAccountSecretCopied")}
+            {messageTranslate("admin.machine.secret.copyFailed")}
           </span>
         </Show>
       </div>

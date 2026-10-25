@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Benutzername
 admin.users.directoryServiceAccountUserNameHint,Wird beim Austausch von Client-Anmeldedaten als Client-ID verwendet.
 admin.users.directoryStatus,Zustand
 admin.users.directorySubtitle,{count} Personen
+admin.users.directorySubtitleOne,1 Person
+admin.users.directorySubtitleInvitations,{count} Einladungen
+admin.users.directorySubtitleInvitationsOne,1 Einladung
+admin.users.directorySubtitleServiceAccounts,{count} Dienstkonten
+admin.users.directorySubtitleServiceAccountsOne,1 Dienstkonto
 admin.users.directoryTabInvitations,Offene Einladungen
 admin.users.directoryTabPeople,Personen
 admin.users.directoryTabServiceAccounts,Maschinenbenutzer

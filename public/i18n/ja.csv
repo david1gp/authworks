@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,ユーザー名
 admin.users.directoryServiceAccountUserNameHint,クライアント資格情報の交換時にクライアント ID として使用されます。
 admin.users.directoryStatus,状態
 admin.users.directorySubtitle,{count} 人のメンバー
+admin.users.directorySubtitleOne,1 人
+admin.users.directorySubtitleInvitations,{count} 件の招待
+admin.users.directorySubtitleInvitationsOne,1 件の招待
+admin.users.directorySubtitleServiceAccounts,{count} 件のサービスアカウント
+admin.users.directorySubtitleServiceAccountsOne,1 件のサービスアカウント
 admin.users.directoryTabInvitations,保留中の招待
 admin.users.directoryTabPeople,メンバー
 admin.users.directoryTabServiceAccounts,サービスアカウント

@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,用户名
 admin.users.directoryServiceAccountUserNameHint,在交换客户端凭据时用作客户端 ID。
 admin.users.directoryStatus,状态
 admin.users.directorySubtitle,{count} 人
+admin.users.directorySubtitleOne,1 人
+admin.users.directorySubtitleInvitations,{count} 个邀请
+admin.users.directorySubtitleInvitationsOne,1 个邀请
+admin.users.directorySubtitleServiceAccounts,{count} 个服务帐号
+admin.users.directorySubtitleServiceAccountsOne,1 个服务帐号
 admin.users.directoryTabInvitations,待处理的邀请
 admin.users.directoryTabPeople,人员
 admin.users.directoryTabServiceAccounts,服务账号

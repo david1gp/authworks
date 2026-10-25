@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,اسم المستخدم
 admin.users.directoryServiceAccountUserNameHint,يُستخدم كمعرّف العميل عند تبادل بيانات اعتماد العميل.
 admin.users.directoryStatus,الحالة
 admin.users.directorySubtitle,{count} من الأشخاص
+admin.users.directorySubtitleOne,شخص واحد
+admin.users.directorySubtitleInvitations,{count} دعوات
+admin.users.directorySubtitleInvitationsOne,دعوة واحدة
+admin.users.directorySubtitleServiceAccounts,{count} حسابات خدمة
+admin.users.directorySubtitleServiceAccountsOne,حساب خدمة واحد
 admin.users.directoryTabInvitations,الدعوات المعلقة
 admin.users.directoryTabPeople,الأشخاص
 admin.users.directoryTabServiceAccounts,حسابات الخدمة

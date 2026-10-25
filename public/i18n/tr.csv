@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Kullanıcı adı
 admin.users.directoryServiceAccountUserNameHint,İstemci kimlik bilgileri takas edilirken istemci ID'si olarak kullanılır.
 admin.users.directoryStatus,Durum
 admin.users.directorySubtitle,{count} kişi
+admin.users.directorySubtitleOne,1 kişi
+admin.users.directorySubtitleInvitations,{count} davet
+admin.users.directorySubtitleInvitationsOne,1 davet
+admin.users.directorySubtitleServiceAccounts,{count} hizmet hesabı
+admin.users.directorySubtitleServiceAccountsOne,1 hizmet hesabı
 admin.users.directoryTabInvitations,Bekleyen davetler
 admin.users.directoryTabPeople,Kişiler
 admin.users.directoryTabServiceAccounts,Hizmet hesapları

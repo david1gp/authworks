@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Nazwa użytkownika
 admin.users.directoryServiceAccountUserNameHint,Używana jako ID klienta podczas wymiany poświadczeń klienta.
 admin.users.directoryStatus,Stan
 admin.users.directorySubtitle,{count} osób
+admin.users.directorySubtitleOne,1 osoba
+admin.users.directorySubtitleInvitations,{count} zaproszeń
+admin.users.directorySubtitleInvitationsOne,1 zaproszenie
+admin.users.directorySubtitleServiceAccounts,{count} kont usług
+admin.users.directorySubtitleServiceAccountsOne,1 konto usługi
 admin.users.directoryTabInvitations,Oczekujące zaproszenia
 admin.users.directoryTabPeople,Osoby
 admin.users.directoryTabServiceAccounts,Konta usługowe

@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Nome utente
 admin.users.directoryServiceAccountUserNameHint,Usato come ID client durante lo scambio delle credenziali client.
 admin.users.directoryStatus,Stato
 admin.users.directorySubtitle,{count} persone
+admin.users.directorySubtitleOne,1 persona
+admin.users.directorySubtitleInvitations,{count} inviti
+admin.users.directorySubtitleInvitationsOne,1 invito
+admin.users.directorySubtitleServiceAccounts,{count} account di servizio
+admin.users.directorySubtitleServiceAccountsOne,1 account di servizio
 admin.users.directoryTabInvitations,Inviti in sospeso
 admin.users.directoryTabPeople,Persone
 admin.users.directoryTabServiceAccounts,Account di servizio

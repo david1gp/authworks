@@ -1132,6 +1132,11 @@ admin.users.directoryServiceAccountUserName,Ім’я користувача
 admin.users.directoryServiceAccountUserNameHint,Використовується як ID клієнта під час обміну облікових даних клієнта.
 admin.users.directoryStatus,Статус
 admin.users.directorySubtitle,{count} людей
+admin.users.directorySubtitleOne,1 особа
+admin.users.directorySubtitleInvitations,{count} запрошень
+admin.users.directorySubtitleInvitationsOne,1 запрошення
+admin.users.directorySubtitleServiceAccounts,{count} сервісних облікових записів
+admin.users.directorySubtitleServiceAccountsOne,1 сервісний обліковий запис
 admin.users.directoryTabInvitations,Очікувані запрошення
 admin.users.directoryTabPeople,Люди
 admin.users.directoryTabServiceAccounts,Сервісні облікові записи
