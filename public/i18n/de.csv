@@ -299,6 +299,9 @@ account.sessions.lastUsed,Zuletzt verwendet {date}
 account.sessions.manage,Sitzung auf {device}
 account.sessions.revoke,Sitzung widerrufen
 account.sessions.revokeConfirm,Diese Sitzung sofort widerrufen?
+account.sessions.deviceLabel,{browser} auf {os}
+account.sessions.deviceLabelBrowser,{browser}
+account.sessions.deviceLabelOs,{os}
 account.sessions.unknownDevice,Unbekanntes Gerät
 account.status.available,Verfügbar
 account.status.configured,Konfiguriert
@@ -1146,6 +1149,7 @@ admin.users.sessions.created,Erstellt
 admin.users.sessions.expires,Läuft ab
 admin.users.sessions.ipAddress,IP-Adresse
 admin.users.sessions.lastUsed,Zuletzt verwendet
+admin.users.sessions.location,Standort
 admin.users.sessions.method,Anmeldemethode
 admin.users.state,Status
 admin.users.title,Benutzer

@@ -53,6 +53,8 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
+import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { DirectoryUserProfilePageState } from "./directoryUserProfilePageStateCreate.js"
 import { directoryUserProfileStateTone } from "./directoryUserProfilePermissions.js"
@@ -631,14 +633,13 @@ function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
 
 function SessionRow(props: { readonly page: DirectoryUserProfilePageState; readonly session: Session }) {
   const metaClass = "flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground"
+  const deviceLocation = () => sessionDeviceLocationGet(props.session.device)
   return (
     <li class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 py-3.5">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiMonitorCellphone} />
-          <h3 class="truncate text-sm font-medium">
-            {props.session.device.description ?? messageTranslate("account.sessions.unknownDevice")}
-          </h3>
+          <h3 class="truncate text-sm font-medium">{sessionDeviceLabelGet(props.session.device)}</h3>
           <Show when={props.session.current}>
             <AuthenticatedStatus label={messageTranslate("account.sessions.current")} tone="success" />
           </Show>
@@ -657,6 +658,13 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
             {(ipAddress) => (
               <span class="font-mono">
                 {messageTranslate("admin.users.sessions.ipAddress")}: {ipAddress()}
+              </span>
+            )}
+          </Show>
+          <Show when={deviceLocation()}>
+            {(location) => (
+              <span>
+                {messageTranslate("admin.users.sessions.location")}: {location()}
               </span>
             )}
           </Show>

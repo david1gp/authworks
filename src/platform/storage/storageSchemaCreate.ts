@@ -348,7 +348,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS password_challenges_user_kind_idx ON password_challenges (realm_id, user_id, kind)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, subject_id TEXT NOT NULL, subject_type TEXT NOT NULL CHECK (subject_type IN ('user', 'bootstrap_admin')), user_id TEXT, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('bootstrap_admin', 'email_otp', 'external_identity', 'impersonation', 'password', 'passkey', 'recovery_code', 'totp', 'whatsapp_otp')), mfa_method TEXT CHECK (mfa_method IS NULL OR mfa_method IN ('email_otp', 'passkey', 'recovery_code', 'totp')), impersonation_organization_id TEXT, impersonation_permissions TEXT CHECK (impersonation_permissions IS NULL OR json_valid(impersonation_permissions)), impersonation_reason TEXT, impersonator_id TEXT, device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, subject_id TEXT NOT NULL, subject_type TEXT NOT NULL CHECK (subject_type IN ('user', 'bootstrap_admin')), user_id TEXT, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('bootstrap_admin', 'email_otp', 'external_identity', 'impersonation', 'password', 'passkey', 'recovery_code', 'totp', 'whatsapp_otp')), mfa_method TEXT CHECK (mfa_method IS NULL OR mfa_method IN ('email_otp', 'passkey', 'recovery_code', 'totp')), impersonation_organization_id TEXT, impersonation_permissions TEXT CHECK (impersonation_permissions IS NULL OR json_valid(impersonation_permissions)), impersonation_reason TEXT, impersonator_id TEXT, device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, country_code TEXT, region TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     try {
       database.run(
@@ -357,6 +357,19 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     } catch (error) {
       if (!storageSchemaDuplicateColumnIsExpected(error, "organization_id")) throw error
     }
+    for (const [statement, column] of [
+      ["ALTER TABLE sessions ADD COLUMN country_code TEXT", "country_code"],
+      ["ALTER TABLE sessions ADD COLUMN region TEXT", "region"],
+    ] as const) {
+      try {
+        database.run(statement)
+      } catch (error) {
+        if (!storageSchemaDuplicateColumnIsExpected(error, column)) throw error
+      }
+    }
+    database.run(
+      "CREATE TABLE IF NOT EXISTS session_geo_cache (ip TEXT PRIMARY KEY NOT NULL, country_code TEXT, region TEXT, updated_at INTEGER NOT NULL CHECK (updated_at >= 0))",
+    )
     database.run(
       "CREATE INDEX IF NOT EXISTS sessions_realm_subject_idx ON sessions (realm_id, subject_type, subject_id)",
     )

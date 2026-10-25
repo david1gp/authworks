@@ -8,6 +8,8 @@ export const sessionTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     deviceDescription: text("device_description"),
     deviceFingerprint: text("device_fingerprint"),
+    countryCode: text("country_code"),
+    region: text("region"),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
     organizationId: text("organization_id"),
@@ -39,3 +41,5 @@ export const sessionTable = sqliteTable(
 )
 
 export type SessionRow = typeof sessionTable.$inferSelect
+
+export type SessionGeoPendingRow = Pick<SessionRow, "id" | "ipAddress" | "realmId">

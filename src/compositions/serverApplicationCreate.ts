@@ -24,6 +24,8 @@ import { passwordServerAppCreate } from "../features/passwords/server/passwordSe
 import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
+import type { SessionGeoLookupPort } from "../features/sessions/domain/sessionGeoLookupPort.js"
+import { sessionGeoBackfillLifecycleCreate } from "../features/sessions/server/sessionGeoBackfillLifecycleCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userProfilePictureImport } from "../features/users/actions/userProfilePictureImport.js"
 import { userProfilePictureCleanupRetryLifecycleCreate } from "../features/users/server/userProfilePictureCleanupRetryLifecycleCreate.js"
@@ -64,6 +66,8 @@ type ServerApplicationCreateOptions = {
   readonly passkeyRpName?: string
   readonly publicOrigin?: string
   readonly r2Configuration?: R2Configuration
+  readonly sessionGeoLookup?: SessionGeoLookupPort
+  readonly sessionGeoBackfillIntervalMs?: number
   readonly clientIpResolve?: (request: Request) => string | undefined
   readonly trustedProxyAddresses?: readonly string[]
   readonly uiDirectory?: string
@@ -112,6 +116,22 @@ export function serverApplicationCreate(
           storage: profilePictureStorage,
         })
   void profilePictureCleanupLifecycle?.start()
+  const sessionGeoLifecycle =
+    options.sessionGeoLookup === undefined
+      ? undefined
+      : sessionGeoBackfillLifecycleCreate({
+          database: database.data,
+          ...(options.sessionGeoBackfillIntervalMs === undefined
+            ? {}
+            : { intervalMs: options.sessionGeoBackfillIntervalMs }),
+          lookup: options.sessionGeoLookup,
+        })
+  void sessionGeoLifecycle?.start().then(
+    (started) => {
+      if (!started.success) console.error(started.errorMessage)
+    },
+    () => console.error("The session geo backfill failed."),
+  )
   const passkeyRpId = options.passkeyRpId ?? new URL(publicOrigin).hostname
   const emailDeliveryCallbacks =
     options.emailGenerator === undefined || options.mailDelivery === undefined
@@ -296,6 +316,7 @@ export function serverApplicationCreate(
     if (stopped) return
     stopped = true
     profilePictureCleanupLifecycle?.stop()
+    sessionGeoLifecycle?.stop()
     wahaHealthLifecycle?.stop()
     database.data.close()
   }

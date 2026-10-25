@@ -299,6 +299,9 @@ account.sessions.lastUsed,Last used {date}
 account.sessions.manage,{device} cihazındaki oturum
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.deviceLabel,{browser} ({os})
+account.sessions.deviceLabelBrowser,{browser}
+account.sessions.deviceLabelOs,{os}
 account.sessions.unknownDevice,Unknown device
 account.status.available,Available
 account.status.configured,Configured
@@ -1146,6 +1149,7 @@ admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
+admin.users.sessions.location,Konum
 admin.users.sessions.method,Sign-in method
 admin.users.state,Durum
 admin.users.title,Kullanıcılar

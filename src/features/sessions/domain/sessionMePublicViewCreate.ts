@@ -8,8 +8,10 @@ export function sessionMePublicViewCreate(row: SessionRow, current = false): Ses
     createdAt: row.createdAt,
     current,
     device: {
+      ...(row.countryCode === null ? {} : { countryCode: row.countryCode }),
       ...(row.deviceDescription === null ? {} : { description: row.deviceDescription }),
       ...(row.ipAddress === null ? {} : { ipAddress: row.ipAddress }),
+      ...(row.region === null ? {} : { region: row.region }),
       ...(row.userAgent === null ? {} : { userAgent: row.userAgent }),
     },
     expiresAt: row.expiresAt,

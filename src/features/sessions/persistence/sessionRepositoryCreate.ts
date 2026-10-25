@@ -1,10 +1,10 @@
-import { and, desc, eq, isNull } from "drizzle-orm"
+import { and, desc, eq, isNull, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { type SessionRow, sessionTable } from "./sessionTable.js"
+import { type SessionGeoPendingRow, type SessionRow, sessionTable } from "./sessionTable.js"
 
 export function sessionRepositoryCreate(database: StorageExecutor) {
   return {
@@ -222,6 +222,60 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "sessionOrganizationContextSet",
           "The session organization context could not be updated.",
+          "sessions.write-failed",
+        )
+      }
+    },
+
+    sessionGeoPendingList(limit: number): Result<readonly SessionGeoPendingRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select({
+              id: sessionTable.id,
+              ipAddress: sessionTable.ipAddress,
+              realmId: sessionTable.realmId,
+            })
+            .from(sessionTable)
+            .where(
+              and(
+                isNull(sessionTable.revokedAt),
+                isNull(sessionTable.countryCode),
+                isNull(sessionTable.region),
+                sql`${sessionTable.ipAddress} IS NOT NULL AND ${sessionTable.ipAddress} != ''`,
+              ),
+            )
+            .orderBy(desc(sessionTable.lastUsedAt))
+            .limit(limit)
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "sessionGeoPendingList",
+          "The sessions pending geo enrichment could not be read.",
+          "sessions.read-failed",
+        )
+      }
+    },
+
+    sessionGeoUpdate(
+      realmId: string,
+      sessionId: string,
+      input: { readonly countryCode: string | null; readonly region: string | null },
+    ): Result<SessionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(sessionTable)
+            .set({ countryCode: input.countryCode, region: input.region })
+            .where(and(eq(sessionTable.realmId, realmId), eq(sessionTable.id, sessionId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "sessionGeoUpdate",
+          "The session geo data could not be updated.",
           "sessions.write-failed",
         )
       }

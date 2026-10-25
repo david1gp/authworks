@@ -44,6 +44,7 @@ import { realmAdministratorTable } from "../../features/realms/persistence/realm
 import { realmBootstrapAdminTable } from "../../features/realms/persistence/realmBootstrapAdminTable.js"
 import { realmDomainTable } from "../../features/realms/persistence/realmDomainTable.js"
 import { realmTable } from "../../features/realms/persistence/realmTable.js"
+import { sessionGeoCacheTable } from "../../features/sessions/persistence/sessionGeoCacheTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userEmailTable } from "../../features/users/persistence/userEmailTable.js"
 import { userProfilePictureCleanupTable } from "../../features/users/persistence/userProfilePictureCleanupTable.js"
@@ -95,6 +96,7 @@ export const storageSchema = {
   oidcSigningKeyTable,
   passkeyCeremonyTable,
   passkeyCredentialTable,
+  sessionGeoCacheTable,
   sessionTable,
   mfaChallengeTable,
   mfaLockoutTable,

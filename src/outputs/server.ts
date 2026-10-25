@@ -1,4 +1,6 @@
 import { serverApplicationCreate } from "../compositions/serverApplicationCreate.js"
+import { sessionGeoConfigurationParse } from "../features/sessions/server/sessionGeoConfigurationParse.js"
+import { sessionGeoIpApiLookupCreate } from "../features/sessions/domain/sessionGeoIpApiLookupCreate.js"
 import { mailTransportConfigurationParse } from "../features/email/server/mailTransportConfigurationParse.js"
 import { smtpMailDeliveryPortCreate } from "../features/email/server/smtpMailDeliveryPortCreate.js"
 import { wahaConfigurationParse } from "../features/waha/server/wahaConfigurationParse.js"
@@ -33,6 +35,12 @@ export function serverListen(): void {
     process.exit(1)
   }
 
+  const sessionGeoConfiguration = sessionGeoConfigurationParse(process.env)
+  if (!sessionGeoConfiguration.success) {
+    console.error(sessionGeoConfiguration.errorMessage)
+    process.exit(1)
+  }
+
   const r2Configuration = r2ConfigurationParse(process.env)
   if (!r2Configuration.success) {
     console.error(r2Configuration.errorMessage)
@@ -52,6 +60,10 @@ export function serverListen(): void {
     production: parsed.data.nodeEnv === "production",
     publicOrigin: parsed.data.publicOrigin,
     r2Configuration: r2Configuration.data,
+    sessionGeoLookup:
+      sessionGeoConfiguration.data === undefined
+        ? undefined
+        : sessionGeoIpApiLookupCreate({ baseUrl: sessionGeoConfiguration.data.baseUrl }),
     systemSecret: process.env.AUTHWORKS_SYSTEM_SECRET,
     trustedProxyAddresses: parsed.data.trustedProxyAddresses,
     wahaConfiguration: wahaConfiguration.data,

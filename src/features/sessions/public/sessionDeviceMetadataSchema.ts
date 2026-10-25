@@ -1,9 +1,11 @@
 import * as v from "valibot"
 
 export const sessionDeviceMetadataSchema = v.strictObject({
+  countryCode: v.optional(v.pipe(v.string(), v.maxLength(16))),
   description: v.optional(v.pipe(v.string(), v.maxLength(256))),
   fingerprint: v.optional(v.pipe(v.string(), v.maxLength(256))),
   ipAddress: v.optional(v.pipe(v.string(), v.maxLength(128))),
+  region: v.optional(v.pipe(v.string(), v.maxLength(128))),
   userAgent: v.optional(v.pipe(v.string(), v.maxLength(512))),
 })
 

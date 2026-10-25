@@ -8,9 +8,11 @@ export function sessionPublicViewCreate(row: SessionRow, current = false): Sessi
     createdAt: row.createdAt,
     current,
     device: {
+      ...(row.countryCode === null ? {} : { countryCode: row.countryCode }),
       ...(row.deviceDescription === null ? {} : { description: row.deviceDescription }),
       ...(row.deviceFingerprint === null ? {} : { fingerprint: row.deviceFingerprint }),
       ...(row.ipAddress === null ? {} : { ipAddress: row.ipAddress }),
+      ...(row.region === null ? {} : { region: row.region }),
       ...(row.userAgent === null ? {} : { userAgent: row.userAgent }),
     },
     expiresAt: row.expiresAt,

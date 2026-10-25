@@ -299,6 +299,9 @@ account.sessions.lastUsed,آخر استخدام في {date}
 account.sessions.manage,جلسة على {device}
 account.sessions.revoke,إلغاء الجلسة
 account.sessions.revokeConfirm,هل تريد إلغاء هذه الجلسة فورًا؟
+account.sessions.deviceLabel,{browser} على {os}
+account.sessions.deviceLabelBrowser,{browser}
+account.sessions.deviceLabelOs,{os}
 account.sessions.unknownDevice,جهاز غير معروف
 account.status.available,متاح
 account.status.configured,تمت التهيئة
@@ -1146,6 +1149,7 @@ admin.users.sessions.created,تاريخ الإنشاء
 admin.users.sessions.expires,تنتهي في
 admin.users.sessions.ipAddress,عنوان IP
 admin.users.sessions.lastUsed,آخر استخدام
+admin.users.sessions.location,الموقع
 admin.users.sessions.method,طريقة تسجيل الدخول
 admin.users.state,الحالة
 admin.users.title,المستخدمون

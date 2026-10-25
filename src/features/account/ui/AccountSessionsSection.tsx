@@ -8,6 +8,8 @@ import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStat
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
+import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 import { accountSessionsSectionStateCreate } from "./accountSessionsSectionStateCreate.js"
@@ -34,73 +36,84 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
         >
           <ul aria-label={messageTranslate("shell.nav.sessionsDevices")} class="divide-y divide-line-subtle">
             <For each={props.state.sessions()}>
-              {(session) => (
-                <li class="min-w-0">
-                  <AuthenticatedDialog
-                    class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                    description={messageTranslate("account.sessions.description")}
-                    disabled={props.state.pendingId() === `session:${session.id}`}
-                    onOpenChange={(open) => state.dialogOpenChange(session.id, open)}
-                    open={state.dialogOpen(session.id)}
-                    title={messageTranslate("account.sessions.manage", {
-                      device: session.device.description ?? messageTranslate("account.sessions.unknownDevice"),
-                    })}
-                    triggerLabel={
-                      <span class="grid min-w-0 gap-0.5">
-                        <span class="flex min-w-0 flex-wrap items-center gap-2">
-                          <span class="min-w-0 break-words text-sm font-medium">
-                            {session.device.description ?? messageTranslate("account.sessions.unknownDevice")}
+              {(session) => {
+                const deviceLabel = () => sessionDeviceLabelGet(session.device)
+                const deviceLocation = () => sessionDeviceLocationGet(session.device)
+                return (
+                  <li class="min-w-0">
+                    <AuthenticatedDialog
+                      class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                      description={messageTranslate("account.sessions.description")}
+                      disabled={props.state.pendingId() === `session:${session.id}`}
+                      onOpenChange={(open) => state.dialogOpenChange(session.id, open)}
+                      open={state.dialogOpen(session.id)}
+                      title={messageTranslate("account.sessions.manage", { device: deviceLabel() })}
+                      triggerLabel={
+                        <span class="grid min-w-0 gap-0.5">
+                          <span class="flex min-w-0 flex-wrap items-center gap-2">
+                            <span class="min-w-0 break-words text-sm font-medium">{deviceLabel()}</span>
+                            <Show when={session.current}>
+                              <AuthenticatedStatus
+                                label={messageTranslate("account.sessions.current")}
+                                tone="success"
+                              />
+                            </Show>
                           </span>
-                          <Show when={session.current}>
-                            <AuthenticatedStatus label={messageTranslate("account.sessions.current")} tone="success" />
-                          </Show>
+                          <span class="text-xs text-muted-foreground">
+                            {messageTranslate("account.sessions.lastUsed", {
+                              date: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                            })}
+                          </span>
                         </span>
-                        <span class="text-xs text-muted-foreground">
-                          {messageTranslate("account.sessions.lastUsed", {
-                            date: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-                          })}
-                        </span>
-                      </span>
-                    }
-                    variant="ghost"
-                  >
-                    <div class="grid gap-3">
-                      <AuthenticatedFieldList
-                        columns={3}
-                        fields={[
-                          {
-                            label: messageTranslate("admin.users.sessions.method"),
-                            value: `${session.authenticationMethod} · ${session.assurance}`,
-                          },
-                          {
-                            label: messageTranslate("admin.users.sessions.lastUsed"),
-                            value: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-                          },
-                          {
-                            identifier: true,
-                            label: messageTranslate("admin.users.sessions.ipAddress"),
-                            value: session.device.ipAddress ?? "",
-                          },
-                        ]}
-                      />
-                      <Show when={!session.current}>
-                        <div>
-                          <AuthenticatedButton
-                            class={authenticatedDangerOutlineButtonClass}
-                            disabled={props.state.pendingId() !== undefined || !state.dialogOpen(session.id)}
-                            icon={mdiLogout}
-                            onClick={() => state.sessionRevoke(session.id, props.state.sessionRevoke)}
-                            type="button"
-                            variant="outline"
-                          >
-                            {messageTranslate("account.sessions.revoke")}
-                          </AuthenticatedButton>
-                        </div>
-                      </Show>
-                    </div>
-                  </AuthenticatedDialog>
-                </li>
-              )}
+                      }
+                      variant="ghost"
+                    >
+                      <div class="grid gap-3">
+                        <AuthenticatedFieldList
+                          columns={3}
+                          fields={[
+                            {
+                              label: messageTranslate("admin.users.sessions.method"),
+                              value: `${session.authenticationMethod} · ${session.assurance}`,
+                            },
+                            {
+                              label: messageTranslate("admin.users.sessions.lastUsed"),
+                              value: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                            },
+                            {
+                              identifier: true,
+                              label: messageTranslate("admin.users.sessions.ipAddress"),
+                              value: session.device.ipAddress ?? "",
+                            },
+                            ...(deviceLocation() === null
+                              ? []
+                              : [
+                                  {
+                                    label: messageTranslate("admin.users.sessions.location"),
+                                    value: deviceLocation() ?? "",
+                                  },
+                                ]),
+                          ]}
+                        />
+                        <Show when={!session.current}>
+                          <div>
+                            <AuthenticatedButton
+                              class={authenticatedDangerOutlineButtonClass}
+                              disabled={props.state.pendingId() !== undefined || !state.dialogOpen(session.id)}
+                              icon={mdiLogout}
+                              onClick={() => state.sessionRevoke(session.id, props.state.sessionRevoke)}
+                              type="button"
+                              variant="outline"
+                            >
+                              {messageTranslate("account.sessions.revoke")}
+                            </AuthenticatedButton>
+                          </div>
+                        </Show>
+                      </div>
+                    </AuthenticatedDialog>
+                  </li>
+                )
+              }}
             </For>
           </ul>
         </Show>
