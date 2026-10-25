@@ -32,3 +32,8 @@
 - The plan in `docs/20260817_authworks.md` is authoritative. Do not implement later task behavior as part of a scaffold
   or tooling change.
 - Keep tests beside the feature they exercise. Use real temporary resources when a later feature needs persistence.
+
+## Reference projects
+
+- `~/opensource/zitadel` is the upstream inspiration for this project. Use it for feature lookup/comparison when
+  designing auth behavior.
