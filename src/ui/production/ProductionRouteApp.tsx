@@ -95,11 +95,8 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                 title={screen().title}
               >
                 <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-                  <Show when={state.shellKind() !== "account"}>
-                    <AuthenticatedPageHeader
-                      eyebrow={messageTranslate("app.name")}
-                      title={messageTranslate(screen().title)}
-                    />
+                  <Show when={state.pageHeaderVisible()}>
+                    <AuthenticatedPageHeader title={messageTranslate(screen().title)} />
                   </Show>
                   <ProductionRouteContent state={state} />
                 </div>

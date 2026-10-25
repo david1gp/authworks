@@ -132,10 +132,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
         title={messageTranslate("admin.projects.list.title")}
       />
 
-      <AuthenticatedToolbar
-        label={messageTranslate("admin.projects.list.title")}
-        summary={messageTranslate("admin.projects.list.subtitle")}
-      >
+      <AuthenticatedToolbar label={messageTranslate("admin.projects.list.title")}>
         <AuthenticatedSearchField
           onInput={state.searchInput}
           placeholder={messageTranslate("admin.projects.list.search")}

@@ -32,5 +32,7 @@ export type ProductionRouteContract = {
     readonly title: MessageKey
     readonly contracts: readonly ProductionFeatureContract[]
     readonly guard?: ProductionRouteGuardRequirement
+    /** The feature view renders its own page header (title, description, actions), so the shell omits its generic one. */
+    readonly ownsPageHeader?: true
   }[]
 }

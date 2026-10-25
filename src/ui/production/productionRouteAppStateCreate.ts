@@ -34,6 +34,8 @@ export function productionRouteAppStateCreate(
   return {
     api,
     guardState,
+    /** Generic shell page title, skipped on the account workspace and on screens that render their own header. */
+    pageHeaderVisible: () => productionShellKindSelect(route()) !== "account" && screen()?.ownsPageHeader !== true,
     routeParam: (name: string) => {
       const current = screen()
       return current === undefined ? undefined : productionRouteParamGet(current.path, location.pathname, name)
