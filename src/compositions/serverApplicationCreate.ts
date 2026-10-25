@@ -11,6 +11,7 @@ import type { ExternalIdentityProviderPorts } from "../features/externalIdentiti
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
 import { machineUserServerAppCreate } from "../features/machineUsers/server/machineUserServerAppCreate.js"
+import { mcpServerAppCreate } from "../features/mcp/server/mcpServerAppCreate.js"
 import { mfaServerAppCreate } from "../features/mfa/server/mfaServerAppCreate.js"
 import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate.js"
 import type { OrganizationDomainDnsVerificationPort } from "../features/organizations/domain/organizationDomainDnsVerificationPort.js"
@@ -261,6 +262,7 @@ export function serverApplicationCreate(
     "/",
     machineUserServerAppCreate({ database: database.data, publicOrigin, systemSecret: options.systemSecret }),
   )
+  application.route("/", mcpServerAppCreate({ database: database.data }))
   application.route("/", impersonationServerAppCreate({ database: database.data, publicOrigin }))
   application.route(
     "/",

@@ -213,6 +213,7 @@
     "@adaptive-ds/zitadel-cli": "0.2.0",
     "@corvu/dialog": "^0.2.4",
     "@corvu/popover": "^0.2.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@simplewebauthn/server": "^13.2.2",
     "@solid-primitives/keyed": "^1.5.3",
     "@solid-primitives/scheduled": "^1.5.2",
