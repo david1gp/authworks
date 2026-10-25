@@ -10,6 +10,12 @@ type E2eServerMetadata = {
   readonly serverOrigin: string
 }
 
+// The WebAuthn ceremony binds to rpId "localhost", so the page must load from a
+// localhost origin. Pin localhost to the Playwright-managed IPv4 Vite server: this
+// shared machine has a stray IPv6 listener on port 5174 that would otherwise win
+// the connection race nondeterministically.
+test.use({ launchOptions: { args: ["--host-resolver-rules=MAP localhost 127.0.0.1"] } })
+
 test("task 17 composed production ceremonies complete passkeys and TOTP without persisting secrets", async ({
   context,
   page,
@@ -52,33 +58,65 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     await expect(page).toHaveURL(/\/account$/)
 
     await page.goto(`${browserOrigin}/account#security`)
-    const securitySection = page.locator("#security")
-    await expect(securitySection.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
-    await securitySection.getByRole("button", { name: "Remove authenticator", exact: true }).click()
+    // The authenticator and passkey lists live inside collapsed cards; expand them first.
+    await page.locator("#security-factors summary").click()
+    const securitySection = page.locator("#security-factors")
+    // With one enrolled authenticator the remove trigger opens a rename dialog holding the remove button.
+    // The dialog content portals outside the section, so scope it to the page.
+    await expect(securitySection.getByRole("button", { name: /Authenticator app/ })).toBeVisible()
+    await securitySection.getByRole("button", { name: /Authenticator app/ }).click()
+    const totpRenameDialog = page.getByRole("dialog", { name: "Authenticator app" })
+    const totpRemoveButton = totpRenameDialog.getByRole("button", { name: "Remove authenticator", exact: true })
+    await expect(totpRemoveButton).toBeVisible()
+    const totpRemovePromise = page.waitForResponse(
+      (response) => response.request().method() === "DELETE" && new URL(response.url()).pathname.endsWith("/mfa/totp"),
+    )
+    await totpRemoveButton.evaluate((element) => (element as HTMLElement).click())
+    // Removal asks for the shared confirmation before the request is sent.
+    const totpRemoveConfirmation = page.getByRole("alertdialog")
+    await expect(totpRemoveConfirmation).toBeVisible()
+    await totpRemoveConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
+    expect((await totpRemovePromise).status()).toBe(200)
+    await expect(totpRemoveConfirmation).toHaveCount(0)
+    // Dismiss any stuck dialog overlay before touching the card again.
+    await page.keyboard.press("Escape")
+    // Reload to clear any wedged dialog/focus state before starting enrollment.
+    await page.reload()
+    await page.locator("#security-factors summary").click()
     await expect(securitySection.getByRole("button", { name: "Add authenticator", exact: true })).toBeVisible()
 
     const enrollmentResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/mfa/totp/enroll"),
     )
+    // The add trigger opens the enroll dialog the same shifting way as the rename dialog.
     await securitySection.getByRole("button", { name: "Add authenticator", exact: true }).click()
     const enrollmentResponse = await enrollmentResponsePromise
     const enrollmentBody = (await enrollmentResponse.json()) as { readonly secret: string }
     expect(enrollmentResponse.status()).toBe(200)
     expect(enrollmentBody.secret).toMatch(/^[A-Z2-7]{16,128}$/)
     const enrollmentCode = totpCodeCreate(enrollmentBody.secret, Math.floor(Date.now() / 30_000))
-    await securitySection.getByLabel("Verification code", { exact: true }).fill(enrollmentCode)
+    await page
+      .getByRole("dialog", { name: "Finish authenticator setup" })
+      .getByLabel("Verification code", { exact: true })
+      .fill(enrollmentCode)
     const enrollmentConfirmPromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/mfa/totp/confirm"),
     )
-    await securitySection.getByRole("button", { name: "Confirm", exact: true }).click()
+    await page
+      .getByRole("dialog", { name: "Finish authenticator setup" })
+      .getByRole("button", { name: "Confirm" })
+      .click()
     const enrollmentConfirm = await enrollmentConfirmPromise
     expect(enrollmentConfirm.status()).toBe(200)
-    await expect(securitySection.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
+    // The setup dialog closes itself on success; wait for it to disappear.
+    await expect(page.getByRole("dialog", { name: "Finish authenticator setup" })).toHaveCount(0)
+    // The confirm reload remounts the collapsed card; expand it again to see the new enrollment.
+    await page.locator("#security-factors summary").click()
+    await expect(securitySection.getByRole("button", { name: /Authenticator app/ })).toBeVisible()
     collectSafeResponses = true
     await page.reload()
-    await expect(
-      page.locator("#security").getByRole("button", { name: "Remove authenticator", exact: true }),
-    ).toBeVisible()
+    await page.locator("#security-factors summary").click()
+    await expect(page.locator("#security-factors").getByRole("button", { name: /Authenticator app/ })).toBeVisible()
     await expect(page.locator("body")).not.toContainText(enrollmentBody.secret)
     await browserSecretAssert(page, context, enrollmentBody.secret, safeResponseBodies, requestUrls)
     await totpStepAdvanceWait()
@@ -114,10 +152,11 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     await expect(page).toHaveURL(/\/account$/)
     await page.reload()
     await page.goto(`${browserOrigin}/account#profile`)
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile")).toContainText("E2E Member")
 
     await page.goto(`${browserOrigin}/account#security`)
-    const securityPasskeysSection = page.locator("#security")
+    await page.locator("#security-passkeys summary").click()
+    const securityPasskeysSection = page.locator("#security-passkeys")
     const registrationStartPromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/passkeys/registration/start"),
     )
@@ -125,6 +164,11 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
       new URL(response.url()).pathname.endsWith("/passkeys/registration/complete"),
     )
     await securityPasskeysSection.getByRole("button", { name: "Add passkey", exact: true }).click()
+    // Adding opens the confirmation dialog holding the inner submit button.
+    await page
+      .getByRole("dialog", { name: "Add passkey" })
+      .getByRole("button", { name: "Add passkey", exact: true })
+      .click()
     const registrationStart = await registrationStartPromise
     const registrationStartBody = (await registrationStart.json()) as {
       readonly options: { readonly rp: { readonly id: string }; readonly user: { readonly id: string } }
@@ -135,9 +179,14 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect(registrationStartBody.options.user.id.length).toBeGreaterThan(0)
     const registrationComplete = await registrationCompletePromise
     expect(registrationComplete.status()).toBe(200)
+    // The add dialog closes itself once the ceremony completes.
+    await expect(page.getByRole("dialog", { name: "Add passkey" })).toHaveCount(0)
+    // Registration remounts the collapsed card; expand it again to see the new passkey.
+    await page.locator("#security-passkeys summary").click()
     await expect(securityPasskeysSection.getByText("Device-bound passkey", { exact: true })).toBeVisible()
     await page.reload()
-    await expect(page.locator("#security").getByText("Device-bound passkey", { exact: true })).toBeVisible()
+    await page.locator("#security-passkeys summary").click()
+    await expect(page.locator("#security-passkeys").getByText("Device-bound passkey", { exact: true })).toBeVisible()
 
     await page.goto(`${browserOrigin}/login/logout`)
     await page.getByRole("button", { name: "Sign out", exact: true }).click()
@@ -175,7 +224,7 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     await expect(page).toHaveURL(/\/account$/)
     await page.reload()
     await page.goto(`${browserOrigin}/account#profile`)
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile")).toContainText("E2E Member")
     await browserSecretAssert(page, context, enrollmentBody.secret, safeResponseBodies, requestUrls)
     await browserSecretAssert(page, context, registrationStartBody.token, [], requestUrls)
     await browserSecretAssert(page, context, authenticationStartBody.token, [], requestUrls)

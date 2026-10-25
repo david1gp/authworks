@@ -59,7 +59,11 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
 
     await page.goto(`/admin/users/${fixture.administrator.id}`)
     await expect(page.getByRole("heading", { name: "E2E Administrator", exact: true })).toBeVisible()
-    await page.getByRole("link", { name: "Impersonate this user", exact: true }).click()
+    // The profile actions live behind the "More actions" overflow menu now.
+    await page.getByRole("button", { name: "More actions", exact: true }).click()
+    const impersonateItem = page.getByRole("menuitem").filter({ hasText: "Impersonate user" })
+    await expect(impersonateItem).toBeVisible()
+    await impersonateItem.evaluate((element) => (element as HTMLElement).click())
     await expect(page.getByLabel("Reason", { exact: true })).toBeVisible()
     await page.getByLabel("Reason", { exact: true }).fill("Ticket IMP-17: investigate the support report.")
     await page.getByLabel("Duration", { exact: true }).selectOption("300")

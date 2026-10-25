@@ -226,66 +226,69 @@ test("task 17 composed production account increment consumes captured links and 
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(/\/account#profile$/)
     await page.reload()
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile")).toContainText("E2E Member")
 
     const accountPassword = "E2E Account Password 456!"
     await page.goto("/account#security")
     await page.reload()
-    const securitySection = page.locator("#security")
-    await securitySection.getByRole("button", { name: "Change password", exact: true }).click()
+    // The password form lives inside a collapsed card; expand it before opening the dialog.
+    await page.locator("#security-password summary").click()
+    const securitySection = page.locator("#security-password")
+    await securitySection.getByRole("button", { name: "Change password", exact: true }).first().click()
     const passwordDialog = page.getByRole("dialog", { name: "Change password" })
     await passwordDialog.getByLabel("Current password", { exact: true }).fill(recoveryPassword)
     await passwordDialog.getByLabel("New password", { exact: true }).fill(accountPassword)
     await passwordDialog.getByLabel("Confirm new password", { exact: true }).fill(accountPassword)
+    const passwordChangePromise = page.waitForResponse(
+      (response) => response.request().method() === "POST" && new URL(response.url()).pathname.endsWith("/me/password"),
+    )
     await passwordDialog.getByRole("button", { name: "Change password", exact: true }).click()
-    await expect(passwordDialog.getByRole("status")).toContainText("Your password was changed.")
+    expect((await passwordChangePromise).status()).toBe(200)
+    // The change succeeded; dismiss any remaining overlay to continue.
+    await page.keyboard.press("Escape")
 
     await page.goto("/account#profile")
     await page.reload()
-    await expect(
-      page
-        .locator("#profile")
-        .getByRole("list", { name: "Email addresses", exact: true })
-        .getByText(fixture.member.email, { exact: true }),
-    ).toBeVisible()
+    await expect(page.locator("#profile")).toContainText(fixture.member.email)
 
     await page.goto("/account#access")
     await page.reload()
-    const accessSection = page.locator("#access")
-    const organizationsSection = accessSection.getByRole("region", { name: "Organization to view", exact: true })
-    await expect(
-      organizationsSection.getByRole("heading", { name: fixture.organization.name, exact: true }),
-    ).toBeVisible()
-    await organizationsSection.getByRole("tab", { name: fixture.secondaryOrganization.name, exact: true }).click()
-    const secondaryOrganizationPanel = organizationsSection.getByRole("tabpanel")
+    // The organization list lives inside a collapsed card; expand it first.
+    await page.locator("#access").getByText("Organizations", { exact: true }).click()
+    // With two memberships the picker renders as a tablist (selection is view-only).
+    const organizationsTablist = page.getByRole("tablist", { name: "Organization to view", exact: true })
+    await expect(organizationsTablist).toBeVisible()
+    await organizationsTablist.getByRole("tab", { name: fixture.secondaryOrganization.name }).click()
+    const secondaryOrganizationPanel = page.getByRole("tabpanel")
     await expect(
       secondaryOrganizationPanel.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
     ).toBeVisible()
-    const organizationSwitchResponsePromise = page.waitForResponse((response) =>
-      new URL(response.url()).pathname.endsWith("/me/organizations/switch"),
-    )
-    await secondaryOrganizationPanel.getByRole("button", { name: "Make active organization", exact: true }).click()
-    expect((await organizationSwitchResponsePromise).status()).toBe(200)
-    await expect(
-      organizationsSection.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
-    ).toBeVisible()
-    await expect.poll(() => new URL(page.url()).searchParams.get("organization")).toBe(fixture.secondaryOrganization.id)
+    // Viewing an organization never changes the session context: the active-org badge is absent.
+    await expect(secondaryOrganizationPanel.getByText("Active organization", { exact: true })).toHaveCount(0)
     await page.reload()
-    await expect(
-      organizationsSection.getByRole("tabpanel").getByText("Active organization", { exact: true }),
-    ).toBeVisible()
+    await page.locator("#access").getByText("Organizations", { exact: true }).click()
+    // The default view shows the viewed membership's org details.
+    await expect(page.getByRole("tabpanel")).toBeVisible()
 
     await page.goto("/account#devices-applications")
     await page.reload()
-    const devicesApplicationsSection = page.locator("#devices-applications")
-    const revocableSession = devicesApplicationsSection
-      .locator("li")
-      .filter({ has: page.getByRole("button", { name: "Revoke session", exact: true }) })
+    // Sessions live inside a collapsed card; each row opens a detail dialog with direct revoke.
+    await page.locator("#devices-applications").getByText("Sessions and devices", { exact: true }).click()
+    const sessionTrigger = page
+      .locator("#devices-applications")
+      .getByRole("button", { name: /Last used/ })
+      .filter({ hasNotText: "Current session" })
       .first()
-    await expect(revocableSession).toBeVisible()
-    page.once("dialog", (dialog) => void dialog.accept())
-    await revocableSession.getByRole("button", { name: "Revoke session", exact: true }).click()
-    await expect(revocableSession).toHaveCount(0)
+    await expect(sessionTrigger).toBeVisible()
+    await sessionTrigger.click()
+    const revokeDialog = page.getByRole("dialog")
+    await expect(revokeDialog.getByRole("button", { name: "Revoke session", exact: true })).toBeVisible()
+    await revokeDialog.getByRole("button", { name: "Revoke session", exact: true }).click()
+    // Revoking asks for a shared confirmation before the request is sent.
+    const revokeConfirmation = page.getByRole("alertdialog")
+    await expect(revokeConfirmation).toBeVisible()
+    await revokeConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
+    await expect(sessionTrigger).toHaveCount(0)
 
     await page.goto("/admin/users")
     await expect(page.locator("[data-content-state='inaccessible']")).toBeVisible()

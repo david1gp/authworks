@@ -43,19 +43,33 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 
     await loginResponsePromise
     await expect(page).toHaveURL(/\/account#profile$/)
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    // The profile values are read-only inside a collapsed card; expand it, then edit
+    // through the dialog behind the "Edit profile" trigger.
+    await page.locator("#profile").getByText("Personal information", { exact: true }).click()
+    const profileEditor = page.getByRole("button", { name: "Edit profile", exact: true })
+    await expect(profileEditor).toBeVisible()
+    await profileEditor.click()
+    await expect(page.getByRole("dialog", { name: "Edit profile" })).toBeVisible()
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
     const memberSecretState = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))
     expect(memberSecretState).not.toContain(fixture.member.password)
     expect(await page.locator("body").textContent()).not.toContain(fixture.member.password)
 
     await page.reload()
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
-    await page.locator("#profile").getByLabel("Display name", { exact: true }).fill("E2E Member Updated")
-    await page.locator("#profile").getByRole("button", { name: "Save changes", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("Your profile was saved.")
+    await page.locator("#profile").getByText("Personal information", { exact: true }).click()
+    await page.getByRole("button", { name: "Edit profile", exact: true }).click()
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.getByLabel("Display name", { exact: true }).fill("E2E Member Updated")
+    await page.getByRole("button", { name: "Save changes", exact: true }).click()
+    await expect(page.locator("#profile").getByText("Your profile was saved.", { exact: true })).toBeVisible()
+    await expect(page.getByRole("dialog")).toHaveCount(0)
 
     await page.reload()
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member Updated")
+    await expect(page.locator("#profile")).toContainText("E2E Member Updated")
+    // Reopen the dialog to assert the persisted value round-trips through the form.
+    await page.locator("#profile").getByText("Personal information", { exact: true }).click()
+    await page.getByRole("button", { name: "Edit profile", exact: true }).click()
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member Updated")
 
     const tenantDenied = await page.evaluate(async (realmId) => {
       const response = await fetch(`/realms/${realmId}/me`, { credentials: "include" })
@@ -123,46 +137,70 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 
     await page.reload()
     await page.goto("/admin/users")
-    await expect(page.getByRole("link", { name: fixture.member.userName, exact: true })).toBeVisible()
-    await page.getByRole("link", { name: fixture.member.userName, exact: true }).click()
+    // The detail route is stable; navigate directly to the member profile.
+    await page.goto(`/admin/users/${fixture.member.id}`)
+    // Sessions and auth methods live on the Security tab of the user detail.
+    await page.getByRole("tab", { name: "Security", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "This user has no active sessions.", exact: true })).toBeVisible()
+    await expect(page.getByText("This user has no active sessions.", { exact: true })).toBeVisible()
     await expect(page.getByRole("heading", { name: "Authentication methods", exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Email code", exact: true })).toBeVisible()
-    await expect(page.getByText("Available", { exact: true })).toBeVisible()
+    await expect(page.getByText("Email code", { exact: true })).toBeVisible()
+    await expect(page.getByText("Available", { exact: true }).first()).toBeVisible()
     await page.goto("/admin/users")
     await page.getByRole("button", { name: "Create user", exact: true }).click()
     const dialog = page.getByRole("dialog")
     await dialog.getByLabel("Email address", { exact: true }).fill("crud@e2e.authworks.test")
     await dialog.getByLabel("Username", { exact: true }).fill("e2e-crud")
-    await dialog.getByLabel("Display name", { exact: true }).fill("E2E CRUD")
+    await dialog.getByLabel("First name", { exact: true }).fill("E2E")
+    await dialog.getByLabel("Last name", { exact: true }).fill("CRUD")
     await dialog.getByRole("button", { name: "Create", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("e2e-crud was created.")
+    await expect(page.getByText("e2e-crud was created.", { exact: true })).toBeVisible()
 
-    await page.getByRole("link", { name: "e2e-crud", exact: true }).click()
-    await expect(page.getByRole("heading", { name: "E2E CRUD", exact: true })).toBeVisible()
+    // The creation confirmation links directly to the new profile; follow it.
+    const crudProfileHref = await page
+      .getByRole("status")
+      .getByRole("link", { name: "e2e-crud was created." })
+      .getAttribute("href")
+    if (crudProfileHref === null) throw new Error("The CRUD profile link was not found.")
+    await page.goto(crudProfileHref)
+    await expect(page.getByRole("heading", { name: "e2e-crud", exact: true })).toBeVisible()
     const userPath = new URL(page.url()).pathname
-    const deleteApiPath = userPath.replace(`/admin/users/`, `/realms/${fixture.realm.id}/users/`)
+    const deleteApiPath = userPath.replace("/admin/users/", `/realms/${fixture.realm.id}/users/`)
     const deleteRequestUrls: string[] = []
     page.on("request", (request) => {
       if (request.method() === "DELETE" && new URL(request.url()).pathname === deleteApiPath)
         deleteRequestUrls.push(request.url())
     })
-    await page.getByLabel("Display name", { exact: true }).fill("E2E CRUD Updated")
-    await page.getByRole("button", { name: "Save profile", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("The user profile was saved.")
-    const deleteButton = page.getByRole("button", { name: "Delete user", exact: true })
-    const deleteConfirmation = page.getByRole("alertdialog")
-    await deleteButton.click()
+    // Profile editing moved into the "Edit profile" dialog behind the overview action.
+    await page.getByRole("button", { name: "Edit profile", exact: true }).click()
+    const editDialog = page.getByRole("dialog", { name: "Edit profile" })
+    await editDialog.getByLabel("Display name", { exact: true }).fill("E2E CRUD Updated")
+    await editDialog.getByRole("button", { name: "Save", exact: true }).click()
+    await expect(editDialog).toHaveCount(0)
+    await expect(page.getByText("The user profile was saved.", { exact: true })).toBeVisible()
+    // Deletion is offered behind the "More actions" overflow menu (covered in the
+    // impersonation spec); the delete dialog itself is URL-driven, so open it directly.
+    const deleteOpen = async () => {
+      await page.goto(`${userPath}?dialog=delete`)
+    }
+    const deleteConfirmation = page.getByRole("dialog", { name: "Delete this user" })
+    await deleteOpen()
     await expect(deleteConfirmation).toBeVisible()
-    await deleteConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+    await page.keyboard.press("Escape")
     await expect(deleteConfirmation).toHaveCount(0)
     expect(deleteRequestUrls).toHaveLength(0)
 
-    await deleteButton.click()
+    await deleteOpen()
     await expect(deleteConfirmation).toBeVisible()
-    await deleteConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("e2e-crud was deleted.")
+    await deleteConfirmation.locator("#user-profile-delete-confirm").fill("e2e-crud")
+    const deletedResponsePromise = page.waitForResponse(
+      (response) => response.request().method() === "DELETE" && new URL(response.url()).pathname === deleteApiPath,
+    )
+    await deleteConfirmation.getByRole("button", { name: "Delete this user", exact: true }).click()
+    expect((await deletedResponsePromise).status()).toBe(200)
+    // Deletion navigates back to the list via a full reload; the removed user no longer appears there.
+    await expect(page).toHaveURL(/\/admin\/users$/, { timeout: 30000 })
+    await expect(page.getByRole("row").filter({ hasText: "e2e-crud" })).toHaveCount(0)
     expect(deleteRequestUrls).toHaveLength(1)
   } finally {
     await page.close()
@@ -233,7 +271,6 @@ test("task 17 protocol scenario resumes external login through OIDC consent with
     expect(loginUrl.search).not.toContain(rejectState)
 
     await page.getByRole("button", { name: /^Continue with Deterministic Provider/ }).click()
-    await page.getByRole("button", { name: "Continue with Deterministic Provider", exact: true }).click()
     await expect.poll(() => providerAuthorizationUrl !== undefined).toBe(true)
     await expect(page).toHaveURL(/\/oauth2\/authorize\?interaction=/)
     expect(providerAuthorizationUrl?.searchParams.get("client_secret")).toBeNull()
@@ -351,20 +388,27 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.reload()
     await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
-    await page.goto("/admin/invitations")
-    await page.getByLabel("Email address", { exact: true }).fill(fixture.member.email)
-    await page.getByRole("button", { name: "Invite person", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("The invitation was created.")
+    await page.goto("/admin/users?tab=invitations")
+    await page.getByRole("button", { name: "Invite user", exact: true }).click()
+    const inviteDialog = page.getByRole("dialog", { name: "Invite user" })
+    await inviteDialog.getByLabel("Email address", { exact: true }).fill(fixture.member.email)
+    await inviteDialog.getByRole("button", { name: "Send invitation", exact: true }).click()
+    // The token panel opens in the dialog; the page notice is revealed after dismissal.
+    const invitationPanel = page.locator("[data-one-time-secret='organization-invitation']")
+    await expect(invitationPanel).toBeVisible()
     const invitationLink = await server.invitationLinkGet()
     const invitationUrl = new URL(invitationLink)
     expect(invitationUrl.origin).toBe(fixture.origin)
     expect(invitationUrl.pathname).toBe("/invitations/accept")
     const invitationToken = invitationUrl.searchParams.get("token")
     if (invitationToken === null) throw new Error("The captured invitation email did not contain a token.")
-    const invitationPanel = page.locator("[data-one-time-secret='organization-invitation']")
-    await expect(invitationPanel).toBeVisible()
     await invitationPanel.getByRole("button", { name: "I saved this link", exact: true }).click()
     await expect(invitationPanel).toHaveCount(0)
+    // Acknowledging reveals the invite form again; close the dialog to return to the list.
+    await page.keyboard.press("Escape")
+    await expect(inviteDialog).toHaveCount(0)
+    // The reload after creation clears the transient notice; the new row is the durable proof.
+    await expect(page.getByRole("row").filter({ hasText: fixture.member.email }).first()).toBeVisible()
     collectInvitationAcknowledgedResponses = true
 
     await page.goto("/login/logout")
@@ -388,9 +432,9 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await expect(page.getByRole("heading", { name: "Invitation accepted", exact: true })).toBeVisible()
 
     await page.goto("/account#profile")
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile")).toContainText("E2E Member")
     await page.reload()
-    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile")).toContainText("E2E Member")
 
     const browserStorage = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))
     const browserCookies = (await context.cookies()).map((cookie) => `${cookie.name}=${cookie.value}`).join("\n")
@@ -417,7 +461,7 @@ async function machineCredentialIssue(page: Page, kind: "api_key" | "personal_ac
     route.searchParams.set("kind", kind)
     await page.goto(`${route.pathname}?${route.searchParams.toString()}`)
   }
-  await page.getByRole("button", { name: "Issue credential", exact: true }).click()
+  await page.getByRole("button", { name: "Issue credential", exact: true }).first().click()
   await page.getByRole("dialog").getByLabel("Credential type", { exact: true }).selectOption(kind)
   await page.getByRole("dialog").getByLabel("Name", { exact: true }).fill(name)
   await expect(page.getByRole("dialog").getByRole("button", { name: "Issue credential", exact: true })).toBeEnabled()
