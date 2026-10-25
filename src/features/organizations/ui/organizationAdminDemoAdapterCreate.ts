@@ -18,6 +18,8 @@ import type { OrganizationLoginPolicyOverride } from "../public/organizationLogi
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
+import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 
 const demoRealmId = "01900000-0000-7000-8000-000000000001"
@@ -60,6 +62,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     allowedFactors: ["totp", "passkey"],
     preferredFactorOrder: ["passkey", "totp"],
   }
+  let passwordPolicy: PasswordPolicy = { ...passwordPolicyDefaults }
   const organizationPolicy = (): OrganizationLoginPolicy => {
     const values = Object.fromEntries(
       Object.entries(organizationOverrides).filter(([, value]) => value !== undefined && value !== null),
@@ -316,5 +319,11 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         return { provider: { ...found } }
       }),
     roleList: () => guard("organizationAdminDemoRoleList", () => ({ items: [...demoAdminOrganizationRoles] })),
+    passwordPolicyGet: () => guard("organizationAdminDemoPasswordPolicyGet", () => ({ policy: { ...passwordPolicy } })),
+    passwordPolicySet: (input) =>
+      guard("organizationAdminDemoPasswordPolicySet", () => {
+        passwordPolicy = { ...input }
+        return { policy: { ...passwordPolicy } }
+      }),
   }
 }

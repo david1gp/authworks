@@ -24,6 +24,8 @@ import type { OrganizationMembershipResponse } from "../public/organizationMembe
 import type { OrganizationMembershipUpdateRequest } from "../public/organizationMembershipUpdateRequestSchema.js"
 import type { OrganizationResponse } from "../public/organizationResponseSchema.js"
 import type { OrganizationRoleListResponse } from "../public/organizationRoleListResponseSchema.js"
+import type { PasswordPolicyResponse } from "../../passwords/public/passwordPolicyResponseSchema.js"
+import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 
 /**
  * Every side effect an organization administration page performs. The production adapter binds these
@@ -88,6 +90,8 @@ export type OrganizationAdminAdapter = {
     organizationId: string,
     input: { readonly name: string },
   ) => Promise<Result<OrganizationResponse>>
+  readonly passwordPolicyGet: () => Promise<Result<PasswordPolicyResponse>>
+  readonly passwordPolicySet: (input: PasswordPolicySetRequest) => Promise<Result<PasswordPolicyResponse>>
   readonly providerCreate: (
     input: ExternalIdentityProviderCreateRequest,
   ) => Promise<Result<ExternalIdentityProviderResponse>>

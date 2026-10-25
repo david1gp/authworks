@@ -15,6 +15,9 @@ import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
 import type { OrganizationStatus } from "../public/organizationStatusSchema.js"
+import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
+import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 import { organizationAdminFailureStatusSelect } from "./organizationAdminFailureStatusSelect.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
@@ -67,6 +70,7 @@ export function organizationAdminPageStateCreate(options: {
   const policy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
   const realmPolicy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
   const overrides = createSignalObject<OrganizationLoginPolicyOverride>({})
+  const passwordPolicy = createSignalObject<PasswordPolicy>({ ...passwordPolicyDefaults })
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<string[]>([])
   const invitationToken = createSignalObject<string | undefined>(options.initialInvitationToken?.())
@@ -149,15 +153,19 @@ export function organizationAdminPageStateCreate(options: {
       return status.set("ready")
     }
     if (screen === "login-policy") {
-      const [policyResult, realmPolicyResult, providerList] = await Promise.all([
+      const realmScope = organizationId.length === 0
+      const [policyResult, realmPolicyResult, providerList, passwordPolicyResult] = await Promise.all([
         options.adapter.loginPolicyGet(organizationId),
-        organizationId.length === 0
-          ? options.adapter.loginPolicyGet(organizationId)
-          : options.adapter.loginPolicyGet(""),
-        options.adapter.providerList(organizationId.length === 0 ? undefined : organizationId),
+        realmScope ? options.adapter.loginPolicyGet(organizationId) : options.adapter.loginPolicyGet(""),
+        options.adapter.providerList(realmScope ? undefined : organizationId),
+        realmScope ? options.adapter.passwordPolicyGet() : Promise.resolve(undefined),
       ])
       if (!policyResult.success) return fail(policyResult)
       if (!realmPolicyResult.success) return fail(realmPolicyResult)
+      if (passwordPolicyResult !== undefined) {
+        if (!passwordPolicyResult.success) return fail(passwordPolicyResult)
+        passwordPolicy.set(passwordPolicyResult.data.policy)
+      }
       if (!providerList.success) {
         policy.set(policyResult.data.policy)
         realmPolicy.set(realmPolicyResult.data.policy)
@@ -331,6 +339,14 @@ export function organizationAdminPageStateCreate(options: {
     organizations: organizations.get,
     overrides: overrides.get,
     pageIndex: () => pageTokens.get().length,
+    passwordPolicy: passwordPolicy.get,
+    passwordPolicySave: async (input: PasswordPolicySetRequest) => {
+      const saved = await mutate("password-policy", () => options.adapter.passwordPolicySet(input))
+      if (saved === undefined) return false
+      passwordPolicy.set(saved.policy)
+      notice.set("password-policy-saved")
+      return true
+    },
     pendingId: pendingId.get,
     policy: policy.get,
     policyScope: () => (options.organizationId().length === 0 ? "realm" : "organization"),

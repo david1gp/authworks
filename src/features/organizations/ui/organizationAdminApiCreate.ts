@@ -3,6 +3,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { externalIdentityApiClientCreate } from "../../externalIdentities/client/externalIdentityApiClientCreate.js"
+import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
@@ -22,6 +23,7 @@ export function organizationAdminApiCreate(options: {
     (options.fetch ?? fetch)(input, { ...init, credentials: "include" })
   const readClients = () => ({
     organizations: organizationApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
+    passwords: passwordApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     providers: externalIdentityApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
   })
   const write = async <T>(run: (clients: ReturnType<typeof readClients>) => Promise<Result<T>>): Promise<Result<T>> => {
@@ -33,6 +35,11 @@ export function organizationAdminApiCreate(options: {
     if (!csrf.success) return csrf
     return run({
       organizations: organizationApiClientCreate({
+        baseUrl: options.baseUrl,
+        csrfToken: csrf.data,
+        fetch: browserFetch,
+      }),
+      passwords: passwordApiClientCreate({
         baseUrl: options.baseUrl,
         csrfToken: csrf.data,
         fetch: browserFetch,
@@ -132,6 +139,9 @@ export function organizationAdminApiCreate(options: {
       readClients().organizations.organizationTenantList(options.realmId(), query),
     organizationUpdate: (organizationId, input) =>
       write((clients) => clients.organizations.organizationTenantUpdate(options.realmId(), organizationId, input)),
+    passwordPolicyGet: () => readClients().passwords.passwordPolicyTenantGet(options.realmId()),
+    passwordPolicySet: (input) =>
+      write((clients) => clients.passwords.passwordPolicyTenantSet(options.realmId(), input)),
     providerCreate: (input) =>
       write((clients) => clients.providers.externalIdentityProviderTenantCreate(options.realmId(), input)),
     providerDisable: (providerId) =>

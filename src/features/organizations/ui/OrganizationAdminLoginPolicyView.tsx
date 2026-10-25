@@ -23,7 +23,9 @@ import type { ExternalIdentityProvider } from "../../externalIdentities/public/e
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
+import { OrganizationAdminPasswordPolicyView } from "./OrganizationAdminPasswordPolicyView.js"
 import { OrganizationAdminSecurityPolicyView } from "./OrganizationAdminSecurityPolicyView.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
@@ -54,6 +56,13 @@ const providerTypes: readonly ExternalIdentityProviderType[] = ["google", "githu
 export function OrganizationAdminLoginPolicyView(props: {
   readonly error?: string
   readonly notice?: string
+  readonly onPasswordPolicyLockoutMinutesInput: (minutes: number) => void
+  readonly onPasswordPolicyMaximumAttemptsInput: (value: number) => void
+  readonly onPasswordPolicyMinimumLengthInput: (value: number) => void
+  readonly onPasswordPolicySubmit: (event: SubmitEvent) => void
+  readonly onPasswordPolicyToggle: (
+    key: "requireLowercase" | "requireNumber" | "requireSymbol" | "requireUppercase",
+  ) => void
   readonly onPolicySubmit: (event: SubmitEvent) => void
   readonly onPolicyToggle: (key: PolicyKey) => void
   readonly onProviderCreateInput: (
@@ -69,6 +78,9 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly onProviderSecretRotate: (providerId: string) => void
   readonly onRetry: () => void
   readonly overrides: OrganizationLoginPolicyOverride
+  readonly passwordPolicy: PasswordPolicy
+  readonly passwordPolicyLockoutMinutes: number
+  readonly passwordPolicyValidationMessage?: string
   readonly pendingId?: string
   readonly policy: OrganizationLoginPolicy
   readonly policyScope: "organization" | "realm"
@@ -174,6 +186,20 @@ export function OrganizationAdminLoginPolicyView(props: {
             scope={props.policyScope}
             validationMessage={props.policyValidationMessage}
           />
+
+          <Show when={props.policyScope === "realm"}>
+            <OrganizationAdminPasswordPolicyView
+              lockoutMinutes={props.passwordPolicyLockoutMinutes}
+              onLockoutMinutesInput={props.onPasswordPolicyLockoutMinutesInput}
+              onMaximumAttemptsInput={props.onPasswordPolicyMaximumAttemptsInput}
+              onMinimumLengthInput={props.onPasswordPolicyMinimumLengthInput}
+              onSubmit={props.onPasswordPolicySubmit}
+              onToggle={props.onPasswordPolicyToggle}
+              pending={props.pendingId === "password-policy"}
+              policy={props.passwordPolicy}
+              validationMessage={props.passwordPolicyValidationMessage}
+            />
+          </Show>
 
           <AuthenticatedSection
             description={messageTranslate("admin.organizations.providers.description")}

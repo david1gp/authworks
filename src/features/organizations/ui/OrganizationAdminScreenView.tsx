@@ -60,6 +60,11 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
           <OrganizationAdminLoginPolicyView
             error={state.page.error()}
             notice={state.page.notice()}
+            onPasswordPolicyLockoutMinutesInput={state.passwordPolicyLockoutMinutesSet}
+            onPasswordPolicyMaximumAttemptsInput={state.passwordPolicyMaximumAttemptsSet}
+            onPasswordPolicyMinimumLengthInput={state.passwordPolicyMinimumLengthSet}
+            onPasswordPolicySubmit={state.passwordPolicySubmit}
+            onPasswordPolicyToggle={state.passwordPolicyToggle}
             onPolicySubmit={state.policySubmit}
             onPolicyToggle={state.policyToggle}
             onProviderAccountCreationToggle={state.providerAccountCreationToggle}
@@ -72,6 +77,9 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             onProviderSecretRotate={state.providerSecretRotate}
             onRetry={state.page.reload}
             overrides={state.page.overrides()}
+            passwordPolicy={state.passwordPolicyDraft()}
+            passwordPolicyLockoutMinutes={state.passwordPolicyLockoutMinutes()}
+            passwordPolicyValidationMessage={state.passwordPolicyValidationMessage()}
             pendingId={state.page.pendingId?.()}
             policy={state.policyDraft()}
             policyScope={state.policyScope()}

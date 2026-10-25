@@ -10,7 +10,9 @@ import type { OrganizationBrandingTheme } from "../public/organizationBrandingTh
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { organizationAdminFormStateCreate } from "./organizationAdminFormStateCreate.js"
+import { organizationAdminPasswordPolicyValidate } from "./organizationAdminPasswordPolicyValidate.js"
 import type { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
 import { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
 
@@ -37,6 +39,8 @@ export function organizationAdminScreenStateCreate(options: {
   const navigate = useNavigate()
   const policyDraftSignal = createSignalObject<OrganizationLoginPolicy | undefined>(undefined)
   const policyValidationMessage = createSignalObject<string | undefined>(undefined)
+  const passwordPolicyDraftSignal = createSignalObject<PasswordPolicy | undefined>(undefined)
+  const passwordPolicyValidationMessage = createSignalObject<string | undefined>(undefined)
 
   const createOpen = () => new URLSearchParams(location.search).get("create") === "organization"
   const createOpenSet = (open: boolean) => {
@@ -57,6 +61,8 @@ export function organizationAdminScreenStateCreate(options: {
   }
   const branding = () => form.branding.get() ?? options.page.branding()
   const policyDraft = () => policyDraftSignal.get() ?? options.page.policy()
+  const passwordPolicyDraft = () => passwordPolicyDraftSignal.get() ?? options.page.passwordPolicy()
+  const passwordPolicyLockoutMinutes = () => Math.round(passwordPolicyDraft().lockoutDurationMs / 60_000)
   const brandingUpdate = (next: OrganizationBranding) => {
     form.branding.set(next)
     form.brandingLocalWrite(options.page.organizationId(), next)
@@ -82,6 +88,11 @@ export function organizationAdminScreenStateCreate(options: {
   createEffect(
     on(options.page.policy, (loaded) => {
       if (options.page.status() === "ready") policyDraftSignal.set(loaded)
+    }),
+  )
+  createEffect(
+    on(options.page.passwordPolicy, (loaded) => {
+      if (options.page.status() === "ready") passwordPolicyDraftSignal.set(loaded)
     }),
   )
 
@@ -190,6 +201,27 @@ export function organizationAdminScreenStateCreate(options: {
     policyScope,
     policyToggle: (key: PolicyKey) => policyDraftSignal.set({ ...policyDraft(), [key]: !policyDraft()[key] }),
     policyValidationMessage: policyValidationMessage.get,
+    passwordPolicyDraft,
+    passwordPolicyLockoutMinutes,
+    passwordPolicyLockoutMinutesSet: (minutes: number) =>
+      passwordPolicyDraftSignal.set({
+        ...passwordPolicyDraft(),
+        lockoutDurationMs: Math.round(minutes * 60_000),
+      }),
+    passwordPolicyMaximumAttemptsSet: (value: number) =>
+      passwordPolicyDraftSignal.set({ ...passwordPolicyDraft(), maximumAttempts: Math.trunc(value) }),
+    passwordPolicyMinimumLengthSet: (value: number) =>
+      passwordPolicyDraftSignal.set({ ...passwordPolicyDraft(), minimumLength: Math.trunc(value) }),
+    passwordPolicySubmit: (event: SubmitEvent) => {
+      event.preventDefault()
+      const validationKey = organizationAdminPasswordPolicyValidate(passwordPolicyDraft())
+      passwordPolicyValidationMessage.set(validationKey === undefined ? undefined : messageTranslate(validationKey))
+      if (validationKey !== undefined) return
+      void options.page.passwordPolicySave({ ...passwordPolicyDraft() })
+    },
+    passwordPolicyToggle: (key: "requireLowercase" | "requireNumber" | "requireSymbol" | "requireUppercase") =>
+      passwordPolicyDraftSignal.set({ ...passwordPolicyDraft(), [key]: !passwordPolicyDraft()[key] }),
+    passwordPolicyValidationMessage: passwordPolicyValidationMessage.get,
     providerAccountCreationToggle: () =>
       form.providerCreate.set({
         ...form.providerCreate.get(),

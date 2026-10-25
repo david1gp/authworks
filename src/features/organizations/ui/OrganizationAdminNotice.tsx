@@ -15,6 +15,7 @@ const noticeKeys = {
   "membership-updated": "admin.organizations.memberships.updated",
   "organization-lifecycle": "admin.organizations.lifecycle.changed",
   "organization-renamed": "admin.organizations.renamed",
+  "password-policy-saved": "admin.organizations.passwordPolicy.saved",
   "policy-saved": "admin.organizations.policy.saved",
   "provider-created": "admin.organizations.providers.created",
   "provider-disabled": "admin.organizations.providers.disabled",

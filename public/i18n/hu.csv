@@ -735,6 +735,23 @@ admin.organizations.policy.remediation,People without an enrolled permitted fact
 admin.organizations.policy.required,Required
 admin.organizations.policy.requiredMfa,Required MFA
 admin.organizations.policy.saved,A bejelentkezési szabályzat mentve.
+admin.organizations.passwordPolicy.title,Password policy
+admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
+admin.organizations.passwordPolicy.minimumLength,Minimum length
+admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
+admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
+admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
+admin.organizations.passwordPolicy.requireNumber,Require a number
+admin.organizations.passwordPolicy.requireSymbol,Require a symbol
+admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
+admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
+admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
+admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
+admin.organizations.passwordPolicy.saved,The password policy was saved.
+admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
+admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
+admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
+admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
 admin.organizations.policy.scopeLabel,Policy scope
 admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
 admin.organizations.policy.securityTitle,MFA and assurance
