@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from "bun:test"
+import { readFileSync } from "node:fs"
 
 mock.module("solid-js", () => ({
   createEffect: (fn: () => void) => {
@@ -39,5 +40,28 @@ describe("organization configuration section selection", () => {
     expect(organizationConfigurationSectionSelect("domains")).toBe("domains")
     expect(organizationConfigurationSectionSelect(undefined)).toBe("general")
     expect(organizationConfigurationSectionSelect("unknown")).toBe("general")
+  })
+})
+
+describe("organization configuration shell layout", () => {
+  test("owns its page header so the shell renders a single Configuration title", async () => {
+    const { productionRouteContractMap } = await import("../../src/ui/production/productionRouteContractMap.js")
+    const configuration = productionRouteContractMap.admin.screens.find((screen) => screen.key === "configuration")
+    expect(configuration?.ownsPageHeader).toBe(true)
+  })
+
+  test("renders one header with top tabs instead of a nested section card", () => {
+    const shellSource = readFileSync("src/features/organizations/ui/OrganizationConfigurationShellView.tsx", "utf8")
+    expect(shellSource).toContain("AuthenticatedPageHeader")
+    expect(shellSource).toContain("AuthenticatedTabs")
+    expect(shellSource).not.toContain("AuthenticatedSection")
+    expect(shellSource).not.toContain("AuthenticatedSubNav")
+  })
+
+  test("demo renders the same single header as production, with no fixture chrome", () => {
+    const demoSource = readFileSync("src/features/organizations/ui/OrganizationConfigurationDemoAdapter.tsx", "utf8")
+    expect(demoSource).not.toContain("AuthenticatedPageHeader")
+    expect(demoSource).not.toContain("DemoFixtureStateSelector")
+    expect(demoSource).not.toContain("headerMeta")
   })
 })
