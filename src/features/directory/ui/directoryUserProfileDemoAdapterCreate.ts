@@ -336,7 +336,7 @@ export function directoryUserProfileDemoAdapterCreate(
           return resultErrorCodedCreate(
             "directoryUserProfileDemoMembershipUpdate",
             "The last owner cannot be removed.",
-            "organizations.owner-last",
+            "organizations.must-retain",
           )
         const owners = demoMemberships.filter(
           (item) => item.organizationId === organizationId && item.roles.includes("owner") && item.id !== membership.id,
@@ -345,7 +345,7 @@ export function directoryUserProfileDemoAdapterCreate(
           return resultErrorCodedCreate(
             "directoryUserProfileDemoMembershipUpdate",
             "The last owner cannot be removed.",
-            "organizations.owner-last",
+            "organizations.must-retain",
           )
         membership.roles = [...input.roles]
         membership.updatedAt = demoNow

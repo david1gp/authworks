@@ -1,6 +1,5 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
 import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
@@ -45,7 +44,7 @@ export function directoryUserProfileProductionAdapterCreate(options: {
     op: string,
   ): Promise<Result<T>> => {
     const csrf = await sessionCsrfTokenGet({ baseUrl: options.baseUrl, fetch: options.fetch, realmId: realm() })
-    if (!csrf.success) return resultErrorCodedCreate(op, csrf.errorMessage, "platform.request-failed")
+    if (!csrf.success) return csrf
     // Users, directory, organization, project, and password writes bind the fresh token;
     // the realm and session clients sign their own CSRF exchange through
     // `sessionBrowserRequest` and the ambient session cookie.
