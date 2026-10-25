@@ -1,10 +1,12 @@
-import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs"
+import { existsSync, readFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { createResult, createResultError, type Result } from "#result"
 import { e2eCheckpointClear } from "./e2eCheckpointClear.js"
 import { e2eCheckpointPathGet } from "./e2eCheckpointPathGet.js"
 import { type E2eCheckpoint, type E2eCheckpointEntity } from "./e2eCheckpointSchema.js"
 import { type E2eCleanupCandidate, e2eCleanupSelect } from "./e2eCleanupSelect.js"
+import { e2eCleanupStaleStateRemove } from "./e2eCleanupStaleStateRemove.js"
+import { e2eDevEnvironmentStatusGet } from "./e2eDevEnvironmentEnsure.js"
 import { type E2eServiceApiClient, e2eServiceApiClientCreate } from "./e2eServiceApiClientCreate.js"
 import { e2eServiceUserIdentityGet } from "./e2eServiceUserEnsure.js"
 import { e2eStateDirResolve } from "./e2eStateDirResolve.js"
@@ -46,7 +48,9 @@ export function e2eCleanupRun(input: E2eCleanupRunInput): Promise<Result<E2eClea
     const stateDir = e2eCleanupStateDirResolve(input.stateDir)
     if (!stateDir.success) return stateDir
     const resolved = stateDir.data
-    e2eCleanupStaleStateRemove(resolved, now)
+    e2eCleanupStaleStateRemove(resolved, now, {
+      devServerRunning: e2eDevEnvironmentStatusGet(resolved).running,
+    })
     if (input.checkpoint !== undefined && input.checkpoint.target === input.target) {
       const staleRemoved = e2eCleanupStaleCheckpointRemove(resolved, input.target, now)
       if (!staleRemoved.success) return staleRemoved
@@ -301,44 +305,6 @@ function e2eCleanupStaleCheckpointRemove(stateDir: string, target: E2eTarget, no
     return createResult(undefined)
   } catch {
     return createResultError("e2eCleanupRun", `Cannot delete the stale E2E checkpoint at ${path}.`)
-  }
-}
-
-function e2eCleanupStaleStateRemove(stateDir: string, now: Date): void {
-  for (const target of ["dev", "production"] as const) {
-    const targetDir = join(stateDir, target)
-    if (!existsSync(targetDir)) continue
-    let entries: string[]
-    try {
-      entries = readdirSync(targetDir)
-    } catch {
-      continue
-    }
-    for (const entry of entries) {
-      if (entry === "checkpoint.json" || entry === "artifacts") continue
-      const path = join(targetDir, entry)
-      try {
-        if (now.getTime() - statSync(path).mtimeMs >= staleAfterMs) rmSync(path, { force: true, recursive: true })
-      } catch {
-        // Best effort: stale state removal must not fail the cleanup.
-      }
-    }
-    const artifactsDir = join(targetDir, "artifacts")
-    if (!existsSync(artifactsDir)) continue
-    let artifacts: string[]
-    try {
-      artifacts = readdirSync(artifactsDir)
-    } catch {
-      continue
-    }
-    for (const entry of artifacts) {
-      const path = join(artifactsDir, entry)
-      try {
-        if (now.getTime() - statSync(path).mtimeMs >= staleAfterMs) rmSync(path, { force: true, recursive: true })
-      } catch {
-        // Best effort: stale artifact removal must not fail the cleanup.
-      }
-    }
   }
 }
 

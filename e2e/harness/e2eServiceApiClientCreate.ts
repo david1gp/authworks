@@ -13,6 +13,7 @@ import { sessionRevocationResponseSchema } from "../../src/features/sessions/pub
 import { userListResponseSchema } from "../../src/features/users/public/userListResponseSchema.js"
 import { userPurgeResponseSchema } from "../../src/features/users/public/userPurgeResponseSchema.js"
 import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
+import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 
 export type E2eServiceApiClient = {
   readonly administratorsList: (
@@ -143,10 +144,19 @@ export function e2eServiceApiClientCreate(
       const fetched = await rawRequest(path, init, operation)
       if (!fetched.success) return fetched
       if (fetched.data.status < 200 || fetched.data.status >= 300) {
-        const detail =
+        const errorBody =
           typeof fetched.data.body === "object" && fetched.data.body !== null && "error" in fetched.data.body
-            ? JSON.stringify((fetched.data.body as { error: unknown }).error)
-            : `status ${fetched.data.status}`
+            ? (fetched.data.body as { error: unknown }).error
+            : undefined
+        const detail = errorBody === undefined ? `status ${fetched.data.status}` : JSON.stringify(errorBody)
+        const code =
+          typeof errorBody === "object" && errorBody !== null && "code" in errorBody
+            ? (errorBody as { code: unknown }).code
+            : undefined
+        // Propagate the server error code so callers can match on it (cleanup tolerates
+        // already-deleted and not-found responses); unknown shapes keep the plain error.
+        if (typeof code === "string")
+          return resultErrorCodedCreate(op, `${operation}: ${path} failed: ${detail}.`, code)
         return createResultError(op, `${operation}: ${path} failed: ${detail}.`)
       }
       const parsed = v.safeParse(schema, fetched.data.body)

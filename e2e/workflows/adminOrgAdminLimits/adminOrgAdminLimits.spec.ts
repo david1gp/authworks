@@ -26,6 +26,7 @@ e2eTest("admin organization admin sees read-only owner settings and cannot grant
   }
   const run = (stepName: AdminOrgAdminLimitsStepName, runStep: () => Promise<void>): Promise<void> =>
     e2eStepRun({
+      namespace: "adminOrgAdminLimits",
       step: async (_title, body) => {
         await body()
       },

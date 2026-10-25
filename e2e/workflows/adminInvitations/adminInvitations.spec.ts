@@ -25,6 +25,7 @@ e2eTest("admin owner invites and revokes a pending organization invitation", asy
   }
   const run = (stepName: AdminInvitationsStepName, runStep: () => Promise<void>): Promise<void> =>
     e2eStepRun({
+      namespace: "adminInvitations",
       step: async (_title, body) => {
         await body()
       },

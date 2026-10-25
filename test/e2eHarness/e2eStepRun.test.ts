@@ -79,6 +79,47 @@ async function e2eStepRunPassThrough(_title: string, body: () => Promise<void>):
   await body()
 }
 
+test("e2e step runs namespace shared step names per workflow", async () => {
+  const directory = await e2eStepRunTemporaryDirCreate()
+  const path = e2eCheckpointPathGet(directory, "dev")
+  expect(e2eCheckpointWrite(path, e2eStepRunCheckpointCreate()).success).toBe(true)
+  let ownerRuns = 0
+  const owner = e2eStepRunCreate(path, e2eStepRunPassThrough, {}, "adminOrgOwner")
+  await owner.run("setup", async () => {
+    ownerRuns += 1
+  })
+  let memberRuns = 0
+  const member = e2eStepRunCreate(path, e2eStepRunPassThrough, {}, "adminMemberDenied")
+  await member.run("setup", async () => {
+    memberRuns += 1
+  })
+  expect(ownerRuns).toBe(1)
+  expect(memberRuns).toBe(1)
+  const persisted = e2eCheckpointRead(path)
+  expect(persisted.success).toBe(true)
+  if (persisted.success && "checkpoint" in persisted.data)
+    expect(persisted.data.checkpoint.completedSteps).toEqual(["adminOrgOwner/setup", "adminMemberDenied/setup"])
+  await owner.run("setup", async () => {
+    ownerRuns += 1
+  })
+  expect(ownerRuns).toBe(1)
+})
+
+test("e2e step runs inject the failure on the bare step name inside a namespace", async () => {
+  const directory = await e2eStepRunTemporaryDirCreate()
+  const path = e2eCheckpointPathGet(directory, "dev")
+  expect(e2eCheckpointWrite(path, e2eStepRunCheckpointCreate()).success).toBe(true)
+  const runner = e2eStepRunCreate(
+    path,
+    e2eStepRunPassThrough,
+    { AUTHWORKS_E2E_FAIL_AFTER_STEP: "users-list" },
+    "adminOrgOwner",
+  )
+  await expect(runner.run("users-list", async () => {})).rejects.toThrow(
+    'Injected E2E failure after step "adminOrgOwner/users-list"',
+  )
+})
+
 async function e2eStepRunTemporaryDirCreate(): Promise<string> {
   const prefix = `${process.env.TMPDIR ?? "/tmp"}/authworks-e2e-steprun-test-`
   const directory = `${prefix}${Date.now()}-${Math.random().toString(36).slice(2)}`

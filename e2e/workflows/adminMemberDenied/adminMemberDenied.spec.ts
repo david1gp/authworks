@@ -16,6 +16,7 @@ type AdminMemberDeniedStepName = (typeof stepNames)[number]
 e2eTest("admin area denies plain organization members", async ({ page }) => {
   const run = (stepName: AdminMemberDeniedStepName, runStep: () => Promise<void>): Promise<void> =>
     e2eStepRun({
+      namespace: "adminMemberDenied",
       step: async (_title, body) => {
         await body()
       },

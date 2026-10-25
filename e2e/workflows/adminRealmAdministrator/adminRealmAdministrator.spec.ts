@@ -25,6 +25,7 @@ e2eTest("realm administrator switches scope and grants plus revokes realm access
   }
   const run = (stepName: AdminRealmAdministratorStepName, runStep: () => Promise<void>): Promise<void> =>
     e2eStepRun({
+      namespace: "adminRealmAdministrator",
       step: async (_title, body) => {
         await body()
       },

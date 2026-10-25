@@ -41,6 +41,7 @@ e2eTest("admin organization owner manages users, roles, projects, and branding",
   }
   const run = (stepName: AdminOrgOwnerStepName, runStep: () => Promise<void>): Promise<void> =>
     e2eStepRun({
+      namespace: "adminOrgOwner",
       step: async (_title, body) => {
         await body()
       },
