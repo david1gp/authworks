@@ -240,6 +240,7 @@ export const productionRouteContractMap = {
         contracts: ["organizations.branding.get", "organizations.login-policy.get"],
         guard: { ...organizationAdminGuard, organization: "required" },
         key: "configuration",
+        ownsPageHeader: true,
         path: "/admin/configuration/:section",
         title: "shell.nav.configuration",
       },
