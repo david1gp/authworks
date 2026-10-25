@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,管理员
 demo.admin.scenario.roles.description,组织角色与项目角色分配。
 demo.admin.scenario.roles.title,角色
 shell.nav.organizationSwitcher,组织
+shell.nav.organizationSwitcherEmpty,没有匹配的组织
+shell.nav.organizationSwitcherSearch,查找组织
 admin.organizations.configuration.brandingDescription,浅色与深色、标志和法律链接，附实时预览。
 admin.organizations.configuration.generalDescription,组织名称、状态与危险区域。
 admin.organizations.configuration.signInDescription,组织登录与安全策略表单。

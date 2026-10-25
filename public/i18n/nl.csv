@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Beheerders
 demo.admin.scenario.roles.description,Organisatierollen en projectroltoewijzingen.
 demo.admin.scenario.roles.title,Rollen
 shell.nav.organizationSwitcher,Organisatie
+shell.nav.organizationSwitcherEmpty,Geen overeenkomende organisaties
+shell.nav.organizationSwitcherSearch,Organisatie zoeken
 admin.organizations.configuration.brandingDescription,"Lichte en donkere kleuren, logo en juridische links met livevoorbeeld."
 admin.organizations.configuration.generalDescription,"Naam, status en gevarenzone van de organisatie."
 admin.organizations.configuration.signInDescription,Aanmeld- en beveiligingsformulieren van de organisatie.

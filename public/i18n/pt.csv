@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Administradores
 demo.admin.scenario.roles.description,Funções da organização e atribuições de funções.
 demo.admin.scenario.roles.title,Funções
 shell.nav.organizationSwitcher,Organização
+shell.nav.organizationSwitcherEmpty,Nenhuma organização correspondente
+shell.nav.organizationSwitcherSearch,Procurar organização
 admin.organizations.configuration.brandingDescription,"Cores claras e escuras, logótipo e ligações legais com pré-visualização."
 admin.organizations.configuration.generalDescription,"Nome, estado e zona de perigo da organização."
 admin.organizations.configuration.signInDescription,Formulários de acesso e política de segurança.

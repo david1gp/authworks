@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Администраторы
 demo.admin.scenario.roles.description,Роли организации и назначения ролей проектов.
 demo.admin.scenario.roles.title,Роли
 shell.nav.organizationSwitcher,Организация
+shell.nav.organizationSwitcherEmpty,Подходящих организаций нет
+shell.nav.organizationSwitcherSearch,Найти организацию
 admin.organizations.configuration.brandingDescription,"Светлые и тёмные цвета, логотип и правовые ссылки с предпросмотром."
 admin.organizations.configuration.generalDescription,"Название, статус и опасная зона организации."
 admin.organizations.configuration.signInDescription,Формы входа и политики безопасности организации.

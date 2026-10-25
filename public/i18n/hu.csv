@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Adminisztrátorok
 demo.admin.scenario.roles.description,Szervezeti szerepkörök és projekt-szerepkörök.
 demo.admin.scenario.roles.title,Szerepkörök
 shell.nav.organizationSwitcher,Szervezet
+shell.nav.organizationSwitcherEmpty,Nincs egyező szervezet
+shell.nav.organizationSwitcherSearch,Szervezet keresése
 admin.organizations.configuration.brandingDescription,"Világos és sötét színek, logó és jogi hivatkozások élő előnézettel."
 admin.organizations.configuration.generalDescription,"Szervezet neve, állapota és veszélyzóna."
 admin.organizations.configuration.signInDescription,Szervezeti bejelentkezési és biztonsági űrlapok.

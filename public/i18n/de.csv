@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Administratoren
 demo.admin.scenario.roles.description,Organisationsrollen und Projektrollenzuweisungen.
 demo.admin.scenario.roles.title,Rollen
 shell.nav.organizationSwitcher,Organisation
+shell.nav.organizationSwitcherEmpty,Keine passenden Organisationen
+shell.nav.organizationSwitcherSearch,Organisation suchen
 admin.organizations.configuration.brandingDescription,"Hell- und Dunkelmodus, Logo und rechtliche Links mit Live-Vorschau."
 admin.organizations.configuration.generalDescription,"Organisationsname, Status und Gefahrenzone."
 admin.organizations.configuration.signInDescription,Organisations-Anmelde- und Sicherheitsrichtlinien.

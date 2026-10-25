@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Administrateurs
 demo.admin.scenario.roles.description,Rôles de l'organisation et affectations de rôles de projet.
 demo.admin.scenario.roles.title,Rôles
 shell.nav.organizationSwitcher,Organisation
+shell.nav.organizationSwitcherEmpty,Aucune organisation correspondante
+shell.nav.organizationSwitcherSearch,Rechercher une organisation
 admin.organizations.configuration.brandingDescription,"Couleurs claires et sombres, logo et liens légaux avec aperçu."
 admin.organizations.configuration.generalDescription,"Nom, statut et zone dangereuse de l'organisation."
 admin.organizations.configuration.signInDescription,Formulaires de connexion et politique de sécurité.

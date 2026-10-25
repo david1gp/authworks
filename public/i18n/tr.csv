@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,Yöneticiler
 demo.admin.scenario.roles.description,Kuruluş rolleri ve proje rolü atamaları.
 demo.admin.scenario.roles.title,Roller
 shell.nav.organizationSwitcher,Kuruluş
+shell.nav.organizationSwitcherEmpty,Eşleşen kuruluş yok
+shell.nav.organizationSwitcherSearch,Kuruluş bul
 admin.organizations.configuration.brandingDescription,"Canlı önizlemeli açık ve koyu renkler, logo ve yasal bağlantılar."
 admin.organizations.configuration.generalDescription,"Kuruluş adı, durumu ve tehlike bölgesi."
 admin.organizations.configuration.signInDescription,Kuruluş oturum açma ve güvenlik formları.

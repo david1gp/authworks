@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,管理者
 demo.admin.scenario.roles.description,組織ロールとプロジェクトロールの割り当て。
 demo.admin.scenario.roles.title,ロール
 shell.nav.organizationSwitcher,組織
+shell.nav.organizationSwitcherEmpty,一致する組織はありません
+shell.nav.organizationSwitcherSearch,組織を検索
 admin.organizations.configuration.brandingDescription,ライト・ダークの色、ロゴ、法的リンクをライブプレビュー付きで。
 admin.organizations.configuration.generalDescription,組織名、ステータス、危険ゾーン。
 admin.organizations.configuration.signInDescription,組織のログインとセキュリティポリシー。

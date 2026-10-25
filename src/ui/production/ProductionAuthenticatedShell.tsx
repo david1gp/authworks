@@ -2,8 +2,6 @@ import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
-import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
-import { mdiUnfoldMoreHorizontal } from "@adaptive-ds/mdi/mdiUnfoldMoreHorizontal.js"
 import { A } from "@solidjs/router"
 import { For, type JSX, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
@@ -18,6 +16,7 @@ import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
 import type { ProductionNavigationItem } from "./productionNavigationItem.js"
+import { ProductionOrganizationSwitcher } from "./ProductionOrganizationSwitcher.js"
 import { productionAuthenticatedShellStateCreate } from "./productionAuthenticatedShellStateCreate.js"
 
 type ProductionAuthenticatedShellState = ReturnType<typeof productionAuthenticatedShellStateCreate>
@@ -34,37 +33,6 @@ function ProductionSidebarToggle(props: { readonly state: ProductionAuthenticate
       iconMobileClose={mdiMenu}
       variant="ghost"
     />
-  )
-}
-
-function ProductionOrganizationSwitcher(props: { readonly state: ProductionAuthenticatedShellState }) {
-  return (
-    <label class={authenticatedNavigationClasses.organizationSwitcher} title={props.state.organizationLabel()}>
-      <Icon path={mdiOfficeBuildingOutline} />
-      <span class="sr-only">{messageTranslate("shell.nav.organizationSwitcher")}</span>
-      <select
-        aria-label={messageTranslate("shell.nav.organizationSwitcher")}
-        aria-busy={props.state.organizationSwitchPending()}
-        class={authenticatedNavigationClasses.organizationSelect}
-        disabled={!props.state.organizationSwitchable() || props.state.organizationSwitchPending()}
-        value={props.state.organizationId()}
-        onChange={props.state.organizationChange}
-      >
-        <For each={props.state.session.organizations}>
-          {(organization) => <option value={organization.id}>{organization.label}</option>}
-        </For>
-      </select>
-      <Show when={props.state.organizationSwitchable()}>
-        <Icon class="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2" path={mdiUnfoldMoreHorizontal} />
-      </Show>
-      <Show when={props.state.organizationError()}>
-        {(error) => (
-          <span aria-live="assertive" class="sr-only" role="alert">
-            {error()}
-          </span>
-        )}
-      </Show>
-    </label>
   )
 }
 
@@ -145,7 +113,14 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
         </Show>
       </div>
       <Show when={props.state.organizationLabel().length > 0}>
-        <ProductionOrganizationSwitcher state={props.state} />
+        <ProductionOrganizationSwitcher
+          activeId={props.state.organizationId()}
+          error={props.state.organizationError()}
+          onSelect={props.state.organizationSelect}
+          organizations={props.state.session.organizations}
+          pending={props.state.organizationSwitchPending()}
+          switchable={props.state.organizationSwitchable()}
+        />
       </Show>
       <nav aria-label={props.state.title()} class={authenticatedNavigationClasses.nav}>
         <For each={props.state.groups()}>

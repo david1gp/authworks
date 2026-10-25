@@ -1839,6 +1839,8 @@ export const englishCatalog = {
   "shell.nav.auditEvents": "Audit events",
   "shell.nav.chooseDestination": "Choose a destination",
   "shell.nav.organizationSwitcher": "Organization",
+  "shell.nav.organizationSwitcherEmpty": "No matching organizations",
+  "shell.nav.organizationSwitcherSearch": "Find organization",
   "shell.nav.credentialsTokens": "Credentials and tokens",
   "admin.organizations.configuration.brandingDescription":
     "Light and dark colours, logo, and legal links with a live preview.",

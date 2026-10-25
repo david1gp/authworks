@@ -27,11 +27,24 @@ export const authenticatedNavigationClasses = {
   identityCaption: "block truncate text-xs text-muted-foreground",
   identityAction:
     "grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>svg]:size-4",
-  /** Full-width organization switcher card at the top of the rail. */
-  organizationSwitcher:
-    "relative mx-2 mt-3 flex h-10 shrink-0 items-center gap-2 rounded-control border border-line bg-surface ps-2.5 pe-2 transition-colors hover:border-line-strong has-[select:focus-visible]:border-accent has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-accent/30 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground",
-  organizationSelect:
-    "min-w-0 flex-1 appearance-none truncate bg-transparent pe-6 text-[0.8125rem] font-medium text-foreground outline-none disabled:opacity-100",
+  /** Wrapper for the organization switcher card at the top of the rail. */
+  organizationSwitcher: "shrink-0 px-2 pt-2",
+  /** Workspace-style card: initials tile, caption, and organization name. */
+  organizationCard: "flex w-full min-w-0 items-center gap-2.5 rounded-control px-2 py-1.5",
+  /** Interactive variant of the card when more than one organization is available. */
+  organizationTrigger:
+    "transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:cursor-progress disabled:opacity-70 data-expanded:bg-surface-hover",
+  organizationTile:
+    "grid size-8 shrink-0 place-items-center rounded-[9px] text-xs font-semibold ring-1 ring-line-subtle ring-inset",
+  organizationCaption: "truncate text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground",
+  organizationName: "truncate text-[0.8125rem] font-semibold text-foreground",
+  organizationMenu:
+    "z-50 flex min-w-56 flex-col overflow-hidden rounded-control border border-line bg-surface text-sm shadow-overlay data-open:animate-in data-open:fade-in-50% data-closed:animate-out data-closed:fade-out-50%",
+  organizationSearch: "flex items-center gap-2 border-b border-line px-2.5 py-2",
+  organizationOption:
+    "flex w-full min-w-0 items-center gap-2.5 rounded-sm px-2 py-1.5 text-start text-[0.8125rem] font-medium text-foreground transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none aria-selected:font-semibold",
+  organizationOptionTile:
+    "grid size-6 shrink-0 place-items-center rounded-md text-[0.625rem] font-semibold ring-1 ring-line-subtle ring-inset",
   frame: "flex h-full min-h-0 flex-col bg-surface",
   groupHeading:
     "flex h-8 w-full items-center gap-2 rounded-control px-2 text-start text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>span]:flex-1",

@@ -112,11 +112,11 @@ export function productionAuthenticatedShellStateCreate(
     /** Only the most specific grouped destination is highlighted. */
     isItemActive: (href: string) => activeHref() === href,
     isContextual: () => kind() !== "account",
-    organizationChange: (event: Event & { readonly currentTarget: HTMLSelectElement }) => {
+    organizationSelect: (organizationId: string) => {
       if (organizationPending.get() || session.organizationSwitchPending()) return
       organizationPending.set(true)
       organizationError.set(undefined)
-      void session.organizationSelect(event.currentTarget.value).then((result) => {
+      void session.organizationSelect(organizationId).then((result) => {
         organizationPending.set(session.organizationSwitchPending())
         if (!result.success) organizationError.set(result.errorMessage)
       })

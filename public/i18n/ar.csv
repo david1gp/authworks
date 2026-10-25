@@ -1806,6 +1806,8 @@ demo.admin.scenario.realm_administrators.title,المسؤولون
 demo.admin.scenario.roles.description,أدوار المنظمة وتعيينات أدوار المشاريع.
 demo.admin.scenario.roles.title,الأدوار
 shell.nav.organizationSwitcher,المنظمة
+shell.nav.organizationSwitcherEmpty,لا توجد مؤسسات مطابقة
+shell.nav.organizationSwitcherSearch,ابحث عن مؤسسة
 admin.organizations.configuration.brandingDescription,ألوان فاتحة وداكنة وشعار وروابط قانونية مع معاينة مباشرة.
 admin.organizations.configuration.generalDescription,اسم المنظمة وحالتها ومنطقة الخطر.
 admin.organizations.configuration.signInDescription,نماذج تسجيل الدخول وسياسة الأمان للمنظمة.
