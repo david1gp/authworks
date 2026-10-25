@@ -1,4 +1,20 @@
+/**
+ * Selection is deferred until the popover has restored focus to its trigger. Running an item's
+ * action synchronously lets it open a modal dialog first; the popover's late focus restore then
+ * lands outside that dialog, whose focus trap treats it as an outside focus and closes it again.
+ */
 export function authenticatedActionMenuStateCreate(options: { readonly onOpenChange: (open: boolean) => void }) {
+  let pending: (() => void) | undefined
+  let fallbackTimer: ReturnType<typeof setTimeout> | undefined
+
+  const pendingRun = () => {
+    if (fallbackTimer !== undefined) clearTimeout(fallbackTimer)
+    fallbackTimer = undefined
+    const action = pending
+    pending = undefined
+    action?.()
+  }
+
   const focusablesGet = (current: HTMLElement): readonly HTMLElement[] => {
     const container = current.closest("[role='menu']")
     if (container === null) return []
@@ -27,7 +43,15 @@ export function authenticatedActionMenuStateCreate(options: { readonly onOpenCha
     select: (item: { readonly disabled?: boolean; readonly onSelect: () => void }) => () => {
       if (item.disabled) return
       options.onOpenChange(false)
-      item.onSelect()
+      pending = item.onSelect
+      // Safety net in case the popover never reports its final focus (e.g. it was unmounted).
+      if (fallbackTimer !== undefined) clearTimeout(fallbackTimer)
+      fallbackTimer = setTimeout(pendingRun, 250)
+    },
+    /** Runs the selected action right after the popover has moved focus back to its trigger. */
+    finalFocus: () => {
+      if (pending === undefined) return
+      setTimeout(pendingRun, 0)
     },
     // Arrow keys, Home, and End move between enabled items. Enter and Space are intentionally
     // left to native button activation so the wrapping `Popover.Close` runs and dismisses the

@@ -67,6 +67,7 @@ export function AuthenticatedDialog(props: {
               </Show>
             </div>
             <Dialog.Close
+              aria-label={messageTranslate("common.close")}
               as={AuthenticatedButton}
               title={messageTranslate("common.close")}
               class="-mt-0.5 shrink-0"

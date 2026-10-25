@@ -26,6 +26,7 @@ export function AuthenticatedActionMenu(props: {
   return (
     <Popover
       floatingOptions={{ flip: true, offset: 8, shift: true }}
+      onFinalFocus={state.finalFocus}
       onOpenChange={(open) => props.onOpenChange?.(open)}
       open={props.open}
     >
@@ -43,6 +44,7 @@ export function AuthenticatedActionMenu(props: {
               {(item) => (
                 <Popover.Close
                   aria-disabled={item.disabled}
+                  aria-label={item.label}
                   class={classMerge(
                     "flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-start text-[0.8125rem] font-medium transition-colors",
                     item.disabled
