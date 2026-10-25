@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => {
       port: uiPort,
       strictPort: true,
       proxy: {
+        "/.well-known": `http://127.0.0.1:${apiPort}`,
         "/api": `http://127.0.0.1:${apiPort}`,
         "/organization-discovery": `http://127.0.0.1:${apiPort}`,
         "/realms": `http://127.0.0.1:${apiPort}`,
