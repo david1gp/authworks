@@ -489,6 +489,51 @@ Explicit `--realm-id` and `--organization-id` flags take precedence over their c
 required ID is missing from both the environment and the selected profile, the CLI exits with a validation error before
 making the request.
 
+## CLI account, directory, and events
+
+The CLI covers the current-account, directory, and event-log operations through the same connection resolution
+(`--server`, `--token`, `--profile`, `--project`, `--env-file`, realm/organization scope):
+
+```bash
+authworks account effective-access --realm-id REALM_ID
+authworks account security-history --realm-id REALM_ID
+authworks directory realm-users --realm-id REALM_ID
+authworks directory organization-users --realm-id REALM_ID --organization-id ORGANIZATION_ID
+authworks directory organization-summary --realm-id REALM_ID --organization-id ORGANIZATION_ID
+authworks directory user-access --realm-id REALM_ID --user-id USER_ID
+authworks events list --realm-id REALM_ID --system-token SYSTEM_SECRET
+authworks events tenant-list --realm-id REALM_ID
+```
+
+`account` commands use the session token (`--token` or `AUTHWORKS_TOKEN`). `directory` commands use the same session
+token. `events list` reads the system event log and needs the system secret (`--system-token` or
+`AUTHWORKS_SYSTEM_SECRET`); `events tenant-list` reads with the session token instead.
+
+Every feature area exposes its user-facing operations through the CLI: users (including `me` and email-address
+management), sessions, organizations, realms, projects, machine users, passwords, email OTP, WhatsApp OTP, MFA
+(including step-up and challenge flows), OIDC clients/signing keys/consents/discovery, external identities (including
+linking), impersonation, passkey revocation, and ZITADEL migration. Browser-bound flows stay out of the CLI: WebAuthn
+registration/authentication ceremonies, OAuth authorization callbacks, and profile-picture upload.
+
+## CLI environments (dev/prod)
+
+Point the CLI at development or production with connection profiles plus an explicit dotenv file. Profiles keep the
+server, token, realm, and organization per environment; `--env-file` loads environment defaults from a file without
+exporting them:
+
+```bash
+authworks profile set dev --server http://127.0.0.1:3000 --realm-id DEV_REALM_ID
+authworks profile set prod --server https://auth.example.com --realm-id PROD_REALM_ID
+authworks events tenant-list --profile dev
+authworks events tenant-list --profile prod --env-file .env.production
+```
+
+Every feature command accepts `--profile NAME`, `--project NAME`, `--env-file PATH` (also `AUTHWORKS_ENV_FILE`),
+`--server`/`--url`/`--base-url`, and `--token`. Resolution per field is: explicit flag, environment variable, dotenv
+file value, selected profile, then the implicit `default` profile. The server itself reads `process.env` (Bun loads
+`.env` automatically); use distinct dotenv files such as `.env.development` and `.env.production` and select between
+them with `--env-file` or `AUTHWORKS_ENV_FILE` rather than mixing values into one shell.
+
 ## Direct project user assignments
 
 Project administrators can manage direct memberships with optional project roles. Omit `--role-keys` for membership-only;
