@@ -1,9 +1,12 @@
 import { expect, test } from "bun:test"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { e2eCheckpointPathGet } from "../../e2e/harness/e2eCheckpointPathGet.js"
 import type { E2eCheckpoint } from "../../e2e/harness/e2eCheckpointSchema.js"
 import { e2eCheckpointWrite } from "../../e2e/harness/e2eCheckpointWrite.js"
 import { e2eCleanupRun } from "../../e2e/harness/e2eCleanupRun.js"
-import { e2eCredentialsResolve } from "../../e2e/harness/e2eCredentialsResolve.js"
+import { e2eCredentialsResolve, e2eProductionEnvironmentMerged } from "../../e2e/harness/e2eCredentialsResolve.js"
 import { e2eRunResumeDecide } from "../../e2e/harness/e2eRunResumeDecide.js"
 import { e2eSuiteRegistryList } from "../../e2e/harness/e2eSuiteRegistryList.js"
 import { e2eSuiteRegistryPendingFilter } from "../../e2e/harness/e2eSuiteRegistryPendingFilter.js"
@@ -127,22 +130,60 @@ test("e2e suite resume skips completed suites in registry order", () => {
 })
 
 test("e2e credentials resolve production members without touching the service user", () => {
-  const resolved = e2eCredentialsResolve({
-    environment: { AUTHWORKS_SSOTEST_PASSWORD: "secret", AUTHWORKS_SSOTEST_USERNAME: "tester" },
-    target: "production",
-  })
-  expect(resolved.success).toBe(true)
-  if (resolved.success) {
-    expect(resolved.data.memberUsername).toBe("tester")
-    expect(resolved.data.serviceUsername).toBe(undefined)
-  }
-  expect(
-    e2eCredentialsResolve({
-      environment: { AUTHWORKS_SSOTEST_PASSWORD: "", AUTHWORKS_SSOTEST_USERNAME: "tester" },
+  // dotenv files on disk also feed the merge, so resolve from an empty directory for a hermetic assertion.
+  e2eOrchestratorDotenvIsolated(() => {
+    const resolved = e2eCredentialsResolve({
+      environment: { AUTHWORKS_SSOTEST_PASSWORD: "secret", AUTHWORKS_SSOTEST_USERNAME: "tester" },
       target: "production",
-    }).success,
-  ).toBe(false)
+    })
+    expect(resolved.success).toBe(true)
+    if (resolved.success) {
+      expect(resolved.data.memberUsername).toBe("tester")
+      expect(resolved.data.serviceUsername).toBe(undefined)
+    }
+    expect(
+      e2eCredentialsResolve({
+        environment: { AUTHWORKS_SSOTEST_PASSWORD: "", AUTHWORKS_SSOTEST_USERNAME: "tester" },
+        target: "production",
+      }).success,
+    ).toBe(false)
+  })
 })
+
+test("e2e production environment merge fills service keys from dotenv files without overriding", async () => {
+  const cwd = process.cwd()
+  const directory = mkdtempSync(join(tmpdir(), "authworks-e2e-dotenv-"))
+  await Bun.write(
+    `${directory}/.env.production`,
+    "AUTHWORKS_E2E_SERVICE_USERNAME=file-service\nAUTHWORKS_E2E_SERVICE_PASSWORD=file-secret\n",
+  )
+  process.chdir(directory)
+  try {
+    const filled = e2eProductionEnvironmentMerged({ AUTHWORKS_SSOTEST_USERNAME: "tester" })
+    expect(filled.AUTHWORKS_E2E_SERVICE_USERNAME).toBe("file-service")
+    expect(filled.AUTHWORKS_E2E_SERVICE_PASSWORD).toBe("file-secret")
+    expect(filled.AUTHWORKS_SSOTEST_USERNAME).toBe("tester")
+    const explicit = e2eProductionEnvironmentMerged({
+      AUTHWORKS_E2E_SERVICE_PASSWORD: "explicit-secret",
+      AUTHWORKS_E2E_SERVICE_USERNAME: "explicit-service",
+    })
+    expect(explicit.AUTHWORKS_E2E_SERVICE_USERNAME).toBe("explicit-service")
+    expect(explicit.AUTHWORKS_E2E_SERVICE_PASSWORD).toBe("explicit-secret")
+  } finally {
+    process.chdir(cwd)
+  }
+})
+
+function e2eOrchestratorDotenvIsolated(run: () => void): void {
+  const cwd = process.cwd()
+  const directory = mkdtempSync(join(tmpdir(), "authworks-e2e-dotenv-"))
+  process.chdir(directory)
+  try {
+    run()
+  } finally {
+    process.chdir(cwd)
+  }
+}
 
 test("e2e credentials resolve dev members and the service user from the dev env file", async () => {
   const directory = await e2eOrchestratorTestDirCreate()

@@ -99,9 +99,12 @@ export function e2eServiceApiClientCreate(
     }
     const cookieHeader = (): string => jar.join("; ")
 
+    // The public origin defaults to the API origin: on dev both are login.localhost, on
+    // production both are the production host. An explicit AUTHWORKS_E2E_PUBLIC_ORIGIN wins.
+    const publicOrigin = e2eServicePublicOriginGet(baseUrl)
     const tenantHost = (() => {
       try {
-        const configured = new URL(process.env.AUTHWORKS_E2E_PUBLIC_ORIGIN ?? "http://login.localhost:5190").hostname
+        const configured = new URL(publicOrigin).hostname
         return configured.length > 0 ? configured : "login.localhost"
       } catch {
         return "login.localhost"
@@ -164,15 +167,9 @@ export function e2eServiceApiClientCreate(
       return createResult(parsed.output)
     }
 
-    // Mutations are origin-checked against the public origin (login.localhost on dev), not
-    // the direct base URL host, so send the public origin on browser-mode mutations.
-    const mutationOrigin = (() => {
-      try {
-        return new URL(process.env.AUTHWORKS_E2E_PUBLIC_ORIGIN ?? "http://login.localhost:5190").origin
-      } catch {
-        return baseUrl
-      }
-    })()
+    // Mutations are origin-checked against the public origin, not the direct base URL
+    // host, so send the public origin on browser-mode mutations.
+    const mutationOrigin = publicOrigin
     const browserHeaders = (csrfToken: string): Headers => {
       const headers = new Headers()
       headers.set(sessionBrowserModeHeaderName, "true")
@@ -183,13 +180,7 @@ export function e2eServiceApiClientCreate(
 
     // Sign in: password login resolves the tenant from the Host header, and a bare host
     // like 127.0.0.1 serves no realm, so resolve the discovery host from the public origin.
-    const originHost = (() => {
-      try {
-        return new URL(process.env.AUTHWORKS_E2E_PUBLIC_ORIGIN ?? "http://login.localhost:5190").hostname
-      } catch {
-        return "login.localhost"
-      }
-    })()
+    const originHost = tenantHost
     const discovered = await parsedRequest(
       `/organization-discovery?domain=${encodeURIComponent(originHost)}`,
       { headers: { host: originHost }, method: "GET" },
@@ -352,4 +343,18 @@ export function e2eServiceApiClientCreate(
         : "The service API client could not be created.",
     ),
   )
+}
+
+function e2eServicePublicOriginGet(baseUrl: string): string {
+  for (const candidate of [process.env.AUTHWORKS_E2E_PUBLIC_ORIGIN, baseUrl]) {
+    if (candidate === undefined || candidate.length === 0) continue
+    let origin: string | undefined
+    try {
+      origin = new URL(candidate).origin
+    } catch {
+      origin = undefined
+    }
+    if (origin !== undefined) return origin
+  }
+  return baseUrl
 }

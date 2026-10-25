@@ -36,7 +36,7 @@ function e2eDotEnvFileParse(raw: string): Record<string, string> {
   return entries
 }
 
-function e2eProductionEnvironmentMerged(
+export function e2eProductionEnvironmentMerged(
   environment: Readonly<Record<string, string | undefined>>,
 ): Record<string, string | undefined> {
   const merged: Record<string, string | undefined> = { ...environment }

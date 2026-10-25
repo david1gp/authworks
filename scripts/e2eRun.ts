@@ -5,7 +5,7 @@ import { e2eCheckpointRead } from "../e2e/harness/e2eCheckpointRead.js"
 import type { E2eCheckpoint } from "../e2e/harness/e2eCheckpointSchema.js"
 import { e2eCheckpointWrite } from "../e2e/harness/e2eCheckpointWrite.js"
 import { e2eCleanupRun } from "../e2e/harness/e2eCleanupRun.js"
-import { e2eCredentialsResolve } from "../e2e/harness/e2eCredentialsResolve.js"
+import { e2eCredentialsResolve, e2eProductionEnvironmentMerged } from "../e2e/harness/e2eCredentialsResolve.js"
 import { e2eDevEnvironmentEnsure, e2eDevEnvironmentStatusGet } from "../e2e/harness/e2eDevEnvironmentEnsure.js"
 import { e2eRunIdCreate } from "../e2e/harness/e2eRunIdCreate.js"
 import { e2eRunLockAcquire, e2eRunLockRelease } from "../e2e/harness/e2eRunLockAcquire.js"
@@ -45,6 +45,9 @@ async function e2eRunScriptMain(): Promise<number> {
     return 2
   }
   const baseUrl = target === "dev" ? "http://login.localhost:5190" : resolved.data.baseUrl
+  // Production service credentials live in .env/.env.production, not the shell. Merge them once so the
+  // in-process cleanup (stale-run purge and the finally hook) authenticates the same way spawned suites do.
+  const runEnvironment = target === "production" ? e2eProductionEnvironmentMerged(process.env) : process.env
   const checkpointPath = e2eCheckpointPathGet(stateDir.data, target)
   const read = e2eCheckpointRead(checkpointPath)
   if (!read.success) {
@@ -62,7 +65,13 @@ async function e2eRunScriptMain(): Promise<number> {
     )
   } else {
     if (existing !== undefined && (decision === "stale" || fresh)) {
-      const cleanup = await e2eCleanupRun({ baseUrl, checkpoint: existing, outcome: "interrupted", target })
+      const cleanup = await e2eCleanupRun({
+        baseUrl,
+        checkpoint: existing,
+        environment: runEnvironment,
+        outcome: "interrupted",
+        target,
+      })
       if (!cleanup.success) process.stderr.write(`Stale-run cleanup reported: ${cleanup.errorMessage}\n`)
       process.stdout.write(
         decision === "stale" && !fresh
@@ -201,6 +210,7 @@ async function e2eRunScriptMain(): Promise<number> {
     const cleanup = await e2eCleanupRun({
       baseUrl,
       checkpoint: finalCheckpoint,
+      environment: runEnvironment,
       outcome,
       stateDir: stateDir.data,
       target,
