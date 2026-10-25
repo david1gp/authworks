@@ -1,5 +1,6 @@
 import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -7,6 +8,7 @@ import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
@@ -131,87 +133,99 @@ export function OidcAdminClientListView(props: {
         status={state.page.status()}
       >
         <AuthenticatedSection>
-          <AuthenticatedRecordList label={messageTranslate("admin.oidc.clients.title")}>
-            <For each={state.filteredClients()}>
-              {(client) => (
-                <AuthenticatedRecordItem
-                  fields={[
-                    { label: messageTranslate("admin.oidc.clients.type"), value: typeLabel(client) },
-                    { label: messageTranslate("admin.oidc.clients.consent"), value: consentLabel(client) },
-                    {
-                      label: messageTranslate("admin.oidc.clients.redirectUris"),
-                      value: <OidcAdminUriList uris={client.redirectUris} wrap />,
-                      wide: true,
-                    },
-                    {
-                      label: messageTranslate("admin.oidc.updated"),
-                      value: localeDateFormat(client.updatedAt, { dateStyle: "medium" }),
-                    },
-                  ]}
-                  status={
-                    <AuthenticatedStatus
-                      label={messageTranslate(`admin.oidc.clients.statusValue.${client.status}`)}
-                      tone={oidcAdminClientStatusTone(client.status)}
-                    />
-                  }
-                  title={clientOpenButton(client)}
-                />
-              )}
-            </For>
-          </AuthenticatedRecordList>
-
-          <Table
-            aria-label={messageTranslate("admin.oidc.clients.title")}
-            class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+          {/* A search with no matches shows the empty state instead of a header-only table. */}
+          <Show
+            fallback={
+              <AuthenticatedEmptyState
+                description={messageTranslate("admin.oidc.clients.emptySearch")}
+                icon={mdiMagnify}
+                title={messageTranslate("admin.oidc.clients.search")}
+              />
+            }
+            when={state.filteredClients().length > 0}
           >
-            <TableHeader class={authenticatedTableClasses.header}>
-              <TableRow>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.oidc.clients.name")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.oidc.clients.type")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.oidc.clients.redirectUris")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.oidc.clients.consent")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.status")}</TableHead>
-                <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.updated")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <AuthenticatedRecordList label={messageTranslate("admin.oidc.clients.title")}>
               <For each={state.filteredClients()}>
                 {(client) => (
-                  <TableRow class={authenticatedTableClasses.row}>
-                    <TableCell class={authenticatedTableClasses.cell}>{clientOpenButton(client)}</TableCell>
-                    <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>
-                      {typeLabel(client)}
-                    </TableCell>
-                    {/* Long exact URIs stay on one line each and truncate, so rows never turn ragged. */}
-                    <TableCell class={`${authenticatedTableClasses.cell} max-w-[26rem]`}>
-                      <OidcAdminUriList uris={client.redirectUris} />
-                    </TableCell>
-                    <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>
-                      {consentLabel(client)}
-                    </TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>
+                  <AuthenticatedRecordItem
+                    fields={[
+                      { label: messageTranslate("admin.oidc.clients.type"), value: typeLabel(client) },
+                      { label: messageTranslate("admin.oidc.clients.consent"), value: consentLabel(client) },
+                      {
+                        label: messageTranslate("admin.oidc.clients.redirectUris"),
+                        value: <OidcAdminUriList uris={client.redirectUris} wrap />,
+                        wide: true,
+                      },
+                      {
+                        label: messageTranslate("admin.oidc.updated"),
+                        value: localeDateFormat(client.updatedAt, { dateStyle: "medium" }),
+                      },
+                    ]}
+                    status={
                       <AuthenticatedStatus
                         label={messageTranslate(`admin.oidc.clients.statusValue.${client.status}`)}
                         tone={oidcAdminClientStatusTone(client.status)}
                       />
-                    </TableCell>
-                    <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(client.updatedAt, { dateStyle: "medium" })}
-                    </TableCell>
-                  </TableRow>
+                    }
+                    title={clientOpenButton(client)}
+                  />
                 )}
               </For>
-            </TableBody>
-          </Table>
+            </AuthenticatedRecordList>
+
+            <Table
+              aria-label={messageTranslate("admin.oidc.clients.title")}
+              class={authenticatedTableClasses.tableWide}
+              tabIndex={0}
+            >
+              <TableHeader class={authenticatedTableClasses.header}>
+                <TableRow>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.oidc.clients.name")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.oidc.clients.type")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.oidc.clients.redirectUris")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.oidc.clients.consent")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.status")}</TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.updated")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <For each={state.filteredClients()}>
+                  {(client) => (
+                    <TableRow class={authenticatedTableClasses.row}>
+                      <TableCell class={authenticatedTableClasses.cell}>{clientOpenButton(client)}</TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>
+                        {typeLabel(client)}
+                      </TableCell>
+                      {/* Long exact URIs stay on one line each and truncate, so rows never turn ragged. */}
+                      <TableCell class={`${authenticatedTableClasses.cell} max-w-[26rem]`}>
+                        <OidcAdminUriList uris={client.redirectUris} />
+                      </TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>
+                        {consentLabel(client)}
+                      </TableCell>
+                      <TableCell class={authenticatedTableClasses.cell}>
+                        <AuthenticatedStatus
+                          label={messageTranslate(`admin.oidc.clients.statusValue.${client.status}`)}
+                          tone={oidcAdminClientStatusTone(client.status)}
+                        />
+                      </TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
+                        {localeDateFormat(client.updatedAt, { dateStyle: "medium" })}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </For>
+              </TableBody>
+            </Table>
+          </Show>
 
           <AuthenticatedPagination
             nextAvailable={state.page.hasNextPage()}

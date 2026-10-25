@@ -527,6 +527,7 @@ admin.oidc.clients.created,İstemci kaydedildi.
 admin.oidc.clients.description,Bu alanda kişileri OpenID Connect üzerinden doğrulayan uygulamalar.
 admin.oidc.clients.detailTitle,OIDC istemci ayrıntısı
 admin.oidc.clients.empty,Bu alanda henüz kayıtlı bir OpenID Connect istemcisi yok.
+admin.oidc.clients.emptySearch,Bu aramayla eşleşen istemci yok.
 admin.oidc.clients.exactMatchHint,Satır başına bir URI. Her yönlendirme tam olarak eşleştirilir; bu nedenle joker karakterler ve sondaki farklılıklar reddedilir.
 admin.oidc.clients.identifier,İstemci tanımlayıcısı
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

@@ -527,6 +527,7 @@ admin.oidc.clients.created,A kliens regisztrálva lett.
 admin.oidc.clients.description,"Alkalmazások, amelyek OpenID Connect használatával hitelesítik az embereket ebben a tartományban."
 admin.oidc.clients.detailTitle,OIDC-kliens részletei
 admin.oidc.clients.empty,Ebben a tartományban még nincs regisztrált OpenID Connect kliens.
+admin.oidc.clients.emptySearch,Egy kliens sem felel meg ennek a keresésnek.
 admin.oidc.clients.exactMatchHint,"Soronként egy URI. Minden átirányítás pontos egyezéssel kerül összehasonlításra, ezért a helyettesítő karakterek és a végződésbeli eltérések elutasításra kerülnek."
 admin.oidc.clients.identifier,Ügyfél-azonosító
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

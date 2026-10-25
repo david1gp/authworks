@@ -527,6 +527,7 @@ admin.oidc.clients.created,Клиент зарегистрирован.
 admin.oidc.clients.description,"Приложения, которые аутентифицируют пользователей через OpenID Connect в этой области."
 admin.oidc.clients.detailTitle,Сведения о клиенте OIDC
 admin.oidc.clients.empty,В этой области ещё не зарегистрировано ни одного клиента OpenID Connect.
+admin.oidc.clients.emptySearch,Ни один клиент не соответствует этому поиску.
 admin.oidc.clients.exactMatchHint,"По одному URI в строке. Каждое перенаправление сверяется точно, поэтому подстановочные знаки и различия в окончании отклоняются."
 admin.oidc.clients.identifier,Идентификатор клиента
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

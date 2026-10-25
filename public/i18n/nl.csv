@@ -527,6 +527,7 @@ admin.oidc.clients.created,De client is geregistreerd.
 admin.oidc.clients.description,Toepassingen die mensen via OpenID Connect authenticeren in dit realm.
 admin.oidc.clients.detailTitle,OIDC-clientdetails
 admin.oidc.clients.empty,Er zijn nog geen OpenID Connect-clients geregistreerd in dit realm.
+admin.oidc.clients.emptySearch,Geen clients komen overeen met deze zoekopdracht.
 admin.oidc.clients.exactMatchHint,"Eén URI per regel. Elke omleiding wordt exact vergeleken, dus jokertekens en afwijkende einden worden geweigerd."
 admin.oidc.clients.identifier,Client-identificatie
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

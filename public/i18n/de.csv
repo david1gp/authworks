@@ -527,6 +527,7 @@ admin.oidc.clients.created,Der Client wurde registriert.
 admin.oidc.clients.description,"Anwendungen, die Personen in diesem Realm über OpenID Connect authentifizieren."
 admin.oidc.clients.detailTitle,OIDC-Clientdetails
 admin.oidc.clients.empty,In diesem Realm ist noch kein OpenID-Connect-Client registriert.
+admin.oidc.clients.emptySearch,Keine Clients entsprechen dieser Suche.
 admin.oidc.clients.exactMatchHint,"Eine URI pro Zeile. Jede Weiterleitung wird exakt abgeglichen, daher werden Platzhalter und abweichende Endungen abgelehnt."
 admin.oidc.clients.identifier,Client-Kennung
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

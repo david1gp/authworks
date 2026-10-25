@@ -527,6 +527,7 @@ admin.oidc.clients.created,クライアントを登録しました。
 admin.oidc.clients.description,このレルムで OpenID Connect を通じて人を認証するアプリケーション。
 admin.oidc.clients.detailTitle,OIDC クライアントの詳細
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
+admin.oidc.clients.emptySearch,この検索に一致するクライアントはありません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
 admin.oidc.clients.identifier,クライアント識別子
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

@@ -527,6 +527,7 @@ admin.oidc.clients.created,El cliente se registró.
 admin.oidc.clients.description,Aplicaciones que autentican a las personas mediante OpenID Connect en este dominio.
 admin.oidc.clients.detailTitle,Detalle del cliente OIDC
 admin.oidc.clients.empty,Todavía no hay clientes de OpenID Connect registrados en este dominio.
+admin.oidc.clients.emptySearch,Ningún cliente coincide con esta búsqueda.
 admin.oidc.clients.exactMatchHint,"Una URI por línea. Cada redirección se compara de forma exacta, por lo que se rechazan los comodines y las diferencias finales."
 admin.oidc.clients.identifier,Identificador del cliente
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

@@ -495,6 +495,7 @@ export const englishCatalog = {
   "admin.oidc.clients.description": "Applications that authenticate people through OpenID Connect in this realm.",
   "admin.oidc.clients.detailTitle": "OIDC client detail",
   "admin.oidc.clients.empty": "No OpenID Connect clients are registered in this realm yet.",
+  "admin.oidc.clients.emptySearch": "No clients match this search.",
   "admin.oidc.clients.exactMatchHint":
     "One URI per line. Every redirect is matched exactly, so wildcards and trailing differences are rejected.",
   "admin.oidc.clients.identifier": "Client identifier",

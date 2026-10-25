@@ -527,6 +527,7 @@ admin.oidc.clients.created,تم تسجيل العميل.
 admin.oidc.clients.description,التطبيقات التي تصادق الأشخاص عبر OpenID Connect في هذا النطاق.
 admin.oidc.clients.detailTitle,تفاصيل عميل OIDC
 admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
+admin.oidc.clients.emptySearch,لا يوجد عملاء يطابقون هذا البحث.
 admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
 admin.oidc.clients.identifier,معرّف العميل
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens

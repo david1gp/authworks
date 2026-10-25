@@ -527,6 +527,7 @@ admin.oidc.clients.created,客户端已注册。
 admin.oidc.clients.description,在此域中通过 OpenID Connect 验证用户身份的应用。
 admin.oidc.clients.detailTitle,OIDC 客户端详情
 admin.oidc.clients.empty,此域中尚未注册任何 OpenID Connect 客户端。
+admin.oidc.clients.emptySearch,没有与此搜索匹配的客户端。
 admin.oidc.clients.exactMatchHint,每行一个 URI。每个重定向都按完全匹配进行校验，因此通配符和结尾差异都会被拒绝。
 admin.oidc.clients.identifier,客户端标识
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
