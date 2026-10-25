@@ -416,7 +416,7 @@ authworks credentials get testadmin --output json
 The first two commands print exactly one value. JSON output is exactly one object, for example:
 
 ```json
-{"userId":"user-123","username":"admin@example.com","password":"test-password"}
+{ "userId": "user-123", "username": "admin@example.com", "password": "test-password" }
 ```
 
 `--field` accepts `username`, `password`, or `userId`; `--output json` and `--field` are mutually exclusive, and one
