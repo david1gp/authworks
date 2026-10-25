@@ -166,7 +166,7 @@ export function e2eServiceUserEnsure(options: E2eServiceUserEnsureOptions): Prom
       if (!verified.success) return verified
     }
 
-    const policy = await apiStage(passwords.passwordPolicyGet(realmId), "password-policy-get")
+    const policy = await apiStage(passwords.passwordPolicySystemGet(realmId), "password-policy-get")
     if (!policy.success) return policy
     const policyChecked = passwordPolicyCheck(options.password, policy.data.policy)
     if (!policyChecked.success)

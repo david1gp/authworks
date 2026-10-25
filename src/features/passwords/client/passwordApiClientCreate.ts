@@ -257,6 +257,14 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         passwordPolicyResponseSchema,
       )
     },
+    passwordPolicySystemGet(realmId: string): Promise<Result<PasswordPolicyResponse>> {
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/password-policy`,
+        { method: "GET" },
+        passwordPolicyResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
+      )
+    },
     passwordPolicyTenantGet(realmId: string): Promise<Result<PasswordPolicyResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/password-policy`,
