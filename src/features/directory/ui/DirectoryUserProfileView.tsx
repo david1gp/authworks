@@ -216,7 +216,6 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                   ? "inaccessible"
                   : "error"
               }
-              title={messageTranslate("admin.users.detailTitle")}
             />
           }
         >
