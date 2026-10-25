@@ -12,6 +12,12 @@ export async function adminRealmAdministratorSessionEnsure(setup: AdminRealmAdmi
   const page = setup.context.page
   await page.goto("/admin/users")
   await page.waitForURL(/\/admin\/users|\/login/, { timeout: 30_000 })
+  // The guard bounces to /login asynchronously after the session check resolves, so the
+  // URL sampled right after navigation can still be /admin/users on a signed-out page.
+  // Wait for a settled marker before branching.
+  const usersHeading = page.getByRole("heading", { name: "Users" }).first()
+  const loginMarker = page.getByRole("heading", { name: "Choose a method" }).or(page.getByLabel("Username or email"))
+  await expect(usersHeading.or(loginMarker)).toBeVisible({ timeout: 30_000 })
   if (/\/login/.test(page.url())) {
     await adminRealmAdministratorSignIn(page, setup)
     return
