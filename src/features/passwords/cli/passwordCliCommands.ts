@@ -297,6 +297,81 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
   docs: { brief: "Ensure the fixed Contentoren ssotest production human from private input" },
 })
 
+const passwordMeChangeCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: PasswordCliFlags & { newPassword: string; currentPassword?: string; realmId?: string },
+  ) {
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordMeChange(resolved.realmId, {
+        ...(flags.currentPassword === undefined ? {} : { currentPassword: flags.currentPassword }),
+        newPassword: flags.newPassword,
+      }),
+      [flags.currentPassword, flags.newPassword, resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...passwordCommonFlags(),
+      realmId: passwordRealmIdFlag(),
+      currentPassword: passwordOptionalTextFlag("Current password"),
+      newPassword: passwordTextFlag("New password"),
+    },
+  },
+  docs: { brief: "Change the current session password" },
+})
+
+const passwordPolicySystemGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: PasswordPolicyCliFlags) {
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordPolicySystemGet(resolved.realmId),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag() } },
+  docs: { brief: "Read the system password policy" },
+})
+
+const passwordCredentialReplaceCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: PasswordCliFlags & {
+      password: string
+      realmId?: string
+      userId: string
+      passwordChangeRequired?: boolean
+    },
+  ) {
+    const { password: payloadPassword, ...connectionFlags } = flags
+    const resolved = await passwordCliConnectionResolve(this, connectionFlags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordCredentialReplace(resolved.realmId, flags.userId, {
+        password: flags.password,
+        ...(flags.passwordChangeRequired === undefined ? {} : { passwordChangeRequired: flags.passwordChangeRequired }),
+      }),
+      [payloadPassword, resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...passwordCommonFlags(),
+      realmId: passwordRealmIdFlag(),
+      userId: passwordUserIdFlag(),
+      password: passwordTextFlag("Replacement password"),
+      passwordChangeRequired: passwordOptionalBooleanFlag("Require a password change on next sign-in"),
+    },
+  },
+  docs: { brief: "Replace a user password credential" },
+})
+
 export const passwordCliCommands = buildRouteMap({
   routes: {
     change: buildCommand({
@@ -327,9 +402,15 @@ export const passwordCliCommands = buildRouteMap({
       docs: { brief: "Change a password" },
     }),
     contentorenSsotestProductionEnsure: passwordContentorenSsoTestProductionEnsureCommand,
+    credentialReplace: passwordCredentialReplaceCommand,
     login: passwordLoginCommand,
+    meChange: passwordMeChangeCommand,
     policy: buildRouteMap({
-      routes: { get: passwordPolicyGetCommand, set: passwordPolicySetCommand },
+      routes: {
+        get: passwordPolicyGetCommand,
+        set: passwordPolicySetCommand,
+        systemGet: passwordPolicySystemGetCommand,
+      },
       docs: { brief: "Manage the password policy" },
     }),
     recover: buildRouteMap({
@@ -488,6 +569,10 @@ function passwordVerificationMethodFlag() {
 
 function passwordNumberFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => Number(value), placeholder: "NUMBER" }
+}
+
+function passwordOptionalBooleanFlag(brief: string) {
+  return { brief, kind: "boolean" as const, optional: true as const }
 }
 
 function passwordBooleanFlag(brief: string) {

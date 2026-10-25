@@ -112,6 +112,295 @@ const externalIdentityProviderDisableCommand = buildCommand({
   docs: { brief: "Disable an external identity provider" },
 })
 
+const externalIdentityProviderUpdateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & {
+      providerId: string
+      allowAccountCreation?: boolean
+      clientId?: string
+      clientSecret?: string
+      displayName?: string
+      enabled?: boolean
+      redirectUri?: string
+      scopes?: string
+    },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderUpdate(
+        resolved.realmId,
+        flags.providerId,
+        {
+          ...(flags.allowAccountCreation === undefined ? {} : { allowAccountCreation: flags.allowAccountCreation }),
+          ...(flags.clientId === undefined ? {} : { clientId: flags.clientId }),
+          ...(flags.clientSecret === undefined ? {} : { clientSecret: flags.clientSecret }),
+          ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
+          ...(flags.enabled === undefined ? {} : { enabled: flags.enabled }),
+          ...(flags.redirectUri === undefined ? {} : { redirectUri: flags.redirectUri }),
+          ...(flags.scopes === undefined ? {} : { scopes: flags.scopes.split(" ") }),
+        },
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+      allowAccountCreation: externalIdentityOptionalBooleanFlag("Allow new accounts"),
+      clientId: externalIdentityOptionalTextFlag("OAuth client ID"),
+      clientSecret: externalIdentityOptionalTextFlag("OAuth client secret"),
+      displayName: externalIdentityOptionalTextFlag("Provider display name"),
+      enabled: externalIdentityOptionalBooleanFlag("Enable the provider"),
+      redirectUri: externalIdentityOptionalTextFlag("Registered callback URI"),
+      scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
+    },
+  },
+  docs: { brief: "Update an external identity provider" },
+})
+
+const externalIdentityProviderPublicListCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & ExternalIdentityListFlags & { organizationId?: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderPublicList(
+        resolved.realmId,
+        resolved.organizationId,
+        externalIdentityListQueryCreate(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      ...externalIdentityListFlags(),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+    },
+  },
+  docs: { brief: "List public external identity providers" },
+})
+
+const externalIdentityProviderMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & ExternalIdentityListFlags) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderMeList(
+        resolved.realmId,
+        externalIdentityListQueryCreate(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...externalIdentityCommonFlags(), ...externalIdentityListFlags() } },
+  docs: { brief: "List external identity providers for the current session" },
+})
+
+const externalIdentityLinkStartCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { providerId: string; userId: string; organizationId?: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityLinkStart(
+        resolved.realmId,
+        flags.userId,
+        flags.providerId,
+        {
+          organizationId: resolved.organizationId,
+        },
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+      userId: externalIdentityUserIdFlag(),
+    },
+  },
+  docs: { brief: "Start linking an external identity to a user" },
+})
+
+const externalIdentityLinkCompleteCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { confirmationToken: string; providerId: string; userId: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityLinkComplete(
+        resolved.realmId,
+        flags.userId,
+        flags.providerId,
+        {
+          confirm: true,
+          confirmationToken: flags.confirmationToken,
+        },
+      ),
+      [flags.confirmationToken, resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      confirmationToken: externalIdentityTextFlag("Link confirmation token"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+      userId: externalIdentityUserIdFlag(),
+    },
+  },
+  docs: { brief: "Complete linking an external identity to a user" },
+})
+
+const externalIdentityUnlinkCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { externalSubject: string; providerId: string; userId: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityUnlink(
+        resolved.realmId,
+        flags.userId,
+        flags.providerId,
+        flags.externalSubject,
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      externalSubject: externalIdentityTextFlag("External subject identifier"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+      userId: externalIdentityUserIdFlag(),
+    },
+  },
+  docs: { brief: "Unlink an external identity from a user" },
+})
+
+const externalIdentityMeListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & ExternalIdentityListFlags) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityMeList(
+        resolved.realmId,
+        externalIdentityListQueryCreate(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...externalIdentityCommonFlags(), ...externalIdentityListFlags() } },
+  docs: { brief: "List the current session external identities" },
+})
+
+const externalIdentityMeLinkStartCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { providerId: string; organizationId?: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityMeLinkStart(
+        resolved.realmId,
+        flags.providerId,
+        {
+          organizationId: resolved.organizationId,
+        },
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+    },
+  },
+  docs: { brief: "Start linking an external identity to the current session" },
+})
+
+const externalIdentityMeLinkCompleteCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { confirmationToken: string; providerId: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityMeLinkComplete(
+        resolved.realmId,
+        flags.providerId,
+        {
+          confirm: true,
+          confirmationToken: flags.confirmationToken,
+        },
+      ),
+      [flags.confirmationToken, resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      confirmationToken: externalIdentityTextFlag("Link confirmation token"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+    },
+  },
+  docs: { brief: "Complete linking an external identity to the current session" },
+})
+
+const externalIdentityMeUnlinkCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & { externalSubject: string; providerId: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityMeUnlink(
+        resolved.realmId,
+        flags.providerId,
+        flags.externalSubject,
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      externalSubject: externalIdentityTextFlag("External subject identifier"),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+    },
+  },
+  docs: { brief: "Unlink an external identity from the current session" },
+})
+
 const externalIdentityStartCommand = buildCommand({
   async func(
     this: ApplicationContext,
@@ -144,9 +433,19 @@ const externalIdentityStartCommand = buildCommand({
 export const externalIdentityCliCommands = buildRouteMap({
   routes: {
     disable: externalIdentityProviderDisableCommand,
+    linkComplete: externalIdentityLinkCompleteCommand,
+    linkStart: externalIdentityLinkStartCommand,
     list: externalIdentityProviderListCommand,
+    meLinkComplete: externalIdentityMeLinkCompleteCommand,
+    meLinkStart: externalIdentityMeLinkStartCommand,
+    meList: externalIdentityMeListCommand,
+    meUnlink: externalIdentityMeUnlinkCommand,
     providerCreate: externalIdentityProviderCreateCommand,
+    providerMeList: externalIdentityProviderMeListCommand,
+    providerPublicList: externalIdentityProviderPublicListCommand,
+    providerUpdate: externalIdentityProviderUpdateCommand,
     start: externalIdentityStartCommand,
+    unlink: externalIdentityUnlinkCommand,
   },
   docs: { brief: "External identities and provider configuration" },
 })
@@ -277,8 +576,16 @@ function externalIdentityListQueryCreate(flags: ExternalIdentityCliFlags & Exter
   }
 }
 
+function externalIdentityUserIdFlag() {
+  return { brief: "User UUID", kind: "parsed" as const, parse: (value: string) => value, placeholder: "USER_ID" }
+}
+
 function externalIdentityTextFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => value, placeholder: "VALUE" }
+}
+
+function externalIdentityOptionalBooleanFlag(brief: string) {
+  return { brief, kind: "boolean" as const, optional: true as const }
 }
 
 function externalIdentityOptionalTextFlag(brief: string) {

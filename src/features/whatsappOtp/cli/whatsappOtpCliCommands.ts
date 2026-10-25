@@ -104,9 +104,90 @@ const whatsappOtpVerifyCommand = buildCommand({
   docs: { brief: "Verify a WhatsApp OTP" },
 })
 
+const whatsappOtpPhoneChangeStartCommand = buildCommand({
+  async func(this: ApplicationContext, flags: WhatsappOtpCliFlags & { phoneNumber: string }) {
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    whatsappOtpCliResultWrite(
+      this,
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpPhoneChangeStart(realmId, {
+        phoneNumber: flags.phoneNumber,
+      }),
+      [connection.data.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...whatsappOtpCommonFlags(),
+      phoneNumber: whatsappOtpTextFlag("Canonical E.164 phone number"),
+    },
+  },
+  docs: { brief: "Start a WhatsApp phone number change" },
+})
+
+const whatsappOtpPhoneChangeResendCommand = buildCommand({
+  async func(this: ApplicationContext, flags: WhatsappOtpCliFlags & { challengeId: string; phoneNumber: string }) {
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    whatsappOtpCliResultWrite(
+      this,
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpPhoneChangeResend(realmId, {
+        challengeId: flags.challengeId,
+        phoneNumber: flags.phoneNumber,
+      }),
+      [connection.data.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...whatsappOtpCommonFlags(),
+      challengeId: whatsappOtpTextFlag("OTP challenge UUID"),
+      phoneNumber: whatsappOtpTextFlag("Canonical E.164 phone number"),
+    },
+  },
+  docs: { brief: "Resend a WhatsApp phone number change OTP" },
+})
+
+const whatsappOtpPhoneChangeVerifyCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: WhatsappOtpCliFlags & { challengeId: string; code: string; phoneNumber: string },
+  ) {
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    whatsappOtpCliResultWrite(
+      this,
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpPhoneChangeVerify(realmId, {
+        challengeId: flags.challengeId,
+        code: flags.code,
+        phoneNumber: flags.phoneNumber,
+      }),
+      [connection.data.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...whatsappOtpCommonFlags(),
+      challengeId: whatsappOtpTextFlag("OTP challenge UUID"),
+      code: whatsappOtpTextFlag("Six-digit OTP code"),
+      phoneNumber: whatsappOtpTextFlag("Canonical E.164 phone number"),
+    },
+  },
+  docs: { brief: "Verify a WhatsApp phone number change" },
+})
+
 export const whatsappOtpCliCommands = buildRouteMap({
   routes: {
     availability: whatsappOtpAvailabilityCommand,
+    phoneChangeResend: whatsappOtpPhoneChangeResendCommand,
+    phoneChangeStart: whatsappOtpPhoneChangeStartCommand,
+    phoneChangeVerify: whatsappOtpPhoneChangeVerifyCommand,
     resend: whatsappOtpResendCommand,
     start: whatsappOtpStartCommand,
     verify: whatsappOtpVerifyCommand,
