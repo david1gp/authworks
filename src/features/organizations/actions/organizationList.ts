@@ -1,7 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -10,6 +9,7 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import type { OrganizationMembershipRow } from "../persistence/organizationMembershipTable.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { OrganizationListResponse } from "../public/organizationListResponseSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
@@ -17,7 +17,7 @@ type OrganizationListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly realmId: string
-  readonly query?: ListQuery
+  readonly query?: OrganizationListQuery
 }
 
 export function organizationList(options: OrganizationListOptions): Result<OrganizationListResponse> {
@@ -39,10 +39,20 @@ export function organizationList(options: OrganizationListOptions): Result<Organ
     if (!memberships.success) return memberships
     for (const membership of memberships.data) membershipsByOrganization.set(membership.organizationId, membership)
   }
+  // An explicit status filter overrides the default visibility: tenants see only active
+  // organizations unless they ask for inactive (or all), while system callers see every
+  // non-removed organization unless they narrow it. Removed organizations never list.
+  const status = options.query?.status
+  const search = options.query?.search?.trim().toLowerCase()
   const organizations = [] as OrganizationListResponse["items"]
   for (const row of rows.data) {
     if (row.status === "removed") continue
-    if (options.context.kind === "tenant" && row.status !== "active") continue
+    if (status === undefined) {
+      if (options.context.kind === "tenant" && row.status !== "active") continue
+    } else if (status !== "all" && row.status !== status) continue
+    if (search !== undefined && search.length > 0) {
+      if (!`${row.name} ${row.id}`.toLowerCase().includes(search)) continue
+    }
     if (options.context.kind === "tenant") {
       const authorized = organizationContextAuthorize({
         context: options.context,

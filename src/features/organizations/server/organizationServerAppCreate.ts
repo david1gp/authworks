@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
 import type { Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
@@ -63,6 +64,8 @@ import { organizationInvitationMeAcceptRequestSchema } from "../public/organizat
 import { organizationInvitationMeDeclineRequestSchema } from "../public/organizationInvitationMeDeclineRequestSchema.js"
 import { organizationInvitationMeInspectRequestSchema } from "../public/organizationInvitationMeInspectRequestSchema.js"
 import { organizationLifecycleRequestSchema } from "../public/organizationLifecycleRequestSchema.js"
+import { organizationListQuerySchema } from "../public/organizationListQuerySchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import { organizationLoginPolicySetRequestSchema } from "../public/organizationLoginPolicySetRequestSchema.js"
 import { organizationMembershipCreateRequestSchema } from "../public/organizationMembershipCreateRequestSchema.js"
 import { organizationMembershipUpdateRequestSchema } from "../public/organizationMembershipUpdateRequestSchema.js"
@@ -130,7 +133,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
-    const query = organizationListQueryRead(context.req.url)
+    const query = organizationDirectoryQueryRead(context.req.url)
     if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
@@ -852,7 +855,7 @@ function organizationAdministratorRoutesRegister(
   app.get("/realms/:realmId/organizations", protectedMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
-    const query = organizationListQueryRead(context.req.url)
+    const query = organizationDirectoryQueryRead(context.req.url)
     if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
@@ -1414,6 +1417,28 @@ function organizationListQueryRead(requestUrl: string): Result<ListQuery> {
   if (!parsed.success)
     return resultErrorCodedCreate("organizationListQueryRead", "The list query is invalid.", "organizations.invalid")
   return parsed
+}
+
+function organizationDirectoryQueryRead(requestUrl: string): Result<OrganizationListQuery> {
+  const searchParams = new URL(requestUrl).searchParams
+  const parsed = listQueryFromSearchParams(searchParams)
+  if (!parsed.success)
+    return resultErrorCodedCreate(
+      "organizationDirectoryQueryRead",
+      "The list query is invalid.",
+      "organizations.invalid",
+    )
+  const query = v.safeParse(organizationListQuerySchema, {
+    ...parsed.data,
+    ...(searchParams.get("status") === null ? {} : { status: searchParams.get("status") }),
+  })
+  if (!query.success)
+    return resultErrorCodedCreate(
+      "organizationDirectoryQueryRead",
+      "The organization filter is invalid.",
+      "organizations.invalid",
+    )
+  return resultCreate(query.output)
 }
 
 function organizationSubjectContextResolve(

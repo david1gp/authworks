@@ -91,6 +91,7 @@ import {
   type OrganizationLifecycleRequest,
   organizationLifecycleRequestSchema,
 } from "../public/organizationLifecycleRequestSchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import {
   type OrganizationListResponse,
   organizationListResponseSchema,
@@ -250,7 +251,7 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         getOptions,
       )
     },
-    organizationTenantList(realmId: string, query?: ListQuery): Promise<Result<OrganizationListResponse>> {
+    organizationTenantList(realmId: string, query?: OrganizationListQuery): Promise<Result<OrganizationListResponse>> {
       return browserRequest(
         organizationListPath(browserOrganizationPath(realmId), query),
         { method: "GET" },
@@ -598,7 +599,7 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         getOptions,
       )
     },
-    organizationList(realmId: string, query?: ListQuery): Promise<Result<OrganizationListResponse>> {
+    organizationList(realmId: string, query?: OrganizationListQuery): Promise<Result<OrganizationListResponse>> {
       return request(
         organizationListPathCreate(`/system/realms/${encodeURIComponent(realmId)}/organizations`, query),
         { method: "GET" },
@@ -1050,13 +1051,18 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
   }
 }
 
-function organizationListPathCreate(path: string, query: ListQuery | undefined): string {
+function organizationListPathCreate(
+  path: string,
+  query: (ListQuery & { readonly status?: string }) | undefined,
+): string {
   if (query === undefined) return path
   const params = new URLSearchParams()
   if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
   if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.search !== undefined) params.set("search", query.search)
   if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
   if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
+  if (query.status !== undefined) params.set("status", query.status)
   const serialized = params.toString()
   return serialized.length === 0 ? path : `${path}?${serialized}`
 }
