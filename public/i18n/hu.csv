@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Szervezethez adás
 admin.userProfile.membershipAdded,{userName} felhasználó hozzáadva a szervezethez.
 admin.userProfile.membershipEmpty,Ez a felhasználó egyetlen szervezetnek sem tagja.
 admin.userProfile.membershipOrganization,Szervezet
+admin.userProfile.membershipRoles,Szerepek
 admin.userProfile.membershipsTitle,Szervezeti tagságok
 admin.userProfile.missingId,Ez a felhasználó nem oldható fel a cím alapján.
 admin.userProfile.never,Soha
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Minden munkamenet visszavonva.
 admin.userProfile.securityTab,Biztonság
 admin.userProfile.sessionsDescription,"Vizsgálja meg az aktív munkameneteket, és vonja vissza a hozzáférést egy eszközről."
 admin.userProfile.sessionsEmpty,Ennek a felhasználónak nincsenek aktív munkamenetei.
+admin.userProfile.sessionsEmptyDetail,"A munkamenetek itt jelennek meg, amikor a felhasználó bejelentkezik."
 admin.userProfile.sessionsRevoke,Visszavonás
 admin.userProfile.sessionsRevokeConfirm,Azonnal visszavonja ezt a munkamenetet? Az eszköz azonnal kijelentkezik.
 admin.userProfile.sessionsRevoked,A munkamenet visszavonva.

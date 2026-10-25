@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Kuruluşa ekle
 admin.userProfile.membershipAdded,{userName} kuruluşa eklendi.
 admin.userProfile.membershipEmpty,Bu kullanıcı hiçbir kuruluşun üyesi değil.
 admin.userProfile.membershipOrganization,Kuruluş
+admin.userProfile.membershipRoles,Roller
 admin.userProfile.membershipsTitle,Kuruluş üyelikleri
 admin.userProfile.missingId,Bu kullanıcı adresten çözümlenemedi.
 admin.userProfile.never,Asla
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Tüm oturumlar iptal edildi.
 admin.userProfile.securityTab,Güvenlik
 admin.userProfile.sessionsDescription,Etkin oturumları inceleyin ve bir cihazın erişimini iptal edin.
 admin.userProfile.sessionsEmpty,Bu kullanıcının etkin oturumu yok.
+admin.userProfile.sessionsEmptyDetail,Kullanıcı oturum açtığında oturumlar burada görünür.
 admin.userProfile.sessionsRevoke,İptal et
 admin.userProfile.sessionsRevokeConfirm,Bu oturum hemen iptal edilsin mi? Cihazın oturumu anında kapatılır.
 admin.userProfile.sessionsRevoked,Oturum iptal edildi.

@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Zur Organisation hinzufügen
 admin.userProfile.membershipAdded,{userName} wurde zur Organisation hinzugefügt.
 admin.userProfile.membershipEmpty,Dieser Benutzer ist kein Mitglied einer Organisation.
 admin.userProfile.membershipOrganization,Organisation
+admin.userProfile.membershipRoles,Rollen
 admin.userProfile.membershipsTitle,Organisationsmitgliedschaften
 admin.userProfile.missingId,Dieser Benutzer konnte anhand der Adresse nicht aufgelöst werden.
 admin.userProfile.never,Nie
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Alle Sitzungen wurden widerrufen.
 admin.userProfile.securityTab,Sicherheit
 admin.userProfile.sessionsDescription,Prüfen Sie aktive Sitzungen und entziehen Sie einem Gerät den Zugriff.
 admin.userProfile.sessionsEmpty,Dieser Benutzer hat keine aktiven Sitzungen.
+admin.userProfile.sessionsEmptyDetail,"Sitzungen erscheinen hier, wenn sich der Benutzer anmeldet."
 admin.userProfile.sessionsRevoke,Widerrufen
 admin.userProfile.sessionsRevokeConfirm,Diese Sitzung sofort widerrufen? Das Gerät wird umgehend abgemeldet.
 admin.userProfile.sessionsRevoked,Die Sitzung wurde widerrufen.

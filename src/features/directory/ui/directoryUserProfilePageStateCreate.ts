@@ -261,6 +261,7 @@ export function directoryUserProfilePageStateCreate(
       return true
     },
     errorGet: error.get,
+    formErrorClear: () => formError.set(undefined),
     formErrorGet: formError.get,
     lifecycleSet: async (state: UserState) => {
       const userId = options.userId()
@@ -354,8 +355,17 @@ export function directoryUserProfilePageStateCreate(
       const userId = options.userId()
       if (userId === undefined) return false
       formError.set(undefined)
-      const draft = profileDraft.get()
-      const displayName = (draft.displayName ?? "").trim()
+      // Fields the admin did not touch (e.g. the dialog was opened from a `?dialog=` URL) keep
+      // their stored value instead of being cleared.
+      const stored = profile.get()?.user?.profile
+      const draft = {
+        displayName: profileDraft.get().displayName ?? stored?.displayName ?? "",
+        firstName: profileDraft.get().firstName ?? stored?.firstName ?? "",
+        lastName: profileDraft.get().lastName ?? stored?.lastName ?? "",
+        nickName: profileDraft.get().nickName ?? stored?.nickName ?? "",
+        preferredLanguage: profileDraft.get().preferredLanguage ?? stored?.preferredLanguage ?? "",
+      }
+      const displayName = draft.displayName.trim()
       if (displayName.length === 0) {
         formError.set(messageTranslate("admin.users.displayNameRequired"))
         return false
@@ -363,10 +373,10 @@ export function directoryUserProfilePageStateCreate(
       const updated = await mutate(`user:profile:${userId}`, () =>
         adapter.userProfileUpdate(userId, {
           displayName,
-          firstName: (draft.firstName ?? "").trim() || null,
-          lastName: (draft.lastName ?? "").trim() || null,
-          nickName: (draft.nickName ?? "").trim() || null,
-          preferredLanguage: (draft.preferredLanguage ?? "").trim() || null,
+          firstName: draft.firstName.trim() || null,
+          lastName: draft.lastName.trim() || null,
+          nickName: draft.nickName.trim() || null,
+          preferredLanguage: draft.preferredLanguage.trim() || null,
         }),
       )
       if (updated === undefined) return false

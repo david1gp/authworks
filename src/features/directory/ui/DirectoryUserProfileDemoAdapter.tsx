@@ -1,5 +1,4 @@
 import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
-import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import type { DirectoryUserProfileViewState } from "./DirectoryUserProfileView.js"
@@ -35,7 +34,6 @@ export function DirectoryUserProfileDemoAdapter() {
         title={messageTranslate("demo.admin.scenario.user_detail.title")}
       />
       <DirectoryUserProfileView state={state} />
-      <ConfirmDialog state={screen.confirmState} titleKey="admin.common.confirmTitle" />
     </div>
   )
 }

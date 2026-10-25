@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Aan organisatie toevoegen
 admin.userProfile.membershipAdded,{userName} is aan de organisatie toegevoegd.
 admin.userProfile.membershipEmpty,Deze gebruiker is geen lid van een organisatie.
 admin.userProfile.membershipOrganization,Organisatie
+admin.userProfile.membershipRoles,Rollen
 admin.userProfile.membershipsTitle,Organisatielidmaatschappen
 admin.userProfile.missingId,Deze gebruiker kon niet uit het adres worden afgeleid.
 admin.userProfile.never,Nooit
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Alle sessies zijn ingetrokken.
 admin.userProfile.securityTab,Beveiliging
 admin.userProfile.sessionsDescription,Bekijk actieve sessies en trek toegang van een apparaat in.
 admin.userProfile.sessionsEmpty,Deze gebruiker heeft geen actieve sessies.
+admin.userProfile.sessionsEmptyDetail,Sessies verschijnen hier wanneer de gebruiker zich aanmeldt.
 admin.userProfile.sessionsRevoke,Intrekken
 admin.userProfile.sessionsRevokeConfirm,Deze sessie onmiddellijk intrekken? Het apparaat wordt direct afgemeld.
 admin.userProfile.sessionsRevoked,De sessie is ingetrokken.

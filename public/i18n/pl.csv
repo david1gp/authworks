@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Dodaj do organizacji
 admin.userProfile.membershipAdded,Dodano użytkownika {userName} do organizacji.
 admin.userProfile.membershipEmpty,Ten użytkownik nie jest członkiem żadnej organizacji.
 admin.userProfile.membershipOrganization,Organizacja
+admin.userProfile.membershipRoles,Role
 admin.userProfile.membershipsTitle,Członkostwa w organizacjach
 admin.userProfile.missingId,Nie można ustalić tego użytkownika na podstawie adresu.
 admin.userProfile.never,Nigdy
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Wszystkie sesje zostały unieważnione.
 admin.userProfile.securityTab,Bezpieczeństwo
 admin.userProfile.sessionsDescription,Sprawdzaj aktywne sesje i odbieraj dostęp z urządzenia.
 admin.userProfile.sessionsEmpty,Ten użytkownik nie ma aktywnych sesji.
+admin.userProfile.sessionsEmptyDetail,"Sesje pojawią się tutaj, gdy użytkownik się zaloguje."
 admin.userProfile.sessionsRevoke,Unieważnij
 admin.userProfile.sessionsRevokeConfirm,Unieważnić tę sesję natychmiast? Urządzenie zostanie od razu wylogowane.
 admin.userProfile.sessionsRevoked,Sesja została unieważniona.

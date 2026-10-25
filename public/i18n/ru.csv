@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Добавить в организацию
 admin.userProfile.membershipAdded,{userName} добавлен в организацию.
 admin.userProfile.membershipEmpty,Этот пользователь не состоит ни в одной организации.
 admin.userProfile.membershipOrganization,Организация
+admin.userProfile.membershipRoles,Роли
 admin.userProfile.membershipsTitle,Членство в организациях
 admin.userProfile.missingId,Не удалось определить пользователя по адресу.
 admin.userProfile.never,Никогда
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Все сеансы отозваны.
 admin.userProfile.securityTab,Безопасность
 admin.userProfile.sessionsDescription,Проверяйте активные сеансы и отзывайте доступ с устройства.
 admin.userProfile.sessionsEmpty,У этого пользователя нет активных сеансов.
+admin.userProfile.sessionsEmptyDetail,"Сеансы появятся здесь, когда пользователь войдёт."
 admin.userProfile.sessionsRevoke,Отозвать
 admin.userProfile.sessionsRevokeConfirm,Немедленно отозвать этот сеанс? Устройство сразу выйдет.
 admin.userProfile.sessionsRevoked,Сеанс отозван.

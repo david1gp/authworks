@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Додати до організації
 admin.userProfile.membershipAdded,{userName} додано до організації.
 admin.userProfile.membershipEmpty,Цей користувач не належить до жодної організації.
 admin.userProfile.membershipOrganization,Організація
+admin.userProfile.membershipRoles,Ролі
 admin.userProfile.membershipsTitle,Членство в організаціях
 admin.userProfile.missingId,Не вдалося визначити користувача за адресою.
 admin.userProfile.never,Ніколи
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Усі сеанси відкликано.
 admin.userProfile.securityTab,Безпека
 admin.userProfile.sessionsDescription,Перевіряйте активні сеанси й відкликайте доступ із пристрою.
 admin.userProfile.sessionsEmpty,Цей користувач не має активних сеансів.
+admin.userProfile.sessionsEmptyDetail,"Сеанси з'являться тут, коли користувач увійде."
 admin.userProfile.sessionsRevoke,Відкликати
 admin.userProfile.sessionsRevokeConfirm,Негайно відкликати цей сеанс? Пристрій одразу вийде.
 admin.userProfile.sessionsRevoked,Сеанс відкликано.

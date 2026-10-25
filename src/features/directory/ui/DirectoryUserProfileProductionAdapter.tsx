@@ -1,4 +1,3 @@
-import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { DirectoryUserProfileViewState } from "./DirectoryUserProfileView.js"
 import { DirectoryUserProfileView } from "./DirectoryUserProfileView.js"
 import { directoryUserProfileProductionStateCreate } from "./directoryUserProfileProductionStateCreate.js"
@@ -18,10 +17,7 @@ export function DirectoryUserProfileProductionAdapter(props: { readonly userId?:
     userId: screen.userId,
     withActor: screen.withActor,
   }
-  return (
-    <>
-      <DirectoryUserProfileView state={state} />
-      <ConfirmDialog state={screen.confirmState} titleKey="admin.common.confirmTitle" />
-    </>
-  )
+  // The view renders the single shared ConfirmDialog; a second mount on the same state
+  // re-opens the focus trap against itself and dismisses confirmations instantly.
+  return <DirectoryUserProfileView state={state} />
 }

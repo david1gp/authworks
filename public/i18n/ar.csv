@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,إضافة إلى مؤسسة
 admin.userProfile.membershipAdded,تمت إضافة {userName} إلى المؤسسة.
 admin.userProfile.membershipEmpty,هذا المستخدم ليس عضواً في أي مؤسسة.
 admin.userProfile.membershipOrganization,المؤسسة
+admin.userProfile.membershipRoles,الأدوار
 admin.userProfile.membershipsTitle,عضويات المؤسسات
 admin.userProfile.missingId,تعذر تحديد هذا المستخدم من العنوان.
 admin.userProfile.never,أبداً
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,تم إلغاء كل الجلسات.
 admin.userProfile.securityTab,الأمان
 admin.userProfile.sessionsDescription,افحص الجلسات النشطة وألغِ الوصول من جهاز ما.
 admin.userProfile.sessionsEmpty,ليس لهذا المستخدم أي جلسات نشطة.
+admin.userProfile.sessionsEmptyDetail,تظهر الجلسات هنا عندما يسجّل المستخدم الدخول.
 admin.userProfile.sessionsRevoke,إلغاء
 admin.userProfile.sessionsRevokeConfirm,هل تريد إلغاء هذه الجلسة فوراً؟ سيُسجَّل خروج الجهاز على الفور.
 admin.userProfile.sessionsRevoked,تم إلغاء الجلسة.

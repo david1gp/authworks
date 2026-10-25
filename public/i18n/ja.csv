@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,組織に追加
 admin.userProfile.membershipAdded,{userName} を組織に追加しました。
 admin.userProfile.membershipEmpty,このユーザーはいかなる組織のメンバーでもありません。
 admin.userProfile.membershipOrganization,組織
+admin.userProfile.membershipRoles,ロール
 admin.userProfile.membershipsTitle,組織メンバーシップ
 admin.userProfile.missingId,アドレスからこのユーザーを特定できませんでした。
 admin.userProfile.never,なし
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,すべてのセッションを取り消しまし
 admin.userProfile.securityTab,セキュリティ
 admin.userProfile.sessionsDescription,アクティブなセッションを確認し、デバイスのアクセスを取り消します。
 admin.userProfile.sessionsEmpty,このユーザーにはアクティブなセッションがありません。
+admin.userProfile.sessionsEmptyDetail,ユーザーがサインインすると、セッションがここに表示されます。
 admin.userProfile.sessionsRevoke,取り消し
 admin.userProfile.sessionsRevokeConfirm,このセッションを今すぐ取り消しますか?デバイスは直ちにサインアウトされます。
 admin.userProfile.sessionsRevoked,セッションを取り消しました。

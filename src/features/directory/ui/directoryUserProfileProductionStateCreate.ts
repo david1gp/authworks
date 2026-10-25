@@ -58,11 +58,15 @@ export function directoryUserProfileProductionStateCreate(options: { readonly us
     navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
   }
   const dialogOpenSet =
-    (dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | undefined) => (open: boolean) =>
+    (dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | undefined) => (open: boolean) => {
+      // A newly opened dialog starts with a clean error slate; a previous surface's failure
+      // must not linger into it (dialogs render the shared form error).
+      if (open) page.formErrorClear()
       paramsSet((next) => {
         if (open && dialog !== undefined) next.set("dialog", dialog)
         else next.delete("dialog")
       })
+    }
 
   return {
     basePath: "/admin",

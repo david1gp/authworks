@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,添加到组织
 admin.userProfile.membershipAdded,已将 {userName} 添加到组织。
 admin.userProfile.membershipEmpty,该用户不属于任何组织。
 admin.userProfile.membershipOrganization,组织
+admin.userProfile.membershipRoles,角色
 admin.userProfile.membershipsTitle,组织成员资格
 admin.userProfile.missingId,无法根据该地址解析此用户。
 admin.userProfile.never,从未
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,所有会话已撤销。
 admin.userProfile.securityTab,安全
 admin.userProfile.sessionsDescription,查看活跃会话并撤销某设备的访问权限。
 admin.userProfile.sessionsEmpty,该用户没有活跃会话。
+admin.userProfile.sessionsEmptyDetail,用户登录后，会话将显示在这里。
 admin.userProfile.sessionsRevoke,撤销
 admin.userProfile.sessionsRevokeConfirm,要立即撤销此会话吗？该设备将即刻退出登录。
 admin.userProfile.sessionsRevoked,会话已撤销。

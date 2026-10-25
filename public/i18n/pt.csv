@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Adicionar à organização
 admin.userProfile.membershipAdded,{userName} foi adicionado à organização.
 admin.userProfile.membershipEmpty,Este utilizador não é membro de nenhuma organização.
 admin.userProfile.membershipOrganization,Organização
+admin.userProfile.membershipRoles,Funções
 admin.userProfile.membershipsTitle,Pertenças às organizações
 admin.userProfile.missingId,Este utilizador não pôde ser resolvido a partir do endereço.
 admin.userProfile.never,Nunca
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Todas as sessões foram revogadas.
 admin.userProfile.securityTab,Segurança
 admin.userProfile.sessionsDescription,Inspecione as sessões ativas e revogue o acesso de um dispositivo.
 admin.userProfile.sessionsEmpty,Este utilizador não tem sessões ativas.
+admin.userProfile.sessionsEmptyDetail,As sessões aparecem aqui quando o utilizador inicia sessão.
 admin.userProfile.sessionsRevoke,Revogar
 admin.userProfile.sessionsRevokeConfirm,Revogar esta sessão de imediato? O dispositivo termina sessão na hora.
 admin.userProfile.sessionsRevoked,A sessão foi revogada.

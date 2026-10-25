@@ -1027,6 +1027,7 @@ admin.userProfile.membershipAdd,Ajouter à une organisation
 admin.userProfile.membershipAdded,{userName} a été ajouté à l'organisation.
 admin.userProfile.membershipEmpty,Cet utilisateur n'est membre d'aucune organisation.
 admin.userProfile.membershipOrganization,Organisation
+admin.userProfile.membershipRoles,Rôles
 admin.userProfile.membershipsTitle,Appartenance aux organisations
 admin.userProfile.missingId,Cet utilisateur n'a pas pu être identifié depuis l'adresse.
 admin.userProfile.never,Jamais
@@ -1063,6 +1064,7 @@ admin.userProfile.revokeAllDone,Toutes les sessions ont été révoquées.
 admin.userProfile.securityTab,Sécurité
 admin.userProfile.sessionsDescription,Consultez les sessions actives et révoquez l'accès d'un appareil.
 admin.userProfile.sessionsEmpty,Cet utilisateur n'a aucune session active.
+admin.userProfile.sessionsEmptyDetail,Les sessions apparaissent ici lorsque l'utilisateur se connecte.
 admin.userProfile.sessionsRevoke,Révoquer
 admin.userProfile.sessionsRevokeConfirm,Révoquer cette session immédiatement ? L'appareil est déconnecté aussitôt.
 admin.userProfile.sessionsRevoked,La session a été révoquée.
