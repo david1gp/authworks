@@ -302,9 +302,65 @@ const machineCredentialRevokeCommand = buildCommand({
   docs: { brief: "Revoke a machine credential" },
 })
 
+const machineCredentialIssueCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MachineRealmFlags & { expiresAt?: number; machineUserId: string; name: string; scopes?: string },
+  ) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineCredentialIssue(realmId, organizationId, {
+        ...(flags.expiresAt === undefined ? {} : { expiresAt: flags.expiresAt }),
+        machineUserId: flags.machineUserId,
+        name: flags.name,
+        scopes: machineScopesSplit(flags.scopes),
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+      name: machineTextFlag("Credential name"),
+      scopes: { ...machineTextFlag("Comma-separated scopes"), optional: true as const },
+      expiresAt: { ...machineNumberFlag("Expiration timestamp in milliseconds"), optional: true as const },
+    },
+  },
+  docs: { brief: "Issue a machine credential" },
+})
+
+const machineProtectedApiGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineCliFlags & { realmId?: string }) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    machineCliResultWrite(this, await machineCliClientCreate(connection.data).machineProtectedApiGet(realmId), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+    },
+  },
+  docs: { brief: "Call the machine protected API probe" },
+})
+
 export const machineUserCliCommands = buildRouteMap({
   routes: {
     apiKeyCreate: machineApiKeyCommand,
+    credentialIssue: machineCredentialIssueCommand,
     credentialList: machineCredentialListCommand,
     credentialRevoke: machineCredentialRevokeCommand,
     create: machineUserCreateCommand,
@@ -312,6 +368,7 @@ export const machineUserCliCommands = buildRouteMap({
     list: machineUserListCommand,
     lifecycle: machineUserLifecycleCommand,
     personalAccessTokenCreate: machinePersonalAccessTokenCommand,
+    protectedApiGet: machineProtectedApiGetCommand,
     secretRotate: machineUserSecretRotateCommand,
   },
   docs: { brief: "Machine users and credentials" },

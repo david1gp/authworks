@@ -28,6 +28,9 @@ type ProjectListCliFlags = ProjectCliFlags & {
 }
 type ProjectListFilterCliFlags = ProjectListCliFlags & { readonly organizationId?: string }
 type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId?: string; readonly realmId?: string }
+type ProjectApplicationIdCliFlags = ProjectIdCliFlags & { readonly applicationId?: string }
+type ProjectGrantIdCliFlags = ProjectIdCliFlags & { readonly grantId?: string }
+type ProjectRoleIdCliFlags = ProjectIdCliFlags & { readonly roleId?: string }
 type ProjectGetCliFlags = ProjectIdCliFlags & { readonly ifModifiedSince?: string }
 type ProjectUserAssignmentCliFlags = ProjectIdCliFlags & { readonly assignmentId: string }
 
@@ -448,6 +451,309 @@ const projectUserAssignmentRemoveCommand = buildCommand({
   docs: { brief: "Remove a project user assignment" },
 })
 
+const projectDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(connection.data).projectDelete(realmId, projectId), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+    },
+  },
+  docs: { brief: "Delete a project" },
+})
+
+const projectApplicationGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectApplicationIdCliFlags & { ifModifiedSince?: string }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const applicationId = projectApplicationIdResolve(this, flags.applicationId)
+    if (realmId === undefined || projectId === undefined || applicationId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectApplicationGet(
+        realmId,
+        projectId,
+        applicationId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      applicationId: applicationScopeIdFlag("Application UUID"),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
+  },
+  docs: { brief: "Get a project application" },
+})
+
+const projectApplicationUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectApplicationIdCliFlags & { name?: string }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const applicationId = projectApplicationIdResolve(this, flags.applicationId)
+    if (realmId === undefined || projectId === undefined || applicationId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectApplicationUpdate(realmId, projectId, applicationId, {
+        ...(flags.name === undefined ? {} : { name: flags.name }),
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      applicationId: applicationScopeIdFlag("Application UUID"),
+      name: { ...textFlag("Application name"), optional: true as const },
+    },
+  },
+  docs: { brief: "Update a project application" },
+})
+
+const projectApplicationDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectApplicationIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const applicationId = projectApplicationIdResolve(this, flags.applicationId)
+    if (realmId === undefined || projectId === undefined || applicationId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectApplicationDelete(realmId, projectId, applicationId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      applicationId: applicationScopeIdFlag("Application UUID"),
+    },
+  },
+  docs: { brief: "Delete a project application" },
+})
+
+const projectApplicationLifecycleCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ProjectApplicationIdCliFlags & { status: "active" | "inactive" | "removed" },
+  ) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const applicationId = projectApplicationIdResolve(this, flags.applicationId)
+    if (realmId === undefined || projectId === undefined || applicationId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectApplicationLifecycleSet(realmId, projectId, applicationId, {
+        status: flags.status,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      applicationId: applicationScopeIdFlag("Application UUID"),
+      status: statusFlag(),
+    },
+  },
+  docs: { brief: "Change a project application lifecycle status" },
+})
+
+const projectGrantUpdateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ProjectGrantIdCliFlags & { grantedOrganizationId?: string; roleKeys?: string },
+  ) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const grantId = projectGrantIdResolve(this, flags.grantId)
+    if (realmId === undefined || projectId === undefined || grantId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectGrantUpdate(realmId, projectId, grantId, {
+        ...(flags.grantedOrganizationId === undefined ? {} : { grantedOrganizationId: flags.grantedOrganizationId }),
+        ...(flags.roleKeys === undefined ? {} : { roleKeys: projectUserAssignmentRoleKeysParse(flags.roleKeys) }),
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      grantId: grantScopeIdFlag("Grant UUID"),
+      grantedOrganizationId: {
+        ...projectScopeIdFlag("Granted organization UUID"),
+        optional: true as const,
+      },
+      roleKeys: { ...textFlag("Comma-separated project role keys; empty clears roles"), optional: true as const },
+    },
+  },
+  docs: { brief: "Update a project grant" },
+})
+
+const projectGrantDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectGrantIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const grantId = projectGrantIdResolve(this, flags.grantId)
+    if (realmId === undefined || projectId === undefined || grantId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectGrantDelete(realmId, projectId, grantId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      grantId: grantScopeIdFlag("Grant UUID"),
+    },
+  },
+  docs: { brief: "Delete a project grant" },
+})
+
+const projectGrantLifecycleCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectGrantIdCliFlags & { status: "active" | "inactive" | "removed" }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const grantId = projectGrantIdResolve(this, flags.grantId)
+    if (realmId === undefined || projectId === undefined || grantId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectGrantLifecycleSet(realmId, projectId, grantId, {
+        status: flags.status,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      grantId: grantScopeIdFlag("Grant UUID"),
+      status: statusFlag(),
+    },
+  },
+  docs: { brief: "Change a project grant lifecycle status" },
+})
+
+const projectRoleUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectRoleIdCliFlags & { displayName?: string; group?: string }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const roleId = projectRoleIdResolve(this, flags.roleId)
+    if (realmId === undefined || projectId === undefined || roleId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectRoleUpdate(realmId, projectId, roleId, {
+        ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
+        ...(flags.group === undefined ? {} : { group: flags.group }),
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      roleId: roleScopeIdFlag("Role UUID"),
+      displayName: { ...textFlag("Role display name"), optional: true as const },
+      group: { ...textFlag("Role group"), optional: true as const },
+    },
+  },
+  docs: { brief: "Update a project role" },
+})
+
+const projectRoleDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectRoleIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    const roleId = projectRoleIdResolve(this, flags.roleId)
+    if (realmId === undefined || projectId === undefined || roleId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectRoleDelete(realmId, projectId, roleId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      roleId: roleScopeIdFlag("Role UUID"),
+    },
+  },
+  docs: { brief: "Delete a project role" },
+})
+
+const projectAccessCheckCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(connection.data).projectAccessCheck(realmId, projectId), [
+      connection.data.token,
+      connection.data.systemToken,
+    ])
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+    },
+  },
+  docs: { brief: "Check project access" },
+})
+
 export const projectCliCommands = buildRouteMap({
   aliases: {
     assign: "assignmentCreate",
@@ -458,20 +764,31 @@ export const projectCliCommands = buildRouteMap({
     unassign: "assignmentRemove",
   },
   routes: {
+    accessCheck: projectAccessCheckCommand,
     assignmentCreate: projectUserAssignmentCreateCommand,
     assignmentList: projectUserAssignmentListCommand,
     assignmentRemove: projectUserAssignmentRemoveCommand,
     assignmentUpdate: projectUserAssignmentUpdateCommand,
     applicationCreate: projectApplicationCreateCommand,
+    applicationDelete: projectApplicationDeleteCommand,
+    applicationGet: projectApplicationGetCommand,
+    applicationLifecycle: projectApplicationLifecycleCommand,
     applicationList: projectApplicationListCommand,
+    applicationUpdate: projectApplicationUpdateCommand,
     create: projectCreateCommand,
+    delete: projectDeleteCommand,
     get: projectGetCommand,
     grantCreate: projectGrantCreateCommand,
+    grantDelete: projectGrantDeleteCommand,
+    grantLifecycle: projectGrantLifecycleCommand,
     grantList: projectGrantListCommand,
+    grantUpdate: projectGrantUpdateCommand,
     lifecycle: projectLifecycleCommand,
     list: projectListCommand,
     roleCreate: projectRoleCreateCommand,
+    roleDelete: projectRoleDeleteCommand,
     roleList: projectRoleListCommand,
+    roleUpdate: projectRoleUpdateCommand,
     update: projectUpdateCommand,
   },
   docs: { brief: "Project, application, role, grant, and assignment administration" },
@@ -620,6 +937,42 @@ function projectIdResolve(context: ApplicationContext, projectId: string | undef
   context.process.stderr.write("Expected input for flag --project-id\n")
   context.process.exitCode = 1
   return undefined
+}
+
+function projectApplicationIdResolve(
+  context: ApplicationContext,
+  applicationId: string | undefined,
+): string | undefined {
+  if (applicationId !== undefined && applicationId.trim().length > 0) return applicationId
+  context.process.stderr.write("Expected input for flag --application-id\n")
+  context.process.exitCode = 1
+  return undefined
+}
+
+function projectGrantIdResolve(context: ApplicationContext, grantId: string | undefined): string | undefined {
+  if (grantId !== undefined && grantId.trim().length > 0) return grantId
+  context.process.stderr.write("Expected input for flag --grant-id\n")
+  context.process.exitCode = 1
+  return undefined
+}
+
+function projectRoleIdResolve(context: ApplicationContext, roleId: string | undefined): string | undefined {
+  if (roleId !== undefined && roleId.trim().length > 0) return roleId
+  context.process.stderr.write("Expected input for flag --role-id\n")
+  context.process.exitCode = 1
+  return undefined
+}
+
+function applicationScopeIdFlag(brief: string) {
+  return { ...idFlag(brief), optional: true as const }
+}
+
+function grantScopeIdFlag(brief: string) {
+  return { ...idFlag(brief), optional: true as const }
+}
+
+function roleScopeIdFlag(brief: string) {
+  return { ...idFlag(brief), optional: true as const }
 }
 
 function ifModifiedSinceFlag() {
