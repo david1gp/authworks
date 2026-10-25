@@ -168,7 +168,6 @@ export function OrganizationConfigurationDomainsSection(props: {
           }}
           open={claimOpen.get()}
           title={messageTranslate("admin.configuration.dialogTitle")}
-          triggerLabel={<span />}
         >
           <form
             class="grid gap-4"
@@ -225,7 +224,6 @@ export function OrganizationConfigurationDomainsSection(props: {
           }}
           open={removeTarget.get() !== undefined}
           title={messageTranslate("admin.configuration.removeTitle")}
-          triggerLabel={<span />}
         >
           <div class="flex justify-end gap-2">
             <AuthenticatedButton onClick={() => removeTarget.set(undefined)} variant="outline">

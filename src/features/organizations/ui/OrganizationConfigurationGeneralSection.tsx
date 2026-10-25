@@ -216,7 +216,6 @@ export function OrganizationConfigurationGeneralSection(props: {
               ? messageTranslate("admin.configuration.deactivate")
               : messageTranslate("admin.configuration.reactivate")
         }
-        triggerLabel={<span />}
       >
         <div class="grid gap-4">
           <Show when={removeDialog()}>
