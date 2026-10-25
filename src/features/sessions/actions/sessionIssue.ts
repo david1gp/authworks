@@ -16,6 +16,7 @@ import { mfaLoginAssuranceClaim } from "../../mfa/server/mfaLoginAssuranceClaim.
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 import { userLastSignInRecord } from "../../users/server/userLastSignInRecord.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
@@ -153,14 +154,20 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     organizationId !== undefined &&
     authenticationMethod.output !== "external_identity"
   ) {
-    const membership = organizationMembershipContextValidate({
-      executor,
-      organizationId,
-      realmId: options.realmId,
-      userId: subjectId,
-    })
-    if (!membership.success)
-      return resultErrorCreate(op, "The session organization context is invalid.", "sessions.unauthorized")
+    // Realm administrators may establish a session in any active organization, mirroring
+    // the organization switch; only other users need an active membership here.
+    const administrator = realmAdministratorIs({ database: executor, realmId: options.realmId, userId: subjectId })
+    if (!administrator.success) return administrator
+    if (!administrator.data) {
+      const membership = organizationMembershipContextValidate({
+        executor,
+        organizationId,
+        realmId: options.realmId,
+        userId: subjectId,
+      })
+      if (!membership.success)
+        return resultErrorCreate(op, "The session organization context is invalid.", "sessions.unauthorized")
+    }
   }
   let sessionLifetimeMs = sessionDefaultLifetimeMs
   if (options.database !== undefined) {

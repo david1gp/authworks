@@ -11,6 +11,7 @@ import { passwordEmailVerify } from "../../src/features/passwords/actions/passwo
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { passwordServerAppCreate } from "../../src/features/passwords/server/passwordServerAppCreate.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -257,6 +258,77 @@ test("session issuance captures organization login lifetime with realm and expli
     })
     expect(explicitSession.success).toBe(true)
     if (explicitSession.success) expect(explicitSession.data.session.expiresAt).toBe(explicitExpiresAt)
+  })
+})
+
+test("realm administrators issue organization sessions without membership", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { context, realm, userId } = await createVerifiedUser(database, "sessions-realm-admin.example.com")
+    let outsiderId = ""
+    let outsiderToken = ""
+    const outsiderRegistered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "outsider-session@example.com",
+        password: "Correct Horse 12",
+        profile: { displayName: "Outsider Session User" },
+        userName: "outsider-session-user",
+      },
+      onVerificationToken: (delivery) => {
+        outsiderId = delivery.userId
+        outsiderToken = delivery.token
+      },
+      realmId: realm.id,
+    })
+    expect(outsiderRegistered.success).toBe(true)
+    if (!outsiderRegistered.success) return
+    expect(passwordEmailVerify({ context, database, input: { token: outsiderToken }, realmId: realm.id }).success).toBe(
+      true,
+    )
+    const organization = organizationCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { name: "Session Realm Admin Organization", ownerUserId: userId },
+      realmId: realm.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    const organizationId = organization.data.organization.id
+
+    const denied = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      organizationId,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: outsiderId,
+    })
+    expect(denied.success).toBe(false)
+    if (denied.success) return
+    expect("code" in denied && denied.code).toBe("sessions.unauthorized")
+
+    const granted = realmAdministratorGrant({
+      context: realmSystemContextCreate("system"),
+      database,
+      realmId: realm.id,
+      userId: outsiderId,
+    })
+    expect(granted.success).toBe(true)
+    if (!granted.success) return
+    const issued = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      organizationId,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: outsiderId,
+    })
+    expect(issued.success).toBe(true)
+    if (!issued.success) return
+    expect(issued.data.session.organizationId).toBe(organizationId)
   })
 })
 
