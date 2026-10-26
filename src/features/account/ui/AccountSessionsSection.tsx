@@ -9,7 +9,6 @@ import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
-import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 import { accountSessionsSectionStateCreate } from "./accountSessionsSectionStateCreate.js"
@@ -38,7 +37,6 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
             <For each={props.state.sessions()}>
               {(session) => {
                 const deviceLabel = () => sessionDeviceLabelGet(session.device)
-                const deviceLocation = () => sessionDeviceLocationGet(session.device)
                 return (
                   <li class="min-w-0">
                     <AuthenticatedDialog
@@ -85,12 +83,20 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                               label: messageTranslate("admin.users.sessions.ipAddress"),
                               value: session.device.ipAddress ?? "",
                             },
-                            ...(deviceLocation() === null
+                            ...(session.device.region === undefined
                               ? []
                               : [
                                   {
-                                    label: messageTranslate("admin.users.sessions.location"),
-                                    value: deviceLocation() ?? "",
+                                    label: messageTranslate("admin.users.sessions.region"),
+                                    value: session.device.region,
+                                  },
+                                ]),
+                            ...(session.device.countryCode === undefined
+                              ? []
+                              : [
+                                  {
+                                    label: messageTranslate("admin.users.sessions.country"),
+                                    value: session.device.countryCode,
                                   },
                                 ]),
                           ]}
