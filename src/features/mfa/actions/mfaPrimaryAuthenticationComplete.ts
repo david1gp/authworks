@@ -4,10 +4,12 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
+import type { OrganizationLoginPolicy } from "../../organizations/public/organizationLoginPolicySchema.js"
 import type { SessionAuthenticationMethod } from "../../sessions/public/sessionAuthenticationMethodSchema.js"
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
 import type { MfaChallengeResponse } from "../public/mfaChallengeResponseSchema.js"
+import { mfaInitSkipGraceActive } from "./mfaInitSkipGraceActive.js"
 import { mfaLoginChallengeStart } from "./mfaLoginChallengeStart.js"
 
 type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
@@ -34,24 +36,52 @@ export function mfaPrimaryAuthenticationComplete<TSession>(
   const repository = mfaRepositoryCreate(options.executor)
   const legacyPolicy = repository.mfaPolicyGet(options.realmId)
   if (!legacyPolicy.success) return legacyPolicy
-  let organizationRequired = false
-  let organizationMinimumStepUpAssurance: "none" | "authenticated" | "multi_factor" | undefined
+  let organizationPolicy: OrganizationLoginPolicy | null = null
   if (options.policyDatabase !== undefined) {
-    const organizationPolicy = organizationLoginPolicyResolve({
+    const resolved = organizationLoginPolicyResolve({
       database: options.policyDatabase,
       executor: options.executor,
       organizationId: options.organizationId,
       realmId: options.realmId,
     })
-    if (!organizationPolicy.success) return organizationPolicy
-    organizationRequired = organizationPolicy.data.requiredMfa
-    organizationMinimumStepUpAssurance = organizationPolicy.data.minimumStepUpAssurance
+    if (!resolved.success) return resolved
+    organizationPolicy = resolved.data
   }
+  const organizationRequired = organizationPolicy?.requiredMfa ?? false
+  const organizationMinimumStepUpAssurance = organizationPolicy?.minimumStepUpAssurance
   const legacyRequired = (legacyPolicy.data ?? mfaPolicyDefaults).mode === "required"
   const minimumAssuranceRequiresMfa =
     organizationMinimumStepUpAssurance !== undefined &&
     mfaAssuranceRankGet(organizationMinimumStepUpAssurance) > mfaAssuranceRankGet("authenticated")
-  if (organizationRequired || legacyRequired || minimumAssuranceRequiresMfa) {
+  let required = organizationRequired || legacyRequired
+  if (
+    required &&
+    (organizationPolicy?.forceMfaLocalOnly ?? false) &&
+    options.primaryAuthenticationMethod === "external_identity"
+  )
+    required = false
+  if (required || minimumAssuranceRequiresMfa) {
+    if (
+      required &&
+      !minimumAssuranceRequiresMfa &&
+      organizationPolicy !== null &&
+      options.sessionCreate !== undefined
+    ) {
+      const grace = mfaInitSkipGraceActive({
+        executor: options.executor,
+        now: options.runtime.now(),
+        policy: organizationPolicy,
+        primaryAuthenticationMethod: options.primaryAuthenticationMethod,
+        realmId: options.realmId,
+        userId: options.userId,
+      })
+      if (!grace.success) return grace
+      if (grace.data) {
+        const session = options.sessionCreate()
+        if (!session.success) return session
+        return resultCreate({ session: session.data })
+      }
+    }
     const challenge = mfaLoginChallengeStart({
       actorId: options.actorId,
       deviceMetadata: options.deviceMetadata,

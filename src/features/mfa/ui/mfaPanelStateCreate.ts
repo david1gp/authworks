@@ -10,16 +10,16 @@ type MfaPanelStateCreateOptions = {
 }
 
 const factorDetails: Readonly<Record<MfaFactor, MessageKey>> = {
-  "email-otp": "login.mfa.emailOtpDetail",
+  email_otp: "login.mfa.emailOtpDetail",
   passkey: "login.mfa.passkeyDetail",
-  "recovery-code": "login.mfa.recoveryCodeDetail",
+  recovery_code: "login.mfa.recoveryCodeDetail",
   totp: "login.mfa.totpDetail",
 }
 
 const factorLabels: Readonly<Record<MfaFactor, MessageKey>> = {
-  "email-otp": "login.mfa.emailOtp",
+  email_otp: "login.mfa.emailOtp",
   passkey: "login.mfa.passkey",
-  "recovery-code": "login.mfa.recoveryCode",
+  recovery_code: "login.mfa.recoveryCode",
   totp: "login.mfa.totp",
 }
 

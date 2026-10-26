@@ -147,6 +147,59 @@ const mfaRecoveryCommand = buildCommand({
   docs: { brief: "Generate single-use recovery codes" },
 })
 
+const mfaTotpAdminRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { userId: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaTotpAdministratorRemove(realmId, flags.userId),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      userId: mfaTextFlag("User ID"),
+    },
+  },
+  docs: { brief: "Remove a user's TOTP enrollments as administrator" },
+})
+
+const mfaRecoveryAdminInvalidateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { userId: string }) {
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    mfaCliResultWrite(
+      this,
+      await mfaCliClientCreate(connection.data, this, flags).mfaRecoveryCodesAdministratorInvalidate(
+        realmId,
+        flags.userId,
+      ),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
+    )
+  },
+  parameters: {
+    flags: {
+      ...mfaCommonFlags(),
+      realmId: mfaRealmIdFlag(),
+      userId: mfaTextFlag("User ID"),
+    },
+  },
+  docs: { brief: "Invalidate a user's recovery codes as administrator" },
+})
+
 const mfaTotpRemoveCommand = buildCommand({
   async func(this: ApplicationContext, flags: MfaRealmFlags & { enrollmentId?: string }) {
     const connection = await mfaCliConnectionResolve(this, flags)
@@ -403,7 +456,9 @@ export const mfaCliCommands = buildRouteMap({
       docs: { brief: "Manage MFA policy" },
     }),
     recovery: mfaRecoveryCommand,
+    recoveryAdminInvalidate: mfaRecoveryAdminInvalidateCommand,
     recoveryVerify: mfaRecoveryVerifyCommand,
+    totpAdminRemove: mfaTotpAdminRemoveCommand,
   },
   docs: { brief: "Manage multi-factor authentication" },
 })

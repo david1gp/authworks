@@ -7,6 +7,7 @@ import { mfaChallengeComplete } from "./mfaChallengeComplete.js"
 
 type MfaStepUpCompleteOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: MfaChallengeCompleteRequest
@@ -19,6 +20,7 @@ type MfaStepUpCompleteOptions = {
 export function mfaStepUpComplete(options: MfaStepUpCompleteOptions): Result<MfaLoginResponse> {
   return mfaChallengeComplete({
     actorId: options.actorId,
+    allowDevelopmentFallback: options.allowDevelopmentFallback,
     correlationId: options.correlationId,
     database: options.database,
     encryptionSecret: options.encryptionSecret,

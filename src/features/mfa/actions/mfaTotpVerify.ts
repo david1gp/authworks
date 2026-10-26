@@ -18,6 +18,7 @@ import type { MfaTotpVerifyResponse } from "../public/mfaTotpVerifyResponseSchem
 
 type MfaTotpVerifyOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly code: string
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
@@ -56,6 +57,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       enrollment.data.encryptedSecret,
       options.realmId,
       options.encryptionSecret,
+      options.allowDevelopmentFallback === true,
     )
     if (!secret.success) return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.invalid")
     const verified = mfaTotpCodeVerify(

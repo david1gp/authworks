@@ -20,10 +20,12 @@ import { mfaChallengeFactorSelect } from "../actions/mfaChallengeFactorSelect.js
 import { mfaEmailOtpStart } from "../actions/mfaEmailOtpStart.js"
 import { mfaPolicyGet } from "../actions/mfaPolicyGet.js"
 import { mfaPolicySet } from "../actions/mfaPolicySet.js"
+import { mfaRecoveryCodesAdministratorInvalidate } from "../actions/mfaRecoveryCodesAdministratorInvalidate.js"
 import { mfaRecoveryCodesGenerate } from "../actions/mfaRecoveryCodesGenerate.js"
 import { mfaRecoveryCodeVerify } from "../actions/mfaRecoveryCodeVerify.js"
 import { mfaStepUpComplete } from "../actions/mfaStepUpComplete.js"
 import { mfaStepUpStart } from "../actions/mfaStepUpStart.js"
+import { mfaTotpAdministratorRemove } from "../actions/mfaTotpAdministratorRemove.js"
 import { mfaTotpEnrollmentConfirm } from "../actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentRemove } from "../actions/mfaTotpEnrollmentRemove.js"
 import { mfaTotpEnrollmentRename } from "../actions/mfaTotpEnrollmentRename.js"
@@ -40,6 +42,7 @@ import { mfaTotpEnrollmentRemoveRequestSchema } from "../public/mfaTotpEnrollmen
 import { mfaTotpEnrollmentRenameRequestSchema } from "../public/mfaTotpEnrollmentRenameRequestSchema.js"
 
 type MfaServerAppCreateOptions = {
+  readonly allowDevelopmentFallback?: boolean
   readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly systemSecret?: Secret | string
@@ -68,6 +71,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     publicOrigin: options.publicOrigin,
   })
   const encryptionSecret = options.encryptionSecret ?? options.systemSecret
+  const allowDevelopmentFallback = options.allowDevelopmentFallback === true
 
   app.get(
     "/realms/:realmId/mfa-policy",
@@ -168,6 +172,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       context,
       mfaTotpEnrollmentStart({
         actorId: context.get("authorizationActor").actorId,
+        allowDevelopmentFallback,
         database: options.database,
         encryptionSecret,
         input: input.output,
@@ -187,6 +192,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       context,
       mfaTotpEnrollmentConfirm({
         actorId: context.get("authorizationActor").actorId,
+        allowDevelopmentFallback,
         database: options.database,
         encryptionSecret,
         input: input.output,
@@ -209,6 +215,46 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         realmId: context.req.param("realmId"),
         sessionToken: mfaSessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
         userId: context.get("authorizationActor").actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/users/:userId/mfa/totp", protectedMiddleware, (context) => {
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.userManage,
+      realmId: context.req.param("realmId"),
+      targetUserId: context.req.param("userId"),
+    })
+    if (!authorized.success) return mfaErrorResponseCreate(context, authorized.errorMessage, authorized.code)
+    return mfaResultResponseCreate(
+      context,
+      mfaTotpAdministratorRemove({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/users/:userId/mfa/recovery-codes", protectedMiddleware, (context) => {
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.userManage,
+      realmId: context.req.param("realmId"),
+      targetUserId: context.req.param("userId"),
+    })
+    if (!authorized.success) return mfaErrorResponseCreate(context, authorized.errorMessage, authorized.code)
+    return mfaResultResponseCreate(
+      context,
+      mfaRecoveryCodesAdministratorInvalidate({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
       }),
     )
   })
@@ -241,6 +287,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       context,
       mfaTotpVerify({
         actorId: context.get("authorizationActor").actorId,
+        allowDevelopmentFallback,
         code,
         database: options.database,
         encryptionSecret,
@@ -300,6 +347,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     if (!input.success) return mfaErrorResponseCreate(context, "The MFA code is invalid.", "mfa.invalid")
     const completed = mfaStepUpComplete({
       actorId: context.get("authorizationActor").actorId,
+      allowDevelopmentFallback,
       database: options.database,
       encryptionSecret,
       input: input.output,
@@ -320,6 +368,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     const input = v.safeParse(mfaChallengeCompleteRequestSchema, body.data)
     if (!input.success) return mfaErrorResponseCreate(context, "The MFA code is invalid.", "mfa.invalid")
     const completed = mfaChallengeComplete({
+      allowDevelopmentFallback,
       database: options.database,
       encryptionSecret,
       input: input.output,

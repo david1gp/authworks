@@ -9,10 +9,13 @@ export function mfaTotpSecretProtect(
   value: string,
   realmId: string,
   secret?: Secret | string,
+  allowDevelopmentFallback = false,
 ): Result<string> {
   const op = "mfaTotpSecretProtect"
   if (realmId.length === 0)
     return resultErrorCreate(op, "The TOTP secret protection context is invalid.", "mfa.invalid")
+  if (secret === undefined && !allowDevelopmentFallback)
+    return resultErrorCreate(op, "The TOTP encryption secret is not configured.", "mfa.invalid")
   try {
     const keyValue =
       secret === undefined ? `development-only:${realmId}` : typeof secret === "string" ? secret : secret.valueGet()

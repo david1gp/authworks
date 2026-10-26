@@ -25,6 +25,7 @@ import type { MfaTotpEnrollmentStartResponse } from "../public/mfaTotpEnrollment
 
 type MfaTotpEnrollmentStartOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly database?: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly executor?: StorageTransaction
@@ -68,7 +69,13 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
     return resultErrorCreate(op, "The TOTP enrollment is invalid.", "mfa.invalid")
   const secret = mfaTotpSecretCreate(runtime)
   if (!secret.success) return secret
-  const protectedSecret = mfaTotpSecretProtect("encrypt", secret.data, options.realmId, options.encryptionSecret)
+  const protectedSecret = mfaTotpSecretProtect(
+    "encrypt",
+    secret.data,
+    options.realmId,
+    options.encryptionSecret,
+    options.allowDevelopmentFallback === true,
+  )
   if (!protectedSecret.success) return protectedSecret
   const enrollmentId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)

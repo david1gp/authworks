@@ -20,6 +20,8 @@ import type { MfaPolicyResponse } from "../public/mfaPolicyResponseSchema.js"
 import { mfaPolicyResponseSchema } from "../public/mfaPolicyResponseSchema.js"
 import type { MfaPolicySetRequest } from "../public/mfaPolicySetRequestSchema.js"
 import { mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.js"
+import type { MfaRecoveryCodesInvalidateResponse } from "../public/mfaRecoveryCodesInvalidateResponseSchema.js"
+import { mfaRecoveryCodesInvalidateResponseSchema } from "../public/mfaRecoveryCodesInvalidateResponseSchema.js"
 import type { MfaRecoveryCodesResponse } from "../public/mfaRecoveryCodesResponseSchema.js"
 import { mfaRecoveryCodesResponseSchema } from "../public/mfaRecoveryCodesResponseSchema.js"
 import type { MfaRecoveryCodeVerifyResponse } from "../public/mfaRecoveryCodeVerifyResponseSchema.js"
@@ -153,6 +155,13 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         mfaTotpEnrollmentRemoveResponseSchema,
       )
     },
+    mfaTotpAdministratorRemove(realmId: string, userId: string): Promise<Result<MfaTotpEnrollmentRemoveResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/mfa/totp`,
+        { method: "DELETE" },
+        mfaTotpEnrollmentRemoveResponseSchema,
+      )
+    },
     mfaTotpEnrollmentRename(
       realmId: string,
       enrollmentId: string,
@@ -199,6 +208,16 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/mfa/recovery-codes`,
         json({}),
         mfaRecoveryCodesResponseSchema,
+      )
+    },
+    mfaRecoveryCodesAdministratorInvalidate(
+      realmId: string,
+      userId: string,
+    ): Promise<Result<MfaRecoveryCodesInvalidateResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/mfa/recovery-codes`,
+        { method: "DELETE" },
+        mfaRecoveryCodesInvalidateResponseSchema,
       )
     },
     mfaRecoveryCodeVerify(realmId: string, code: string): Promise<Result<MfaRecoveryCodeVerifyResponse>> {

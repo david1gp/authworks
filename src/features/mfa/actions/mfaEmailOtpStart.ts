@@ -42,11 +42,12 @@ export function mfaEmailOtpStart(options: MfaEmailOtpStartOptions): Result<Email
     const context = mfaLoginChallengeContextGet({
       executor: transaction,
       expectedFactor: "email_otp",
-      expectedPurpose: "login",
       now,
       realmId: options.realmId,
       token: options.challengeToken,
     })
+    if (context.success && context.data.purpose !== "login" && context.data.purpose !== "step_up")
+      return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.invalid")
     if (!context.success) return context
     const available = mfaFactorAvailabilityResolve({
       executor: transaction,

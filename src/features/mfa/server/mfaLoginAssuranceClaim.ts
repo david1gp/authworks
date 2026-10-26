@@ -32,10 +32,11 @@ export function mfaLoginAssuranceClaim(options: MfaLoginAssuranceClaimOptions): 
   if (!challenge.success) return challenge
   if (
     challenge.data === null ||
-    challenge.data.purpose !== "login" ||
+    (challenge.data.purpose !== "login" && challenge.data.purpose !== "step_up") ||
     challenge.data.consumedAt === null ||
     challenge.data.expiresAt <= options.now ||
-    challenge.data.sessionId !== null ||
+    (challenge.data.purpose === "login" && challenge.data.sessionId !== null) ||
+    (challenge.data.purpose === "step_up" && challenge.data.sessionId === null) ||
     challenge.data.userId !== options.userId ||
     challenge.data.realmId !== options.realmId ||
     challenge.data.primaryAuthenticationMethod !== options.primaryAuthenticationMethod

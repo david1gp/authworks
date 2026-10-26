@@ -5,8 +5,8 @@ describe("mfaPanelStateCreate", () => {
   test("keeps unavailable factors visible but non-selectable", () => {
     const selected: string[] = []
     const state = mfaPanelStateCreate({
-      factorAvailability: () => ({ "email-otp": false, passkey: false, "recovery-code": true, totp: true }),
-      factors: () => ["totp", "email-otp", "passkey", "recovery-code"],
+      factorAvailability: () => ({ email_otp: false, passkey: false, recovery_code: true, totp: true }),
+      factors: () => ["totp", "email_otp", "passkey", "recovery_code"],
       mode: () => "select",
       onSelect: (factor) => selected.push(factor),
     })
@@ -21,7 +21,7 @@ describe("mfaPanelStateCreate", () => {
       {
         available: false,
         detail: "login.mfa.emailOtpDetail",
-        factor: "email-otp",
+        factor: "email_otp",
         label: "login.mfa.emailOtp",
       },
       {
@@ -33,7 +33,7 @@ describe("mfaPanelStateCreate", () => {
       {
         available: true,
         detail: "login.mfa.recoveryCodeDetail",
-        factor: "recovery-code",
+        factor: "recovery_code",
         label: "login.mfa.recoveryCode",
       },
     ])

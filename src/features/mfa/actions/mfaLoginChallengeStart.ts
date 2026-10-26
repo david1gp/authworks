@@ -180,6 +180,28 @@ function mfaLoginChallengeStartTransaction(
     organizationPolicy = resolved.data
   }
   const permittedFactors = organizationPolicy?.allowedFactors ?? (["totp"] as const)
+  const organizationRequiresMfa = organizationPolicy?.requiredMfa === true
+  const legacyMode = policyRow.data?.mode
+  if (legacyMode === "disabled" && !organizationRequiresMfa)
+    return resultErrorCreate(
+      "mfaLoginChallengeStart",
+      "Multi-factor authentication is disabled for this realm.",
+      "mfa.factor-disabled",
+    )
+  if (legacyMode === "optional" && !organizationRequiresMfa && available.data.length === 0)
+    return resultErrorCreate(
+      "mfaLoginChallengeStart",
+      "No permitted MFA factor is currently enrolled.",
+      "mfa.enrollment-required",
+      {
+        availableFactors: [],
+        permittedFactors,
+        remediation: {
+          action: "enroll_mfa_factor",
+          factors: permittedFactors,
+        },
+      },
+    )
   if (options.factor !== undefined && !permittedFactors.includes(options.factor))
     return resultErrorCreate(
       "mfaLoginChallengeStart",

@@ -21,6 +21,7 @@ import type { MfaTotpEnrollmentConfirmResponse } from "../public/mfaTotpEnrollme
 
 type MfaTotpEnrollmentConfirmOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: MfaTotpEnrollmentConfirmRequest
@@ -59,6 +60,7 @@ export function mfaTotpEnrollmentConfirm(
       enrollment.data.encryptedSecret,
       options.realmId,
       options.encryptionSecret,
+      options.allowDevelopmentFallback === true,
     )
     if (!secret.success) return resultErrorCreate(op, "The TOTP enrollment is invalid.", "mfa.invalid")
     const step = mfaTotpCodeVerify(secret.data, input.output.code, now, policy.totpWindow)

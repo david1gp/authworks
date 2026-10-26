@@ -46,7 +46,7 @@ export function mfaPasskeyComplete(options: MfaPasskeyCompleteOptions): Result<M
     challenge.data === null ||
     challenge.data.consumedAt !== null ||
     challenge.data.expiresAt <= now ||
-    challenge.data.purpose !== "login" ||
+    (challenge.data.purpose !== "login" && challenge.data.purpose !== "step_up") ||
     challenge.data.factor !== "passkey" ||
     challenge.data.userId !== options.userId
   )
