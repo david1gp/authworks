@@ -5,10 +5,12 @@ import { directoryServerAppCreate } from "../features/directory/server/directory
 import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort.js"
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
+import { emailOtpSecurityNotificationLogCreate } from "../features/emailOtp/server/emailOtpSecurityNotificationLogCreate.js"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
+import { impersonationSecurityNotificationLogCreate } from "../features/impersonation/server/impersonationSecurityNotificationLogCreate.js"
 import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
 import { machineUserServerAppCreate } from "../features/machineUsers/server/machineUserServerAppCreate.js"
 import { mcpServerAppCreate } from "../features/mcp/server/mcpServerAppCreate.js"
@@ -198,8 +200,13 @@ export function serverApplicationCreate(
     "/",
     emailOtpServerAppCreate({
       browserMode: options.browserMode,
+      clientIpResolve:
+        options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
       database: database.data,
       onDelivery: emailDeliveryCallbacks?.onOtpDelivery,
+      onSecurityNotification: emailOtpSecurityNotificationLogCreate(),
+      rateLimitSecret: options.systemSecret,
+      trustedProxyAddresses: options.trustedProxyAddresses,
     }),
   )
   application.route(
@@ -220,6 +227,7 @@ export function serverApplicationCreate(
     "/",
     externalIdentityServerAppCreate({
       accountUiOrigin,
+      allowDevelopmentFallback: options.production !== true,
       browserMode: options.browserMode,
       database: database.data,
       profilePictureImport,
@@ -263,10 +271,18 @@ export function serverApplicationCreate(
     machineUserServerAppCreate({ database: database.data, publicOrigin, systemSecret: options.systemSecret }),
   )
   application.route("/", mcpServerAppCreate({ database: database.data }))
-  application.route("/", impersonationServerAppCreate({ database: database.data, publicOrigin }))
+  application.route(
+    "/",
+    impersonationServerAppCreate({
+      database: database.data,
+      onSecurityNotification: impersonationSecurityNotificationLogCreate(),
+      publicOrigin,
+    }),
+  )
   application.route(
     "/",
     mfaServerAppCreate({
+      allowDevelopmentFallback: options.production !== true,
       browserMode: options.browserMode,
       database: database.data,
       encryptionSecret: options.systemSecret,
