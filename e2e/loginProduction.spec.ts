@@ -45,6 +45,10 @@ const discovery = {
     preferredFactorOrder: ["totp", "email_otp", "passkey"],
     providerIds: [providerId],
     requiredMfa: false,
+    mfaInitSkipLifetimeSeconds: null,
+    secondFactorCheckLifetimeSeconds: null,
+    multiFactorCheckLifetimeSeconds: null,
+    forceMfaLocalOnly: false,
   },
   providers: [{ displayName: "GitHub", id: providerId, type: "github" }],
 }
@@ -366,7 +370,7 @@ test("a production sign-in failure is shown in place without disclosing the acco
   await page.getByLabel("Password", { exact: true }).fill("wrong")
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
-  await expect(page.getByRole("alert")).toContainText("The identifier or password is incorrect.")
+  await expect(page.getByRole("alert")).toContainText("Incorrect username or password.")
   await expect(page).toHaveURL(/\/login\/password$/)
 })
 
@@ -583,4 +587,120 @@ test("the registration entry point is hidden when the login policy forbids it", 
 
   await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Create an account" })).toBeHidden()
+})
+
+test("a direct register route returns to the chooser when the policy forbids registration", async ({ page }) => {
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }), {
+    ...discovery,
+    policy: { ...discovery.policy, allowRegistration: false },
+  })
+
+  await page.goto("/login/register")
+
+  await expect(page).toHaveURL(/\/login\/chooser$/)
+  await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
+})
+
+test("a forced password change routes to the change-required screen and resumes sign-in", async ({ page }) => {
+  const requests = await loginBackendMock(page, (route, pathname) => {
+    if (pathname.endsWith("/password/login"))
+      return route.fulfill({ json: { authentication, passwordChangeRequired: true } })
+    if (pathname.endsWith("/me/password")) return route.fulfill({ json: { changed: true } })
+    return route.fulfill({ json: { authentication } })
+  })
+
+  await page.goto("/login/password")
+  await page.getByLabel("Username or email").fill("alex@acme.example")
+  await page.getByLabel("Password", { exact: true }).fill("old-password")
+  await page.getByRole("button", { name: "Sign in", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\/password\/change-required$/)
+  await expect(page.getByRole("heading", { name: "Change your password" })).toBeVisible()
+
+  await page.getByLabel("Current password").fill("old-password")
+  await page.getByLabel("New password", { exact: true }).fill("new-password-1")
+  await page.getByLabel("Confirm new password").fill("new-password-1")
+  await page.getByRole("button", { name: "Change password", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/account$/)
+  const change = requests.find((request) => request.pathname.endsWith("/me/password"))
+  expect(JSON.parse(change?.body ?? "{}")).toMatchObject({
+    currentPassword: "old-password",
+    newPassword: "new-password-1",
+  })
+})
+
+test("a forced password change with a pending challenge continues to MFA", async ({ page }) => {
+  await loginBackendMock(page, (route, pathname) => {
+    if (pathname.endsWith("/password/login"))
+      return route.fulfill({
+        json: {
+          authentication,
+          challenge: {
+            challenge: { expiresAt: 600_000, id: "challenge-1", purpose: "login", requiredAssurance: "multi_factor" },
+            token: "t".repeat(43),
+          },
+          passwordChangeRequired: true,
+        },
+      })
+    if (pathname.endsWith("/me/password")) return route.fulfill({ json: { changed: true } })
+    if (pathname.endsWith("/mfa/challenge/complete")) return route.fulfill({ json: { authentication } })
+    return route.fulfill({ json: { authentication } })
+  })
+
+  await page.goto("/login/password")
+  await page.getByLabel("Username or email").fill("alex@acme.example")
+  await page.getByLabel("Password", { exact: true }).fill("old-password")
+  await page.getByRole("button", { name: "Sign in", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\/password\/change-required$/)
+  await page.getByLabel("Current password").fill("old-password")
+  await page.getByLabel("New password", { exact: true }).fill("new-password-1")
+  await page.getByLabel("Confirm new password").fill("new-password-1")
+  await page.getByRole("button", { name: "Change password", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\/mfa$/)
+  await page.getByRole("button", { name: "Authenticator app" }).click()
+  await page.getByLabel("Verification code").fill("123456")
+  await page.getByRole("button", { name: "Verify", exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+})
+
+test("the MFA roster follows the policy factor order", async ({ page }) => {
+  await loginBackendMock(
+    page,
+    (route, pathname) => {
+      if (pathname.endsWith("/password/login"))
+        return route.fulfill({
+          json: {
+            authentication,
+            challenge: {
+              challenge: { expiresAt: 600_000, id: "challenge-1", purpose: "login", requiredAssurance: "multi_factor" },
+              token: "t".repeat(43),
+            },
+          },
+        })
+      return route.fulfill({ json: { authentication } })
+    },
+    {
+      ...discovery,
+      policy: {
+        ...discovery.policy,
+        allowedFactors: ["email_otp", "passkey"],
+        preferredFactorOrder: ["email_otp", "passkey"],
+      },
+    },
+  )
+
+  await page.goto("/login/password")
+  await page.getByLabel("Username or email").fill("alex@acme.example")
+  await page.getByLabel("Password", { exact: true }).fill("correct-horse")
+  await page.getByRole("button", { name: "Sign in", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\/mfa$/)
+  const factors = page.getByRole("button", { name: /Email code|Authenticator app|Passkey|Recovery code/ })
+  await expect(factors).toHaveCount(3)
+  await expect(factors.nth(0)).toContainText("Email code")
+  await expect(factors.nth(1)).toContainText("Passkey")
+  await expect(factors.nth(2)).toContainText("Recovery code")
 })

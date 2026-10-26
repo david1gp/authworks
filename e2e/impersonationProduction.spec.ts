@@ -117,10 +117,14 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
 
     const auditContextPage = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
     await adminSignIn(auditContextPage, fixture.bootstrapAdmin.secret)
-    await auditContextPage.goto(`/admin/events?q=${encodeURIComponent(impersonationSessionId)}`)
+    await auditContextPage.goto(`/admin/events?aggregateId=${encodeURIComponent(impersonationSessionId)}`)
     // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
     await expect(auditContextPage.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
-    await auditContextPage.getByRole("button", { name: "Show payload", exact: true }).first().click()
+    await auditContextPage
+      .getByRole("row")
+      .filter({ hasText: "impersonation.started" })
+      .getByRole("button", { name: "Show payload", exact: true })
+      .click()
     await expect(auditContextPage.locator("body")).toContainText("Ticket IMP-17: investigate the support report.")
 
     await page.goto("/account#profile")
