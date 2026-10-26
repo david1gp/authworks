@@ -1,15 +1,13 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js"
-import * as v from "valibot"
 import type { StorageDatabase } from "../../platform/storage/storageDatabaseOpen.js"
 import { machineCredentialAuthenticate } from "../machineUsers/actions/machineCredentialAuthenticate.js"
 import type { MachineCredentialAuthentication } from "../machineUsers/domain/machineCredentialAuthentication.js"
-import { realmGet } from "../realms/actions/realmGet.js"
 import { realmTenantContextResolve } from "../realms/actions/realmTenantContextResolve.js"
 import type { RealmTenantContext } from "../realms/domain/realmTenantContext.js"
 import { mcpReadToolsRegister } from "./mcpReadToolsRegister.js"
-import type { McpToolDefinition, McpToolResult } from "./mcpToolRegistry.js"
+import type { McpToolDefinition } from "./mcpToolRegistry.js"
 import { mcpToolRegistryCreate } from "./mcpToolRegistry.js"
 import { mcpWriteToolsRegister } from "./mcpWriteToolsRegister.js"
 
@@ -75,17 +73,7 @@ function mcpServerCreate(
   }
   const definitions: McpToolDefinition[] = [
     ...mcpReadToolsRegister({ context, database, realmId, scopes: authenticated.scopes }),
-    ...mcpWriteToolsRegister({ context, database, realmId }),
-    {
-      name: "realm-get",
-      description: "Get the current realm.",
-      inputSchema: v.object({}),
-      run: async () => {
-        const result = realmGet({ context, database, realmId })
-        if (!result.success) return mcpErrorResult(result.errorMessage)
-        return mcpTextResult(result.data)
-      },
-    },
+    ...mcpWriteToolsRegister({ context, database, realmId, scopes: authenticated.scopes }),
   ]
   const registry = mcpToolRegistryCreate(definitions)
   const server = new Server({ name: "authworks", version: "0.3.0" }, { capabilities: { tools: {} } })
@@ -102,14 +90,6 @@ function mcpServerCreate(
     return registry.call(params.name, params.arguments)
   })
   return server
-}
-
-function mcpTextResult(result: unknown): McpToolResult {
-  return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
-}
-
-function mcpErrorResult(message: string): McpToolResult {
-  return { content: [{ type: "text", text: message }], isError: true }
 }
 
 function mcpUnauthorizedResponse(): Response {
