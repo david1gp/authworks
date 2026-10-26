@@ -1,12 +1,7 @@
-import { mdiAccountMultiplePlusOutline } from "@adaptive-ds/mdi/mdiAccountMultiplePlusOutline.js"
-import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
-import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
-import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
-import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
-import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
 import { A, useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -30,6 +25,7 @@ import { AuthenticatedTabs } from "../../../ui/authenticated/AuthenticatedTabs.j
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import type { AuthenticatedDataTableSort } from "../../../ui/authenticated/authenticatedDataTableSort.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
+import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
@@ -45,7 +41,9 @@ import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
 import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialogsStateCreate.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
+import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
+import { directoryTabIconGet } from "./directoryTabIconGet.js"
 
 const directoryRoleMessageKey = (role: OrganizationRoleId): MessageKey => directoryRoleLabelKeyGet(role)
 
@@ -113,17 +111,20 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     return [
       {
         href: directoryTabsHref(state.basePath, search, "people"),
+        icon: directoryTabIconGet("people"),
         label: messageTranslate("admin.users.directoryTabPeople"),
         value: "people" as const,
       },
       {
         count: undefined,
         href: directoryTabsHref(state.basePath, search, "service-accounts"),
+        icon: directoryTabIconGet("service-accounts"),
         label: messageTranslate("admin.users.directoryTabServiceAccounts"),
         value: "service-accounts" as const,
       },
       {
         href: directoryTabsHref(state.basePath, search, "invitations"),
+        icon: directoryTabIconGet("invitations"),
         label: messageTranslate("admin.users.directoryTabInvitations"),
         value: "invitations" as const,
       },
@@ -190,6 +191,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
         <For each={personRoles(entry)}>
           {(role) => (
             <AuthenticatedChip
+              icon={directoryRoleIconGet(role)}
               label={messageTranslate(directoryRoleMessageKey(role))}
               tone={role === "owner" || role === "admin" ? "accent" : "neutral"}
             />
@@ -262,14 +264,18 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
         actions={
           <>
             <AuthenticatedButton
-              icon={mdiAccountMultiplePlusOutline}
+              icon={authenticatedIconRegistry.directoryInvite}
               onClick={() => dialogOpenSet("invite")}
               variant="filledBlue"
             >
               {messageTranslate("admin.users.directoryInvite")}
             </AuthenticatedButton>
             <Show when={page().realmAdministrator()}>
-              <AuthenticatedButton icon={mdiAccountPlus} onClick={() => dialogOpenSet("create-user")} variant="outline">
+              <AuthenticatedButton
+                icon={authenticatedIconRegistry.directoryCreateUser}
+                onClick={() => dialogOpenSet("create-user")}
+                variant="outline"
+              >
                 {messageTranslate("admin.users.create")}
               </AuthenticatedButton>
             </Show>
@@ -316,6 +322,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
             <legend class="sr-only">{messageTranslate("admin.users.directoryRole")}</legend>
             <AuthenticatedButton
               aria-pressed={activeRole() === undefined}
+              icon={directoryRoleIconGet("all")}
               onClick={() => roleSet(undefined)}
               size="sm"
               variant={activeRole() === undefined ? "filledBlue" : "outline"}
@@ -327,6 +334,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               {(role) => (
                 <AuthenticatedButton
                   aria-pressed={activeRole() === role}
+                  icon={directoryRoleIconGet(role)}
                   onClick={() => roleSet(activeRole() === role ? undefined : role)}
                   size="sm"
                   variant={activeRole() === role ? "filledBlue" : "outline"}
@@ -348,7 +356,11 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                 <AuthenticatedSection>
                   <AuthenticatedEmptyState
                     actions={
-                      <AuthenticatedButton icon={mdiRefresh} onClick={page().reload} variant="outline">
+                      <AuthenticatedButton
+                        icon={authenticatedIconRegistry.directoryRetry}
+                        onClick={page().reload}
+                        variant="outline"
+                      >
                         {messageTranslate("common.retry")}
                       </AuthenticatedButton>
                     }
@@ -374,6 +386,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                   actions={
                     <Show when={(query().q ?? "").length > 0 || activeRole() !== undefined}>
                       <AuthenticatedButton
+                        icon={authenticatedIconRegistry.directoryClearFilters}
                         onClick={() => {
                           authenticatedUrlSearchParamWrite("q", "")
                           roleSet(undefined)
@@ -389,6 +402,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                       ? messageTranslate("admin.users.directoryEmptySearchDetail")
                       : messageTranslate("admin.users.directoryNoPeopleDetail")
                   }
+                  icon={directoryTabIconGet("people")}
                   title={
                     (query().q ?? "").length > 0 || activeRole() !== undefined
                       ? messageTranslate("admin.users.directoryEmptySearch")
@@ -499,7 +513,7 @@ function ServiceAccountsSection(props: {
       <AuthenticatedToolbar
         actions={
           <AuthenticatedButton
-            icon={mdiAccountPlus}
+            icon={authenticatedIconRegistry.directoryCreateServiceAccount}
             onClick={() => props.dialogOpenSet("create-service-account")}
             variant="filledBlue"
           >
@@ -525,6 +539,7 @@ function ServiceAccountsSection(props: {
             <AuthenticatedSection>
               <AuthenticatedEmptyState
                 description={messageTranslate("admin.users.directoryServiceAccountEmptyDetail")}
+                icon={directoryTabIconGet("service-accounts")}
                 title={messageTranslate("admin.users.directoryServiceAccountEmpty")}
               />
             </AuthenticatedSection>
@@ -644,6 +659,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
           <AuthenticatedSection>
             <AuthenticatedEmptyState
               description={messageTranslate("admin.organizations.invitations.empty")}
+              icon={directoryTabIconGet("invitations")}
               title={messageTranslate("admin.organizations.invitations.title")}
             />
           </AuthenticatedSection>
@@ -658,7 +674,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                     <Show when={invitation.status === "pending"}>
                       <AuthenticatedButton
                         disabled={page().pendingId() === `invitation:${invitation.id}`}
-                        icon={mdiCancel}
+                        icon={authenticatedIconRegistry.directoryInviteRevoke}
                         onClick={() => page().invitationRevoke(invitation.id, invitation.email)}
                         size="sm"
                         variant="outline"
@@ -670,7 +686,19 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                   fields={[
                     {
                       label: messageTranslate("admin.organizations.memberships.roles"),
-                      value: invitation.roles.map((role) => messageTranslate(directoryRoleMessageKey(role))).join(", "),
+                      value: (
+                        <span class="flex flex-wrap items-center gap-1">
+                          <For each={invitation.roles}>
+                            {(role) => (
+                              <AuthenticatedChip
+                                icon={directoryRoleIconGet(role)}
+                                label={messageTranslate(directoryRoleMessageKey(role))}
+                                tone="neutral"
+                              />
+                            )}
+                          </For>
+                        </span>
+                      ),
                     },
                     {
                       label: messageTranslate("admin.organizations.invitations.expires"),
@@ -721,7 +749,17 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                   <TableRow class={authenticatedTableClasses.row}>
                     <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{invitation.email}</TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
-                      {invitation.roles.map((role) => messageTranslate(directoryRoleMessageKey(role))).join(", ")}
+                      <span class="flex flex-wrap items-center gap-1">
+                        <For each={invitation.roles}>
+                          {(role) => (
+                            <AuthenticatedChip
+                              icon={directoryRoleIconGet(role)}
+                              label={messageTranslate(directoryRoleMessageKey(role))}
+                              tone="neutral"
+                            />
+                          )}
+                        </For>
+                      </span>
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
                       <AuthenticatedStatus
@@ -739,7 +777,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                       <Show when={invitation.status === "pending"}>
                         <AuthenticatedButton
                           disabled={page().pendingId() === `invitation:${invitation.id}`}
-                          icon={mdiCancel}
+                          icon={authenticatedIconRegistry.directoryInviteRevoke}
                           onClick={() => page().invitationRevoke(invitation.id, invitation.email)}
                           size="sm"
                           variant="outline"
@@ -808,6 +846,7 @@ function InviteUserDialog(props: { state: DirectoryAdminUsersViewState }) {
                       onChange={() => dialogs().inviteRolesToggle(role)}
                       type="checkbox"
                     />
+                    <Icon aria-hidden="true" class="size-4 text-muted-foreground" path={directoryRoleIconGet(role)} />
                     {messageTranslate(directoryRoleMessageKey(role))}
                   </label>
                 )}
@@ -818,7 +857,7 @@ function InviteUserDialog(props: { state: DirectoryAdminUsersViewState }) {
             {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
           </Show>
           <div class="flex justify-end gap-2">
-            <AuthenticatedButton icon={mdiAccountMultiplePlusOutline} type="submit" variant="filledBlue">
+            <AuthenticatedButton icon={authenticatedIconRegistry.directoryInvite} type="submit" variant="filledBlue">
               {messageTranslate("admin.users.directoryInviteSubmit")}
             </AuthenticatedButton>
           </div>
@@ -845,7 +884,7 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
       <p class="text-xs text-muted-foreground">{messageTranslate("admin.users.inviteTokenOnce")}</p>
       <div class="flex flex-wrap items-center gap-2">
         <AuthenticatedButton
-          icon={mdiContentCopy}
+          icon={authenticatedIconRegistry.directoryInviteCopy}
           onClick={() => dialogs().copyText(page().invitationToken())}
           size="sm"
           variant="outline"
@@ -853,7 +892,7 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
           {messageTranslate("admin.users.inviteTokenCopy")}
         </AuthenticatedButton>
         <AuthenticatedButton
-          icon={mdiCheck}
+          icon={authenticatedIconRegistry.directoryInviteAcknowledge}
           onClick={() => page().invitationTokenAcknowledge()}
           size="sm"
           variant="filledBlue"
@@ -951,7 +990,7 @@ function CreateUserDialog(props: { state: DirectoryAdminUsersViewState }) {
           )}
         </Show>
         <div class="flex justify-end gap-2">
-          <AuthenticatedButton icon={mdiAccountPlus} type="submit" variant="filledBlue">
+          <AuthenticatedButton icon={authenticatedIconRegistry.directoryCreateUser} type="submit" variant="filledBlue">
             {messageTranslate("admin.users.createSubmit")}
           </AuthenticatedButton>
         </div>
@@ -1029,7 +1068,11 @@ function ServiceAccountDialog(props: { state: DirectoryAdminUsersViewState }) {
             {messageTranslate("admin.users.directoryServiceAccountSecretWarning")}
           </p>
           <div class="flex justify-end gap-2">
-            <AuthenticatedButton icon={mdiAccountPlus} type="submit" variant="filledBlue">
+            <AuthenticatedButton
+              icon={authenticatedIconRegistry.directoryCreateServiceAccount}
+              type="submit"
+              variant="filledBlue"
+            >
               {messageTranslate("common.save")}
             </AuthenticatedButton>
           </div>
@@ -1067,7 +1110,7 @@ function ServiceAccountSecretPanel(props: { state: DirectoryAdminUsersViewState 
       <p class="text-xs text-warning">{messageTranslate("admin.users.directoryServiceAccountSecretWarning")}</p>
       <div class="flex flex-wrap items-center gap-2">
         <AuthenticatedButton
-          icon={mdiContentCopy}
+          icon={authenticatedIconRegistry.directoryInviteCopy}
           onClick={() => dialogs().copyText(page().serviceSecret()?.secret)}
           size="sm"
           variant="outline"
@@ -1075,7 +1118,7 @@ function ServiceAccountSecretPanel(props: { state: DirectoryAdminUsersViewState 
           {messageTranslate("admin.users.directoryServiceAccountSecretCopy")}
         </AuthenticatedButton>
         <AuthenticatedButton
-          icon={mdiCheck}
+          icon={authenticatedIconRegistry.directoryInviteAcknowledge}
           onClick={() => page().serviceSecretAcknowledge()}
           size="sm"
           variant="filledBlue"
