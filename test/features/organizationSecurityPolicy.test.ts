@@ -3,6 +3,7 @@ import * as v from "valibot"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { organizationLoginPolicyResolve } from "../../src/features/organizations/actions/organizationLoginPolicyResolve.js"
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { organizationLoginPolicyFactorOrderResolve } from "../../src/features/organizations/domain/organizationLoginPolicyFactorOrderResolve.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
@@ -56,6 +57,32 @@ test("security policy contracts reject unknown and duplicate factors", () => {
   expect(
     v.safeParse(organizationLoginPolicySetRequestSchema, { preferredFactorOrder: ["email_otp", "email_otp"] }).success,
   ).toBe(false)
+})
+
+test("security policy defaults prefer passkey, then authenticator app, then email code", async () => {
+  await withDatabase(async (database) => {
+    const { organization, realm } = await realmAndOrganizationCreate(database, "default-factor-order")
+    const realmPolicy = organizationRealmLoginPolicyGet({ database, realmId: realm.id })
+    expect(realmPolicy).toMatchObject({
+      data: {
+        overrides: {},
+        policy: {
+          allowedFactors: ["passkey", "totp", "email_otp"],
+          preferredFactorOrder: ["passkey", "totp", "email_otp"],
+        },
+      },
+      success: true,
+    })
+    const inherited = organizationLoginPolicyResolve({
+      database,
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(inherited).toMatchObject({
+      data: { preferredFactorOrder: ["passkey", "totp", "email_otp"] },
+      success: true,
+    })
+  })
 })
 
 test("security policy defaults and precedence control external identity auto-linking", async () => {
