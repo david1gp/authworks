@@ -4,6 +4,7 @@ import { organizationResourceIdSchema } from "../../organizations/public/organiz
 
 export const projectListQuerySchema = v.strictObject({
   ...listQuerySchema.entries,
+  grantedToOrganizationId: v.optional(organizationResourceIdSchema),
   organizationId: v.optional(organizationResourceIdSchema),
   status: v.optional(v.picklist(["active", "inactive", "all"])),
 })
