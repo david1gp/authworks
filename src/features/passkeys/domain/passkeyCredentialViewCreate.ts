@@ -16,6 +16,7 @@ export function passkeyCredentialViewCreate(row: PasskeyCredentialRow): PasskeyC
     deviceType: row.deviceType as PasskeyCredential["deviceType"],
     id: row.id,
     lastUsedAt: row.lastUsedAt,
+    nickname: row.nickname,
     revokedAt: row.revokedAt,
     transports,
   }

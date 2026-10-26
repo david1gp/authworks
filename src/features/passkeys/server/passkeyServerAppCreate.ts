@@ -4,6 +4,9 @@ import type { Result } from "#result"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { sessionBrowserCookieTokenGet } from "../../sessions/domain/sessionBrowserCookieTokenGet.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
@@ -11,12 +14,15 @@ import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowse
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passkeyAuthenticationComplete } from "../actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../actions/passkeyAuthenticationStart.js"
+import { passkeyCredentialAdministratorRevoke } from "../actions/passkeyCredentialAdministratorRevoke.js"
 import { passkeyCredentialList } from "../actions/passkeyCredentialList.js"
+import { passkeyCredentialRename } from "../actions/passkeyCredentialRename.js"
 import { passkeyCredentialRevoke } from "../actions/passkeyCredentialRevoke.js"
 import { passkeyRegistrationComplete } from "../actions/passkeyRegistrationComplete.js"
 import { passkeyRegistrationStart } from "../actions/passkeyRegistrationStart.js"
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
+import { passkeyCredentialRenameRequestSchema } from "../public/passkeyCredentialRenameRequestSchema.js"
 import { passkeyMfaAuthenticationStartRequestSchema } from "../public/passkeyMfaAuthenticationStartRequestSchema.js"
 import { passkeyCredentialRevokeRequestSchema } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyRegistrationCompleteRequestSchema } from "../public/passkeyRegistrationCompleteRequestSchema.js"
@@ -33,7 +39,7 @@ type PasskeyServerAppCreateOptions = {
 
 type PasskeyServerEnv = {
   Variables: {
-    authorizationActor: { actorId: string }
+    authorizationActor: AuthorizationActorContext
     cookieAuthenticated: boolean
     session: { id: string }
   }
@@ -41,7 +47,7 @@ type PasskeyServerEnv = {
 
 type PasskeyRouteContext = {
   readonly get: {
-    (key: "authorizationActor"): { actorId: string }
+    (key: "authorizationActor"): AuthorizationActorContext
     (key: "cookieAuthenticated"): boolean
     (key: "session"): { id: string }
   }
@@ -250,6 +256,46 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   app.get("/realms/:realmId/passkeys", protectedMiddleware, (context) =>
     passkeyCredentialListRoute(context, options.database),
   )
+
+  app.patch("/realms/:realmId/passkeys/:credentialId", protectedMiddleware, async (context) => {
+    const body = await passkeyJsonRead(context)
+    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
+    const input = v.safeParse(passkeyCredentialRenameRequestSchema, body.data)
+    if (!input.success)
+      return passkeyErrorResponseCreate(context, "The passkey credential nickname is invalid.", "passkeys.invalid")
+    return passkeyResultResponseCreate(
+      context,
+      passkeyCredentialRename({
+        actorId: context.get("authorizationActor").actorId,
+        credentialId: context.req.param("credentialId"),
+        database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: context.get("authorizationActor").actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/users/:userId/passkeys/:credentialId", protectedMiddleware, (context) => {
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.userManage,
+      realmId: context.req.param("realmId"),
+      targetUserId: context.req.param("userId"),
+    })
+    if (!authorized.success) return passkeyErrorResponseCreate(context, authorized.errorMessage, authorized.code)
+    return passkeyResultResponseCreate(
+      context,
+      passkeyCredentialAdministratorRevoke({
+        actor: context.get("authorizationActor"),
+        credentialId: context.req.param("credentialId"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
 
   app.delete("/realms/:realmId/passkeys", strongMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)

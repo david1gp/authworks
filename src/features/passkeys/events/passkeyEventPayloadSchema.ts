@@ -5,6 +5,8 @@ export const passkeyEventPayloadSchema = v.strictObject({
   ceremonyId: v.optional(v.pipe(v.string(), v.minLength(1))),
   credentialId: v.optional(v.pipe(v.string(), v.minLength(1))),
   counter: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  nickname: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
+  previousNickname: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   purpose: v.optional(v.picklist(["passwordless", "mfa", "step_up"])),
   userId: v.optional(v.pipe(v.string(), v.minLength(1))),
   userVerified: v.optional(v.boolean()),
