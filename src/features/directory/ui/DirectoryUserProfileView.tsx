@@ -57,7 +57,6 @@ import { ProductionStatePanel } from "../../../ui/production/ProductionStatePane
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
-import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { DirectoryUserProfilePageState } from "./directoryUserProfilePageStateCreate.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
@@ -721,7 +720,6 @@ function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
 
 function SessionRow(props: { readonly page: DirectoryUserProfilePageState; readonly session: Session }) {
   const metaClass = "flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground"
-  const deviceLocation = () => sessionDeviceLocationGet(props.session.device)
   return (
     <li class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 py-3.5">
       <div class="min-w-0 flex-1">
@@ -749,10 +747,17 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
               </span>
             )}
           </Show>
-          <Show when={deviceLocation()}>
-            {(location) => (
+          <Show when={props.session.device.region}>
+            {(region) => (
               <span>
-                {messageTranslate("admin.users.sessions.location")}: {location()}
+                {messageTranslate("admin.users.sessions.region")}: {region()}
+              </span>
+            )}
+          </Show>
+          <Show when={props.session.device.countryCode}>
+            {(countryCode) => (
+              <span>
+                {messageTranslate("admin.users.sessions.country")}: {countryCode()}
               </span>
             )}
           </Show>
