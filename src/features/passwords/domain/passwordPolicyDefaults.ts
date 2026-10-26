@@ -1,6 +1,7 @@
 import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 
 export const passwordPolicyDefaults: PasswordPolicy = {
+  maxAgeDays: null,
   minimumLength: 12,
   requireLowercase: false,
   requireUppercase: false,

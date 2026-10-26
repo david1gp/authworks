@@ -1,6 +1,7 @@
 import * as v from "valibot"
 
 export const passwordPolicySchema = v.strictObject({
+  maxAgeDays: v.optional(v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1)))),
   minimumLength: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(72)),
   requireLowercase: v.boolean(),
   requireUppercase: v.boolean(),

@@ -5,6 +5,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { otpLockoutRepositoryCreate } from "../../../platform/lockout/otpLockoutRepositoryCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -16,28 +17,32 @@ import { organizationLoginContextResolve } from "../../organizations/server/orga
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { passwordHashVerify } from "../domain/passwordHashVerify.js"
 import { passwordIdentifierNormalize } from "../domain/passwordIdentifierNormalize.js"
-import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
+import { passwordMaxAgeExpired } from "../domain/passwordMaxAgeExpired.js"
+import { passwordPolicyResolve } from "../domain/passwordPolicyResolve.js"
 import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordLockoutEventPayloadSchema } from "../events/passwordLockoutEventPayloadSchema.js"
 import { passwordLoginEventPayloadSchema } from "../events/passwordLoginEventPayloadSchema.js"
 import { passwordLoginSucceededEventPayloadSchema } from "../events/passwordLoginSucceededEventPayloadSchema.js"
 import { passwordUnlockedEventPayloadSchema } from "../events/passwordUnlockedEventPayloadSchema.js"
+import { passwordLoginRateLimitConsume } from "./passwordLoginRateLimitConsume.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import { type PasswordLoginRequest, passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
 import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
 
 type PasswordLoginOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
+  readonly clientIp?: string
   readonly database: StorageDatabase
   readonly input: PasswordLoginRequest
+  readonly rateLimitSecret?: Secret | string
   readonly realmId: string
   readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -60,6 +65,29 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
   if (!identifier.success) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
     return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+  }
+  if (options.rateLimitSecret !== undefined) {
+    const rateLimitRuntime = options.runtime ?? options.database.runtime
+    const rateLimitNow = rateLimitRuntime.now()
+    if (!Number.isSafeInteger(rateLimitNow) || rateLimitNow < 0)
+      return resultErrorCreate(op, "The login timestamp is invalid.", "passwords.invalid-timestamp")
+    const limited = storageTransactionRun(options.database, (transaction) =>
+      passwordLoginRateLimitConsume(transaction, {
+        clientIp: options.clientIp ?? "unknown",
+        identifier: identifier.data,
+        now: rateLimitNow,
+        operation: "login",
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: options.realmId,
+      }),
+    )
+    if (!limited.success) return limited
+    if (!limited.data.allowed) {
+      passwordHashVerify(parsed.output.password, passwordDummyHash)
+      return resultErrorCreate(op, "Too many login requests.", "passwords.rate-limited", {
+        retryAfterSeconds: Math.max(1, Math.ceil((limited.data.retryAt - rateLimitNow) / 1_000)),
+      })
+    }
   }
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
@@ -109,14 +137,19 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const verified = passwordHashVerify(parsed.output.password, credential.data?.hash ?? passwordDummyHash)
-  if (!verified.success || !verified.data) return passwordLoginFailureRecord(options, userRow.id, "invalid_credentials")
+  if (!verified.success || !verified.data)
+    return passwordLoginFailureRecord(options, userRow.id, "invalid_credentials", organizationId)
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The login timestamp is invalid.", "passwords.invalid-timestamp")
-  const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
-  const passwordPolicy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
+  const resolved = passwordPolicyResolve({
+    executor: options.database.db,
+    ...(organizationId === undefined ? {} : { organizationId }),
+    realmId: options.realmId,
+  })
+  if (!resolved.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+  const passwordPolicy = resolved.data
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   const authenticated = storageTransactionRun<PasswordLoginResponse>(options.database, (transaction) => {
@@ -135,6 +168,12 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     if (!currentLockout.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const lockedUntil = currentLockout.data?.lockedUntil
     if (current.data.state === "locked" && (lockedUntil === null || lockedUntil === undefined || lockedUntil > now))
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+    const currentOtpLockout = otpLockoutRepositoryCreate(transaction).otpLockoutGet(options.realmId, current.data.id)
+    if (!currentOtpLockout.success)
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+    const otpLockedUntil = currentOtpLockout.data?.lockedUntil
+    if (otpLockedUntil !== null && otpLockedUntil !== undefined && otpLockedUntil > now)
       return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     let userVersion = current.data.version
     let userUnlocked = false
@@ -184,6 +223,17 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       version: lockoutVersion,
     })
     if (!lockout.success) return lockout
+    if (currentOtpLockout.data !== null) {
+      const otpReset = otpLockoutRepositoryCreate(transaction).otpLockoutSet({
+        failedAttempts: 0,
+        lockedUntil: null,
+        realmId: options.realmId,
+        updatedAt: now,
+        userId: currentUser.id,
+        version: currentOtpLockout.data.version + 1,
+      })
+      if (!otpReset.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+    }
     const eventVersion = currentRepository.passwordEventVersionGet(options.realmId, current.data.id)
     if (!eventVersion.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     if (userUnlocked) {
@@ -236,7 +286,10 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       realmId: options.realmId,
       userId: currentUser.id,
     }
-    if (currentCredential.data.passwordChangeRequired === 1)
+    if (
+      currentCredential.data.passwordChangeRequired === 1 ||
+      passwordMaxAgeExpired(currentCredential.data.changedAt, passwordPolicy.maxAgeDays, now)
+    )
       return resultCreate({ authentication, passwordChangeRequired: true as const })
     const authenticationResult = mfaPrimaryAuthenticationComplete({
       actorId: options.context.actorId,
@@ -281,16 +334,21 @@ function passwordLoginFailureRecord(
   options: PasswordLoginOptions,
   userId: string,
   reason: "invalid_credentials" | "locked" | "not_verified" | "inactive",
+  organizationId?: string,
 ): Result<PasswordLoginResponse> {
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
-  if (!policyRow.success)
+  const resolved = passwordPolicyResolve({
+    executor: options.database.db,
+    ...(organizationId === undefined ? {} : { organizationId }),
+    realmId: options.realmId,
+  })
+  if (!resolved.success)
     return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
+  const policy = resolved.data
   const recorded = storageTransactionRun(options.database, (transaction) => {
     const repository = passwordRepositoryCreate(transaction)
     const current = repository.passwordUserGet(options.realmId, userId)
@@ -303,6 +361,15 @@ function passwordLoginFailureRecord(
       currentLockout.data?.lockedUntil !== null &&
       currentLockout.data?.lockedUntil !== undefined &&
       currentLockout.data.lockedUntil > now
+    )
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
+    const otpLockout = otpLockoutRepositoryCreate(transaction).otpLockoutGet(options.realmId, userId)
+    if (!otpLockout.success)
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
+    if (
+      otpLockout.data?.lockedUntil !== null &&
+      otpLockout.data?.lockedUntil !== undefined &&
+      otpLockout.data.lockedUntil > now
     )
       return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     if (current.data.state !== "active" && current.data.state !== "locked")

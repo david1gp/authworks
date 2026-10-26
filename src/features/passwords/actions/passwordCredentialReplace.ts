@@ -13,8 +13,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordHashVerify } from "../domain/passwordHashVerify.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
-import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
+import { passwordPolicyResolve } from "../domain/passwordPolicyResolve.js"
 import { passwordCredentialChangedEventPayloadSchema } from "../events/passwordCredentialChangedEventPayloadSchema.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
@@ -42,9 +41,9 @@ export function passwordCredentialReplace(
   if (realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The realm is not active.", "passwords.forbidden")
   const repository = passwordRepositoryCreate(options.database.db)
-  const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate(op, "The password could not be replaced.", "passwords.write-failed")
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
+  const resolved = passwordPolicyResolve({ executor: options.database.db, realmId: options.realmId })
+  if (!resolved.success) return resultErrorCreate(op, "The password could not be replaced.", "passwords.write-failed")
+  const policy = resolved.data
   const password = options.password.valueGet()
   const passwordChangeRequired = options.passwordChangeRequired === true ? 1 : 0
   const checked = passwordPolicyCheck(password, policy)

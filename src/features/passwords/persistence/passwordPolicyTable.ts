@@ -1,6 +1,7 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 export const passwordPolicyTable = sqliteTable("password_policies", {
+  maxAgeDays: integer("max_age_days"),
   realmId: text("realm_id").primaryKey(),
   minimumLength: integer("minimum_length").notNull(),
   requireLowercase: integer("require_lowercase").notNull(),

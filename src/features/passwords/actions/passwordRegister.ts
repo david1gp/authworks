@@ -25,8 +25,7 @@ import { userRepositoryCreate } from "../../users/persistence/userRepositoryCrea
 import type { UserProfile } from "../../users/public/userProfileSchema.js"
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
-import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
+import { passwordPolicyResolve } from "../domain/passwordPolicyResolve.js"
 import { passwordRegistrationCodeCreate } from "../domain/passwordRegistrationCodeCreate.js"
 import { passwordRegistrationCodeHashCreate } from "../domain/passwordRegistrationCodeHashCreate.js"
 import { passwordRegistrationRateLimitSecretValidate } from "../domain/passwordRegistrationRateLimitSecretValidate.js"
@@ -155,10 +154,13 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     if (!availability.data.available)
       return resultErrorCreate(op, "WhatsApp registration is currently unavailable.", "passwords.whatsapp-unavailable")
   }
-  const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return policyRow
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
-  const checked = passwordPolicyCheck(parsed.output.password, policy)
+  const resolved = passwordPolicyResolve({
+    executor: options.database.db,
+    ...(parsed.output.organizationId === undefined ? {} : { organizationId: parsed.output.organizationId }),
+    realmId: options.realmId,
+  })
+  if (!resolved.success) return resolved
+  const checked = passwordPolicyCheck(parsed.output.password, resolved.data)
   if (!checked.success) return checked
   const runtime = options.runtime ?? options.database.runtime
   const hash = passwordHashCreate(parsed.output.password, runtime)

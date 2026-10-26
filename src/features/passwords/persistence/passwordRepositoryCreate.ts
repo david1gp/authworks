@@ -10,6 +10,7 @@ import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { type PasswordChallengeRow, passwordChallengeTable } from "./passwordChallengeTable.js"
 import { type PasswordCredentialRow, passwordCredentialTable } from "./passwordCredentialTable.js"
 import { type PasswordLockoutRow, passwordLockoutTable } from "./passwordLockoutTable.js"
+import { type PasswordOrgPolicyRow, passwordOrgPolicyTable } from "./passwordOrgPolicyTable.js"
 import { type PasswordPolicyRow, passwordPolicyTable } from "./passwordPolicyTable.js"
 import {
   type PasswordRegistrationChallengeRow,
@@ -464,6 +465,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
               requireSymbol: input.requireSymbol,
               requireUppercase: input.requireUppercase,
               maximumAttempts: input.maximumAttempts,
+              maxAgeDays: input.maxAgeDays,
               lockoutDurationMs: input.lockoutDurationMs,
               updatedAt: input.updatedAt,
               version: input.version,
@@ -482,6 +484,67 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       } catch (_error) {
         return resultErrorCreate(
           "passwordPolicySet",
+          "The password policy could not be written.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordOrgPolicyGet(realmId: string, organizationId: string): Result<PasswordOrgPolicyRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(passwordOrgPolicyTable)
+            .where(
+              and(
+                eq(passwordOrgPolicyTable.realmId, realmId),
+                eq(passwordOrgPolicyTable.organizationId, organizationId),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordOrgPolicyGet",
+          "The password policy could not be read.",
+          "passwords.read-failed",
+        )
+      }
+    },
+
+    passwordOrgPolicySet(input: typeof passwordOrgPolicyTable.$inferInsert): Result<PasswordOrgPolicyRow> {
+      try {
+        const row = database
+          .insert(passwordOrgPolicyTable)
+          .values(input)
+          .onConflictDoUpdate({
+            set: {
+              minimumLength: input.minimumLength,
+              requireLowercase: input.requireLowercase,
+              requireNumber: input.requireNumber,
+              requireSymbol: input.requireSymbol,
+              requireUppercase: input.requireUppercase,
+              maximumAttempts: input.maximumAttempts,
+              maxAgeDays: input.maxAgeDays,
+              lockoutDurationMs: input.lockoutDurationMs,
+              updatedAt: input.updatedAt,
+              version: input.version,
+            },
+            target: [passwordOrgPolicyTable.realmId, passwordOrgPolicyTable.organizationId],
+          })
+          .returning()
+          .get()
+        if (row === undefined)
+          return resultErrorCreate(
+            "passwordOrgPolicySet",
+            "The password policy could not be written.",
+            "passwords.write-failed",
+          )
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordOrgPolicySet",
           "The password policy could not be written.",
           "passwords.write-failed",
         )
