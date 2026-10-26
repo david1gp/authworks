@@ -2,10 +2,9 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { mfaRepositoryCreate } from "../../mfa/persistence/mfaRepositoryCreate.js"
-import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
-import { passkeyCredentialViewCreate } from "../../passkeys/domain/passkeyCredentialViewCreate.js"
-import { passkeyRepositoryCreate } from "../../passkeys/persistence/passkeyRepositoryCreate.js"
+import { mfaUserAuthenticationMethodsRead } from "../../mfa/server/mfaUserAuthenticationMethodsRead.js"
+import { organizationLoginPolicyServerResolve } from "../../organizations/server/organizationLoginPolicyServerResolve.js"
+import { passkeyUserAuthenticationMethodsRead } from "../../passkeys/server/passkeyUserAuthenticationMethodsRead.js"
 import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
 import type { RealmTenantContext } from "../../realms/server/index.js"
 import { userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
@@ -38,26 +37,19 @@ export function userAuthenticationMethodsRead(
   if (user.data === null || user.data.state === "deleted")
     return resultErrorCreate(op, "The user was not found.", "users.not-found")
 
-  const totp = mfaRepositoryCreate(options.database.db).mfaEnrollmentList(options.realmId, options.userId)
-  if (!totp.success) return totp
-  const enrollments = totp.data
-    .filter((enrollment) => enrollment.status === "pending" || enrollment.status === "active")
-    .map((enrollment) => ({
-      confirmedAt: enrollment.confirmedAt,
-      id: enrollment.id,
-      label: enrollment.label,
-      status: enrollment.status as "pending" | "active",
-    }))
+  const methods = mfaUserAuthenticationMethodsRead({
+    executor: options.database.db,
+    realmId: options.realmId,
+    userId: options.userId,
+  })
+  if (!methods.success) return methods
+  const enrollments = methods.data.enrollments
 
-  const recoveryCodes = mfaRepositoryCreate(options.database.db).mfaRecoveryCodeList(options.realmId, options.userId)
-  if (!recoveryCodes.success) return recoveryCodes
-  const remaining = recoveryCodes.data.filter((code) => code.consumedAt === null).length
-  const generatedAt = recoveryCodes.data.reduce<number | null>(
-    (latest, code) => (latest === null || code.createdAt > latest ? code.createdAt : latest),
-    null,
-  )
-
-  const passkeys = passkeyRepositoryCreate(options.database.db).passkeyCredentialList(options.realmId, options.userId)
+  const passkeys = passkeyUserAuthenticationMethodsRead({
+    executor: options.database.db,
+    realmId: options.realmId,
+    userId: options.userId,
+  })
   if (!passkeys.success) return passkeys
 
   const password = passwordUsableAuthenticationMethodRead({
@@ -67,7 +59,7 @@ export function userAuthenticationMethodsRead(
   })
   if (!password.success) return password
 
-  const policy = organizationLoginPolicyResolve({
+  const policy = organizationLoginPolicyServerResolve({
     database: options.database,
     organizationId: options.context.actor.organizationId,
     realmId: options.realmId,
@@ -76,9 +68,9 @@ export function userAuthenticationMethodsRead(
 
   return resultCreate({
     emailOtp: { available: policy.data.allowEmailOtp && user.data.emailVerifiedAt !== null },
-    passkeys: { credentials: passkeys.data.map(passkeyCredentialViewCreate) },
+    passkeys: { credentials: passkeys.data },
     password: password.data,
-    recoveryCodes: { available: remaining > 0, generatedAt, remaining },
+    recoveryCodes: methods.data.recoveryCodes,
     totp: { enrolled: enrollments.some((enrollment) => enrollment.status === "active"), enrollments },
   })
 }
