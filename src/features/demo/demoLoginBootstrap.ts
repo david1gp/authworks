@@ -45,6 +45,10 @@ export const demoLoginBootstrap = {
     allowedFactors: ["totp", "email_otp", "passkey"],
     preferredFactorOrder: ["totp", "email_otp", "passkey"],
     minimumStepUpAssurance: "authenticated",
+    mfaInitSkipLifetimeSeconds: null,
+    secondFactorCheckLifetimeSeconds: null,
+    multiFactorCheckLifetimeSeconds: null,
+    forceMfaLocalOnly: false,
   },
   providers: [
     {
