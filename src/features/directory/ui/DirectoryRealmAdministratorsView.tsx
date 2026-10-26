@@ -1,6 +1,4 @@
-import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
 import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
-import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -31,6 +29,8 @@ import {
   directoryRealmAdministratorNameGet,
 } from "./directoryRealmAdministratorsAdapter.js"
 import type { DirectoryRealmAdministratorsViewState } from "./directoryRealmAdministratorsViewStateCreate.js"
+import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
+import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 
 export type DirectoryRealmAdministratorsShellState = {
   readonly confirmState: ConfirmState
@@ -91,7 +91,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
           when={!page().lastAdmin()}
           fallback={
             <span title={messageTranslate("admin.realmAdministrators.lastAdminHint")}>
-              <AuthenticatedButton disabled icon={mdiShieldCrownOutline} size="sm" variant="outline">
+              <AuthenticatedButton disabled icon={directoryRoleIconGet("owner")} size="sm" variant="outline">
                 {messageTranslate("admin.realmAdministrators.remove")}
               </AuthenticatedButton>
             </span>
@@ -99,7 +99,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
         >
           <AuthenticatedButton
             disabled={page().pendingId() === `revoke:${admin.userId}`}
-            icon={mdiShieldCrownOutline}
+            icon={directoryRoleIconGet("owner")}
             onClick={() => void page().administratorRemove(admin)}
             size="sm"
             variant="outlineRed"
@@ -123,7 +123,11 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
       <ConfirmDialog state={props.state.confirmState} titleKey="admin.common.confirmTitle" />
       <AuthenticatedPageHeader
         actions={
-          <AuthenticatedButton icon={mdiAccountPlus} onClick={() => view().dialogOpenSet(true)} variant="filledBlue">
+          <AuthenticatedButton
+            icon={authenticatedIconRegistry.directoryCreateUser}
+            onClick={() => view().dialogOpenSet(true)}
+            variant="filledBlue"
+          >
             {messageTranslate("admin.realmAdministrators.add")}
           </AuthenticatedButton>
         }
@@ -167,7 +171,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                 <AuthenticatedEmptyState
                   actions={
                     <AuthenticatedButton
-                      icon={mdiAccountPlus}
+                      icon={authenticatedIconRegistry.directoryCreateUser}
                       onClick={() => view().dialogOpenSet(true)}
                       variant="filledBlue"
                     >
@@ -200,7 +204,12 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                           when={!page().lastAdmin()}
                           fallback={
                             <span title={messageTranslate("admin.realmAdministrators.lastAdminHint")}>
-                              <AuthenticatedButton disabled icon={mdiShieldCrownOutline} size="sm" variant="outline">
+                              <AuthenticatedButton
+                                disabled
+                                icon={directoryRoleIconGet("owner")}
+                                size="sm"
+                                variant="outline"
+                              >
                                 {messageTranslate("admin.realmAdministrators.remove")}
                               </AuthenticatedButton>
                             </span>
@@ -208,7 +217,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                         >
                           <AuthenticatedButton
                             disabled={page().pendingId() === `revoke:${admin.userId}`}
-                            icon={mdiShieldCrownOutline}
+                            icon={directoryRoleIconGet("owner")}
                             onClick={() => void page().administratorRemove(admin)}
                             size="sm"
                             variant="outlineRed"
@@ -334,7 +343,11 @@ function AddAdministratorDialog(props: { readonly state: DirectoryRealmAdministr
                           when={candidate.alreadyAdmin}
                           fallback={
                             <span class="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
-                              <Icon aria-hidden="true" class="size-3.5" path={mdiAccountPlus} />
+                              <Icon
+                                aria-hidden="true"
+                                class="size-3.5"
+                                path={authenticatedIconRegistry.directoryCreateUser}
+                              />
                               {messageTranslate("admin.realmAdministrators.grant")}
                             </span>
                           }
