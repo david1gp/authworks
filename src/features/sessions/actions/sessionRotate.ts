@@ -15,6 +15,7 @@ import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstra
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
+import { sessionMfaCheckExpired } from "../domain/sessionMfaCheckExpired.js"
 import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
 import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRotatedEventPayloadSchema } from "../events/sessionRotatedEventPayloadSchema.js"
@@ -79,6 +80,28 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
       return resultErrorCreate(
         op,
         "Stronger authentication is required for this session rotation.",
+        "sessions.assurance-required",
+        details,
+      )
+    }
+    if (
+      current.data.subjectType === "user" &&
+      sessionMfaCheckExpired({
+        assurance: current.data.assurance,
+        createdAt: current.data.createdAt,
+        mfaMethod: current.data.mfaMethod,
+        now,
+        policy: policy.data,
+      })
+    ) {
+      const details: SessionAssuranceRequiredDetails = {
+        action: "step_up",
+        organizationId: organizationContext.data.organizationId ?? null,
+        requiredAssurance: "multi_factor",
+      }
+      return resultErrorCreate(
+        op,
+        "A fresh multi-factor check is required for this session rotation.",
         "sessions.assurance-required",
         details,
       )

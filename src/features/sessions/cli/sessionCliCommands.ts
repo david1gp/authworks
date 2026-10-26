@@ -215,6 +215,10 @@ const sessionBootstrapSignInCommand = buildCommand({
   docs: { brief: "Sign in as the bootstrap administrator" },
 })
 
+// The session CSRF and logout routes are browser-cookie flows (cookie auth +
+// CSRF/origin checks) and the CLI resolves bearer-token connections without a
+// cookie jar, so they are intentionally absent here. Library consumers drive
+// them through sessionCsrfGet/sessionLogout on the session API client.
 export const sessionCliCommands = buildRouteMap({
   routes: {
     bootstrapSignIn: sessionBootstrapSignInCommand,
