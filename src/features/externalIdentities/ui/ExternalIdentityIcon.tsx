@@ -1,6 +1,7 @@
 import { mdiGithub } from "@adaptive-ds/mdi/mdiGithub.js"
 import { mdiGoogle } from "@adaptive-ds/mdi/mdiGoogle.js"
 import { mdiMicrosoft } from "@adaptive-ds/mdi/mdiMicrosoft.js"
+import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
@@ -8,6 +9,7 @@ const providerIcons: Readonly<Record<ExternalIdentityProviderType, string>> = {
   github: mdiGithub,
   google: mdiGoogle,
   microsoft: mdiMicrosoft,
+  oidc: mdiOpenid,
 }
 
 export function ExternalIdentityIcon(props: { readonly class?: string; readonly type: ExternalIdentityProviderType }) {

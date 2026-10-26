@@ -6,6 +6,7 @@ export const externalIdentityProviderUpdateRequestSchema = v.strictObject({
   clientSecret: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(4096))),
   displayName: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   enabled: v.optional(v.boolean()),
+  issuer: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(2048))),
   redirectUri: v.optional(v.pipe(v.string(), v.url(), v.maxLength(2048))),
   scopes: v.optional(v.pipe(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128))), v.maxLength(32))),
 })

@@ -29,4 +29,10 @@ export const externalIdentityProviderDefaults: Readonly<
     scopes: ["openid", "email", "profile"],
     usesNonce: true,
   },
+  oidc: {
+    allowedScopes: ["openid", "profile", "email", "address", "phone", "offline_access"],
+    requiredScopes: ["openid"],
+    scopes: ["openid", "profile", "email"],
+    usesNonce: true,
+  },
 }

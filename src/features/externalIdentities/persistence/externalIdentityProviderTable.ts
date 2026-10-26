@@ -12,6 +12,7 @@ export const externalIdentityProviderTable = sqliteTable(
     id: text("id").primaryKey(),
     realmId: text("realm_id").notNull(),
     organizationId: text("organization_id"),
+    issuer: text("issuer"),
     redirectUri: text("redirect_uri").notNull(),
     scopes: text("scopes").notNull(),
     type: text("type").notNull(),
@@ -21,7 +22,12 @@ export const externalIdentityProviderTable = sqliteTable(
   (table) => [
     index("external_identity_providers_realm_idx").on(table.realmId),
     index("external_identity_providers_organization_idx").on(table.realmId, table.organizationId),
-    uniqueIndex("external_identity_providers_realm_type_org_idx").on(table.realmId, table.type, table.organizationId),
+    uniqueIndex("external_identity_providers_realm_type_org_idx").on(
+      table.realmId,
+      table.type,
+      table.organizationId,
+      table.issuer,
+    ),
   ],
 )
 

@@ -31,6 +31,7 @@ const externalIdentityProviderCreateCommand = buildCommand({
       redirectUri: string
       type: string
       allowAccountCreation?: boolean
+      issuer?: string
       organizationId?: string
       scopes?: string
     },
@@ -44,6 +45,7 @@ const externalIdentityProviderCreateCommand = buildCommand({
         clientId: flags.clientId,
         clientSecret: flags.clientSecret,
         displayName: flags.displayName,
+        ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
         organizationId: resolved.organizationId,
         redirectUri: flags.redirectUri,
         scopes: flags.scopes?.split(" "),
@@ -59,10 +61,11 @@ const externalIdentityProviderCreateCommand = buildCommand({
       clientId: externalIdentityTextFlag("OAuth client ID"),
       clientSecret: externalIdentityTextFlag("OAuth client secret"),
       displayName: externalIdentityTextFlag("Provider display name"),
+      issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
       redirectUri: externalIdentityTextFlag("Registered callback URI"),
       scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
-      type: externalIdentityTextFlag("google, github, or microsoft"),
+      type: externalIdentityTextFlag("google, github, microsoft, or oidc"),
     },
   },
   docs: { brief: "Configure an external identity provider" },
@@ -122,6 +125,7 @@ const externalIdentityProviderUpdateCommand = buildCommand({
       clientSecret?: string
       displayName?: string
       enabled?: boolean
+      issuer?: string
       redirectUri?: string
       scopes?: string
     },
@@ -139,6 +143,7 @@ const externalIdentityProviderUpdateCommand = buildCommand({
           ...(flags.clientSecret === undefined ? {} : { clientSecret: flags.clientSecret }),
           ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
           ...(flags.enabled === undefined ? {} : { enabled: flags.enabled }),
+          ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
           ...(flags.redirectUri === undefined ? {} : { redirectUri: flags.redirectUri }),
           ...(flags.scopes === undefined ? {} : { scopes: flags.scopes.split(" ") }),
         },
@@ -155,6 +160,7 @@ const externalIdentityProviderUpdateCommand = buildCommand({
       clientSecret: externalIdentityOptionalTextFlag("OAuth client secret"),
       displayName: externalIdentityOptionalTextFlag("Provider display name"),
       enabled: externalIdentityOptionalBooleanFlag("Enable the provider"),
+      issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       redirectUri: externalIdentityOptionalTextFlag("Registered callback URI"),
       scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
     },
@@ -430,6 +436,170 @@ const externalIdentityStartCommand = buildCommand({
   docs: { brief: "Start external identity authentication" },
 })
 
+const externalIdentityTenantProviderCreateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & {
+      clientId: string
+      clientSecret: string
+      displayName: string
+      redirectUri: string
+      type: string
+      allowAccountCreation?: boolean
+      issuer?: string
+      organizationId?: string
+      scopes?: string
+    },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    const result = await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderTenantCreate(
+      resolved.realmId,
+      {
+        allowAccountCreation: flags.allowAccountCreation ?? false,
+        clientId: flags.clientId,
+        clientSecret: flags.clientSecret,
+        displayName: flags.displayName,
+        ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
+        ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
+        redirectUri: flags.redirectUri,
+        scopes: flags.scopes?.split(" "),
+        type: flags.type as ExternalIdentityProviderType,
+      },
+    )
+    externalIdentityCliResultWrite(this, result, [resolved.connection.token, resolved.connection.systemToken])
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      allowAccountCreation: { brief: "Allow new accounts", kind: "boolean" as const, optional: true as const },
+      clientId: externalIdentityTextFlag("OAuth client ID"),
+      clientSecret: externalIdentityTextFlag("OAuth client secret"),
+      displayName: externalIdentityTextFlag("Provider display name"),
+      issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+      redirectUri: externalIdentityTextFlag("Registered callback URI"),
+      scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
+      type: externalIdentityTextFlag("google, github, microsoft, or oidc"),
+    },
+  },
+  docs: { brief: "Configure a tenant external identity provider" },
+})
+
+const externalIdentityTenantProviderListCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & ExternalIdentityListFlags & { organizationId?: string },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderTenantList(
+        resolved.realmId,
+        resolved.organizationId,
+        externalIdentityListQueryCreate(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      ...externalIdentityListFlags(),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+    },
+  },
+  docs: { brief: "List tenant external identity providers" },
+})
+
+const externalIdentityTenantProviderGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { providerId: string }) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderTenantGet(
+        resolved.realmId,
+        flags.providerId,
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...externalIdentityCommonFlags(), providerId: externalIdentityTextFlag("Provider UUID") } },
+  docs: { brief: "Get a tenant external identity provider" },
+})
+
+const externalIdentityTenantProviderDisableCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { providerId: string }) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderTenantDisable(
+        resolved.realmId,
+        flags.providerId,
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: { ...externalIdentityCommonFlags(), providerId: externalIdentityTextFlag("Provider UUID") } },
+  docs: { brief: "Disable a tenant external identity provider" },
+})
+
+const externalIdentityTenantProviderUpdateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & {
+      providerId: string
+      allowAccountCreation?: boolean
+      clientId?: string
+      clientSecret?: string
+      displayName?: string
+      enabled?: boolean
+      issuer?: string
+      redirectUri?: string
+      scopes?: string
+    },
+  ) {
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    externalIdentityCliResultWrite(
+      this,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderTenantUpdate(
+        resolved.realmId,
+        flags.providerId,
+        {
+          ...(flags.allowAccountCreation === undefined ? {} : { allowAccountCreation: flags.allowAccountCreation }),
+          ...(flags.clientId === undefined ? {} : { clientId: flags.clientId }),
+          ...(flags.clientSecret === undefined ? {} : { clientSecret: flags.clientSecret }),
+          ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
+          ...(flags.enabled === undefined ? {} : { enabled: flags.enabled }),
+          ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
+          ...(flags.redirectUri === undefined ? {} : { redirectUri: flags.redirectUri }),
+          ...(flags.scopes === undefined ? {} : { scopes: flags.scopes.split(" ") }),
+        },
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...externalIdentityCommonFlags(),
+      providerId: externalIdentityTextFlag("Provider UUID"),
+      allowAccountCreation: externalIdentityOptionalBooleanFlag("Allow new accounts"),
+      clientId: externalIdentityOptionalTextFlag("OAuth client ID"),
+      clientSecret: externalIdentityOptionalTextFlag("OAuth client secret"),
+      displayName: externalIdentityOptionalTextFlag("Provider display name"),
+      enabled: externalIdentityOptionalBooleanFlag("Enable the provider"),
+      issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
+      redirectUri: externalIdentityOptionalTextFlag("Registered callback URI"),
+      scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
+    },
+  },
+  docs: { brief: "Update a tenant external identity provider" },
+})
+
 export const externalIdentityCliCommands = buildRouteMap({
   routes: {
     disable: externalIdentityProviderDisableCommand,
@@ -445,6 +615,11 @@ export const externalIdentityCliCommands = buildRouteMap({
     providerPublicList: externalIdentityProviderPublicListCommand,
     providerUpdate: externalIdentityProviderUpdateCommand,
     start: externalIdentityStartCommand,
+    tenantProviderCreate: externalIdentityTenantProviderCreateCommand,
+    tenantProviderDisable: externalIdentityTenantProviderDisableCommand,
+    tenantProviderGet: externalIdentityTenantProviderGetCommand,
+    tenantProviderList: externalIdentityTenantProviderListCommand,
+    tenantProviderUpdate: externalIdentityTenantProviderUpdateCommand,
     unlink: externalIdentityUnlinkCommand,
   },
   docs: { brief: "External identities and provider configuration" },

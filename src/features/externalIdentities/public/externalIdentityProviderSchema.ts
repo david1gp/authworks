@@ -10,6 +10,7 @@ export const externalIdentityProviderSchema = v.strictObject({
   id: v.pipe(v.string(), v.minLength(1)),
   realmId: v.pipe(v.string(), v.minLength(1)),
   organizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
+  issuer: v.optional(v.pipe(v.string(), v.minLength(1))),
   redirectUri: v.pipe(v.string(), v.url()),
   scopes: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.maxLength(32)),
   type: externalIdentityProviderTypeSchema,

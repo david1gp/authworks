@@ -3,6 +3,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
+import { externalIdentityOidcIssuerValidate } from "./externalIdentityOidcIssuerValidate.js"
 import type {
   ExternalIdentityProviderPort,
   ExternalIdentityProviderPortCallbackInput,
@@ -24,6 +25,7 @@ export function externalIdentityProviderPortCreate(
     github: externalIdentityProviderPortCreateFor("github", fetcher, timeoutMs),
     google: externalIdentityProviderPortCreateFor("google", fetcher, timeoutMs),
     microsoft: externalIdentityProviderPortCreateFor("microsoft", fetcher, timeoutMs),
+    oidc: externalIdentityOidcPortCreate(fetcher, timeoutMs),
   }
 }
 
@@ -397,6 +399,261 @@ function providerPictureGet(value: unknown, key: string): string | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
   const candidate = (value as Record<string, unknown>)[key]
   return typeof candidate === "string" && candidate.length > 0 ? candidate : undefined
+}
+
+type ExternalIdentityOidcDiscovery = {
+  readonly authorizationEndpoint: string
+  readonly issuer: string
+  readonly jwksUri: string
+  readonly tokenEndpoint: string
+  readonly userinfoEndpoint?: string
+}
+
+const externalIdentityOidcDiscoveryCache = new Map<
+  string,
+  { readonly discovery: ExternalIdentityOidcDiscovery; readonly expiresAt: number }
+>()
+
+const externalIdentityOidcDiscoveryTtlMs = 5 * 60 * 1_000
+
+function externalIdentityOidcPortCreate(fetcher: typeof fetch, timeoutMs: number): ExternalIdentityProviderPort {
+  return {
+    authorizationUrlCreate() {
+      return resultErrorCreate(
+        "externalIdentityProviderStart",
+        "The external provider discovery has not completed.",
+        "external-identities.read-failed",
+      )
+    },
+    async authorizationUrlCreateAsync(configuration, input) {
+      const op = "externalIdentityProviderStart"
+      const issuer = externalIdentityOidcIssuerValidate(configuration.issuer)
+      if (!issuer.success) return issuer
+      const discovery = await externalIdentityOidcDiscoveryGet(fetcher, timeoutMs, issuer.data)
+      if (!discovery.success) return discovery
+      const query = new URLSearchParams({
+        client_id: configuration.clientId,
+        code_challenge: input.pkceChallenge,
+        code_challenge_method: "S256",
+        redirect_uri: configuration.redirectUri,
+        response_type: "code",
+        scope: configuration.scopes.join(" "),
+        state: input.state,
+      })
+      if (input.prompt !== undefined) query.set("prompt", input.prompt)
+      if (input.nonce !== undefined) query.set("nonce", input.nonce)
+      return resultCreate(`${discovery.data.authorizationEndpoint}?${query.toString()}`)
+    },
+    async callbackExchange(configuration, input) {
+      const issuer = externalIdentityOidcIssuerValidate(configuration.issuer)
+      if (!issuer.success)
+        return resultErrorCreate(
+          "externalIdentityProviderCallback",
+          "The external provider identity response is invalid.",
+          "external-identities.invalid",
+        )
+      const discovery = await externalIdentityOidcDiscoveryGet(fetcher, timeoutMs, issuer.data)
+      if (!discovery.success) return discovery
+      const token = await externalIdentityOidcTokenFetch(
+        fetcher,
+        timeoutMs,
+        discovery.data.tokenEndpoint,
+        configuration,
+        input,
+      )
+      if (!token.success) return token
+      if (token.data.idToken === undefined)
+        return resultErrorCreate(
+          "externalIdentityProviderCallback",
+          "The external provider identity response is invalid.",
+          "external-identities.invalid",
+        )
+      const claims = await providerJwtClaimsVerify(fetcher, timeoutMs, discovery.data.jwksUri, token.data.idToken)
+      if (!claims.success) return claims
+      const subject = providerStringGet(claims.data, "sub")
+      const tokenIssuer = providerStringGet(claims.data, "iss")
+      const nonce = providerStringGet(claims.data, "nonce")
+      if (
+        subject === null ||
+        tokenIssuer !== issuer.data ||
+        !externalIdentityOidcAudienceMatches(claims.data, configuration.clientId) ||
+        nonce !== input.nonce
+      )
+        return resultErrorCreate(
+          "externalIdentityProviderCallback",
+          "The external provider identity response is invalid.",
+          "external-identities.invalid",
+        )
+      const userinfo = await externalIdentityOidcUserinfoGet(
+        fetcher,
+        timeoutMs,
+        discovery.data.userinfoEndpoint,
+        token.data.accessToken,
+      )
+      const profile = userinfo ?? {}
+      const email = providerStringGet(profile, "email") ?? providerStringGet(claims.data, "email") ?? undefined
+      const emailVerified =
+        providerBooleanGet(profile, "email_verified") || providerBooleanGet(claims.data, "email_verified")
+      const displayName =
+        providerStringGet(profile, "name") ??
+        providerStringGet(claims.data, "name") ??
+        externalIdentityOidcDisplayNameGet({ ...claims.data, ...profile }) ??
+        undefined
+      const picture = providerPictureGet(profile, "picture") ?? providerPictureGet(claims.data, "picture") ?? undefined
+      return resultCreate({
+        ...(displayName === undefined ? {} : { displayName }),
+        ...(email === undefined ? {} : { email }),
+        emailVerified,
+        externalSubject: subject,
+        issuer: issuer.data,
+        ...(nonce === null ? {} : { nonce }),
+        ...(picture === undefined ? {} : { picture }),
+        providerType: "oidc",
+        username:
+          providerStringGet(profile, "preferred_username") ??
+          providerStringGet(claims.data, "preferred_username") ??
+          undefined,
+      })
+    },
+  }
+}
+
+async function externalIdentityOidcDiscoveryGet(
+  fetcher: typeof fetch,
+  timeoutMs: number,
+  issuer: string,
+): Promise<ReturnType<typeof resultCreate<ExternalIdentityOidcDiscovery>> | ReturnType<typeof resultErrorCreate>> {
+  const op = "externalIdentityProviderStart"
+  const cached = externalIdentityOidcDiscoveryCache.get(issuer)
+  if (cached !== undefined && cached.expiresAt > Date.now()) return resultCreate(cached.discovery)
+  let raw: unknown
+  try {
+    const response = await fetcher(`${issuer}/.well-known/openid-configuration`, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    raw = await response.json().catch(() => undefined)
+    if (!response.ok || typeof raw !== "object" || raw === null) throw new Error("invalid discovery")
+  } catch (_error) {
+    return resultErrorCreate(op, "The external provider could not be reached.", "external-identities.read-failed")
+  }
+  const document = raw as Record<string, unknown>
+  const documentIssuer =
+    typeof document.issuer === "string" ? externalIdentityOidcIssuerValidate(document.issuer) : null
+  const authorizationEndpoint =
+    typeof document.authorization_endpoint === "string" ? document.authorization_endpoint : null
+  const tokenEndpoint = typeof document.token_endpoint === "string" ? document.token_endpoint : null
+  const jwksUri = typeof document.jwks_uri === "string" ? document.jwks_uri : null
+  const userinfoEndpoint =
+    typeof document.userinfo_endpoint === "string" && document.userinfo_endpoint.length > 0
+      ? document.userinfo_endpoint
+      : undefined
+  if (
+    documentIssuer === null ||
+    !documentIssuer.success ||
+    documentIssuer.data !== issuer ||
+    authorizationEndpoint === null ||
+    tokenEndpoint === null ||
+    jwksUri === null
+  )
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
+  const discovery: ExternalIdentityOidcDiscovery = {
+    authorizationEndpoint,
+    issuer,
+    jwksUri,
+    tokenEndpoint,
+    ...(userinfoEndpoint === undefined ? {} : { userinfoEndpoint }),
+  }
+  externalIdentityOidcDiscoveryCache.set(issuer, {
+    discovery,
+    expiresAt: Date.now() + externalIdentityOidcDiscoveryTtlMs,
+  })
+  return resultCreate(discovery)
+}
+
+async function externalIdentityOidcTokenFetch(
+  fetcher: typeof fetch,
+  timeoutMs: number,
+  tokenEndpoint: string,
+  configuration: ExternalIdentityProviderPortConfiguration,
+  input: ExternalIdentityProviderPortCallbackInput,
+): Promise<ReturnType<typeof resultCreate<ProviderToken>> | ReturnType<typeof resultErrorCreate>> {
+  const body = new URLSearchParams({
+    client_id: configuration.clientId,
+    client_secret: configuration.clientSecret,
+    code: input.code,
+    code_verifier: input.pkceVerifier,
+    grant_type: "authorization_code",
+    redirect_uri: configuration.redirectUri,
+  })
+  try {
+    const response = await fetcher(tokenEndpoint, {
+      body,
+      headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
+      method: "POST",
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    const raw = (await response.json().catch(() => undefined)) as unknown
+    if (!response.ok || typeof raw !== "object" || raw === null)
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
+    const accessToken = providerStringGet(raw, "access_token")
+    const idToken = providerStringGet(raw, "id_token")
+    if (accessToken === null || idToken === null)
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
+    return resultCreate({ accessToken, idToken })
+  } catch (_error) {
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider could not be reached.",
+      "external-identities.read-failed",
+    )
+  }
+}
+
+async function externalIdentityOidcUserinfoGet(
+  fetcher: typeof fetch,
+  timeoutMs: number,
+  userinfoEndpoint: string | undefined,
+  accessToken: string,
+): Promise<Record<string, unknown> | null> {
+  if (userinfoEndpoint === undefined) return null
+  try {
+    const response = await fetcher(userinfoEndpoint, {
+      headers: { accept: "application/json", authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    const raw = (await response.json().catch(() => undefined)) as unknown
+    if (!response.ok || typeof raw !== "object" || raw === null) return null
+    return raw as Record<string, unknown>
+  } catch (_error) {
+    return null
+  }
+}
+
+function externalIdentityOidcAudienceMatches(claims: Record<string, unknown>, clientId: string): boolean {
+  const audience = claims.aud
+  if (typeof audience === "string") return audience === clientId
+  if (Array.isArray(audience)) return audience.some((candidate) => candidate === clientId)
+  return false
+}
+
+function externalIdentityOidcDisplayNameGet(claims: Record<string, unknown>): string | null {
+  const given = typeof claims.given_name === "string" ? claims.given_name : null
+  const family = typeof claims.family_name === "string" ? claims.family_name : null
+  if (given === null && family === null) return null
+  return [given, family].filter((part) => part !== null && part.length > 0).join(" ") || null
 }
 
 function authorizationEndpointGet(type: ExternalIdentityProviderType): string {

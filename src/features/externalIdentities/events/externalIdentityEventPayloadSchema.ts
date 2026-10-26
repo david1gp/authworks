@@ -15,7 +15,7 @@ export const externalIdentityEventPayloadSchema = v.strictObject({
   externalSubject: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(512))),
   identityId: v.optional(v.pipe(v.string(), v.minLength(1))),
   providerId: v.optional(v.pipe(v.string(), v.minLength(1))),
-  providerType: v.optional(v.picklist(["google", "github", "microsoft"])),
+  providerType: v.optional(v.picklist(["google", "github", "microsoft", "oidc"])),
   reason: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   userId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })

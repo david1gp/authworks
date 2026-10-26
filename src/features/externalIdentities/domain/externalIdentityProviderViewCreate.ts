@@ -21,6 +21,7 @@ export function externalIdentityProviderViewCreate(row: ExternalIdentityProvider
     id: row.id,
     realmId: row.realmId,
     ...(row.organizationId === null ? {} : { organizationId: row.organizationId }),
+    ...(row.issuer === null || row.issuer.length === 0 ? {} : { issuer: row.issuer }),
     redirectUri: row.redirectUri,
     scopes: parsedScopes.success ? parsedScopes.output : [],
     type: parsedType.success ? parsedType.output : "google",
