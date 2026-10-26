@@ -20,6 +20,7 @@ import type { AuthenticatedDataTableColumn } from "../../../ui/authenticated/aut
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { ProjectListItem } from "../public/projectListItemSchema.js"
+import { ProjectFaviconImage } from "./ProjectFaviconImage.js"
 import type { projectAdminListViewStateCreate } from "./projectAdminListViewStateCreate.js"
 import { projectAdminStatusTone } from "./projectAdminStatusTone.js"
 
@@ -29,10 +30,13 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
   const columns: AuthenticatedDataTableColumn<ProjectListItem>[] = [
     {
       cell: (project) => (
-        <span class="grid min-w-0">
-          <span class="truncate font-medium">{project.name}</span>
-          <span class="truncate text-xs text-muted-foreground">
-            {state.page.organizationName(project.organizationId)}
+        <span class="flex min-w-0 items-center gap-2">
+          <ProjectFaviconImage faviconHref={state.page.projectFaviconHref} name={project.name} projectId={project.id} />
+          <span class="grid min-w-0">
+            <span class="truncate font-medium">{project.name}</span>
+            <span class="truncate text-xs text-muted-foreground">
+              {state.page.organizationName(project.organizationId)}
+            </span>
           </span>
         </span>
       ),
