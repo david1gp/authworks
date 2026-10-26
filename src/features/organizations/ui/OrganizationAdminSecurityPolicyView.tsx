@@ -13,7 +13,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MfaPolicyFactor } from "../../mfa/public/mfaPolicyFactorSchema.js"
 import type { OrganizationLoginPolicyAssurance } from "../public/organizationLoginPolicyAssuranceSchema.js"
 
-const factors: readonly MfaPolicyFactor[] = ["totp", "email_otp", "passkey"]
+const factors: readonly MfaPolicyFactor[] = ["passkey", "totp", "email_otp"]
 const factorLabelKeys = {
   email_otp: "admin.organizations.policy.factor.emailOtp",
   passkey: "admin.organizations.policy.factor.passkey",

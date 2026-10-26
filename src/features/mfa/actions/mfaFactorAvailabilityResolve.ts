@@ -38,7 +38,7 @@ function mfaFactorAvailabilityNormalize(values: readonly MfaPolicyFactor[]): Mfa
     return factor.success ? [factor.output] : []
   })
   const available = new Set(parsed)
-  const canonical: readonly MfaPolicyFactor[] = ["totp", "email_otp", "passkey"]
+  const canonical: readonly MfaPolicyFactor[] = ["passkey", "totp", "email_otp"]
   return canonical.filter((factor) => available.has(factor))
 }
 

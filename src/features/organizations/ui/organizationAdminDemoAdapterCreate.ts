@@ -53,8 +53,8 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     allowRegistration: false,
     providerIds: null,
     requiredMfa: true,
-    allowedFactors: ["totp", "email_otp", "passkey"],
-    preferredFactorOrder: ["totp", "email_otp", "passkey"],
+    allowedFactors: ["passkey", "totp", "email_otp"],
+    preferredFactorOrder: ["passkey", "totp", "email_otp"],
     minimumStepUpAssurance: "multi_factor",
   }
   let organizationOverrides: OrganizationLoginPolicyOverride = {
