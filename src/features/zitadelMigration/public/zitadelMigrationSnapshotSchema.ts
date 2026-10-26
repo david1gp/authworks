@@ -104,6 +104,7 @@ const oidcApplicationSchema = v.strictObject({
     v.pipe(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(100))), v.minLength(1), v.maxLength(100)),
   ),
   accessTokenRoleAssertion: v.optional(v.boolean(), false),
+  idTokenRoleAssertion: v.optional(v.boolean(), false),
   additionalOrigins: v.optional(
     v.pipe(
       v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(2048))),
@@ -113,6 +114,7 @@ const oidcApplicationSchema = v.strictObject({
           oidcClientCompatibilitySettingsValidate({
             accessTokenRoleAssertion: false,
             additionalOrigins,
+            idTokenRoleAssertion: false,
             idTokenUserinfoAssertion: false,
           }).success,
         "Additional origins must be valid, normalized, and unique.",
@@ -163,6 +165,10 @@ const loginPolicySchema = v.strictObject({
   sourceId: sourceIdSchema,
   createdAt: v.optional(timestampSchema),
   updatedAt: v.optional(timestampSchema),
+  mfaInitSkipLifetimeSeconds: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  secondFactorCheckLifetimeSeconds: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  multiFactorCheckLifetimeSeconds: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  forceMfaLocalOnly: v.optional(v.boolean()),
 })
 
 const identityProviderSchema = v.strictObject({
