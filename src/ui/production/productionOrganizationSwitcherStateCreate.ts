@@ -47,9 +47,11 @@ export function productionOrganizationSwitcherStateCreate(options: {
 
   return {
     activeLabel: () => active()?.label ?? "",
+    activeImageUrl: () => active()?.imageUrl,
     activeInitials: () => authenticatedInitialsGet(active()?.label ?? ""),
     activeTone: () => authenticatedAvatarColorGet(active()?.label ?? ""),
     filtered,
+    imageUrl: (organizationId: string) => options.organizations().find((item) => item.id === organizationId)?.imageUrl,
     isActive: (organizationId: string) => organizationId === active()?.id,
     initials: (label: string) => authenticatedInitialsGet(label),
     tone: (label: string) => authenticatedAvatarColorGet(label),

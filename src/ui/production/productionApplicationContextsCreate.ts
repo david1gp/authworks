@@ -15,6 +15,7 @@ import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.j
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
+import { organizationBrandingIconUrlSelect } from "./organizationBrandingIconUrlSelect.js"
 import { productionShellAccessResolve } from "./productionShellAccessResolve.js"
 
 const sessionCurrentResponseSchema = v.strictObject({ session: sessionSchema })
@@ -79,11 +80,12 @@ export async function productionApplicationContextsCreate(): Promise<{
         )
       : undefined
   const organizations = (
-    allOrganizations?.items.map((item) => ({ id: item.id, label: item.name })) ??
+    allOrganizations?.items.map((item) => ({ id: item.id, imageUrl: undefined, label: item.name })) ??
     memberships?.items.map((item) => ({
       id: item.organization.id,
+      imageUrl: organizationBrandingIconUrlSelect(item.branding),
       label: item.organization.name,
-    })) ?? [{ id: discovery.organization.id, label: discovery.organization.name }]
+    })) ?? [{ id: discovery.organization.id, imageUrl: undefined, label: discovery.organization.name }]
   ).filter((item, index, items) => items.findIndex((other) => other.id === item.id) === index)
   const requestedOrganization = v.safeParse(
     organizationResourceIdSchema,
@@ -175,6 +177,7 @@ export async function productionApplicationContextsCreate(): Promise<{
     api: { content: "ready", retry: () => undefined },
     session: {
       actorLabel: user?.user.profile.displayName ?? user?.user.email ?? "Administrator",
+      actorPictureUrl: user?.user.profile.picture?.url,
       guard: {
         get access() {
           const current = organization.get()

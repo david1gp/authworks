@@ -6,6 +6,7 @@ import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.
 
 export type ProductionSessionContextValue = {
   readonly actorLabel: string
+  readonly actorPictureUrl?: string | undefined
   readonly guard: ProductionRouteGuardContext
   readonly impersonation: ProductionImpersonationContext | null
   readonly organizations: readonly ProductionContextOption[]

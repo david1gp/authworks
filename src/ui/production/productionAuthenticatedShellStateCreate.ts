@@ -47,11 +47,12 @@ export function productionAuthenticatedShellStateCreate(
     return typeof session.guard.organization === "object" ? session.guard.organization.organizationId : ""
   }
 
-  const organizationLabel = () => {
+  const activeOrganization = () =>
+    session.organizations.find((item) => item.id === organizationId()) ?? session.organizations[0]
+
+  const realmLabel = () => {
     if (kind() === "account") return ""
-    const currentId = organizationId()
-    const active = session.organizations.find((item) => item.id === currentId) ?? session.organizations[0]
-    return active?.label ?? ""
+    return session.realms[0]?.label ?? ""
   }
 
   const groupItemsVisible = (group: ProductionNavigationGroup) => {
@@ -97,7 +98,6 @@ export function productionAuthenticatedShellStateCreate(
   }
 
   return {
-    actorInitial: () => session.actorLabel.trim().slice(0, 1).toUpperCase(),
     contentClass: () =>
       kind() !== "account" && sidebar.openDesktop.get() ? authenticatedNavigationClasses.contentOffset : "",
     destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
@@ -107,8 +107,6 @@ export function productionAuthenticatedShellStateCreate(
     /** The rail's own collapse control is only meaningful on desktop; mobile uses the top bar. */
     collapseVisible: () => !sidebar.isMobile.get(),
     homeHref: () => (kind() === "admin" ? "/admin/users" : "/account"),
-    /** Exact-or-nested match, used for destinations outside the grouped navigation (the account link). */
-    isActive: (href: string) => productionNavigationItemActive(href, location.pathname),
     /** Only the most specific grouped destination is highlighted. */
     isItemActive: (href: string) => activeHref() === href,
     isContextual: () => kind() !== "account",
@@ -121,8 +119,9 @@ export function productionAuthenticatedShellStateCreate(
         if (!result.success) organizationError.set(result.errorMessage)
       })
     },
+    activeOrganization,
     organizationId,
-    organizationLabel,
+    realmLabel,
     organizationError: organizationError.get,
     organizationSwitchPending: () => organizationPending.get() || session.organizationSwitchPending(),
     organizationSwitchable: () => kind() !== "account" && session.organizations.length > 1,

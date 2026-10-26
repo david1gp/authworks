@@ -8,11 +8,14 @@ import { classMerge } from "#ui/utils/classMerge.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import type { ProductionContextOption } from "./productionContextOption.js"
+import { ProductionOrganizationTile } from "./ProductionOrganizationTile.js"
 import { productionOrganizationSwitcherStateCreate } from "./productionOrganizationSwitcherStateCreate.js"
 
 /**
- * Sidebar organization switcher: a workspace-style card (initials tile, name, caption) that opens a
- * width-matched listbox. With a single organization it renders as a static card without a menu.
+ * Sidebar organization switcher: a workspace-style card (initials tile, realm caption, organization
+ * name) that opens a width-matched listbox. The realm caption replaces the former "Organization"
+ * label so the realm context lives inside the selector. With a single organization it renders as a
+ * static card without a menu.
  */
 export function ProductionOrganizationSwitcher(props: {
   readonly activeId: string
@@ -20,6 +23,7 @@ export function ProductionOrganizationSwitcher(props: {
   readonly onSelect: (organizationId: string) => void
   readonly organizations: readonly ProductionContextOption[]
   readonly pending: boolean
+  readonly realmLabel: string
   readonly switchable: boolean
 }) {
   const state = productionOrganizationSwitcherStateCreate({
@@ -31,13 +35,17 @@ export function ProductionOrganizationSwitcher(props: {
 
   const identity = () => (
     <>
-      <span aria-hidden="true" class={classMerge(authenticatedNavigationClasses.organizationTile, state.activeTone())}>
-        {state.activeInitials()}
-      </span>
+      <ProductionOrganizationTile
+        imageUrl={state.activeImageUrl()}
+        label={state.activeLabel()}
+        tileClass={classMerge(authenticatedNavigationClasses.organizationTile, state.activeTone())}
+      />
       <span class="grid min-w-0 flex-1 text-start leading-tight">
-        <span class={authenticatedNavigationClasses.organizationCaption}>
-          {messageTranslate("shell.nav.organizationSwitcher")}
-        </span>
+        <Show when={props.realmLabel.length > 0}>
+          <span class={authenticatedNavigationClasses.organizationCaption} title={props.realmLabel}>
+            {props.realmLabel}
+          </span>
+        </Show>
         <span class={authenticatedNavigationClasses.organizationName} title={state.activeLabel()}>
           {state.activeLabel()}
         </span>
@@ -108,15 +116,14 @@ export function ProductionOrganizationSwitcher(props: {
                       role="option"
                       type="button"
                     >
-                      <span
-                        aria-hidden="true"
-                        class={classMerge(
+                      <ProductionOrganizationTile
+                        imageUrl={state.imageUrl(organization.id)}
+                        label={organization.label}
+                        tileClass={classMerge(
                           authenticatedNavigationClasses.organizationOptionTile,
                           state.tone(organization.label),
                         )}
-                      >
-                        {state.initials(organization.label)}
-                      </span>
+                      />
                       <span class="min-w-0 flex-1 truncate" title={organization.label}>
                         {organization.label}
                       </span>

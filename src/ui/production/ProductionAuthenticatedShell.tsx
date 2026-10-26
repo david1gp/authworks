@@ -1,23 +1,25 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
-import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
 import { A } from "@solidjs/router"
 import { For, type JSX, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
-import { AuthenticatedBrandMark } from "../authenticated/AuthenticatedBrandMark.js"
+import { classMerge } from "#ui/utils/classMerge.js"
 import { AuthenticatedThemeToggle } from "../authenticated/AuthenticatedThemeToggle.js"
+import { authenticatedAvatarColorGet } from "../authenticated/authenticatedAvatarColorGet.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../authenticated/authenticatedNavigationLinkClassGet.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
+import { ProductionIdentityMenu } from "./ProductionIdentityMenu.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
-import type { ProductionNavigationItem } from "./productionNavigationItem.js"
 import { ProductionOrganizationSwitcher } from "./ProductionOrganizationSwitcher.js"
+import { ProductionOrganizationTile } from "./ProductionOrganizationTile.js"
 import { productionAuthenticatedShellStateCreate } from "./productionAuthenticatedShellStateCreate.js"
+import type { ProductionNavigationItem } from "./productionNavigationItem.js"
 
 type ProductionAuthenticatedShellState = ReturnType<typeof productionAuthenticatedShellStateCreate>
 
@@ -37,50 +39,19 @@ function ProductionSidebarToggle(props: { readonly state: ProductionAuthenticate
 }
 
 function ProductionSidebarFooter(props: { readonly state: ProductionAuthenticatedShellState }) {
-  const identity = () => (
-    <>
-      <span aria-hidden="true" class={authenticatedNavigationClasses.identityAvatar}>
-        {props.state.actorInitial()}
-      </span>
-      <span class="min-w-0 flex-1">
-        <span class={authenticatedNavigationClasses.identityName} title={props.state.session.actorLabel}>
-          {props.state.session.actorLabel}
-        </span>
-        <Show when={props.state.showAccountNavigation()}>
-          <span class={authenticatedNavigationClasses.identityCaption}>{messageTranslate("shell.nav.account")}</span>
-        </Show>
-      </span>
-    </>
-  )
   return (
     <div class={authenticatedNavigationClasses.footer}>
       <div class={authenticatedNavigationClasses.footerPreferences}>
         <LanguageSelector class="authenticated-language-selector min-w-0" />
         <AuthenticatedThemeToggle />
       </div>
-      <div class={authenticatedNavigationClasses.identityRow}>
-        <Show
-          when={props.state.showAccountNavigation()}
-          fallback={<div class="flex min-w-0 flex-1 items-center gap-2.5 px-1.5 py-1.5">{identity()}</div>}
-        >
-          <A
-            aria-current={props.state.isActive("/account") ? "page" : undefined}
-            class={authenticatedNavigationClasses.identityLink}
-            href="/account"
-            onClick={props.state.destinationSelect}
-          >
-            {identity()}
-          </A>
-        </Show>
-        <A
-          aria-label={messageTranslate("common.signOut")}
-          class={authenticatedNavigationClasses.identityAction}
-          href={props.state.signOutHref}
-          title={messageTranslate("common.signOut")}
-        >
-          <Icon class="rtl:-scale-x-100" path={mdiLogout} />
-        </A>
-      </div>
+      <ProductionIdentityMenu
+        name={props.state.session.actorLabel}
+        pictureUrl={props.state.session.actorPictureUrl}
+        showProfile={props.state.showAccountNavigation()}
+        signOutHref={props.state.signOutHref}
+        onNavigate={props.state.destinationSelect}
+      />
     </div>
   )
 }
@@ -99,29 +70,20 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
   )
   return (
     <div class={authenticatedNavigationClasses.frame}>
-      <div class={authenticatedNavigationClasses.brandRow}>
-        <AuthenticatedBrandMark />
-        <A
-          class={authenticatedNavigationClasses.brandLink}
-          href={props.state.homeHref()}
-          onClick={props.state.destinationSelect}
-        >
-          {messageTranslate("app.name")}
-        </A>
-        <Show when={props.state.collapseVisible()}>
-          <ProductionSidebarToggle state={props.state} />
-        </Show>
-      </div>
-      <Show when={props.state.organizationLabel().length > 0}>
+      <div class={authenticatedNavigationClasses.contextRow}>
         <ProductionOrganizationSwitcher
           activeId={props.state.organizationId()}
           error={props.state.organizationError()}
           onSelect={props.state.organizationSelect}
           organizations={props.state.session.organizations}
           pending={props.state.organizationSwitchPending()}
+          realmLabel={props.state.realmLabel()}
           switchable={props.state.organizationSwitchable()}
         />
-      </Show>
+        <Show when={props.state.collapseVisible()}>
+          <ProductionSidebarToggle state={props.state} />
+        </Show>
+      </div>
       <nav aria-label={props.state.title()} class={authenticatedNavigationClasses.nav}>
         <For each={props.state.groups()}>
           {(group) => (
@@ -169,8 +131,8 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
 /**
  * Production authenticated frame. Contextual shells (administration, invitations) carry all global
  * controls — organization, language, theme, identity, sign-out — inside the sidebar; a slim top bar
- * only appears on mobile or while the desktop rail is collapsed. The account workspace renders its
- * own toolbar and therefore gets no shell chrome.
+ * carrying the active organization context only appears on mobile or while the desktop rail is
+ * collapsed. The account workspace renders its own toolbar and therefore gets no shell chrome.
  */
 export function ProductionAuthenticatedShell(props: {
   readonly children: JSX.Element
@@ -209,10 +171,31 @@ export function ProductionAuthenticatedShell(props: {
         <Show when={props.kind !== "account" && state.topBarVisible()}>
           <div class={authenticatedNavigationClasses.topBar}>
             <ProductionSidebarToggle state={state} />
-            <A class={authenticatedNavigationClasses.headerBrand} href={state.homeHref()}>
-              <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
-              <span class={authenticatedNavigationClasses.brandLink}>{messageTranslate("app.name")}</span>
-            </A>
+            <Show
+              fallback={<span class={authenticatedNavigationClasses.brandLink}>{state.realmLabel()}</span>}
+              when={state.activeOrganization()}
+            >
+              {(organization) => (
+                <A class={authenticatedNavigationClasses.headerBrand} href={state.homeHref()}>
+                  <ProductionOrganizationTile
+                    imageUrl={organization().imageUrl}
+                    label={organization().label}
+                    tileClass={classMerge(
+                      authenticatedNavigationClasses.organizationTile,
+                      authenticatedAvatarColorGet(organization().label),
+                    )}
+                  />
+                  <span class="grid min-w-0 flex-1 text-start leading-tight">
+                    <Show when={state.realmLabel().length > 0}>
+                      <span class={authenticatedNavigationClasses.organizationCaption}>{state.realmLabel()}</span>
+                    </Show>
+                    <span class={authenticatedNavigationClasses.brandLink} title={organization().label}>
+                      {organization().label}
+                    </span>
+                  </span>
+                </A>
+              )}
+            </Show>
           </div>
         </Show>
 

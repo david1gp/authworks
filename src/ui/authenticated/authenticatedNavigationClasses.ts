@@ -1,41 +1,44 @@
 /**
  * Compact navigation language shared by the production authenticated shell and the demo shells,
- * so both render the same 240px rail, compact 32px rows, and a slim top bar that only appears on
+ * so both render the same 208px rail, compact 32px rows, and a slim top bar that only appears on
  * mobile or while the rail is collapsed. Global controls (organization, language, theme, identity)
  * live inside the rail rather than in a separate navbar.
  */
 export const authenticatedNavigationClasses = {
   /** Fixed desktop rail; pairs with `contentOffset`. Uses logical sides so RTL mirrors it. */
-  aside: "fixed inset-y-0 z-20 w-60 border-line bg-surface ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l",
+  aside: "fixed inset-y-0 z-20 w-52 border-line bg-surface ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l",
   /** Desktop content offset applied while the rail is open. */
-  contentOffset: "lg:ltr:ml-60 lg:rtl:mr-60",
+  contentOffset: "lg:ltr:ml-52 lg:rtl:mr-52",
   /** Sidebar brand row; the header has its own content-column framing. */
   brandRow: "flex h-14 shrink-0 items-center gap-2.5 border-b border-line ps-4 pe-2 max-lg:hidden",
+  /** Sidebar context row carrying the organization selector and the collapse control. */
+  contextRow: "flex h-14 shrink-0 items-center gap-1 border-b border-line px-2",
   /** Icon-only control in the brand row that collapses the desktop rail. */
   brandCollapse:
     "grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>svg]:size-4.5 rtl:[&>svg]:-scale-x-100",
   brandLink: "min-w-0 flex-1 truncate text-[0.9375rem] font-semibold tracking-tight",
   /** Rail footer holding preferences and the signed-in identity; also shown inside the mobile drawer. */
   footer: "grid shrink-0 gap-1.5 border-t border-line p-2",
-  footerPreferences: "flex min-w-0 items-center justify-between gap-2 px-1 py-0.5",
-  identityRow: "flex min-w-0 items-center gap-1 rounded-control",
-  identityLink:
-    "flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1.5 py-1.5 transition-colors hover:bg-surface-hover aria-[current=page]:bg-accent-soft",
-  identityAvatar:
-    "grid size-8 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent",
-  identityName: "block truncate text-[0.8125rem] font-medium text-foreground",
-  identityCaption: "block truncate text-xs text-muted-foreground",
-  identityAction:
-    "grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>svg]:size-4",
-  /** Wrapper for the organization switcher card at the top of the rail. */
-  organizationSwitcher: "shrink-0 px-2 pt-2",
+  /** Language and theme controls stack vertically so each keeps its full label. */
+  footerPreferences: "grid min-w-0 items-start gap-2 px-1 py-0.5",
+  identityName: "min-w-0 flex-1 truncate text-start text-[0.8125rem] font-medium text-foreground",
+  /** Identity trigger opening the profile/sign-out popover. */
+  identityTrigger:
+    "flex w-full min-w-0 items-center gap-2.5 rounded-control px-1.5 py-1.5 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 data-expanded:bg-surface-hover",
+  identityMenu:
+    "z-50 flex min-w-52 flex-col overflow-hidden rounded-control border border-line bg-surface text-sm shadow-overlay data-open:animate-in data-open:fade-in-50% data-closed:animate-out data-closed:fade-out-50%",
+  identityMenuHeader: "truncate border-b border-line px-2.5 py-2 text-[0.8125rem] font-semibold text-foreground",
+  identityMenuOption:
+    "flex w-full min-w-0 items-center gap-2.5 rounded-sm px-2 py-1.5 text-start text-[0.8125rem] font-medium text-foreground transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none",
+  /** Wrapper for the organization switcher card heading the rail. */
+  organizationSwitcher: "min-w-0 flex-1",
   /** Workspace-style card: initials tile, caption, and organization name. */
   organizationCard: "flex w-full min-w-0 items-center gap-2.5 rounded-control px-2 py-1.5",
   /** Interactive variant of the card when more than one organization is available. */
   organizationTrigger:
     "transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:cursor-progress disabled:opacity-70 data-expanded:bg-surface-hover",
   organizationTile:
-    "grid size-8 shrink-0 place-items-center rounded-[9px] text-xs font-semibold ring-1 ring-line-subtle ring-inset",
+    "grid size-8 shrink-0 place-items-center overflow-hidden rounded-[9px] text-xs font-semibold ring-1 ring-line-subtle ring-inset",
   organizationCaption: "truncate text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground",
   organizationName: "truncate text-[0.8125rem] font-semibold text-foreground",
   organizationMenu:
@@ -44,7 +47,7 @@ export const authenticatedNavigationClasses = {
   organizationOption:
     "flex w-full min-w-0 items-center gap-2.5 rounded-sm px-2 py-1.5 text-start text-[0.8125rem] font-medium text-foreground transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none aria-selected:font-semibold",
   organizationOptionTile:
-    "grid size-6 shrink-0 place-items-center rounded-md text-[0.625rem] font-semibold ring-1 ring-line-subtle ring-inset",
+    "grid size-6 shrink-0 place-items-center overflow-hidden rounded-md text-[0.625rem] font-semibold ring-1 ring-line-subtle ring-inset",
   frame: "flex h-full min-h-0 flex-col bg-surface",
   groupHeading:
     "flex h-8 w-full items-center gap-2 rounded-control px-2 text-start text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>span]:flex-1",
