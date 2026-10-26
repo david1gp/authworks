@@ -833,7 +833,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     const state = stateCreate(route)
     await flushEffects()
 
-    expect(state.mfaFactors()).toEqual(["totp", "email_otp", "passkey", "recovery_code"])
+    expect(state.mfaFactors()).toEqual(["passkey", "totp", "email_otp", "recovery_code"])
   })
 
   test("renders a mapped catalog message for a stable server error code", async () => {
