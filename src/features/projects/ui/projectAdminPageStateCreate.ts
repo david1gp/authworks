@@ -300,6 +300,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       if (current === undefined) return true
       return current.organizationId === options.organizationId()
     },
+    projectFaviconHref: (projectId: string) => adapter.projectFaviconHref?.(projectId),
     projects: projects.get,
     projectUpdate: async (
       projectId: string,

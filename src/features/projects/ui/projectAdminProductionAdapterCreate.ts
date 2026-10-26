@@ -3,6 +3,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { authorizationFixedRoleDefinitions } from "../../authorization/domain/authorizationFixedRoleDefinitions.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
+import { oidcProjectFaviconHrefSelect } from "../../oidc/client/oidcProjectFaviconHrefSelect.js"
 import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 import { projectAdminApiCreate } from "./projectAdminApiCreate.js"
 
@@ -118,6 +119,8 @@ export function projectAdminProductionAdapterCreate(options: {
     },
     permissionRoles: () => authorizationFixedRoleDefinitions,
     projectAccessCheck: (projectId) => api().projects.projectTenantAccessCheck(realm(), projectId),
+    projectFaviconHref: (projectId) =>
+      oidcProjectFaviconHrefSelect({ baseUrl: options.baseUrl, projectId, realmId: realm() }),
     projectCreate: (input) =>
       mutate(
         (client) => client.projects.projectTenantCreate(realm(), input),
