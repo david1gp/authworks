@@ -2,12 +2,20 @@ import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
+import { adminEventExportDownload } from "./adminEventExportDownload.js"
+import {
+  type AdminEventFilterKey,
+  type AdminEventFilters,
+  adminEventFiltersParse,
+  adminEventFiltersToQuery,
+} from "./adminEventFiltersSchema.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
 import type { AdminViewStatus } from "./adminViewStatusSchema.js"
 
@@ -25,9 +33,8 @@ type AdminPageStateOptions = {
   /** An extra reactive key that forces a reload, such as the selected demo fixture state. */
   readonly reloadKey?: () => string
   readonly screen: () => AdminScreen
-  /** URL-held search term, so a filtered list survives reloads and deep links. */
-  readonly search?: () => string
-  readonly searchSet?: (value: string) => void
+  /** URL-held audit-event filters, so a filtered list survives reloads and deep links. */
+  readonly eventFilterSearch?: () => string
   readonly userId?: () => string | undefined
 }
 
@@ -43,12 +50,12 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const events = createSignalObject<readonly TenantEvent[]>([])
   const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
-  const searchSignal = createSignalObject("")
-  // Search lives in the URL when the caller provides it, and falls back to local state otherwise.
-  const searchTerm = {
-    get: () => options.search?.() ?? searchSignal.get(),
-    set: (value: string) => (options.searchSet === undefined ? searchSignal.set(value) : options.searchSet(value)),
-  }
+  // Filters live in the URL; the state parses them on every load so typing stays in the address bar.
+  const eventFilters = (): AdminEventFilters => adminEventFiltersParse(options.eventFilterSearch?.() ?? "")
+  const eventFiltersKey = () =>
+    (["actorId", "aggregateId", "aggregateType", "eventType", "occurredFrom", "occurredTo", "userSubjectId"] as const)
+      .map((key) => eventFilters()[key] ?? "")
+      .join("|")
   const expandedEventId = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<readonly string[]>([])
   const nextPageToken = createSignalObject<string | undefined>(undefined)
@@ -116,7 +123,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       return status.set("ready")
     }
     if (options.screen() === "audit-events") {
-      const result = await options.adapter.eventList(query())
+      const result = await options.adapter.eventList({ ...query(), ...adminEventFiltersToQuery(eventFilters()) })
       if (!result.success) return fail(result)
       events.set(result.data.items)
       nextPageToken.set(result.data.nextPageToken)
@@ -139,7 +146,8 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
 
   createEffect(
     on(
-      () => `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${options.reloadKey?.() ?? ""}`,
+      () =>
+        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${options.reloadKey?.() ?? ""}`,
       () => void load(),
     ),
   )
@@ -170,6 +178,15 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       session.set(undefined)
       status.set("signed-out")
     },
+    sessionRevoke: async (userId: string, sessionId: string) => {
+      const confirmed = await confirmAction(messageTranslate("account.sessions.revokeConfirm"))
+      if (!confirmed) return
+      const data = await mutate(`session:${sessionId}`, () => options.adapter.sessionRevoke(userId, sessionId))
+      if (data === undefined) return
+      // Reload the page so the revoked session disappears even when pagination shifted.
+      await load()
+      notice.set(messageTranslate("admin.sessions.revoked"))
+    },
     lifecycleConfirmation,
     realmLifecycleApply: async (next: RealmStatus) => {
       validationMessage.set(undefined)
@@ -189,16 +206,34 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     sessions: sessions.get,
     signInSecret,
     error: error.get,
-    events: () => {
-      const term = searchTerm.get().trim().toLowerCase()
-      if (term.length === 0) return events.get()
-      return events
-        .get()
-        .filter((item) =>
-          `${item.eventType} ${item.aggregateType} ${item.aggregateId} ${item.actorId ?? ""}`
-            .toLowerCase()
-            .includes(term),
-        )
+    // Events arrive server-filtered; the view renders the loaded page as-is.
+    events: events.get,
+    eventFilters,
+    eventFilterSet: (key: AdminEventFilterKey, value: string) => {
+      // A changed filter restarts from the first page.
+      pageTokens.set([])
+      authenticatedUrlSearchParamWrite(key, value.trim())
+    },
+    eventFiltersClear: () => {
+      pageTokens.set([])
+      for (const key of [
+        "actorId",
+        "aggregateId",
+        "aggregateType",
+        "eventType",
+        "occurredFrom",
+        "occurredTo",
+        "userSubjectId",
+      ] as const)
+        authenticatedUrlSearchParamWrite(key, "")
+    },
+    eventsExport: async () => {
+      const exported = await mutate("events:export", () =>
+        options.adapter.eventExport(adminEventFiltersToQuery(eventFilters())),
+      )
+      if (exported === undefined) return
+      adminEventExportDownload(exported.items)
+      notice.set(messageTranslate("admin.events.exported", { count: exported.items.length }))
     },
     expandedEventId: expandedEventId.get,
     eventExpandToggle: (id: string) => expandedEventId.set(expandedEventId.get() === id ? undefined : id),
@@ -241,7 +276,6 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     },
     realmStatus,
     reload: () => void load(),
-    searchTerm,
     status: status.get,
     validationMessage: validationMessage.get,
   }

@@ -38,6 +38,12 @@ export function adminDemoAdapterCreate(
 
   return {
     ...adminSessionDemoAdapterCreate({ fixtureState, signedInInitially: options.signedInInitially }),
+    eventExport: async () => {
+      if (fixtureState() === "loading") return pending()
+      const failed = readFailure("adminDemoEventExport")
+      if (failed !== undefined) return failed
+      return resultCreate({ items: fixtureState() === "empty" ? [] : events, truncated: false })
+    },
     eventList: async () => {
       if (fixtureState() === "loading") return pending()
       const failed = readFailure("adminDemoEventList")

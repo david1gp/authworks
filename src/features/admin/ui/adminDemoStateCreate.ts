@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "@solidjs/router"
+import { useLocation, useParams } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
 import { i18nStore } from "../../../ui/i18n/model/i18nStore.js"
@@ -34,7 +34,6 @@ function adminDemoScenarioMessageKeyGet(scenarioKey: string, kind: "title" | "de
 
 export function adminDemoStateCreate(screen: () => AdminScreen) {
   const location = useLocation()
-  const navigate = useNavigate()
   const params = useParams<{ userId?: string }>()
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAdminScenarioGroups)
   const fixtureState = () => demoFixtureStateSelect(location.search, scenario()?.states ?? ["success"])
@@ -44,16 +43,9 @@ export function adminDemoStateCreate(screen: () => AdminScreen) {
     adapter,
     // Every guarded administration action is answered by the same visible, cancelable dialog.
     confirm: confirmState.confirm,
+    eventFilterSearch: () => location.search,
     reloadKey: () => `${fixtureState()}:${i18nStore.language.get()}`,
     screen,
-    search: () => new URLSearchParams(location.search).get("q") ?? "",
-    searchSet: (value: string) => {
-      const search = new URLSearchParams(location.search)
-      if (value.length === 0) search.delete("q")
-      else search.set("q", value)
-      const encoded = search.toString()
-      navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
-    },
     userId: () => params.userId,
   })
 
