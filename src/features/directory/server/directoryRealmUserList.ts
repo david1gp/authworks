@@ -81,6 +81,7 @@ export function directoryRealmUserList(options: DirectoryRealmUserListOptions): 
     entries.push({ memberships: items, user: userView.data })
   }
 
+  // Realm scope is organization-agnostic: a person matches when they hold the role anywhere.
   const filtered = parsed.output.role === undefined ? entries : directoryRoleFilterApply(entries, parsed.output.role)
   return directoryEntryListPageCreate({
     entries: filtered,

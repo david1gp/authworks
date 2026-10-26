@@ -4,6 +4,7 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationRolesDecode } from "../../organizations/domain/organizationRolesDecode.js"
 import { organizationRepositoryCreate } from "../../organizations/persistence/organizationRepositoryCreate.js"
+import { userBulkRead } from "../../users/server/userBulkRead.js"
 import type { DirectoryOrganizationUserSummary } from "../public/directoryOrganizationUserSummarySchema.js"
 
 type DirectoryOrganizationUserSummaryOptions = {
@@ -22,9 +23,19 @@ export function directoryOrganizationUserSummary(
   const memberships = repository.organizationMembershipList(options.organizationId)
   if (!memberships.success) return memberships
   const active = memberships.data.filter((row) => row.realmId === options.realmId)
+  // Membership rows carry no foreign key to users, so a membership can outlive its user.
+  // The people list only shows memberships with a user row; the counts must agree with it.
+  const users = userBulkRead({
+    database: options.database,
+    realmId: options.realmId,
+    userIds: [...new Set(active.map((membership) => membership.userId))],
+  })
+  if (!users.success) return users
+  const existingUserIds = new Set(users.data.map((user) => user.id))
   const counts = { admin: 0, guest: 0, member: 0, owner: 0 }
   const seen = new Set<string>()
   for (const membership of active) {
+    if (!existingUserIds.has(membership.userId)) continue
     const roles = organizationRolesDecode(membership.roles)
     if (!roles.success) return roles
     seen.add(membership.userId)

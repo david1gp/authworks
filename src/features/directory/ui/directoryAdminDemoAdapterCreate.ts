@@ -94,7 +94,7 @@ export function directoryAdminDemoAdapterCreate(
     return true
   }
 
-  const peopleList = (query?: DirectoryUserListQuery) => {
+  const peopleList = (query?: DirectoryUserListQuery, organizationId?: string) => {
     const parsed = v.safeParse(directoryUserListQuerySchema, query ?? {})
     if (!parsed.success)
       return resultErrorCodedCreate(
@@ -108,7 +108,13 @@ export function directoryAdminDemoAdapterCreate(
     if (typeof input.search === "string" && input.search.trim().length > 0)
       rows = rows.filter((entry) => peopleMatchesSearch(entry, input.search as string))
     if (role !== undefined)
-      rows = rows.filter((entry) => entry.memberships.some((membership) => membership.roles.includes(role)))
+      rows = rows.filter((entry) =>
+        entry.memberships.some(
+          (membership) =>
+            (organizationId === undefined || membership.organizationId === organizationId) &&
+            membership.roles.includes(role),
+        ),
+      )
     const sortBy = input.sortBy ?? "lastSignInAt"
     const direction = input.sortDirection ?? (sortBy === "userName" ? "asc" : "desc")
     rows.sort((left, right) => {
@@ -227,7 +233,7 @@ export function directoryAdminDemoAdapterCreate(
         return resultCreate({ revoked: true as const })
       }),
     organizationUserList: (query?: DirectoryUserListQuery) =>
-      gate("directoryAdminDemoOrganizationUserList", () => peopleList(query)),
+      gate("directoryAdminDemoOrganizationUserList", () => peopleList(query, demoOrganizationId)),
     organizationUserSummary: () =>
       gate("directoryAdminDemoOrganizationUserSummary", () =>
         resultCreate(

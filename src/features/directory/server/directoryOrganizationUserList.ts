@@ -121,7 +121,12 @@ export function directoryOrganizationUserList(
     entries.push({ memberships: membershipEntries, user: userView.data })
   }
 
-  const filtered = parsed.output.role === undefined ? entries : directoryRoleFilterApply(entries, parsed.output.role)
+  // Organization-scoped counts and role pills describe membership of this organization only,
+  // so the filter must ignore roles the person holds in other organizations.
+  const filtered =
+    parsed.output.role === undefined
+      ? entries
+      : directoryRoleFilterApply(entries, parsed.output.role, options.organizationId)
   return directoryEntryListPageCreate({
     entries: filtered,
     fallbackSortBy: "lastSignInAt",

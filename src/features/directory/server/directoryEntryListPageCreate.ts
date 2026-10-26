@@ -74,10 +74,18 @@ export function directoryEntryListPageCreate(input: {
 }
 
 export function directoryRoleFilterApply<
-  TEntry extends { readonly memberships: readonly { readonly roles: readonly string[] }[] },
->(entries: readonly TEntry[], role: string | undefined): TEntry[] {
+  TEntry extends {
+    readonly memberships: readonly { readonly organizationId: string; readonly roles: readonly string[] }[]
+  },
+>(entries: readonly TEntry[], role: string | undefined, organizationId?: string): TEntry[] {
   if (role === undefined) return [...entries]
-  return entries.filter((entry) => entry.memberships.some((membership) => membership.roles.includes(role)))
+  return entries.filter((entry) =>
+    entry.memberships.some(
+      (membership) =>
+        (organizationId === undefined || membership.organizationId === organizationId) &&
+        membership.roles.includes(role),
+    ),
+  )
 }
 
 export function directoryListQueryValidate(query: unknown): Result<DirectoryUserListQuery> {

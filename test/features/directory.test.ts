@@ -486,6 +486,100 @@ test("directory tenant endpoints round-trip through the composed server with bro
   })
 })
 
+test("organization role filter matches only memberships of the requested organization", async () => {
+  await withDatabase(async (database) => {
+    const { memberAId, memberBId, organizationA, organizationB, ownerAId, ownerBId, realmId } = await setupTwoOrgRealm(
+      database,
+      "directory-cross-role.example.com",
+    )
+    // memberA is a plain member of A but an admin of B: the A-scoped admin filter must not leak them in.
+    const cross = organizationMembershipCreate({
+      context: realmTenantContextCreate(realmId, ownerBId),
+      database,
+      input: { roles: ["admin"], userId: memberAId },
+      organizationId: organizationB.id,
+      realmId,
+    })
+    expect(cross.success).toBe(true)
+    const context = realmTenantContextCreate(realmId, ownerAId)
+    const adminsOfA = directoryOrganizationUserList({
+      context,
+      database,
+      includeOtherMemberships: true,
+      organizationId: organizationA.id,
+      organizationName: organizationA.name,
+      query: { role: "admin" },
+      realmId,
+    })
+    expect(adminsOfA.success).toBe(true)
+    if (!adminsOfA.success) return
+    expect(adminsOfA.data.items.map((item) => item.user.id).includes(memberAId)).toBe(false)
+    expect(adminsOfA.data.items).toHaveLength(0)
+    const adminsOfB = directoryOrganizationUserList({
+      context: realmTenantContextCreate(realmId, ownerBId),
+      database,
+      includeOtherMemberships: true,
+      organizationId: organizationB.id,
+      organizationName: organizationB.name,
+      query: { role: "admin" },
+      realmId,
+    })
+    expect(adminsOfB.success).toBe(true)
+    if (!adminsOfB.success) return
+    expect(new Set(adminsOfB.data.items.map((item) => item.user.id))).toEqual(new Set([memberAId, memberBId]))
+    // The realm-wide list keeps anywhere semantics: memberA is an admin somewhere.
+    const realmAdmins = directoryRealmUserList({ context, database, query: { role: "admin" }, realmId })
+    expect(realmAdmins.success).toBe(true)
+    if (!realmAdmins.success) return
+    expect(realmAdmins.data.items.map((item) => item.user.id)).toContain(memberAId)
+  })
+})
+
+test("organization user summary agrees with the role-filtered list for memberships without users", async () => {
+  await withDatabase(async (database) => {
+    const { memberAId, organizationA, ownerAId, realmId } = await setupTwoOrgRealm(
+      database,
+      "directory-dangling.example.com",
+    )
+    // Membership rows carry no foreign key to users, so a membership can outlive its user.
+    const ghost = organizationMembershipCreate({
+      context: realmTenantContextCreate(realmId, ownerAId),
+      database,
+      input: { roles: ["admin"], userId: "01900000-0000-7000-8000-00000000abcd" },
+      organizationId: organizationA.id,
+      realmId,
+    })
+    expect(ghost.success).toBe(true)
+    const summary = directoryOrganizationUserSummary({ database, organizationId: organizationA.id, realmId })
+    expect(summary).toMatchObject({
+      success: true,
+      data: { roles: { admin: 0, guest: 0, member: 1, owner: 1 }, total: 2 },
+    })
+    const context = realmTenantContextCreate(realmId, ownerAId)
+    const admins = directoryOrganizationUserList({
+      context,
+      database,
+      includeOtherMemberships: false,
+      organizationId: organizationA.id,
+      organizationName: organizationA.name,
+      query: { role: "admin" },
+      realmId,
+    })
+    expect(admins).toMatchObject({ success: true, data: { items: [] } })
+    const everyone = directoryOrganizationUserList({
+      context,
+      database,
+      includeOtherMemberships: false,
+      organizationId: organizationA.id,
+      organizationName: organizationA.name,
+      realmId,
+    })
+    expect(everyone.success).toBe(true)
+    if (!everyone.success) return
+    expect(new Set(everyone.data.items.map((item) => item.user.id))).toEqual(new Set([memberAId, ownerAId]))
+  })
+})
+
 test("directory list paging helper keeps last sign-in nulls last", async () => {
   const usersById = new Map([
     ["a", { createdAt: 1, userName: "a" }],
