@@ -132,14 +132,17 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
   }
 
   const roleCounts = () => page().summary()?.roles
-  const subtitleCount = () =>
-    activeTab() === "people"
-      ? page().summary() === undefined
-        ? page().people().length
-        : (page().summary()?.total ?? 0)
-      : activeTab() === "service-accounts"
-        ? page().serviceAccounts().length
-        : page().invitations().length
+  const subtitleCount = () => {
+    if (activeTab() === "people") {
+      // The header total must describe the filtered list: with an organization-scoped role
+      // filter the matching pill count is the exact total, not the unfiltered people total.
+      const role = activeRole()
+      if (role !== undefined && activeScope() === "organization" && page().summary() !== undefined)
+        return roleCounts()?.[role] ?? 0
+      return page().summary() === undefined ? page().people().length : (page().summary()?.total ?? 0)
+    }
+    return activeTab() === "service-accounts" ? page().serviceAccounts().length : page().invitations().length
+  }
   const subtitle = () => {
     const count = subtitleCount()
     if (count === 1)

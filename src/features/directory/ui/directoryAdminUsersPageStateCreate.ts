@@ -198,11 +198,25 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     status.set("ready")
   }
 
+  const peopleFilterKey = () =>
+    `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
+  let lastPeopleFilterKey: string | undefined
+
   createEffect(
     on(
       () =>
         `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${options.realmId}:${options.organizationId}:${options.reloadKey?.() ?? ""}`,
       () => {
+        // A page cursor belongs to the filter that produced it: drop it before loading a new
+        // filter, otherwise the new list starts mid-page and can come back empty.
+        const filterKey = peopleFilterKey()
+        if (lastPeopleFilterKey !== filterKey) {
+          lastPeopleFilterKey = filterKey
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
+        }
         void load()
       },
     ),
