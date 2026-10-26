@@ -41,6 +41,18 @@ export const eventSecurityEventDefinitionByType = {
     productionIntegrations: ["mfaRecoveryCodesGenerate"],
     subject: "user",
   },
+  "mfa.recovery_codes.invalidated": {
+    category: "mfa",
+    displayCode: "mfa.recovery_codes.invalidated",
+    productionIntegrations: ["mfaRecoveryCodesAdministratorInvalidate"],
+    subject: "user",
+  },
+  "mfa.totp.administrator_removed": {
+    category: "mfa",
+    displayCode: "mfa.totp.administrator_removed",
+    productionIntegrations: ["mfaTotpAdministratorRemove"],
+    subject: "user",
+  },
   "mfa.totp.enrollment.confirmed": {
     category: "mfa",
     displayCode: "mfa.totp.enrollment.confirmed",
@@ -152,6 +164,18 @@ export const eventSecurityEventDefinitionByType = {
     category: "passkeys",
     displayCode: "passkey.authentication_started",
     productionIntegrations: ["passkeyAuthenticationStart"],
+    subject: "user",
+  },
+  "passkey.credential_renamed": {
+    category: "passkeys",
+    displayCode: "passkey.credential_renamed",
+    productionIntegrations: ["passkeyCredentialRename"],
+    subject: "user",
+  },
+  "passkey.credential_administrator_revoked": {
+    category: "passkeys",
+    displayCode: "passkey.credential_administrator_revoked",
+    productionIntegrations: ["passkeyCredentialAdministratorRevoke"],
     subject: "user",
   },
   "passkey.credential_revoked": {
