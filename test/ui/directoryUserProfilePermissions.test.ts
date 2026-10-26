@@ -98,6 +98,7 @@ describe("user profile url state", () => {
     expect(directoryUserProfileDialogSelect("?dialog=assign-roles")).toBe("assign-roles")
     expect(directoryUserProfileDialogSelect("?dialog=set-password")).toBe("set-password")
     expect(directoryUserProfileDialogSelect("?dialog=delete")).toBe("delete")
+    expect(directoryUserProfileDialogSelect("?dialog=purge")).toBe("purge")
     expect(directoryUserProfileDialogSelect("?dialog=remove")).toBe(undefined)
   })
 })

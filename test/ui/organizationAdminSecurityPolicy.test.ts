@@ -30,6 +30,10 @@ const realmPolicy: OrganizationLoginPolicy = {
   preferredFactorOrder: ["totp", "email_otp", "passkey"],
   providerIds: null,
   requiredMfa: true,
+  mfaInitSkipLifetimeSeconds: null,
+  secondFactorCheckLifetimeSeconds: null,
+  multiFactorCheckLifetimeSeconds: null,
+  forceMfaLocalOnly: false,
 }
 
 describe("organization administration security policy state validation", () => {

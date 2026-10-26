@@ -16,12 +16,20 @@ test("CLI organization and realm gap commands expose help", async () => {
     ["organizations", "branding-get"],
     ["organizations", "domain-remove"],
     ["organizations", "domain-discover"],
+    ["organizations", "domain-seed"],
     ["organizations", "invitation-me-list"],
     ["organizations", "invitation-me-accept"],
     ["organizations", "invitation-me-decline"],
+    ["organizations", "invitation-me-inspect"],
     ["organizations", "me-switch"],
+    ["organizations", "purge"],
     ["realms", "get"],
     ["realms", "update"],
+    ["realms", "tenant-get"],
+    ["realms", "tenant-update"],
+    ["realms", "tenant-administrator-list"],
+    ["realms", "tenant-administrator-grant"],
+    ["realms", "tenant-administrator-revoke"],
   ]) {
     const result = await cliRun(...route, "--help")
     expect(result.exitCode).toBe(0)
@@ -33,8 +41,18 @@ test("CLI organization and realm gap commands expose help", async () => {
   expect(meList.stdout).toContain("--realm-id REALM_ID")
   const brandingGet = await cliRun("organizations", "branding-get", "--help")
   expect(brandingGet.stdout).toContain("--organization-id ORGANIZATION_ID")
+  const purge = await cliRun("organizations", "purge", "--help")
+  expect(purge.stdout).toContain("--organization-id ORGANIZATION_ID")
+  const domainSeed = await cliRun("organizations", "domain-seed", "--help")
+  expect(domainSeed.stdout).toContain("--domain VALUE")
+  const invitationInspect = await cliRun("organizations", "invitation-me-inspect", "--help")
+  expect(invitationInspect.stdout).toContain("--invitation-token VALUE")
   const realmGet = await cliRun("realms", "get", "--help")
   expect(realmGet.stdout).toContain("--realm-id REALM_ID")
+  const tenantGet = await cliRun("realms", "tenant-get", "--help")
+  expect(tenantGet.stdout).toContain("--realm-id REALM_ID")
+  const tenantUpdate = await cliRun("realms", "tenant-update", "--help")
+  expect(tenantUpdate.stdout).toContain("--name NAME")
 }, 30_000)
 
 test("CLI organization and realm gap commands require scope before any request", async () => {
@@ -44,8 +62,12 @@ test("CLI organization and realm gap commands require scope before any request",
     ["organizations", "invitation-me-list", "--server", unavailableServer],
     ["organizations", "invitation-me-accept", "--server", unavailableServer, "--invitation-token", "token"],
     ["organizations", "invitation-me-decline", "--server", unavailableServer, "--invitation-token", "token"],
+    ["organizations", "invitation-me-inspect", "--server", unavailableServer, "--invitation-token", "token"],
     ["realms", "get", "--server", unavailableServer],
     ["realms", "update", "--server", unavailableServer, "--name", "Renamed"],
+    ["realms", "tenant-get", "--server", unavailableServer],
+    ["realms", "tenant-update", "--server", unavailableServer, "--name", "Renamed"],
+    ["realms", "tenant-administrator-list", "--server", unavailableServer],
   ]) {
     const result = await cliRunWithEnvironment({ AUTHWORKS_REALM_ID: undefined }, ...args)
     expect(result.exitCode).not.toBe(0)
@@ -56,7 +78,9 @@ test("CLI organization and realm gap commands require scope before any request",
   for (const args of [
     ["organizations", "branding-get", "--server", unavailableServer],
     ["organizations", "domain-remove", "--server", unavailableServer, "--domain", "example.com"],
+    ["organizations", "domain-seed", "--server", unavailableServer, "--domain", "example.com"],
     ["organizations", "me-switch", "--server", unavailableServer],
+    ["organizations", "purge", "--server", unavailableServer],
   ]) {
     const result = await cliRunWithEnvironment(
       { AUTHWORKS_ORGANIZATION_ID: undefined, AUTHWORKS_REALM_ID: undefined },

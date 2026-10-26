@@ -17,6 +17,7 @@ import { organizationLifecycleSet } from "../../src/features/organizations/actio
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { organizationMembershipRemove } from "../../src/features/organizations/actions/organizationMembershipRemove.js"
 import { organizationMeSwitch } from "../../src/features/organizations/actions/organizationMeSwitch.js"
+import { organizationSwitch } from "../../src/features/organizations/actions/organizationSwitch.js"
 import { organizationRepositoryCreate } from "../../src/features/organizations/persistence/organizationRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -462,5 +463,51 @@ test("organization step-up rejects non-members and contexts deactivated after st
         sessionToken: ownerSession.data.token,
       }).success,
     ).toBe(false)
+  })
+})
+
+test("organization switching reports session-context failures under the organizations namespace", async () => {
+  await withDatabase(async (database) => {
+    const realm = createActiveRealm(database, "organization-switch-codes.example.com")
+    const member = createActiveUser(database, realm.id, "switch-member")
+    const other = createActiveUser(database, realm.id, "switch-other")
+    const organization = organizationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "Switch organization", ownerUserId: member.id },
+      realmId: realm.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    const organizationId = organization.data.organization.id
+    expect(
+      organizationMeSwitch({
+        context: realmTenantContextCreate(realm.id, member.id),
+        database,
+        input: { organizationId },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "organizations.unauthorized", success: false })
+    expect(
+      organizationSwitch({
+        context: realmSystemContextCreate(),
+        database,
+        input: { organizationId },
+        realmId: realm.id,
+        sessionId: "018bcfe5-6800-7010-9010-101010101010",
+      }),
+    ).toMatchObject({ code: "organizations.unauthorized", success: false })
+    const mismatched = {
+      ...realmTenantContextCreate(realm.id, member.id),
+      actor: { ...realmTenantContextCreate(realm.id, member.id).actor, actorId: other.id },
+    }
+    expect(
+      organizationSwitch({
+        context: mismatched,
+        database,
+        input: { organizationId },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "organizations.unauthorized", success: false })
   })
 })

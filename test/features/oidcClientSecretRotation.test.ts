@@ -78,15 +78,8 @@ function pkceChallengeCreate(verifier: string): string {
   return createHash("sha256").update(verifier, "utf8").digest("base64url")
 }
 
-function oauthClientPasswordEncode(value: string): string {
-  const encoded = encodeURIComponent(value)
-  const first = value.charCodeAt(0).toString(16).padStart(2, "0")
-  return `%${first}${encoded.slice(1)}`
-}
-
 function clientSecretBasicCreate(clientId: string, clientSecret: string): string {
-  const credentials = `${oauthClientPasswordEncode(clientId)}:${oauthClientPasswordEncode(clientSecret)}`
-  return `Basic ${Buffer.from(credentials, "utf8").toString("base64")}`
+  return `Basic ${Buffer.from(`${clientId}:${clientSecret}`, "utf8").toString("base64")}`
 }
 
 async function tokenRequest(
@@ -191,7 +184,7 @@ test("rotated confidential clients complete authorization-code PKCE with client_
     const malformed = await tokenRequest(
       app,
       realm.domain,
-      `Basic ${Buffer.from(`${oauthClientPasswordEncode(created.client.id)}:%ZZ`, "utf8").toString("base64")}`,
+      `Basic ${Buffer.from(`${created.client.id}:%ZZ`, "utf8").toString("base64")}`,
       tokenInput,
     )
     expect(malformed.status).toBe(401)

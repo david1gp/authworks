@@ -430,7 +430,7 @@ test("GET /oauth2/me/access rejects untrusted clients, bad tokens, and dead sess
     const expiredToken = await issue(trustedClient.data.client.id, trustedClient.data.clientSecret)
     database.sqlite
       .query("UPDATE oidc_access_tokens SET expires_at = ? WHERE token_hash = ?")
-      .run(database.runtime.now() - 1, oidcHashCreate(expiredToken))
+      .run(database.runtime.now() - 60_000, oidcHashCreate(expiredToken))
     const expiredResponse = await accessGet(app, domain, expiredToken)
     expect(expiredResponse.status).toBe(401)
     expect(await expiredResponse.json()).toEqual({

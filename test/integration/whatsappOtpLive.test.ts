@@ -688,6 +688,10 @@ function liveTestOrganizationDiscoveryFoundCreate(
       preferredFactorOrder: ["totp"],
       providerIds: [],
       requiredMfa: false,
+      mfaInitSkipLifetimeSeconds: null,
+      secondFactorCheckLifetimeSeconds: null,
+      multiFactorCheckLifetimeSeconds: null,
+      forceMfaLocalOnly: false,
     },
     providers: [],
   }

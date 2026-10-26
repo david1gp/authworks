@@ -241,6 +241,7 @@ test("access-token role assertions are exact, project-scoped, and recomputed on 
       database,
       input: {
         accessTokenRoleAssertion: true,
+        allowedScopes: ["openid", "offline_access"],
         clientType: "public",
         name: "Enabled role client",
         projectId: project.data.project.id,
@@ -253,6 +254,7 @@ test("access-token role assertions are exact, project-scoped, and recomputed on 
       context: realmSystemContextCreate(),
       database,
       input: {
+        allowedScopes: ["openid", "offline_access"],
         clientType: "public",
         name: "Disabled role client",
         projectId: project.data.project.id,
@@ -266,6 +268,7 @@ test("access-token role assertions are exact, project-scoped, and recomputed on 
       database,
       input: {
         accessTokenRoleAssertion: true,
+        allowedScopes: ["openid", "offline_access"],
         clientType: "public",
         name: "No project role client",
         redirectUris: ["https://no-project.example/callback"],
@@ -305,7 +308,7 @@ test("access-token role assertions are exact, project-scoped, and recomputed on 
         code_challenge_method: "S256" as const,
         redirect_uri: redirectUri,
         response_type: "code" as const,
-        scope: "openid",
+        scope: "openid offline_access",
         state: `${clientId}-${stateIndex++}`,
       }
       const parsedRequest = v.safeParse(oidcAuthorizationRequestSchema, requestInput)

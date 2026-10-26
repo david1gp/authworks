@@ -186,7 +186,7 @@ test("task 8 preserves source primary state, clears it, and drives effective ver
           roleKeys: ["reader"],
         },
       ]),
-    ).toEqual({})
+    ).toEqual({ "urn:zitadel:iam:org:project:roles": { reader: { [organizationId]: organizationId } } })
 
     const restored = structuredClone(snapshot)
     restored.domains[0]!.updatedAt = 202
@@ -205,7 +205,7 @@ test("task 8 preserves source primary state, clears it, and drives effective ver
       oidcAccessTokenRoleClaimsCreate([
         { organizationId, primaryDomain: afterClear.success ? afterClear.data : undefined, roleKeys: ["reader"] },
       ]),
-    ).toEqual({})
+    ).toEqual({ "urn:zitadel:iam:org:project:roles": { reader: { [organizationId]: organizationId } } })
   })
 })
 

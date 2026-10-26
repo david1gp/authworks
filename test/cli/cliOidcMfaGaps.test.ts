@@ -100,6 +100,32 @@ test("CLI OIDC and MFA gap commands require a realm before any request", async (
   }
 }, 30_000)
 
+test("CLI OIDC client update exposes application flags and rejects conflicting clear", async () => {
+  const help = await cliRun("oidc", "client-update", "--help")
+  expect(help.exitCode).toBe(0)
+  expect(help.stderr).toBe("")
+  expect(help.stdout).toContain("--application-id")
+  expect(help.stdout).toContain("--clear-application-id")
+
+  const conflict = await cliRunWithEnvironment(
+    { AUTHWORKS_REALM_ID: "11111111-1111-1111-1111-111111111111" },
+    "oidc",
+    "client-update",
+    "--server",
+    "http://127.0.0.1:1",
+    "--system-token",
+    "secret",
+    "--client-id",
+    "22222222-2222-2222-2222-222222222222",
+    "--application-id",
+    "33333333-3333-3333-3333-333333333333",
+    "--clear-application-id",
+  )
+  expect(conflict.exitCode).toBe(1)
+  expect(conflict.stdout).toBe("")
+  expect(conflict.stderr).toBe("--application-id and --clear-application-id are mutually exclusive.\n")
+}, 30_000)
+
 test("CLI OIDC system gap commands require a system credential", async () => {
   const result = await cliRunWithEnvironment(
     { AUTHWORKS_REALM_ID: undefined, AUTHWORKS_SYSTEM_SECRET: undefined },

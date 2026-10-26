@@ -201,7 +201,7 @@ test("authorization and replay events store migrated destination user IDs", asyn
       context: realmSystemContextCreate(),
       database,
       input: {
-        allowedScopes: ["openid", "profile", "email"],
+        allowedScopes: ["openid", "profile", "email", "offline_access"],
         clientType: "public",
         name: "Migrated user client",
         redirectUris: ["https://client.example/callback"],
@@ -290,7 +290,7 @@ test("authorization and replay events store migrated destination user IDs", asyn
         code_challenge_method: "S256",
         redirect_uri: "https://client.example/callback",
         response_type: "code",
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         state: "authorization-event-state-two",
       },
       realmId,

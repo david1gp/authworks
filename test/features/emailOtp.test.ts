@@ -328,6 +328,9 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       consumed_at: 1_700_000_000_000,
     })
 
+    // Five failures reach the OTP lockout threshold, so the account is locked here.
+    // Expire the lock before exercising the expired-challenge path below.
+    testkit.advance(15 * 60 * 1_000)
     testkit.advance(60_001)
     let expiredChallenge = ""
     emailOtpStart({

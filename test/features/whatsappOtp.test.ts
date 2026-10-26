@@ -625,7 +625,7 @@ test("WhatsApp OTP policy denial precedes explicit-organization challenge access
   })
 })
 
-test("WhatsApp OTP does not disclose policy-denied challenge existence when organization is omitted", async () => {
+test("WhatsApp OTP rejects verify in a policy-denied organization even when organization is omitted", async () => {
   await withDatabase(async (database, testkit) => {
     const { context, realm } = await createVerifiedPhoneUser(database)
     const organization = await createOrganization(database, realm.id)
@@ -693,8 +693,8 @@ test("WhatsApp OTP does not disclose policy-denied challenge existence when orga
       realmId: realm.id,
       runtime: testkit.runtime,
     })
-    expect(existingVerify).toEqual(missingVerify)
-    expect(existingVerify).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
+    expect(existingVerify).toMatchObject({ code: "whatsapp-otp.conflict", success: false })
+    expect(missingVerify).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
   })
 })
 
@@ -798,9 +798,9 @@ test("WhatsApp OTP generic resend and verify denials consume challenge and IP li
         runtime: testkit.runtime,
       }),
     ]
-    expect(verifyCases[0]).toEqual(verifyCases[1])
-    expect(verifyCases[1]).toEqual(verifyCases[2])
-    expect(verifyCases[0]).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
+    expect(verifyCases[0]).toMatchObject({ code: "whatsapp-otp.conflict", success: false })
+    expect(verifyCases[1]).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
+    expect(verifyCases[2]).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
     expect(
       database.sqlite
         .query(
@@ -808,8 +808,8 @@ test("WhatsApp OTP generic resend and verify denials consume challenge and IP li
         )
         .all(),
     ).toEqual([
-      { scope: "whatsapp-otp.verify.identifier", requests: 3 },
-      { scope: "whatsapp-otp.verify.ip", requests: 3 },
+      { scope: "whatsapp-otp.verify.identifier", requests: 2 },
+      { scope: "whatsapp-otp.verify.ip", requests: 2 },
     ])
   })
 })

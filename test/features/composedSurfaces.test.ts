@@ -133,7 +133,7 @@ test("all feature clients round-trip through the composed server", async () => {
     const machines = machineUserApiClientCreate(system)
     const machineUser = await machines.machineUserCreate(realmId, organizationId, {
       displayName: "Surface machine",
-      scopes: ["api.read"],
+      scopes: ["event.read"],
       userName: "surface-machine",
     })
     expect(machineUser.success).toBe(true)

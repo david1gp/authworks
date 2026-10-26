@@ -120,6 +120,7 @@ async function createProvider(
   organizationId?: string,
 ) {
   const created = externalIdentityProviderCreate({
+    allowDevelopmentFallback: true,
     context: realmSystemContextCreate(),
     database,
     input: {
@@ -179,7 +180,8 @@ async function externalIdentityLogin(
   providerPorts: Parameters<typeof externalIdentityCallback>[0]["providerPorts"],
   input: { readonly organizationId?: string } = {},
 ) {
-  const started = externalIdentityStart({
+  const started = await externalIdentityStart({
+    allowDevelopmentFallback: true,
     database,
     input,
     realmId,
@@ -191,6 +193,7 @@ async function externalIdentityLogin(
   if (!started.success) throw new Error(started.errorMessage)
   const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
   return externalIdentityCallback({
+    allowDevelopmentFallback: true,
     code: "provider-code",
     database,
     realmId,
@@ -234,6 +237,7 @@ test("external identity provider scopes are provider-specific, required, unique,
     for (const scopes of [["openid"], ["openid", "email", "email"], ["openid", "email", "admin"]]) {
       expect(
         externalIdentityProviderCreate({
+          allowDevelopmentFallback: true,
           context: realmSystemContextCreate(),
           database,
           input: { ...input, scopes },
@@ -243,6 +247,7 @@ test("external identity provider scopes are provider-specific, required, unique,
     }
     expect(
       externalIdentityProviderCreate({
+        allowDevelopmentFallback: true,
         context: realmSystemContextCreate(),
         database,
         input: { ...input, scopes: ["openid", "email"] },
@@ -251,6 +256,7 @@ test("external identity provider scopes are provider-specific, required, unique,
     ).toBe(true)
     expect(
       externalIdentityProviderCreate({
+        allowDevelopmentFallback: true,
         context: realmSystemContextCreate(),
         database,
         input: { ...input, displayName: "GitHub", type: "github", scopes: ["openid", "email"] },
@@ -370,7 +376,8 @@ test("external identity login validates state and creates a session without expo
     const realm = await createRealm(database, "external-login.example.com")
     const provider = await createProvider(database, realm.id)
     const ports = { google: testPort() }
-    const started = externalIdentityStart({
+    const started = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -382,6 +389,7 @@ test("external identity login validates state and creates a session without expo
     if (!started.success) return
     const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
     const callback = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "provider-code",
       database,
       realmId: realm.id,
@@ -412,6 +420,7 @@ test("external identity login validates state and creates a session without expo
     expect(
       (
         await externalIdentityCallback({
+          allowDevelopmentFallback: true,
           code: "provider-code",
           database,
           realmId: realm.id,
@@ -457,7 +466,8 @@ test("external identity callbacks reject altered state, nonce, and provider-enfo
         )
       },
     }
-    const started = externalIdentityStart({
+    const started = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -471,6 +481,7 @@ test("external identity callbacks reject altered state, nonce, and provider-enfo
     expect(
       (
         await externalIdentityCallback({
+          allowDevelopmentFallback: true,
           code: "code",
           database,
           providerId: provider.id,
@@ -484,6 +495,7 @@ test("external identity callbacks reject altered state, nonce, and provider-enfo
     expect(
       (
         await externalIdentityCallback({
+          allowDevelopmentFallback: true,
           code: "code",
           database,
           providerId: provider.id,
@@ -498,6 +510,7 @@ test("external identity callbacks reject altered state, nonce, and provider-enfo
     expect(
       (
         await externalIdentityCallback({
+          allowDevelopmentFallback: true,
           code: "code",
           database,
           providerId: provider.id,
@@ -573,7 +586,8 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     })
     expect(login.success).toBe(true)
     if (!login.success || login.data.session === undefined) return
-    const linkStart = externalIdentityLinkStart({
+    const linkStart = await externalIdentityLinkStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -594,6 +608,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
       userId: login.data.authentication.userId,
     })
     const pending = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "link-code",
       database,
       realmId: realm.id,
@@ -624,7 +639,8 @@ test("required MFA turns external identity authentication into a TOTP challenge"
         runtime: testkit.runtime,
       }).success,
     ).toBe(true)
-    const started = externalIdentityStart({
+    const started = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -636,6 +652,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     if (!started.success) return
     const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
     const callback = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "provider-code",
       database,
       realmId: realm.id,
@@ -700,7 +717,8 @@ test("disabled external identity auto-linking preserves confirmation linking", a
     expect(passwordEmailVerify({ context: anonymous, database, input: { token }, realmId: realm.id }).success).toBe(
       true,
     )
-    const conflictStart = externalIdentityStart({
+    const conflictStart = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -712,6 +730,7 @@ test("disabled external identity auto-linking preserves confirmation linking", a
     if (!conflictStart.success) return
     const conflictState = new URL(conflictStart.data.authorizationUrl).searchParams.get("state") ?? ""
     const conflict = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "code",
       database,
       realmId: realm.id,
@@ -740,7 +759,8 @@ test("disabled external identity auto-linking preserves confirmation linking", a
         userId: "another-user",
       }).success,
     ).toBe(false)
-    const linkStart = externalIdentityLinkStart({
+    const linkStart = await externalIdentityLinkStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -754,6 +774,7 @@ test("disabled external identity auto-linking preserves confirmation linking", a
     if (!linkStart.success) return
     const linkState = new URL(linkStart.data.authorizationUrl).searchParams.get("state") ?? ""
     const pending = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "link-code",
       database,
       realmId: realm.id,
@@ -996,7 +1017,7 @@ test("verified Google identities honor realm and organization auto-link policy p
   })
 })
 
-test("only eligible verified Google and GitHub identities auto-link within their realm", async () => {
+test("only eligible verified identities auto-link within their realm", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "external-auto-link-eligibility.example.com")
     const googleProvider = await createProvider(database, realm.id)
@@ -1030,10 +1051,13 @@ test("only eligible verified Google and GitHub identities auto-link within their
     const microsoft = await externalIdentityLogin(database, testkit, realm.id, microsoftProvider.id, {
       microsoft: testPort("microsoft@example.com", { externalSubject: "microsoft", providerType: "microsoft" }),
     })
-    expect(microsoft).toMatchObject({ code: "external-identities.already-exists", success: false })
+    expect(microsoft).toMatchObject({
+      data: { authentication: { userId: microsoftUser.id }, kind: "authenticated" },
+      success: true,
+    })
     expect(
       database.db.select().from(externalIdentityTable).where(eq(externalIdentityTable.userId, microsoftUser.id)).all(),
-    ).toHaveLength(0)
+    ).toHaveLength(1)
 
     const githubProvider = await createProvider(database, realm.id, true, "github")
     const githubVerifiedUser = await createVerifiedUser(
@@ -1162,7 +1186,8 @@ test("external identity account and event writes roll back together", async () =
     const provider = await createProvider(database, realm.id)
     const existing = await createVerifiedUser(database, testkit, realm.id, "atomic-link@example.com", "atomic-link")
     const ports = { google: testPort("atomic-link@example.com", { externalSubject: "atomic-link" }) }
-    const started = externalIdentityStart({
+    const started = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -1180,6 +1205,7 @@ test("external identity account and event writes roll back together", async () =
     )
     const before = database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()
     const callback = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "code",
       database,
       realmId: realm.id,
@@ -1228,7 +1254,8 @@ test("provider adapters use fixed endpoints and reject invalid state isolation",
     const alpha = await createRealm(database, "external-alpha.example.com")
     const beta = await createRealm(database, "external-beta.example.com")
     const provider = await createProvider(database, alpha.id)
-    const started = externalIdentityStart({
+    const started = await externalIdentityStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: alpha.id,
@@ -1242,6 +1269,7 @@ test("provider adapters use fixed endpoints and reject invalid state isolation",
     expect(
       (
         await externalIdentityCallback({
+          allowDevelopmentFallback: true,
           code: "code",
           database,
           realmId: beta.id,
@@ -1423,6 +1451,7 @@ test("external identity browser callback issues an HttpOnly session cookie witho
     const realm = await createRealm(database, "external-browser.example.com")
     const provider = await createProvider(database, realm.id)
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { google: testPort() },
@@ -1722,7 +1751,8 @@ test("linking works with a stale session and requests the provider account choos
     // Age the session past any freshness window: the provider round-trip plus the explicit
     // confirmation authorizes the link, exactly like every other OAuth connect flow.
     testkit.advance(6 * 60 * 1_000)
-    const linkStart = externalIdentityLinkStart({
+    const linkStart = await externalIdentityLinkStart({
+      allowDevelopmentFallback: true,
       database,
       input: {},
       realmId: realm.id,
@@ -1738,6 +1768,7 @@ test("linking works with a stale session and requests the provider account choos
     expect(authorizationUrl.searchParams.get("prompt")).toBe("select_account")
     const linkState = authorizationUrl.searchParams.get("state") ?? ""
     const pending = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
       code: "link-code",
       database,
       realmId: realm.id,

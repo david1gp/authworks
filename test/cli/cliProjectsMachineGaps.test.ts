@@ -26,6 +26,32 @@ test("CLI project and machine gap commands expose help", async () => {
     "grant-update",
     "role-delete",
     "role-update",
+    "tenant-access-check",
+    "tenant-application-create",
+    "tenant-application-delete",
+    "tenant-application-get",
+    "tenant-application-lifecycle",
+    "tenant-application-list",
+    "tenant-application-update",
+    "tenant-assignment-create",
+    "tenant-assignment-list",
+    "tenant-assignment-remove",
+    "tenant-assignment-update",
+    "tenant-create",
+    "tenant-delete",
+    "tenant-get",
+    "tenant-grant-create",
+    "tenant-grant-delete",
+    "tenant-grant-lifecycle",
+    "tenant-grant-list",
+    "tenant-grant-update",
+    "tenant-lifecycle",
+    "tenant-list",
+    "tenant-role-create",
+    "tenant-role-delete",
+    "tenant-role-list",
+    "tenant-role-update",
+    "tenant-update",
   ]) {
     expect(projects.stdout).toContain(route)
   }
@@ -35,6 +61,19 @@ test("CLI project and machine gap commands expose help", async () => {
   expect(machines.stderr).toBe("")
   expect(machines.stdout).toContain("credential-issue")
   expect(machines.stdout).toContain("protected-api-get")
+  for (const route of [
+    "tenant-api-key-create",
+    "tenant-create",
+    "tenant-credential-list",
+    "tenant-credential-revoke",
+    "tenant-get",
+    "tenant-lifecycle",
+    "tenant-list",
+    "tenant-personal-access-token-create",
+    "tenant-secret-rotate",
+  ]) {
+    expect(machines.stdout).toContain(route)
+  }
 
   const applicationGet = await cliRun("projects", "application-get", "--help")
   expect(applicationGet.stdout).toContain("--application-id")
@@ -45,8 +84,23 @@ test("CLI project and machine gap commands expose help", async () => {
   const roleUpdate = await cliRun("projects", "role-update", "--help")
   expect(roleUpdate.stdout).toContain("--role-id")
 
+  const tenantApplicationGet = await cliRun("projects", "tenant-application-get", "--help")
+  expect(tenantApplicationGet.stdout).toContain("--application-id")
+
+  const tenantGrantUpdate = await cliRun("projects", "tenant-grant-update", "--help")
+  expect(tenantGrantUpdate.stdout).toContain("--grant-id")
+
+  const tenantRoleUpdate = await cliRun("projects", "tenant-role-update", "--help")
+  expect(tenantRoleUpdate.stdout).toContain("--role-id")
+
+  const tenantAssignmentCreate = await cliRun("projects", "tenant-assignment-create", "--help")
+  expect(tenantAssignmentCreate.stdout).toContain("--user-id")
+
   const credentialIssue = await cliRun("machine-users", "credential-issue", "--help")
   expect(credentialIssue.stdout).toContain("--machine-user-id")
+
+  const tenantCredentialIssue = await cliRun("machine-users", "tenant-credential-list", "--help")
+  expect(tenantCredentialIssue.stdout).toContain("--machine-user-id")
 
   const protectedApi = await cliRun("machine-users", "protected-api-get", "--help")
   expect(protectedApi.stdout).toContain("--realm-id UUID")
@@ -70,6 +124,14 @@ test("CLI project and machine gap commands require scope before any request", as
       "Expected input for flag --realm-id\nExpected input for flag --project-id\n",
     ],
     [
+      ["projects", "tenant-get", "--server", unavailableServer],
+      "Expected input for flag --realm-id\nExpected input for flag --project-id\n",
+    ],
+    [
+      ["projects", "tenant-access-check", "--server", unavailableServer],
+      "Expected input for flag --realm-id\nExpected input for flag --project-id\n",
+    ],
+    [
       [
         "machine-users",
         "credential-issue",
@@ -83,6 +145,17 @@ test("CLI project and machine gap commands require scope before any request", as
       "Expected input for flag --realm-id\nExpected input for flag --organization-id\n",
     ],
     [["machine-users", "protected-api-get", "--server", unavailableServer], "Expected input for flag --realm-id\n"],
+    [
+      [
+        "machine-users",
+        "tenant-credential-revoke",
+        "--server",
+        unavailableServer,
+        "--credential-id",
+        "44444444-4444-4444-4444-444444444444",
+      ],
+      "Expected input for flag --realm-id\nExpected input for flag --organization-id\n",
+    ],
   ] as const) {
     const result = await cliRunWithEnvironment(cleanEnvironment, ...args)
     expect(result.exitCode).not.toBe(0)
@@ -95,6 +168,10 @@ test("CLI project and machine gap commands require scope before any request", as
   for (const [args, expected] of [
     [
       ["projects", "application-get", "--server", unavailableServer, "--realm-id", realmId],
+      "Expected input for flag --project-id\nExpected input for flag --application-id\n",
+    ],
+    [
+      ["projects", "tenant-application-get", "--server", unavailableServer, "--realm-id", realmId],
       "Expected input for flag --project-id\nExpected input for flag --application-id\n",
     ],
     [
@@ -382,7 +459,7 @@ test("CLI machine credential issue and protected API round-trip through the comp
       "--display-name",
       "Machine gaps user",
       "--scopes",
-      "read",
+      "user.read",
     )
     expect(machineCreate.exitCode).toBe(0)
     const machineUserId = (JSON.parse(machineCreate.stdout) as { machineUser: { id: string } }).machineUser.id
@@ -400,7 +477,7 @@ test("CLI machine credential issue and protected API round-trip through the comp
       "--name",
       "gaps-credential",
       "--scopes",
-      "read",
+      "user.read",
     )
     expect(credentialIssue.exitCode).toBe(0)
     const issued = JSON.parse(credentialIssue.stdout) as {
@@ -438,7 +515,7 @@ test("CLI machine credential issue and protected API round-trip through the comp
     expect(protectedApi.exitCode).toBe(0)
     expect(JSON.parse(protectedApi.stdout)).toMatchObject({
       machineUser: { id: machineUserId },
-      scopes: ["read"],
+      scopes: ["user.read"],
     })
   } finally {
     server.stop(true)

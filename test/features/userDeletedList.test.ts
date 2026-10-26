@@ -157,9 +157,26 @@ test("an invalid state value is rejected", async () => {
       publicOrigin: "https://deleted-list.example.com",
       systemSecret: "system-secret",
     })
-    const invalidResponse = await app.request(`https://deleted-list.example.com/realms/${realmId}/users?state=active`, {
+    const invalidResponse = await app.request(
+      `https://deleted-list.example.com/realms/${realmId}/users?state=retired`,
+      {
+        headers: { authorization: `Bearer ${sessionToken(database, realmId, adminId)}` },
+      },
+    )
+    expect(invalidResponse.status).toBe(400)
+    const invalidVerifiedResponse = await app.request(
+      `https://deleted-list.example.com/realms/${realmId}/users?emailVerified=yes`,
+      {
+        headers: { authorization: `Bearer ${sessionToken(database, realmId, adminId)}` },
+      },
+    )
+    expect(invalidVerifiedResponse.status).toBe(400)
+    const activeResponse = await app.request(`https://deleted-list.example.com/realms/${realmId}/users?state=active`, {
       headers: { authorization: `Bearer ${sessionToken(database, realmId, adminId)}` },
     })
-    expect(invalidResponse.status).toBe(400)
+    expect(activeResponse.status).toBe(200)
+    const activeBody = (await activeResponse.json()) as { items: { id: string; state: string }[] }
+    expect(activeBody.items.length).toBeGreaterThan(0)
+    expect(activeBody.items.every((item) => item.state === "active")).toBe(true)
   })
 })
