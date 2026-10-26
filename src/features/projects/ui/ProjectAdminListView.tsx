@@ -47,11 +47,11 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
       cell: (project) => (
         <AuthenticatedChip
           label={messageTranslate(
-            project.organizationId === state.page.organizations()[0]?.id
+            project.organizationId === state.activeOrganizationId()
               ? "admin.projects.detail.owned"
               : "admin.projects.detail.shared",
           )}
-          tone={project.organizationId === state.page.organizations()[0]?.id ? "accent" : "neutral"}
+          tone={project.organizationId === state.activeOrganizationId() ? "accent" : "neutral"}
         />
       ),
       header: messageTranslate("admin.projects.detail.organization"),

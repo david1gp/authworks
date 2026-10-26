@@ -44,6 +44,7 @@ export function projectAdminListViewStateCreate(options: {
   }
 
   return {
+    activeOrganizationId: options.organizationId,
     createOpen: options.createOpen,
     createOpenSet: (open: boolean) => {
       formError.set(undefined)
