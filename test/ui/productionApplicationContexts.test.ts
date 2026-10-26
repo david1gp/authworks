@@ -419,6 +419,264 @@ describe("production application contexts", () => {
       expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
     }
   })
+
+  test("exposes the profile picture url for the shell avatar", async () => {
+    const pictureUrl = "https://assets.example.test/user-pictures/alice.png"
+    const responses: Record<string, unknown> = {
+      "/organization-discovery": {
+        branding: {
+          dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+          disableWatermark: true,
+          light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+          themeMode: "system",
+        },
+        domain: "customer.example",
+        found: true,
+        organization: { id: organizationId, name: "Owner organization", realmId },
+        policy: {
+          allowDomainDiscovery: true,
+          allowEmailOtp: true,
+          allowExternalIdentity: true,
+          allowExternalIdentityAutoLinking: true,
+          allowPassword: true,
+          allowPasswordRecovery: true,
+          allowPasskey: true,
+          allowRegistration: true,
+          providerIds: [],
+          requiredMfa: false,
+          allowedFactors: ["totp", "email_otp", "passkey"],
+          preferredFactorOrder: ["totp", "email_otp", "passkey"],
+          minimumStepUpAssurance: "authenticated",
+          mfaInitSkipLifetimeSeconds: null,
+          secondFactorCheckLifetimeSeconds: null,
+          multiFactorCheckLifetimeSeconds: null,
+          forceMfaLocalOnly: false,
+        },
+        providers: [],
+      },
+      [`/realms/${realmId}/me`]: {
+        capabilities: { realmAdministrator: false, realmRead: false },
+        user: {
+          createdAt: 1,
+          email: "alice@example.com",
+          emailVerified: true,
+          id: userId,
+          profile: { displayName: "Alice Example", picture: { contentType: "image/png", url: pictureUrl } },
+          realmId,
+          state: "active",
+          updatedAt: 1,
+          userName: "alice",
+          verificationState: "verified",
+        },
+      },
+      [`/realms/${realmId}/me/organizations`]: {
+        items: [
+          {
+            membership: {
+              createdAt: 1,
+              id: "membership-1",
+              organizationId,
+              realmId,
+              roles: ["member"],
+              updatedAt: 1,
+              userId,
+            },
+            organization: {
+              createdAt: 1,
+              id: organizationId,
+              name: "Owner organization",
+              realmId,
+              status: "active",
+              updatedAt: 1,
+            },
+          },
+        ],
+      },
+      [`/realms/${realmId}/sessions/current`]: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
+          createdAt: 1,
+          current: true,
+          device: {},
+          expiresAt: 2,
+          id: "session-1",
+          lastUsedAt: 1,
+          realmId,
+          revokedAt: null,
+          subjectId: userId,
+          subjectType: "user",
+          userId,
+        },
+      },
+      [`/realms/${realmId}`]: {
+        realm: {
+          createdAt: 1,
+          domain: "customer.example",
+          domains: ["customer.example"],
+          id: realmId,
+          name: "customer",
+          status: "active",
+          updatedAt: 1,
+        },
+      },
+    }
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      value: async (input: string | URL | Request) => {
+        const path = new URL(String(input), "https://auth.example").pathname
+        const body = responses[path]
+        return body === undefined ? Response.json({}, { status: 404 }) : Response.json(body)
+      },
+    })
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { href: "https://auth.example/account#access" } },
+    })
+
+    const contexts = await productionApplicationContextsCreate()
+
+    expect(contexts.session.actorLabel).toBe("Alice Example")
+    expect(contexts.session.actorPictureUrl).toBe(pictureUrl)
+  })
+
+  test("exposes the organization branding icon for the switcher image", async () => {
+    const iconUrl = "https://assets.example.test/org-icons/owner.png"
+    const responses: Record<string, unknown> = {
+      "/organization-discovery": {
+        branding: {
+          dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+          disableWatermark: true,
+          light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+          themeMode: "system",
+        },
+        domain: "customer.example",
+        found: true,
+        organization: { id: organizationId, name: "Owner organization", realmId },
+        policy: {
+          allowDomainDiscovery: true,
+          allowEmailOtp: true,
+          allowExternalIdentity: true,
+          allowExternalIdentityAutoLinking: true,
+          allowPassword: true,
+          allowPasswordRecovery: true,
+          allowPasskey: true,
+          allowRegistration: true,
+          providerIds: [],
+          requiredMfa: false,
+          allowedFactors: ["totp", "email_otp", "passkey"],
+          preferredFactorOrder: ["totp", "email_otp", "passkey"],
+          minimumStepUpAssurance: "authenticated",
+          mfaInitSkipLifetimeSeconds: null,
+          secondFactorCheckLifetimeSeconds: null,
+          multiFactorCheckLifetimeSeconds: null,
+          forceMfaLocalOnly: false,
+        },
+        providers: [],
+      },
+      [`/realms/${realmId}/me`]: {
+        capabilities: { realmAdministrator: false, realmRead: false },
+        user: {
+          createdAt: 1,
+          email: "alice@example.com",
+          emailVerified: true,
+          id: userId,
+          profile: { displayName: "Alice Example" },
+          realmId,
+          state: "active",
+          updatedAt: 1,
+          userName: "alice",
+          verificationState: "verified",
+        },
+      },
+      [`/realms/${realmId}/me/organizations`]: {
+        items: [
+          {
+            branding: {
+              dark: {
+                backgroundColor: "#111827",
+                fontColor: "#f9fafb",
+                primaryColor: "#60a5fa",
+                warnColor: "#f87171",
+              },
+              disableWatermark: false,
+              light: {
+                backgroundColor: "#f8fafc",
+                fontColor: "#111827",
+                icon: { contentType: "image/png", url: iconUrl },
+                primaryColor: "#2563eb",
+                warnColor: "#dc2626",
+              },
+              themeMode: "system",
+            },
+            membership: {
+              createdAt: 1,
+              id: "membership-1",
+              organizationId,
+              realmId,
+              roles: ["member"],
+              updatedAt: 1,
+              userId,
+            },
+            organization: {
+              createdAt: 1,
+              id: organizationId,
+              name: "Owner organization",
+              realmId,
+              status: "active",
+              updatedAt: 1,
+            },
+          },
+        ],
+      },
+      [`/realms/${realmId}/sessions/current`]: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
+          createdAt: 1,
+          current: true,
+          device: {},
+          expiresAt: 2,
+          id: "session-1",
+          lastUsedAt: 1,
+          realmId,
+          revokedAt: null,
+          subjectId: userId,
+          subjectType: "user",
+          userId,
+        },
+      },
+      [`/realms/${realmId}`]: {
+        realm: {
+          createdAt: 1,
+          domain: "customer.example",
+          domains: ["customer.example"],
+          id: realmId,
+          name: "customer",
+          status: "active",
+          updatedAt: 1,
+        },
+      },
+    }
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      value: async (input: string | URL | Request) => {
+        const path = new URL(String(input), "https://auth.example").pathname
+        const body = responses[path]
+        return body === undefined ? Response.json({}, { status: 404 }) : Response.json(body)
+      },
+    })
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { href: "https://auth.example/admin/users" } },
+    })
+
+    const contexts = await productionApplicationContextsCreate()
+
+    expect(contexts.session.organizations).toEqual([
+      { id: organizationId, imageUrl: iconUrl, label: "Owner organization" },
+    ])
+  })
 })
 
 function productionOrganizationSwitchFixtureInstall(secondOrganizationId: string) {

@@ -849,29 +849,53 @@ describe("account workspace", () => {
     expect(source).toContain('organizationsHref="/account#access"')
   })
 
-  test("omits the global header organization switcher and label on the account shell", () => {
+  test("omits the global header organization switcher and realm caption on the account shell", () => {
     createRoot((dispose) => {
       const accountRootState = productionAuthenticatedShellStateCreate(
         () => "account",
         () => "shell.nav.account",
       )
       expect(accountRootState.organizationSwitchable()).toBe(false)
-      expect(accountRootState.organizationLabel()).toBe("")
+      expect(accountRootState.realmLabel()).toBe("")
 
       dispose()
     })
   })
 
-  test("retains global header organization switcher on non-account routes when multiple organizations exist", () => {
+  test("retains global header organization switcher with realm caption on non-account routes", () => {
     createRoot((dispose) => {
       const adminState = productionAuthenticatedShellStateCreate(
         () => "admin",
         () => "admin.navigation.label",
       )
       expect(adminState.organizationSwitchable()).toBe(true)
-      expect(adminState.organizationLabel()).toBe("Northwind Labs")
+      expect(adminState.realmLabel()).toBe("Customer identity")
 
       dispose()
     })
+  })
+
+  test("renders organization branding images with initials fallback and no Authworks brand chrome", async () => {
+    const switcher = await Bun.file(
+      new URL("../../src/ui/production/ProductionOrganizationSwitcher.tsx", import.meta.url),
+    ).text()
+    expect(switcher).toContain("<ProductionOrganizationTile")
+    expect(switcher).toContain("state.activeImageUrl()")
+    expect(switcher).toContain("state.imageUrl(organization.id)")
+
+    const tile = await Bun.file(
+      new URL("../../src/ui/production/ProductionOrganizationTile.tsx", import.meta.url),
+    ).text()
+    expect(tile).toContain("<img")
+    expect(tile).toContain("onError={fallback.onError}")
+    expect(tile).toContain("authenticatedInitialsGet(props.label)")
+
+    const shell = await Bun.file(
+      new URL("../../src/ui/production/ProductionAuthenticatedShell.tsx", import.meta.url),
+    ).text()
+    expect(shell).not.toContain("AuthenticatedBrandMark")
+    expect(shell).not.toContain('messageTranslate("app.name")')
+    expect(shell).toContain("state.activeOrganization()")
+    expect(shell).toContain("<ProductionOrganizationTile")
   })
 })
