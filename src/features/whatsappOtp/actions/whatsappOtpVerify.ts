@@ -1,9 +1,11 @@
+import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import { otpLockoutRepositoryCreate } from "../../../platform/lockout/otpLockoutRepositoryCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -18,7 +20,13 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import { userEventTypes } from "../../users/events/userEventTypes.js"
+import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
+import { userTable } from "../../users/persistence/userTable.js"
 import { userLookupCreate } from "../../users/server/userLookupCreate.js"
+import { passwordPolicyResolve } from "../../passwords/domain/passwordPolicyResolve.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
+import { passwordRepositoryCreate } from "../../passwords/persistence/passwordRepositoryCreate.js"
 import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpCodeMatches } from "../domain/whatsappOtpCodeMatches.js"
 import { whatsappOtpPhoneHashCreate } from "../domain/whatsappOtpPhoneHashCreate.js"
@@ -97,6 +105,19 @@ export function whatsappOtpVerify(options: WhatsappOtpVerifyOptions): Result<Wha
         "The WhatsApp OTP login method is disabled for this organization.",
         "whatsapp-otp.conflict",
       )
+  } else {
+    const denial = whatsappOtpChallengePolicyDenialGet({
+      challengeId: parsed.output.challengeId,
+      database: options.database,
+      realmId: options.realmId,
+    })
+    if (!denial.success) return denial
+    if (denial.data.denied)
+      return resultErrorCreate(
+        op,
+        "The WhatsApp OTP login method is disabled for this organization.",
+        "whatsapp-otp.conflict",
+      )
   }
   if (options.availability === undefined)
     return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
@@ -137,6 +158,40 @@ export function whatsappOtpVerify(options: WhatsappOtpVerifyOptions): Result<Wha
     whatsappOtpNotificationInvoke(options.onSecurityNotification, committed.data.notification)
   if (committed.data.failure) return resultErrorCreate(op, "The WhatsApp OTP code is invalid.", "whatsapp-otp.invalid")
   return resultCreate(committed.data.response)
+}
+
+type WhatsappOtpChallengePolicyDenialOptions = {
+  readonly challengeId: string
+  readonly database: StorageDatabase
+  readonly realmId: string
+}
+
+function whatsappOtpChallengePolicyDenialGet(
+  options: WhatsappOtpChallengePolicyDenialOptions,
+): Result<{ denied: boolean }> {
+  const challenge = whatsappOtpRepositoryCreate(options.database.db).whatsappOtpChallengeGet(
+    options.realmId,
+    options.challengeId,
+  )
+  if (!challenge.success) return challenge
+  if (challenge.data === null || challenge.data.purpose !== "sign_in") return resultCreate({ denied: false })
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(challenge.data.organizationId === null ? {} : { organizationId: challenge.data.organizationId }),
+      realmId: challenge.data.realmId,
+    },
+    executor: options.database.db,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success) return resultCreate({ denied: false })
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    method: "whatsapp_otp",
+    organizationId: loginContext.data.organizationId,
+    realmId: options.realmId,
+  })
+  if (!policy.success) return resultCreate({ denied: true })
+  return resultCreate({ denied: false })
 }
 
 type WhatsappOtpVerifyTransactionOptions = {
@@ -182,16 +237,42 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
   })
   if (!loginContext.success) return resultCreate({ failure: true })
   const organizationId = loginContext.data.organizationId
-  if (options.input.organizationId !== undefined) {
-    const policy = organizationLoginPolicyEnforce({
-      database: options.policyDatabase,
-      executor: options.database,
-      method: "whatsapp_otp",
-      organizationId,
-      realmId: options.realmId,
+  const policy = organizationLoginPolicyEnforce({
+    database: options.policyDatabase,
+    executor: options.database,
+    method: "whatsapp_otp",
+    organizationId,
+    realmId: options.realmId,
+  })
+  if (!policy.success) return resultCreate({ policyDenied: true })
+  const otpPolicy = passwordPolicyResolve({
+    executor: options.database,
+    ...(organizationId === undefined ? {} : { organizationId }),
+    realmId: options.realmId,
+  })
+  if (!otpPolicy.success) return resultCreate({ failure: true })
+  const otpLockouts = otpLockoutRepositoryCreate(options.database)
+  const otpLockout = current.userId === null ? null : otpLockouts.otpLockoutGet(options.realmId, current.userId)
+  if (otpLockout !== null && !otpLockout.success) return otpLockout
+  const otpLockoutRow = otpLockout?.data ?? null
+  if (
+    otpLockoutRow?.lockedUntil !== null &&
+    otpLockoutRow?.lockedUntil !== undefined &&
+    otpLockoutRow.lockedUntil > options.now
+  )
+    return resultCreate({
+      failure: true,
+      notification:
+        current.userId === null
+          ? undefined
+          : whatsappOtpNotificationCreate(
+              "failed",
+              current.userId,
+              current.id,
+              options.realmId,
+              otpLockoutRow.failedAttempts,
+            ),
     })
-    if (!policy.success) return resultCreate({ policyDenied: true })
-  }
   if (current.consumedAt !== null) return resultCreate({ failure: true })
   if (current.expiresAt <= options.now)
     return whatsappOtpExpiredRecord(
@@ -219,6 +300,23 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
     if (updated.data === null) return resultCreate({ failure: true })
     const event = whatsappOtpFailedEventAppend(options, updated.data.version, attempts, exhausted, "invalid_code")
     if (!event.success) return event
+    if (current.userId !== null) {
+      const lockoutRecorded = whatsappOtpFailureLockoutRecord({
+        context: options.context,
+        correlationId: options.correlationId,
+        database: options.database,
+        lockedUntil: otpLockoutRow?.lockedUntil ?? null,
+        now: options.now,
+        otpLockouts,
+        policy: otpPolicy.data,
+        previousAttempts: otpLockoutRow?.failedAttempts ?? 0,
+        previousVersion: otpLockoutRow?.version ?? 0,
+        realmId: options.realmId,
+        runtime: options.runtime,
+        userId: current.userId,
+      })
+      if (!lockoutRecorded.success) return lockoutRecorded
+    }
     return resultCreate({
       failure: true,
       notification:
@@ -231,13 +329,64 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
   const userId = current.userId
   const user = users.userGet(options.realmId, userId)
   if (!user.success) return user
+  let verifiedUser = user.data
+  let passwordLockedOut = false
+  if (verifiedUser !== null && verifiedUser.state === "locked") {
+    const passwordLockout = passwordRepositoryCreate(options.database).passwordLockoutGet(options.realmId, userId)
+    if (!passwordLockout.success) return passwordLockout
+    passwordLockedOut =
+      passwordLockout.data?.lockedUntil !== null &&
+      passwordLockout.data?.lockedUntil !== undefined &&
+      passwordLockout.data.lockedUntil > options.now
+    if (!passwordLockedOut) {
+      const fullUser = passwordRepositoryCreate(options.database).passwordUserGet(options.realmId, userId)
+      if (!fullUser.success) return fullUser
+      if (fullUser.data === null) return resultCreate({ failure: true })
+      const unlocked = options.database
+        .update(userTable)
+        .set({ state: "active", updatedAt: options.now, version: fullUser.data.version + 1 })
+        .where(and(eq(userTable.id, userId), eq(userTable.realmId, options.realmId)))
+        .returning()
+        .get()
+      if (unlocked === undefined) return resultCreate({ failure: true })
+      const unlockedPayload = v.safeParse(userStateChangedEventPayloadSchema, { from: "locked", to: "active" })
+      if (!unlockedPayload.success)
+        return resultErrorCreate(
+          "whatsappOtpVerify",
+          "The WhatsApp OTP event payload is invalid.",
+          "whatsapp-otp.internal",
+        )
+      const unlockedEvent = storageEventAppend(
+        options.database,
+        {
+          actorId: options.context.actorId,
+          aggregateId: userId,
+          aggregateType: "user",
+          aggregateVersion: unlocked.version,
+          commandIndex: 0,
+          correlationId: options.correlationId,
+          eventType: userEventTypes.stateChanged,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "whatsapp_otp" },
+          occurredAt: options.now,
+          payload: unlockedPayload.output,
+        },
+        options.runtime,
+      )
+      if (!unlockedEvent.success) return unlockedEvent
+      const refreshed = users.userGet(options.realmId, userId)
+      if (!refreshed.success) return refreshed
+      verifiedUser = refreshed.data
+    }
+  }
   const eligible =
-    user.data !== null &&
-    user.data.state === "active" &&
-    user.data.deletedAt === null &&
-    user.data.phoneNumber !== null &&
-    user.data.phoneNumberVerifiedAt !== null &&
-    whatsappOtpPhoneHashCreate(user.data.phoneNumber) === current.phoneHash
+    !passwordLockedOut &&
+    verifiedUser !== null &&
+    verifiedUser.state === "active" &&
+    verifiedUser.deletedAt === null &&
+    verifiedUser.phoneNumber !== null &&
+    verifiedUser.phoneNumberVerifiedAt !== null &&
+    whatsappOtpPhoneHashCreate(verifiedUser.phoneNumber) === current.phoneHash
   if (!eligible) {
     const consumed = repository.whatsappOtpChallengeConsume(options.realmId, current.id, current.version, options.now)
     if (!consumed.success) return consumed
@@ -254,6 +403,17 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
       failure: true,
       notification: whatsappOtpNotificationCreate("failed", userId, current.id, options.realmId, current.attempts),
     })
+  }
+  if (otpLockoutRow !== null) {
+    const reset = otpLockouts.otpLockoutSet({
+      failedAttempts: 0,
+      lockedUntil: null,
+      realmId: options.realmId,
+      updatedAt: options.now,
+      userId,
+      version: otpLockoutRow.version + 1,
+    })
+    if (!reset.success) return reset
   }
   const consumed = repository.whatsappOtpChallengeConsume(options.realmId, current.id, current.version, options.now)
   if (!consumed.success) return consumed
@@ -312,6 +472,77 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
     notification: whatsappOtpNotificationCreate("verified", userId, current.id, options.realmId),
     response: { authentication, ...authenticationResult.data },
   })
+}
+
+type WhatsappOtpFailureLockoutRecordOptions = {
+  readonly context: RealmSystemContext | RealmTenantContext
+  readonly correlationId: string
+  readonly database: StorageTransaction
+  readonly lockedUntil: number | null
+  readonly now: number
+  readonly otpLockouts: ReturnType<typeof otpLockoutRepositoryCreate>
+  readonly policy: PasswordPolicy
+  readonly previousAttempts: number
+  readonly previousVersion: number
+  readonly realmId: string
+  readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly userId: string
+}
+
+function whatsappOtpFailureLockoutRecord(
+  options: WhatsappOtpFailureLockoutRecordOptions,
+): Result<{ readonly locked: boolean }> {
+  const op = "whatsappOtpVerify"
+  const base = options.lockedUntil !== null && options.lockedUntil <= options.now ? 0 : options.previousAttempts
+  const attempts = base + 1
+  const locked = attempts >= options.policy.maximumAttempts
+  const recorded = options.otpLockouts.otpLockoutSet({
+    failedAttempts: attempts,
+    lockedUntil: locked ? options.now + options.policy.lockoutDurationMs : null,
+    realmId: options.realmId,
+    updatedAt: options.now,
+    userId: options.userId,
+    version: options.previousVersion + 1,
+  })
+  if (!recorded.success) return recorded
+  if (!locked) return resultCreate({ locked: false })
+  const users = userLookupCreate(options.database)
+  const user = users.userGet(options.realmId, options.userId)
+  if (!user.success) return user
+  if (user.data === null || user.data.state === "locked") return resultCreate({ locked: true })
+  const fullUser = passwordRepositoryCreate(options.database).passwordUserGet(options.realmId, options.userId)
+  if (!fullUser.success) return fullUser
+  if (fullUser.data === null) return resultCreate({ locked: true })
+  const updated = options.database
+    .update(userTable)
+    .set({ state: "locked", updatedAt: options.now, version: fullUser.data.version + 1 })
+    .where(and(eq(userTable.id, options.userId), eq(userTable.realmId, options.realmId)))
+    .returning()
+    .get()
+  if (updated === undefined)
+    return resultErrorCreate(op, "The WhatsApp OTP code is invalid.", "whatsapp-otp.write-failed")
+  const payload = v.safeParse(userStateChangedEventPayloadSchema, { from: fullUser.data.state, to: "locked" })
+  if (!payload.success)
+    return resultErrorCreate(op, "The WhatsApp OTP event payload is invalid.", "whatsapp-otp.internal")
+  const event = storageEventAppend(
+    options.database,
+    {
+      actorId: options.context.actorId,
+      aggregateId: options.userId,
+      aggregateType: "user",
+      aggregateVersion: updated.version,
+      commandIndex: 0,
+      correlationId: options.correlationId,
+      eventType: userEventTypes.stateChanged,
+      realmId: options.realmId,
+      metadata: { auditSafe: true, source: "whatsapp_otp" },
+      occurredAt: options.now,
+      payload: payload.output,
+    },
+    options.runtime,
+  )
+  if (!event.success) return event
+  return resultCreate({ locked: true })
 }
 
 function whatsappOtpExpiredRecord(
