@@ -7,7 +7,6 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
-import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
@@ -34,7 +33,6 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
         <ul class="divide-y divide-line-subtle">
           <For each={props.state.sessions()}>
             {(session) => {
-              const deviceLocation = () => sessionDeviceLocationGet(session.device)
               return (
                 <li class="grid gap-2 px-5 py-3.5" data-admin-session={session.id}>
                   <div class="flex items-start justify-between gap-3">
@@ -75,11 +73,19 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
                         </div>
                       )}
                     </Show>
-                    <Show when={deviceLocation()}>
-                      {(location) => (
+                    <Show when={session.device.region}>
+                      {(region) => (
                         <div>
-                          <dt>{messageTranslate("admin.users.sessions.location")}</dt>
-                          <dd>{location()}</dd>
+                          <dt>{messageTranslate("admin.users.sessions.region")}</dt>
+                          <dd>{region()}</dd>
+                        </div>
+                      )}
+                    </Show>
+                    <Show when={session.device.countryCode}>
+                      {(countryCode) => (
+                        <div>
+                          <dt>{messageTranslate("admin.users.sessions.country")}</dt>
+                          <dd>{countryCode()}</dd>
                         </div>
                       )}
                     </Show>
