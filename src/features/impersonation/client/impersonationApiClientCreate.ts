@@ -46,6 +46,13 @@ export function impersonationApiClientCreate(options: ImpersonationApiClientCrea
         impersonationEndResponseSchema,
       )
     },
+    impersonationEndDelete(realmId: string, sessionId: string): Promise<Result<ImpersonationEndResponse>> {
+      return mutationRequest(
+        `/realms/${encodeURIComponent(realmId)}/impersonations/${encodeURIComponent(sessionId)}`,
+        { method: "DELETE" },
+        impersonationEndResponseSchema,
+      )
+    },
     impersonationStart(realmId: string, input: ImpersonationStartRequest): Promise<Result<ImpersonationStartResponse>> {
       const parsed = v.safeParse(impersonationStartRequestSchema, input)
       if (!parsed.success)

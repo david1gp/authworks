@@ -123,8 +123,8 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     /** Deep link into the audit stream filtered to this impersonation session. */
     eventsHref: (basePath: string) => {
       const session = active.get()
-      const query = session === null ? "impersonation" : session.sessionId
-      return `${basePath}/events?q=${encodeURIComponent(query)}`
+      if (session === null) return `${basePath}/events?aggregateType=impersonation`
+      return `${basePath}/events?aggregateId=${encodeURIComponent(session.sessionId)}`
     },
     impersonationEnd: async () => {
       const session = active.get()
