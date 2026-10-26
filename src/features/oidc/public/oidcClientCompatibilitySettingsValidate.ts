@@ -6,10 +6,12 @@ import { oidcOriginValidate } from "./oidcOriginValidate.js"
 export function oidcClientCompatibilitySettingsValidate(input: {
   readonly accessTokenRoleAssertion: boolean
   readonly additionalOrigins: readonly string[]
+  readonly idTokenRoleAssertion: boolean
   readonly idTokenUserinfoAssertion: boolean
 }): Result<{
   readonly accessTokenRoleAssertion: boolean
   readonly additionalOrigins: string[]
+  readonly idTokenRoleAssertion: boolean
   readonly idTokenUserinfoAssertion: boolean
 }> {
   const op = "oidcClientCompatibilitySettingsValidate"
@@ -32,6 +34,7 @@ export function oidcClientCompatibilitySettingsValidate(input: {
   return resultCreate({
     accessTokenRoleAssertion: input.accessTokenRoleAssertion,
     additionalOrigins,
+    idTokenRoleAssertion: input.idTokenRoleAssertion,
     idTokenUserinfoAssertion: input.idTokenUserinfoAssertion,
   })
 }

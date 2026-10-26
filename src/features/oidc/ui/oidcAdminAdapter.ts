@@ -1,4 +1,7 @@
 import type { Result } from "#result"
+import type { ProjectApplication } from "../../projects/public/projectApplicationSchema.js"
+import type { ProjectListItem } from "../../projects/public/projectListItemSchema.js"
+import type { UserListQuery } from "../../users/public/userListQuerySchema.js"
 import type { OidcClientCreateRequest } from "../public/oidcClientCreateRequestSchema.js"
 import type { OidcClientLifecycleRequest } from "../public/oidcClientLifecycleRequestSchema.js"
 import type { OidcClientListResponse } from "../public/oidcClientListResponseSchema.js"
@@ -22,6 +25,8 @@ export type OidcAdminClientSecretIssue = {
  * deliberately read-only: no mutating counterpart exists on this contract.
  */
 export type OidcAdminAdapter = {
+  /** Applications of one project, for the client project/application selectors. */
+  readonly applicationList: (projectId: string) => Promise<Result<readonly ProjectApplication[]>>
   readonly clientCreate: (input: OidcClientCreateRequest) => Promise<Result<OidcAdminClientSecretIssue>>
   readonly clientGet: (clientId: string) => Promise<Result<OidcClient>>
   readonly clientLifecycleSet: (clientId: string, input: OidcClientLifecycleRequest) => Promise<Result<OidcClient>>
@@ -36,10 +41,17 @@ export type OidcAdminAdapter = {
   readonly discoveryGet: () => Promise<Result<OidcDiscovery>>
   /** Read-only published public keys. Private key material is never exposed. */
   readonly jwksGet: () => Promise<Result<OidcJwks>>
+  /** Projects the operator may attach a client to, for the client project selector. */
+  readonly projectList: () => Promise<Result<readonly ProjectListItem[]>>
   readonly signingKeyCreate: () => Promise<Result<OidcSigningKey>>
   readonly signingKeyList: (pageToken?: string) => Promise<Result<OidcSigningKeyListResponse>>
   readonly signingKeyRetire: (signingKeyId: string) => Promise<Result<OidcSigningKey>>
   readonly signingKeyRotate: () => Promise<Result<OidcSigningKey>>
-  /** Users the operator may inspect consents for. */
-  readonly users: () => Promise<Result<readonly { readonly id: string; readonly label: string }[]>>
+  /** Realm consent subjects, server-searched by name or email and cursor-paginated. */
+  readonly users: (query?: UserListQuery) => Promise<
+    Result<{
+      readonly items: readonly { readonly id: string; readonly label: string }[]
+      readonly nextPageToken?: string
+    }>
+  >
 }

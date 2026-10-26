@@ -8,6 +8,7 @@ type OidcClientContextValidateOptions = {
   readonly organizationId?: string | null
   readonly projectId?: string | null
   readonly realmId: string
+  readonly userId?: string
 }
 
 export function oidcClientContextValidate(options: OidcClientContextValidateOptions): Result<void> {

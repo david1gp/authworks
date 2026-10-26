@@ -12,6 +12,7 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { oidcAuthorizationCodeCreate } from "../domain/oidcAuthorizationCodeCreate.js"
+import { oidcAuthorizationPromptValidate } from "../domain/oidcAuthorizationPromptValidate.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
 import { oidcRedirectUriMatches } from "../domain/oidcRedirectUriMatches.js"
@@ -53,6 +54,11 @@ export function oidcAuthorizationRequestAuthorize(
   const parsed = v.safeParse(oidcAuthorizationRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
   if (options.realmId.length === 0) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
+  const prompt = oidcAuthorizationPromptValidate({
+    ...(parsed.output.max_age === undefined ? {} : { max_age: parsed.output.max_age }),
+    ...(parsed.output.prompt === undefined ? {} : { prompt: parsed.output.prompt }),
+  })
+  if (!prompt.success) return prompt
 
   const runtime = options.runtime ?? options.database.runtime
   const authenticated = sessionAuthenticate({
@@ -73,6 +79,14 @@ export function oidcAuthorizationRequestAuthorize(
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The OIDC authorization timestamp is invalid.", undefined, "oidc.invalid-timestamp")
+  // prompt=login and prompt=select_account always demand a fresh primary
+  // authentication through the interaction flow (select_account is treated as
+  // login: no account chooser exists). max_age compares the session auth_time
+  // (session creation) against the requested maximum age.
+  const promptReauthForced =
+    prompt.data.prompts.includes("login") ||
+    prompt.data.prompts.includes("select_account") ||
+    (prompt.data.maxAge !== undefined && authenticated.data.session.createdAt < now - prompt.data.maxAge * 1_000)
   const realm = realmGet({
     context: realmSystemContextCreate(),
     database: options.database,
@@ -99,6 +113,8 @@ export function oidcAuthorizationRequestAuthorize(
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate(op, "The OIDC client was not found.")
+    const responseType = oidcAuthorizationResponseTypeAuthorize(client.data, parsed.output.response_type)
+    if (!responseType.success) return responseType
     const clientContext = oidcClientContextValidate({
       applicationId: client.data.applicationId,
       executor: transaction,
@@ -109,6 +125,7 @@ export function oidcAuthorizationRequestAuthorize(
         null,
       projectId: client.data.projectId,
       realmId: options.realmId,
+      userId: authenticated.data.actor.actorId,
     })
     if (!clientContext.success) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
 
@@ -126,8 +143,18 @@ export function oidcAuthorizationRequestAuthorize(
     const grantedScope = consent.data === null ? resultCreate<string[]>([]) : oidcStoredScopeParse(consent.data.scope)
     if (!grantedScope.success) return resultErrorCreate(op, "The stored OIDC consent is invalid.")
     const consentSatisfied = oidcScopeIncludes(grantedScope.data, scope.data)
-    const consentRequired = client.data.requireConsent === 1 && client.data.trusted !== 1 && !consentSatisfied
-    if (consentRequired && parsed.output.prompt === "none")
+    // prompt=consent forces the consent screen even for trusted clients and
+    // prior grants. prompt=login, prompt=select_account, and a stale max_age
+    // force a fresh primary authentication through the interaction flow.
+    // Consent precedence: the screen is skipped when trusted == true OR
+    // requireConsent == false (either suffices); it appears only for
+    // untrusted clients with requireConsent enabled (plus prompt=consent).
+    const consentRequired =
+      prompt.data.prompts.includes("consent") ||
+      (client.data.requireConsent === 1 && client.data.trusted !== 1 && !consentSatisfied)
+    if (promptReauthForced)
+      return resultErrorCreate("oidcAuthorizationInteractionRequired", "User interaction is required.")
+    if (consentRequired && prompt.data.prompts.includes("none"))
       return resultErrorCreate("oidcAuthorizationInteractionRequired", "User interaction is required.")
 
     const request = repository.authorizationRequestCreate({
@@ -392,6 +419,31 @@ function oidcScopeIncludes(granted: readonly string[], requested: readonly strin
 
 function oidcConsentScopeCreate(existing: readonly string[], requested: readonly string[]): string[] {
   return [...new Set([...existing, ...requested])]
+}
+
+function oidcAuthorizationResponseTypeAuthorize(
+  client: { readonly responseTypes: string },
+  responseType: string,
+): Result<void> {
+  let responseTypes: unknown
+  try {
+    responseTypes = JSON.parse(client.responseTypes)
+  } catch (_error) {
+    return resultErrorCreate(
+      "oidcAuthorizationUnsupportedResponseType",
+      "The response type is not supported by this client.",
+    )
+  }
+  const allowed =
+    Array.isArray(responseTypes) && responseTypes.every((entry): entry is string => typeof entry === "string")
+      ? responseTypes
+      : ["code"]
+  if (!allowed.includes(responseType))
+    return resultErrorCreate(
+      "oidcAuthorizationUnsupportedResponseType",
+      "The response type is not supported by this client.",
+    )
+  return resultCreate<void>(undefined)
 }
 
 function oidcStringArrayParse(value: string): Result<string[]> {

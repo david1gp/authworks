@@ -1,12 +1,15 @@
 import * as v from "valibot"
 import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
 import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
 import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { httpUrlResolve } from "../../../platform/http/httpUrlResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import {
   type OidcAuthorizationCodeRedeemRequest,
   oidcAuthorizationCodeRedeemRequestSchema,
@@ -48,6 +51,16 @@ import {
   oidcClientSecretRotateResponseSchema,
 } from "../public/oidcClientSecretRotateResponseSchema.js"
 import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
+import { type OidcInteractionDetails, oidcInteractionDetailsSchema } from "../public/oidcInteractionDetailsSchema.js"
+import {
+  type OidcIntrospectionRequest,
+  oidcIntrospectionRequestSchema,
+} from "../public/oidcIntrospectionRequestSchema.js"
+import {
+  type OidcIntrospectionResponse,
+  oidcIntrospectionResponseSchema,
+} from "../public/oidcIntrospectionResponseSchema.js"
+import { oidcConsentBrowserResponseSchema } from "../public/oidcConsentBrowserResponseSchema.js"
 import { type OidcConsentListResponse, oidcConsentListResponseSchema } from "../public/oidcConsentListResponseSchema.js"
 import {
   type OidcConsentRevokeRequest,
@@ -318,6 +331,68 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         { body: JSON.stringify(parsed.output), method: "POST" },
         oidcAuthorizationConsentResponseSchema,
       )
+    },
+
+    oidcInteractionBrowserGet(handle: string): Promise<HttpGetResult<OidcInteractionDetails>> {
+      return browserGetRequest(
+        `/oauth2/interaction?${new URLSearchParams({ interaction: handle }).toString()}`,
+        oidcInteractionDetailsSchema,
+      )
+    },
+
+    async oidcConsentBrowserDecide(
+      realmId: string,
+      handle: string,
+      decision: "approve" | "deny",
+    ): Promise<Result<string>> {
+      const op = "oidcApiClientConsentBrowserDecide"
+      if (!/^[A-Za-z0-9_-]{43,128}$/.test(handle))
+        return resultErrorCodedCreate(op, "The consent request is invalid.", "oidc.invalid-request")
+      if (decision !== "approve" && decision !== "deny")
+        return resultErrorCodedCreate(op, "The consent request is invalid.", "oidc.invalid-request")
+      const csrf = await sessionCsrfTokenGet({ baseUrl: options.baseUrl, fetch: options.fetch, realmId })
+      if (!csrf.success) return csrf
+      // Browsers hide 302 locations from fetch as opaque redirects, so the browser flow answers
+      // with the server-built redirect URL as JSON and the view follows it verbatim.
+      let response: Response
+      try {
+        response = await (options.fetch ?? fetch)(httpUrlResolve(options.baseUrl, "/oauth2/consent"), {
+          body: JSON.stringify({ decision, interaction: handle }),
+          credentials: "include",
+          headers: { accept: "application/json", "content-type": "application/json", "x-csrf-token": csrf.data },
+          method: "POST",
+        })
+      } catch (_error) {
+        return resultErrorCodedCreate(op, "The server could not be reached.", "platform.unreachable")
+      }
+      if (response.ok) {
+        let body: unknown
+        try {
+          body = await response.json()
+        } catch (_error) {
+          body = undefined
+        }
+        const parsed = v.safeParse(oidcConsentBrowserResponseSchema, body)
+        if (parsed.success && parsed.output.redirect.length > 0) return resultCreate(parsed.output.redirect)
+        return resultErrorCodedCreate(op, "The server returned an invalid response.", "platform.invalid-response")
+      }
+      let body: unknown
+      try {
+        body = await response.json()
+      } catch (_error) {
+        body = undefined
+      }
+      const parsedError = v.safeParse(
+        v.strictObject({ error: v.string(), error_description: v.optional(v.string()) }),
+        body,
+      )
+      if (parsedError.success && parsedError.output.error === "login_required")
+        return resultErrorCodedCreate(op, "Session authorization is required.", "oidc.unauthorized")
+      const message =
+        parsedError.success && parsedError.output.error_description !== undefined
+          ? parsedError.output.error_description
+          : "The consent request could not be completed."
+      return resultErrorCodedCreate(op, message, "oidc.invalid-request")
     },
 
     oidcTokenIssue(input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> {
@@ -785,6 +860,75 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         { body: JSON.stringify(parsed.output), method: "POST" },
         oidcSigningKeyResponseSchema,
       )
+    },
+
+    oidcSigningKeyDelete(realmId: string, signingKeyId: string): Promise<Result<OidcSigningKeyResponse>> {
+      return managementRequest(
+        managementPath(realmId, `/signing-keys/${encodeURIComponent(signingKeyId)}`),
+        { method: "DELETE" },
+        oidcSigningKeyResponseSchema,
+      )
+    },
+
+    oidcSigningKeyTenantDelete(realmId: string, signingKeyId: string): Promise<Result<OidcSigningKeyResponse>> {
+      return browserRequest(
+        browserManagementPath(realmId, `/signing-keys/${encodeURIComponent(signingKeyId)}`),
+        { method: "DELETE" },
+        oidcSigningKeyResponseSchema,
+      )
+    },
+
+    oidcTokenIntrospect(input: OidcIntrospectionRequest): Promise<Result<OidcIntrospectionResponse>> {
+      const parsed = v.safeParse(oidcIntrospectionRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientTokenIntrospect",
+            "The introspection request is invalid.",
+            "oidc.invalid-request",
+          ),
+        )
+      const body = new URLSearchParams()
+      body.set("token", parsed.output.token)
+      if (parsed.output.token_type_hint !== undefined) body.set("token_type_hint", parsed.output.token_type_hint)
+      const headers = new Headers()
+      if (parsed.output.client_secret === undefined) {
+        if (parsed.output.client_id === undefined)
+          return Promise.resolve(
+            resultErrorCodedCreate(
+              "oidcApiClientTokenIntrospect",
+              "The introspection request is invalid.",
+              "oidc.invalid-request",
+            ),
+          )
+        body.set("client_id", parsed.output.client_id)
+      } else {
+        if (parsed.output.client_id === undefined)
+          return Promise.resolve(
+            resultErrorCodedCreate(
+              "oidcApiClientTokenIntrospect",
+              "The introspection request is invalid.",
+              "oidc.invalid-request",
+            ),
+          )
+        headers.set(
+          "authorization",
+          `Basic ${Buffer.from(`${parsed.output.client_id}:${parsed.output.client_secret}`).toString("base64")}`,
+        )
+      }
+      return httpApiClientRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { body, headers, method: "POST" },
+        invalidResponseMessage: "The server returned an invalid introspection response.",
+        op: "oidcApiClientTokenIntrospect",
+        path: "/oauth2/introspect",
+        responseErrorMessageGet: (responseBody) => {
+          const parsedError = v.safeParse(oidcTokenErrorSchema, responseBody)
+          return parsedError.success ? (parsedError.output.error_description ?? parsedError.output.error) : undefined
+        },
+        schema: oidcIntrospectionResponseSchema,
+      })
     },
 
     oidcDiscoveryGet(): Promise<Result<OidcDiscovery>> {

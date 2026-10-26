@@ -9,6 +9,7 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { type SessionRow, sessionTable } from "../../sessions/persistence/sessionTable.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
+import { oidcClockSkewMs } from "../domain/oidcClockSkewMs.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import type { OidcAccessTokenRow } from "../persistence/oidcAccessTokenTable.js"
@@ -56,7 +57,7 @@ export function oidcAccessTokenContextResolve(
     if (
       access.data === null ||
       access.data.realmId !== options.realmId ||
-      access.data.expiresAt <= now ||
+      access.data.expiresAt + oidcClockSkewMs <= now ||
       access.data.revokedAt !== null
     )
       return resultErrorCreate("oidcAccessTokenContextInvalidToken", "The access token is invalid.")
@@ -71,7 +72,7 @@ export function oidcAccessTokenContextResolve(
         ),
       )
       .get()
-    if (session === undefined || session.revokedAt !== null || session.expiresAt <= now)
+    if (session === undefined || session.revokedAt !== null || session.expiresAt + oidcClockSkewMs <= now)
       return resultErrorCreate("oidcAccessTokenContextInvalidToken", "The access token is invalid.")
     const user = transaction
       .select()

@@ -24,6 +24,8 @@ type OidcAdminPageStateCreateOptions = {
   readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly clientId: () => string | undefined
   readonly consentUserId: () => string | undefined
+  readonly consentUserSearch?: () => string | undefined
+  readonly consentUserSearchSet?: (value: string) => void
   /**
    * Renders an already-issued one-time secret without a mutation. Only the demo adapter
    * supplies this, so the one-time state is reachable directly from a URL.
@@ -59,6 +61,8 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
   const secretAcknowledged = createSignalObject(false)
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<readonly string[]>([])
+  const userNextPageToken = createSignalObject<string | undefined>(undefined)
+  const userPageTokens = createSignalObject<readonly string[]>([])
 
   /** Every destructive action awaits an explicit confirmation that the operator can cancel. */
   const confirmed = async (key: Parameters<typeof messageTranslate>[0]) =>
@@ -106,10 +110,16 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     }
 
     if (screen === "oidc-consents") {
-      const directory = await adapter.users()
+      const userSearch = options.consentUserSearch?.()?.trim() ?? ""
+      const userPageToken = userPageTokens.get().at(-1)
+      const directory = await adapter.users({
+        ...(userPageToken === undefined ? {} : { pageToken: userPageToken }),
+        ...(userSearch.length === 0 ? {} : { search: userSearch }),
+      })
       if (!directory.success) return fail(directory)
-      users.set(directory.data)
-      const selectedUserId = options.consentUserId() ?? directory.data[0]?.id
+      users.set(directory.data.items)
+      userNextPageToken.set(directory.data.nextPageToken)
+      const selectedUserId = options.consentUserId() ?? directory.data.items[0]?.id
       if (selectedUserId === undefined) {
         consents.set([])
         return status.set("empty")
@@ -148,7 +158,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
   createEffect(
     on(
       () =>
-        `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${pageTokens.get().length}`,
+        `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${pageTokens.get().length}:${userPageTokens.get().length}`,
       load,
     ),
   )
@@ -279,7 +289,21 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     },
     signingKeys: signingKeys.get,
     status: status.get,
+    userHasNextPage: () => userNextPageToken.get() !== undefined,
+    userHasPreviousPage: () => userPageTokens.get().length > 0,
     userLabel: (userId: string) => users.get().find((item) => item.id === userId)?.label ?? userId,
+    userPageNext: () => {
+      const token = userNextPageToken.get()
+      if (token === undefined) return
+      userPageTokens.set([...userPageTokens.get(), token])
+    },
+    userPagePrevious: () => userPageTokens.set(userPageTokens.get().slice(0, -1)),
+    userSearch: () => options.consentUserSearch?.() ?? "",
+    userSearchSet: (value: string) => {
+      // A new search always restarts from the first directory page.
+      userPageTokens.set([])
+      options.consentUserSearchSet?.(value)
+    },
     users: users.get,
   }
 }

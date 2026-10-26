@@ -7,6 +7,8 @@ import { demoAdminOidcConsents } from "../../demo/demoAdminOidcConsents.js"
 import { demoAdminOidcDiscovery } from "../../demo/demoAdminOidcDiscovery.js"
 import { demoAdminOidcJwks } from "../../demo/demoAdminOidcJwks.js"
 import { demoAdminOidcSigningKeys } from "../../demo/demoAdminOidcSigningKeys.js"
+import { demoAdminProjectApplications } from "../../demo/demoAdminProjectApplications.js"
+import { demoAdminProjects } from "../../demo/demoAdminProjects.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
@@ -64,23 +66,39 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
     gate(() => resultCreate({ items: fixtureState() === "empty" ? [] : [...items] }))
 
   return {
+    applicationList: (projectId) =>
+      gate(() =>
+        resultCreate(
+          fixtureState() === "empty"
+            ? []
+            : demoAdminProjectApplications.filter((application) => application.projectId === projectId),
+        ),
+      ),
     clientCreate: (input) =>
       gate(() => {
         const client: OidcClient = {
           allowedScopes: input.allowedScopes === undefined ? ["openid"] : [...input.allowedScopes],
+          accessTokenLifetimeSeconds: input.accessTokenLifetimeSeconds ?? null,
           accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? false,
           ...(input.applicationId === undefined ? {} : { applicationId: input.applicationId }),
           clientType: input.clientType,
           additionalOrigins: input.additionalOrigins === undefined ? [] : [...input.additionalOrigins],
           createdAt: timestamp,
+          devMode: input.devMode ?? false,
+          grantTypes: input.grantTypes === undefined ? ["authorization_code", "refresh_token"] : [...input.grantTypes],
           id: demoResourceIdGenerate(),
+          idTokenLifetimeSeconds: input.idTokenLifetimeSeconds ?? null,
+          idTokenRoleAssertion: input.idTokenRoleAssertion ?? false,
           idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? false,
           realmId: demoRealmId,
           name: input.name,
           postLogoutRedirectUris: input.postLogoutRedirectUris === undefined ? [] : [...input.postLogoutRedirectUris],
           ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
           redirectUris: [...input.redirectUris],
+          refreshTokenAbsoluteLifetimeSeconds: input.refreshTokenAbsoluteLifetimeSeconds ?? null,
+          refreshTokenIdleLifetimeSeconds: input.refreshTokenIdleLifetimeSeconds ?? null,
           requireConsent: input.requireConsent ?? true,
+          responseTypes: input.responseTypes === undefined ? ["code"] : [...input.responseTypes],
           status: "active",
           trusted: input.trusted ?? false,
           updatedAt: timestamp,
@@ -137,17 +155,45 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
         const updated: OidcClient = {
           ...existing,
           allowedScopes: input.allowedScopes === undefined ? existing.allowedScopes : [...input.allowedScopes],
+          accessTokenLifetimeSeconds:
+            input.accessTokenLifetimeSeconds === undefined
+              ? existing.accessTokenLifetimeSeconds
+              : input.accessTokenLifetimeSeconds,
           accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? existing.accessTokenRoleAssertion,
+          ...(input.applicationId === undefined
+            ? {}
+            : input.applicationId === null
+              ? { applicationId: undefined }
+              : { applicationId: input.applicationId }),
           additionalOrigins:
             input.additionalOrigins === undefined ? existing.additionalOrigins : [...input.additionalOrigins],
+          devMode: input.devMode ?? existing.devMode,
+          grantTypes: input.grantTypes === undefined ? existing.grantTypes : [...input.grantTypes],
+          idTokenLifetimeSeconds:
+            input.idTokenLifetimeSeconds === undefined ? existing.idTokenLifetimeSeconds : input.idTokenLifetimeSeconds,
+          idTokenRoleAssertion: input.idTokenRoleAssertion ?? existing.idTokenRoleAssertion,
           idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? existing.idTokenUserinfoAssertion,
           name: input.name ?? existing.name,
           postLogoutRedirectUris:
             input.postLogoutRedirectUris === undefined
               ? existing.postLogoutRedirectUris
               : [...input.postLogoutRedirectUris],
+          ...(input.projectId === undefined
+            ? {}
+            : input.projectId === null
+              ? { projectId: undefined }
+              : { projectId: input.projectId }),
           redirectUris: input.redirectUris === undefined ? existing.redirectUris : [...input.redirectUris],
+          refreshTokenAbsoluteLifetimeSeconds:
+            input.refreshTokenAbsoluteLifetimeSeconds === undefined
+              ? existing.refreshTokenAbsoluteLifetimeSeconds
+              : input.refreshTokenAbsoluteLifetimeSeconds,
+          refreshTokenIdleLifetimeSeconds:
+            input.refreshTokenIdleLifetimeSeconds === undefined
+              ? existing.refreshTokenIdleLifetimeSeconds
+              : input.refreshTokenIdleLifetimeSeconds,
           requireConsent: input.requireConsent ?? existing.requireConsent,
+          responseTypes: input.responseTypes === undefined ? existing.responseTypes : [...input.responseTypes],
           trusted: input.trusted ?? existing.trusted,
           updatedAt: timestamp,
         }
@@ -164,6 +210,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
       }),
     discoveryGet: () => gate(() => resultCreate(demoAdminOidcDiscovery)),
     jwksGet: () => gate(() => resultCreate(demoAdminOidcJwks)),
+    projectList: () => gate(() => resultCreate(fixtureState() === "empty" ? [] : [...demoAdminProjects])),
     signingKeyCreate: () =>
       gate(() => {
         const key = signingKeyCreate()
@@ -191,7 +238,22 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
         signingKeys.push(key)
         return resultCreate(key)
       }),
-    users: () => gate(() => resultCreate(oidcAdminDemoUserFixtures.map((user) => ({ ...user })))),
+    users: (query) =>
+      gate(() => {
+        const term = query?.search?.trim().toLowerCase() ?? ""
+        const filtered =
+          term.length === 0
+            ? oidcAdminDemoUserFixtures.map((user) => ({ ...user }))
+            : oidcAdminDemoUserFixtures
+                .filter((user) => user.label.toLowerCase().includes(term) || user.id.toLowerCase().includes(term))
+                .map((user) => ({ ...user }))
+        const size = query?.pageSize ?? 25
+        const offset = query?.pageToken === undefined ? 0 : Number.parseInt(query.pageToken, 10)
+        const start = Number.isNaN(offset) || offset < 0 ? 0 : offset
+        const items = filtered.slice(start, start + size)
+        const next = start + size < filtered.length ? String(start + size) : undefined
+        return resultCreate({ items, ...(next === undefined ? {} : { nextPageToken: next }) })
+      }),
   }
 
   function signingKeyCreate(): OidcSigningKey {
