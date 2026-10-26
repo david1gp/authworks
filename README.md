@@ -27,7 +27,7 @@ Public origin resolution keeps a configured pathname. Configured host and port g
 
 `public/` is the transport-contract directory, not the published package. Its files may import Valibot, `public/` files from the same feature, another feature's `public/` files, and shared platform transport contracts only.
 
-Package exports use an explicit allowlist. `.` is a thin root containing `packageName` plus shared result and HTTP error contracts. `./library` aliases `.`. Named feature paths remain, including `./users`, `./organizations`, and `./oidc`, along with the other current feature barrels. `./server`, `./cli`, and `./package.json` remain. `./features/*` and `./*` are not exported.
+Package exports use an explicit allowlist. `.` is a thin root containing `packageName` plus shared result and HTTP error contracts. `./library` aliases `.`. Named feature paths remain, including `./users`, `./organizations`, `./oidc`, and `./directory`, along with the other current feature barrels. `./server`, `./cli`, and `./package.json` remain. `./features/*` and `./*` are not exported. Mail transport factories (`smtpMailDeliveryPortCreate`, `imapMailReceivePortCreate`) depend on node-only mail libraries and are server-output only; the `./email` library barrel publishes just the generator client and render contracts.
 
 ## Install
 
@@ -46,7 +46,7 @@ bun run build     # emit dist/
 bun run format   # biome
 bun run check    # repository checks
 bun run release  # git-cliff changelog + tag
-bun run deploy   # full check plus optional live HTTPS smoke
+bun run deploy   # preflight check + smoke, then prodctl deploy
 ```
 
 `bun run check` runs formatting, UI-literal, type, test, build, and build-output
@@ -109,6 +109,11 @@ for that single public origin. Do not put the system secret in Caddy or the
 repository. After a release, rebuild and restart with
 `systemctl --user restart authworks.service`.
 
+`bun run deploy` is the one documented deploy command. It runs the
+`ops/deploy.sh` preflight (`bun run check`, plus the public smoke when
+`AUTHWORKS_SMOKE_URL` is set) and then `prodctl deploy`, whose units, health
+path, and install steps live in `ops/prod/prodctl.json`.
+
 Run the public smoke without storing its URL in the repository:
 
 ```bash
@@ -116,19 +121,19 @@ AUTHWORKS_SMOKE_URL=https://auth.example.com bun run smoke:public
 ```
 
 The smoke checks HTTPS, the production root redirect, health, the SPA fallback,
-the packaged favicon, built-asset caching, API/static precedence, and production
-exclusion of `/demo/**`.
+the packaged favicon, built-asset caching, API/static precedence, and that the
+intentionally served `/demo/**` routes still return the demo SPA. Demo routes
+are part of the built UI in every mode: the static server falls back to
+`index.html` for `/demo/**` regardless of the production flag, so production
+does not exclude them.
 
 ## WhatsApp OTP and WAHA
 
-The package currently resolves `@adaptive-ds/waha-client` from the sibling
-`../waha-client` checkout. Local development therefore requires that checkout,
-`bun install`, and a reachable WAHA instance with at least one configured
-session in `WORKING` state (normally `http://localhost:3000`).
-Because `package.json` declares this dependency as `file:../waha-client`, an
-install from npm or a standalone Authworks checkout cannot resolve it without
-that sibling checkout. Deployment must include the sibling checkout, or
-replace the dependency with a published package before deployment.
+The package depends on the published `@adaptive-ds/waha-client` registry
+package (`^0.3.0` in `package.json`, resolved from the registry via
+`bun install`). No sibling checkout is required. Local development needs a
+reachable WAHA instance with at least one configured session in `WORKING`
+state (normally `http://localhost:3000`).
 
 WAHA is disabled unless `AUTHWORKS_WAHA_ENABLED` is `1`, `true`, or `yes`.
 When enabled, `AUTHWORKS_WAHA_ENDPOINTS` is a required JSON array with one or
@@ -244,14 +249,94 @@ request `Host` tenant mapping. Every request needs a machine credential as a
 missing or invalid credentials return `401`.
 
 Read tools: `ping`, `server-info`, `realm-get`, `user-list`, `user-get`,
-`organization-list`, `organization-get`, `project-list`, `project-get`,
-`machine-user-list`, `machine-user-get`, `event-list`. Write tools:
-`user-create`, `user-profile-update`, `user-lifecycle-set`,
-`organization-create`, `organization-update`, `project-create`,
-`project-update`, `machine-user-create`, `machine-user-lifecycle-set`,
-`machine-credential-issue`, `machine-credential-revoke`. Every tool runs with
-the calling credential's actor and scopes, so each tool inherits exactly the
-permissions of that credential and nothing more.
+`user-metadata-list`, `user-metadata-get`, `organization-list`,
+`organization-get`, `organization-metadata-list`,
+`organization-metadata-get`, `organization-login-policy-get`,
+`organization-branding-get`, `organization-domain-list`,
+`organization-membership-list`, `organization-invitation-list`,
+`project-list`, `project-get`, `project-role-list`, `project-grant-list`,
+`project-user-assignment-list`, `project-application-list`,
+`machine-user-list`, `machine-user-get`, `machine-credential-list`,
+`oidc-client-list`, `oidc-client-get`, `oidc-discovery-get`,
+`oidc-jwks-get`, `oidc-signing-key-list`, `session-list`, `event-list`.
+Write tools: `user-create`, `user-profile-update`, `user-lifecycle-set`,
+`user-delete`, `user-email-verification-set`, `user-metadata-set`,
+`user-metadata-remove`, `organization-create`, `organization-update`,
+`organization-lifecycle-set`, `organization-metadata-set`,
+`organization-metadata-remove`, `organization-login-policy-set`,
+`organization-branding-set`, `organization-domain-claim`,
+`organization-domain-verify`, `organization-domain-remove`,
+`organization-membership-create`, `organization-membership-update`,
+`organization-membership-remove`, `organization-invitation-revoke`,
+`project-create`, `project-update`, `project-role-create`,
+`project-role-update`, `project-role-remove`, `project-grant-create`,
+`project-grant-update`, `project-grant-lifecycle-set`, `project-grant-remove`,
+`project-user-assignment-create`, `project-user-assignment-remove`,
+`project-application-create`, `project-application-update`,
+`project-application-remove`, `machine-user-create`,
+`machine-user-lifecycle-set`, `machine-credential-issue`,
+`machine-credential-revoke`. Every tool runs with the calling credential's
+actor and scopes, so each tool inherits exactly the permissions of that
+credential and nothing more. Credential scopes are permission ids
+(`oidc.read`, `machine.credential.manage`, `user.read`, ...).
+
+MCP tools never take secrets as input, and no tool returns stored secret
+material: OIDC client views strip secret hashes, and credential listings
+carry only metadata. The only secret-returning tools are the machine
+credential issue/create tools, which return show-once values at creation.
+Excluded by design (use the Admin/CLI/API surfaces instead): MFA and passkey
+secret operations (no enroll/verify/reset tools), OIDC client secret and
+signing-key writes, identity-provider `clientSecret` writes, machine secret
+rotate (transcript persistence makes shown-once secrets unsafe there),
+session revoke (sessions are read-only over MCP), invitation creation (sends
+mail), event export (responses can be huge; use API/CLI export), and
+`realm-list`/`realm-update` (system-only or ungated for machine context;
+only `realm-get` is exposed).
+
+## Zitadel comparison and non-goals
+
+Authworks is Zitadel-inspired, not Zitadel-compatible: no protobuf/ConnectRPC
+API, no ZITADEL client compatibility, and no claim that a Zitadel client works
+against it. `docs/20260824_zitadel_migration.md` describes the one-way
+migration story; `docs/20261026_zitadel-parity-wiring.md` tracks the parity
+work. This section states the fidelity ceiling and the explicit non-goals.
+
+Migration fidelity: the snapshot schema
+(`src/features/zitadelMigration/public/zitadelMigrationSnapshotSchema.ts`)
+round-trips users, organizations, organization memberships, projects, project
+roles, project grants, OIDC applications, machine users, domains, login
+policies, identity providers, and external identity links — the importer
+consumes every one of those collections. Dropped, never round-tripped:
+password credentials (`password-credentials-not-portable`), machine or
+otherwise unsupported user records, non-OIDC application protocols, OIDC
+applications with unsupported auth methods, application types, or settings
+(response types, grant types, back-channel logout URIs, native-app links, and
+similar), and identity providers that cannot be mapped to an Authworks
+generic-OIDC type (recorded as skipped for manual reconfiguration). Secrets
+are never in the snapshot: OIDC/IdP client secrets must be supplied at import
+via the provider credentials bundle, and import marks affected providers for
+rotation.
+
+Explicit non-goals: SAML, SCIM, LDAP, Actions V2, webhooks, device grant,
+token exchange, PAR/JAR/DPoP/mTLS/CIBA, SMS as a second factor, per-org email
+templates and custom texts, `private_key_jwt`, implicit/hybrid grants, and
+front/back-channel logout delivery.
+
+Intentional deviations from Zitadel behavior: PKCE S256 is always required in
+the authorization code flow, redirect URIs must match a registered value
+exactly, JWT access tokens resolve server-side by token hash rather than
+self-contained validation, and usernames are unique per realm rather than
+globally.
+
+Known limitations: databases created before the current
+`external_identity_providers` unique index keep the old provider uniqueness
+rule (SQLite tables have no migrations); only fresh databases guarantee
+multiple generic OIDC providers per organization, distinguished by issuer.
+Project `tenant-*` CLI commands use the cookie-based browser request path
+with no `Authorization` header, so they need a session cookie and return
+`401` from a bare CLI. Over MCP, `session-list` runs the realm-admin-gated
+administrator list for a target user — realm-admin user context only; see the
+[MCP](#mcp) exclusions above for everything MCP deliberately omits.
 
 ## CLI connection profiles
 
@@ -530,8 +615,13 @@ token. `events list` reads the system event log and needs the system secret (`--
 Every feature area exposes its user-facing operations through the CLI: users (including `me` and email-address
 management), sessions, organizations, realms, projects, machine users, passwords, email OTP, WhatsApp OTP, MFA
 (including step-up and challenge flows), OIDC clients/signing keys/consents/discovery, external identities (including
-linking), impersonation, passkey revocation, and ZITADEL migration. Browser-bound flows stay out of the CLI: WebAuthn
-registration/authentication ceremonies, OAuth authorization callbacks, and profile-picture upload.
+linking), impersonation, passkey ceremonies, and ZITADEL migration. Browser-bound flows stay out of the CLI: WebAuthn
+registration/authentication ceremonies, OAuth authorization callbacks, and profile-picture upload. Passkey `start`
+commands print the ceremony options JSON, and the matching `complete` commands submit a previously captured ceremony
+response from a JSON file (`--response-file PATH`); the live authenticator interaction itself stays browser-bound.
+Session CSRF and logout are browser-cookie flows: the library client exposes them as `sessionCsrfGet` and
+`sessionLogout`, but the CLI (bearer-token auth, no cookie jar) intentionally has no `sessions csrf` or
+`sessions logout` commands.
 
 ## CLI environments (dev/prod)
 
@@ -573,6 +663,27 @@ import { projectApiClientCreate } from "@adaptive-ds/authworks/projects"
 const client = projectApiClientCreate({ baseUrl: SERVER_URL, token: TOKEN })
 await client.projectUserAssignmentCreate(REALM_ID, PROJECT_ID, { userId: USER_ID, roleKeys: ["reader"] })
 ```
+
+## OIDC claims and consent
+
+`acr`, `amr`, and `auth_time` come from the session everywhere: `acr` is the
+session assurance verbatim (`none`, `authenticated`, `multi_factor`), `amr`
+lists the distinct session authentication and MFA method names, and
+`auth_time` is the session creation second. ID tokens, access tokens, and
+UserInfo all carry the same three values.
+
+Project roles stay claims-only. A client with `accessTokenRoleAssertion`
+carries `urn:zitadel:iam:org:project:roles` in the access token, and a client
+with `idTokenRoleAssertion` carries the same shape in the ID token. Each role
+maps to the organizations holding it, keyed by verified primary domain or by
+organization id when the organization has no verified domain. UserInfo exposes
+the role claim exactly when the presenting access token's client has
+`accessTokenRoleAssertion`; roles resolve at request time so revocations apply
+immediately. Either flag defaults to `false`.
+
+Consent is skipped when the client is trusted or when it does not require
+consent, so a consent screen appears only for untrusted clients with
+`requireConsent` enabled. `prompt=consent` always forces the screen.
 
 ## Layout
 
