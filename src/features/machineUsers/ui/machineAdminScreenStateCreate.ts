@@ -9,7 +9,7 @@ import { machineAdminListViewStateCreate } from "./machineAdminListViewStateCrea
 import { machineAdminPageStateCreate } from "./machineAdminPageStateCreate.js"
 import type { MachineAdminScreen } from "./machineAdminScreenSchema.js"
 
-const dialogSchema = v.picklist(["machine-user", "credential"])
+const dialogSchema = v.picklist(["machine-user", "machine-user-edit", "credential"])
 const issueKindSchema = v.picklist(["api_key", "personal_access_token"])
 
 /**
@@ -84,6 +84,8 @@ export function machineAdminScreenStateCreate(options: {
       page,
     }),
     detail: machineAdminDetailViewStateCreate({
+      editOpen: () => dialogOpen("machine-user-edit"),
+      editOpenSet: dialogOpenSet("machine-user-edit"),
       issueKind,
       issueKindSet,
       issueOpen: () => dialogOpen("credential"),

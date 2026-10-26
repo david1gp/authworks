@@ -1,12 +1,17 @@
 import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
+import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { Show } from "solid-js"
+import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -42,10 +47,23 @@ export function MachineAdminDetailView(props: {
             <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
               <AuthenticatedSection
                 actions={
-                  <AuthenticatedStatus
-                    label={messageTranslate(`admin.machine.statusValue.${machineUser().status}`)}
-                    tone={machineUserStatusTone(machineUser().status)}
-                  />
+                  <div class="flex flex-wrap items-center gap-2">
+                    <AuthenticatedStatus
+                      label={messageTranslate(`admin.machine.statusValue.${machineUser().status}`)}
+                      tone={machineUserStatusTone(machineUser().status)}
+                    />
+                    <AuthenticatedButton
+                      icon={mdiPencil}
+                      onClick={() => {
+                        state.editForm.load()
+                        state.editOpenSet(true)
+                      }}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.machine.users.edit")}
+                    </AuthenticatedButton>
+                  </div>
                 }
                 padded
                 title={machineUser().displayName}
@@ -153,6 +171,8 @@ export function MachineAdminDetailView(props: {
                 </AuthenticatedSection>
               </div>
 
+              <MachineAdminEditDialog state={state} />
+
               <AuthenticatedSection
                 actions={
                   <AuthenticatedDialog
@@ -177,5 +197,55 @@ export function MachineAdminDetailView(props: {
         </Show>
       </MachineAdminStateBoundary>
     </section>
+  )
+}
+
+function MachineAdminEditDialog(props: { readonly state: ReturnType<typeof machineAdminDetailViewStateCreate> }) {
+  const state = props.state
+  return (
+    <AuthenticatedDialog
+      onOpenChange={state.editOpenSet}
+      open={state.editOpen()}
+      title={messageTranslate("admin.machine.users.editTitle")}
+    >
+      <form
+        class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"
+        onSubmit={state.editForm.submit}
+      >
+        <div class="grid min-w-0 gap-1">
+          <Label for="machine-user-edit-name">{messageTranslate("admin.machine.users.displayName")}</Label>
+          <AuthenticatedInput
+            id="machine-user-edit-name"
+            onInput={(event) => state.editForm.displayName.set(event.currentTarget.value)}
+            value={state.editForm.displayName.get()}
+          />
+        </div>
+        <div class="grid min-w-0 gap-1">
+          <Label for="machine-user-edit-scopes">{messageTranslate("admin.machine.users.scopes")}</Label>
+          <AuthenticatedInput
+            class="font-mono text-xs"
+            id="machine-user-edit-scopes"
+            onInput={(event) => state.editForm.scopes.set(event.currentTarget.value)}
+            value={state.editForm.scopes.get()}
+          />
+          <p class="text-xs leading-4 text-muted-foreground">{messageTranslate("admin.machine.users.scopesHint")}</p>
+        </div>
+
+        <Show when={state.editForm.formError()}>
+          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+        </Show>
+
+        <div class="flex justify-end gap-2">
+          <AuthenticatedButton
+            disabled={state.page.pendingId() !== undefined}
+            icon={mdiContentSave}
+            type="submit"
+            variant="filledBlue"
+          >
+            {messageTranslate("common.save")}
+          </AuthenticatedButton>
+        </div>
+      </form>
+    </AuthenticatedDialog>
   )
 }

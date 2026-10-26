@@ -4,6 +4,7 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineCredential } from "../public/machineCredentialSchema.js"
 import type { MachineUserCreateRequest } from "../public/machineUserCreateRequestSchema.js"
+import type { MachineUserUpdateRequest } from "../public/machineUserUpdateRequestSchema.js"
 import type { MachineUser } from "../public/machineUserSchema.js"
 import type { MachineUserStatus } from "../public/machineUserStatusSchema.js"
 import type { MachineAdminAdapter } from "./machineAdminAdapter.js"
@@ -236,6 +237,20 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
         secret: created.clientSecret,
       })
       return true
+    },
+    machineUserUpdate: async (machineUserId: string, input: MachineUserUpdateRequest): Promise<string | undefined> => {
+      pendingId.set(`machine-user:${machineUserId}`)
+      error.set(undefined)
+      const result = await adapter.machineUserUpdate(machineUserId, input)
+      pendingId.set(undefined)
+      // A failed edit stays local to the edit dialog: unlike lifecycle failures, it must
+      // not flip the detail screen into its error panel, so the message travels back to
+      // the form instead of through the shared page error.
+      if (!result.success) return result.errorMessage
+      machineUser.set(result.data)
+      machineUsers.set(machineUsers.get().map((item) => (item.id === machineUserId ? result.data : item)))
+      notice.set("machine-user-updated")
+      return undefined
     },
     machineUserLifecycleSet: async (machineUserId: string, nextStatus: MachineUserStatus) => {
       if (nextStatus === "removed" && !(await confirmed("admin.machine.lifecycle.removeConfirm"))) return

@@ -357,9 +357,327 @@ const machineProtectedApiGetCommand = buildCommand({
   docs: { brief: "Call the machine protected API probe" },
 })
 
+const machineClientCredentialsRevokeCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MachineCliFlags & { accessToken: string; clientId: string; clientSecret: string; realmId?: string },
+  ) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineClientCredentialsRevoke(realmId, {
+        clientId: flags.clientId,
+        clientSecret: flags.clientSecret,
+        token: flags.accessToken,
+      }),
+      [connection.data.token, connection.data.systemToken, flags.clientSecret, flags.accessToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      clientId: machineTextFlag("Machine username (client ID)"),
+      clientSecret: machineTextFlag("Machine client secret"),
+      accessToken: machineTextFlag("Client credentials access token"),
+    },
+  },
+  docs: { brief: "Revoke a client credentials access token" },
+})
+
+const machineTenantUserCreateCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: MachineRealmFlags & { displayName: string; scopes?: string; userName: string },
+  ) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantCreate(realmId, organizationId, {
+        displayName: flags.displayName,
+        scopes: machineScopesSplit(flags.scopes),
+        userName: flags.userName,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      userName: machineTextFlag("Machine username"),
+      displayName: machineTextFlag("Machine display name"),
+      scopes: { ...machineTextFlag("Comma-separated scopes"), optional: true as const },
+    },
+  },
+  docs: { brief: "Create a tenant machine user and one-time client secret" },
+})
+
+const machineTenantUserListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineRealmFlags & MachineListFlags) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantList(
+        realmId,
+        organizationId,
+        machineListQueryCreate(flags),
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      ...machineListFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+    },
+  },
+  docs: { brief: "List tenant machine users" },
+})
+
+const machineTenantUserGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantGet(realmId, organizationId, flags.machineUserId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+    },
+  },
+  docs: { brief: "Get a tenant machine user" },
+})
+
+const machineTenantUserSecretRotateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantClientSecretRotate(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+    },
+  },
+  docs: { brief: "Rotate a tenant machine user client secret" },
+})
+
+const machineTenantUserLifecycleCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags & { status: "active" | "inactive" | "removed" }) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantLifecycleSet(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        {
+          status: flags.status,
+        },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+      status: {
+        brief: "Machine user status",
+        kind: "parsed" as const,
+        parse: (value: string) => value as "active" | "inactive" | "removed",
+        placeholder: "STATUS",
+      },
+    },
+  },
+  docs: { brief: "Change a tenant machine user lifecycle status" },
+})
+
+const machineTenantPersonalAccessTokenCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags & { expiresAt?: number; name: string; scopes: string }) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantPersonalAccessTokenCreate(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        {
+          expiresAt: flags.expiresAt,
+          machineUserId: flags.machineUserId,
+          name: flags.name,
+          scopes: machineScopesSplit(flags.scopes),
+        },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+      name: machineTextFlag("Token name"),
+      scopes: machineTextFlag("Comma-separated scopes"),
+      expiresAt: { ...machineNumberFlag("Expiration timestamp in milliseconds"), optional: true as const },
+    },
+  },
+  docs: { brief: "Create a tenant personal access token" },
+})
+
+const machineTenantApiKeyCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags & { expiresAt?: number; name: string; scopes: string }) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantApiKeyCreate(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        {
+          expiresAt: flags.expiresAt,
+          machineUserId: flags.machineUserId,
+          name: flags.name,
+          scopes: machineScopesSplit(flags.scopes),
+        },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+      name: machineTextFlag("API key name"),
+      scopes: machineTextFlag("Comma-separated scopes"),
+      expiresAt: { ...machineNumberFlag("Expiration timestamp in milliseconds"), optional: true as const },
+    },
+  },
+  docs: { brief: "Create a tenant API key" },
+})
+
+const machineTenantCredentialListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineUserFlags & MachineListFlags) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantCredentialList(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        machineListQueryCreate(flags),
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      ...machineListFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      machineUserId: machineIdFlag("Machine user UUID"),
+    },
+  },
+  docs: { brief: "List tenant machine credentials" },
+})
+
+const machineTenantCredentialRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: MachineRealmFlags & { credentialId: string; reason?: string }) {
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserTenantCredentialRevoke(
+        realmId,
+        organizationId,
+        flags.credentialId,
+        {
+          reason: flags.reason,
+        },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+      credentialId: machineIdFlag("Credential UUID"),
+      reason: { ...machineTextFlag("Revocation reason"), optional: true as const },
+    },
+  },
+  docs: { brief: "Revoke a tenant machine credential" },
+})
+
 export const machineUserCliCommands = buildRouteMap({
   routes: {
     apiKeyCreate: machineApiKeyCommand,
+    clientCredentialsRevoke: machineClientCredentialsRevokeCommand,
     credentialIssue: machineCredentialIssueCommand,
     credentialList: machineCredentialListCommand,
     credentialRevoke: machineCredentialRevokeCommand,
@@ -370,6 +688,15 @@ export const machineUserCliCommands = buildRouteMap({
     personalAccessTokenCreate: machinePersonalAccessTokenCommand,
     protectedApiGet: machineProtectedApiGetCommand,
     secretRotate: machineUserSecretRotateCommand,
+    tenantApiKeyCreate: machineTenantApiKeyCommand,
+    tenantCreate: machineTenantUserCreateCommand,
+    tenantCredentialList: machineTenantCredentialListCommand,
+    tenantCredentialRevoke: machineTenantCredentialRevokeCommand,
+    tenantGet: machineTenantUserGetCommand,
+    tenantLifecycle: machineTenantUserLifecycleCommand,
+    tenantList: machineTenantUserListCommand,
+    tenantPersonalAccessTokenCreate: machineTenantPersonalAccessTokenCommand,
+    tenantSecretRotate: machineTenantUserSecretRotateCommand,
   },
   docs: { brief: "Machine users and credentials" },
 })

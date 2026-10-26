@@ -8,6 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineScopesPermissionValidate } from "../domain/machineScopesPermissionValidate.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
 import { machineSecretHashCreate } from "../domain/machineSecretHashCreate.js"
 import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
@@ -97,6 +98,8 @@ export function machineClientCredentialsIssue(
         "machine-users.invalid-client",
       )
     const scopes = parsed.output.scope ?? configuredScopes.data
+    const catalogScopes = machineScopesPermissionValidate(scopes)
+    if (!catalogScopes.success) return catalogScopes
     if (scopes.some((scope) => !configuredScopes.data.includes(scope)))
       return resultErrorCreate(
         "machineClientCredentialsInvalidScope",

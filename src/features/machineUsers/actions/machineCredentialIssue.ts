@@ -11,6 +11,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialPublicViewCreate } from "../domain/machineCredentialPublicViewCreate.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineScopesPermissionValidate } from "../domain/machineScopesPermissionValidate.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
 import { machineSecretHashCreate } from "../domain/machineSecretHashCreate.js"
 import { machineCredentialIssuedEventPayloadSchema } from "../events/machineCredentialIssuedEventPayloadSchema.js"
@@ -69,6 +70,8 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
     const scopes = [...new Set(parsed.output.scopes ?? configuredScopes.data)]
     if (scopes.some((scope) => !configuredScopes.data.includes(scope)))
       return resultErrorCreate(op, "The requested machine scopes are not allowed.", "machine-users.invalid-scope")
+    const catalogScopes = machineScopesPermissionValidate(scopes)
+    if (!catalogScopes.success) return catalogScopes
     const credential = repository.credentialCreate({
       createdAt: now,
       expiresAt,

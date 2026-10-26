@@ -9,6 +9,7 @@ const noticeKeys = {
   "credential-revoked": "admin.machine.credentials.revoked",
   "machine-user-created": "admin.machine.users.created",
   "machine-user-lifecycle": "admin.machine.users.lifecycleChanged",
+  "machine-user-updated": "admin.machine.users.updated",
   "personal-access-token-created": "admin.machine.credentials.tokenCreated",
 } as const satisfies Readonly<Record<string, MessageKey>>
 
