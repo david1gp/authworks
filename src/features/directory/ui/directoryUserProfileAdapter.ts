@@ -10,9 +10,12 @@ import type { ProjectUserAssignment } from "../../projects/public/projectUserAss
 import type { ProjectUserAssignmentUpdateRequest } from "../../projects/public/projectUserAssignmentUpdateRequestSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
+import type { UserEmailAddressListResponse } from "../../users/public/userEmailAddressListResponseSchema.js"
+import type { UserEmailVerificationResendResponse } from "../../users/public/userEmailVerificationResendResponseSchema.js"
 import type { UserLifecycleRequest } from "../../users/public/userLifecycleRequestSchema.js"
 import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpdateRequestSchema.js"
 import type { User } from "../../users/public/userSchema.js"
+import type { UserVerificationRequest } from "../../users/public/userVerificationRequestSchema.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryProjectAssignment, DirectoryUserAccess } from "../public/directoryUserAccessSchema.js"
 
@@ -42,6 +45,7 @@ export type DirectoryUserProfileAdapter = {
     input: ProjectUserAssignmentUpdateRequest,
   ) => Promise<Result<ProjectUserAssignment>>
   readonly authenticationMethodsGet: (userId: string) => Promise<Result<UserAuthenticationMethods>>
+  readonly emailList: (userId: string) => Promise<Result<UserEmailAddressListResponse>>
   readonly membershipCreate: (
     organizationId: string,
     input: OrganizationMembershipCreateRequest,
@@ -51,19 +55,25 @@ export type DirectoryUserProfileAdapter = {
     membershipId: string,
     input: OrganizationMembershipUpdateRequest,
   ) => Promise<Result<OrganizationMembership>>
+  readonly passkeyRevoke: (userId: string, credentialId: string) => Promise<Result<void>>
   readonly passwordSet: (userId: string, password: string) => Promise<Result<DirectoryUserProfilePasswordResult>>
   readonly projectList: () => Promise<Result<readonly ProjectListItem[]>>
   readonly projectRoleList: (projectId: string) => Promise<Result<readonly ProjectRole[]>>
   readonly realmAdministratorGrant: (userId: string) => Promise<Result<void>>
+  readonly recoveryCodesInvalidate: (userId: string) => Promise<Result<void>>
+  readonly resendVerification: (userId: string, emailId: string) => Promise<Result<UserEmailVerificationResendResponse>>
   readonly realmAdministratorRevoke: (userId: string) => Promise<Result<void>>
   readonly sessionRevoke: (userId: string, sessionId: string) => Promise<Result<void>>
   readonly sessionRevokeAll: (userId: string) => Promise<Result<void>>
   readonly sessionsList: (userId: string) => Promise<Result<readonly Session[]>>
+  readonly totpRemove: (userId: string) => Promise<Result<void>>
   readonly userAccessGet: (userId: string) => Promise<Result<DirectoryUserAccess>>
   readonly userDelete: (userId: string) => Promise<Result<void>>
   readonly userGet: (userId: string) => Promise<Result<DirectoryUserProfile>>
   readonly userLifecycleSet: (userId: string, input: UserLifecycleRequest) => Promise<Result<DirectoryUserProfile>>
   readonly userProfileUpdate: (userId: string, input: UserProfileUpdateRequest) => Promise<Result<DirectoryUserProfile>>
+  readonly userPurge: (userId: string) => Promise<Result<void>>
+  readonly verificationSet: (userId: string, input: UserVerificationRequest) => Promise<Result<DirectoryUserProfile>>
 }
 
 export type DirectoryUserProfileAssignmentGroup = {

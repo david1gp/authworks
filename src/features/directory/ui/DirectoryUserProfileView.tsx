@@ -4,6 +4,7 @@ import { mdiAccountEyeOutline } from "@adaptive-ds/mdi/mdiAccountEyeOutline.js"
 import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiBriefcase } from "@adaptive-ds/mdi/mdiBriefcase.js"
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCellphone } from "@adaptive-ds/mdi/mdiCellphone.js"
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
@@ -66,9 +67,9 @@ export type DirectoryUserProfileViewState = {
   readonly asParam: (() => string | undefined) | undefined
   readonly basePath: string
   readonly confirmState: ConfirmState
-  readonly dialog: () => "edit-profile" | "assign-roles" | "set-password" | "delete" | undefined
+  readonly dialog: () => "edit-profile" | "assign-roles" | "set-password" | "delete" | "purge" | undefined
   readonly dialogOpenSet: (
-    dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | undefined,
+    dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | "purge" | undefined,
   ) => (open: boolean) => void
   readonly organizationName: () => string
   readonly page: DirectoryUserProfilePageState
@@ -151,6 +152,28 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
         label: messageTranslate("admin.userProfile.deactivate"),
         onSelect: () => void page().lifecycleSet("inactive"),
       })
+    if (can.activate && current.state === "active")
+      items.push({
+        icon: mdiCancel,
+        label: messageTranslate("admin.userProfile.suspend"),
+        onSelect: () => void page().lifecycleSet("suspended"),
+      })
+    if (can.activate && current.state !== "deleted" && !current.emailVerified)
+      items.push({
+        icon: mdiEmailOutline,
+        label: messageTranslate("admin.userProfile.resendVerification"),
+        onSelect: () => void page().verificationResend(),
+      })
+    if (can.setPassword)
+      items.push({
+        icon: mdiShieldOutline,
+        label: messageTranslate(
+          current.emailVerified
+            ? "admin.userProfile.verificationOverrideUnverify"
+            : "admin.userProfile.verificationOverrideVerify",
+        ),
+        onSelect: () => void page().verificationOverrideSet(current.emailVerified ? "unverified" : "verified"),
+      })
     if (can.impersonate && current.state === "active")
       items.push({
         icon: mdiAccountArrowRight,
@@ -184,6 +207,13 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
         icon: mdiDeleteOutline,
         label: messageTranslate("admin.userProfile.deleteConfirmTitle"),
         onSelect: () => state.dialogOpenSet("delete")(true),
+        tone: "danger",
+      })
+    if (state.page.actorGet().realmAdministrator && current.state === "deleted")
+      items.push({
+        icon: mdiDeleteOutline,
+        label: messageTranslate("admin.userProfile.purge"),
+        onSelect: () => state.dialogOpenSet("purge")(true),
         tone: "danger",
       })
     return items
@@ -316,6 +346,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                 <EditProfileDialog state={state} />
                 <SetPasswordDialog state={state} />
                 <DeleteUserDialog state={state} />
+                <PurgeUserDialog state={state} />
                 <AssignRolesDialog state={state} />
               </>
             )}
@@ -619,7 +650,9 @@ function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
               </div>
             }
           >
-            <Show when={page().methodsGet()}>{(methods) => <AuthenticationMethods methods={methods()} />}</Show>
+            <Show when={page().methodsGet()}>
+              {(methods) => <AuthenticationMethods methods={methods()} page={page()} />}
+            </Show>
           </Show>
         </Show>
       </AuthenticatedSection>
@@ -740,8 +773,13 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
   )
 }
 
-function AuthenticationMethods(props: { readonly methods: UserAuthenticationMethods }) {
+function AuthenticationMethods(props: {
+  readonly methods: UserAuthenticationMethods
+  readonly page: DirectoryUserProfilePageState
+}) {
   const metaClass = "flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground"
+  const canReset = () => props.page.permissionsGet().activate
+  const disabled = () => props.page.pendingIdGet() !== undefined
   return (
     <ul class="divide-y divide-line-subtle">
       <MethodRow
@@ -765,6 +803,19 @@ function AuthenticationMethods(props: { readonly methods: UserAuthenticationMeth
         tone={props.methods.emailOtp.available ? "success" : "neutral"}
       />
       <MethodRow
+        actions={
+          <Show when={canReset() && props.methods.totp.enrolled}>
+            <AuthenticatedButton
+              disabled={disabled()}
+              icon={mdiDeleteOutline}
+              onClick={() => void props.page.totpRemove()}
+              size="sm"
+              variant="outlineRed"
+            >
+              {messageTranslate("admin.userProfile.totpRemove")}
+            </AuthenticatedButton>
+          </Show>
+        }
         detail={
           props.methods.totp.enrolled
             ? messageTranslate("account.status.configured")
@@ -796,20 +847,46 @@ function AuthenticationMethods(props: { readonly methods: UserAuthenticationMeth
       >
         <For each={props.methods.passkeys.credentials}>
           {(credential) => (
-            <p class={metaClass}>
-              {messageTranslate("admin.users.authentication.passkeyMetadata", {
-                created: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
-                deviceType: credential.deviceType,
-                lastUsed:
-                  credential.lastUsedAt === null
-                    ? messageTranslate("admin.users.authentication.neverUsed")
-                    : localeDateFormat(credential.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-              })}
-            </p>
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <p class={metaClass}>
+                {messageTranslate("admin.users.authentication.passkeyMetadata", {
+                  created: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
+                  deviceType: credential.deviceType,
+                  lastUsed:
+                    credential.lastUsedAt === null
+                      ? messageTranslate("admin.users.authentication.neverUsed")
+                      : localeDateFormat(credential.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                })}
+              </p>
+              <Show when={canReset()}>
+                <AuthenticatedButton
+                  disabled={disabled()}
+                  icon={mdiDeleteOutline}
+                  onClick={() => void props.page.passkeyRevoke(credential.id)}
+                  size="sm"
+                  variant="outline"
+                >
+                  {messageTranslate("admin.userProfile.passkeyRevoke")}
+                </AuthenticatedButton>
+              </Show>
+            </div>
           )}
         </For>
       </MethodRow>
       <MethodRow
+        actions={
+          <Show when={canReset() && props.methods.recoveryCodes.available}>
+            <AuthenticatedButton
+              disabled={disabled()}
+              icon={mdiDeleteOutline}
+              onClick={() => void props.page.recoveryCodesInvalidate()}
+              size="sm"
+              variant="outlineRed"
+            >
+              {messageTranslate("admin.userProfile.recoveryCodesInvalidate")}
+            </AuthenticatedButton>
+          </Show>
+        }
         detail={
           props.methods.recoveryCodes.available
             ? messageTranslate("admin.users.authentication.recoveryCount", {
@@ -836,6 +913,7 @@ function AuthenticationMethods(props: { readonly methods: UserAuthenticationMeth
 }
 
 function MethodRow(props: {
+  readonly actions?: unknown
   readonly children?: unknown
   readonly detail: string
   readonly icon: string
@@ -849,7 +927,10 @@ function MethodRow(props: {
           <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={props.icon} />
           {props.title}
         </h3>
-        <AuthenticatedStatus label={props.detail} tone={props.tone} />
+        <div class="flex flex-wrap items-center gap-2">
+          <AuthenticatedStatus label={props.detail} tone={props.tone} />
+          {props.actions as never}
+        </div>
       </div>
       {props.children as never}
     </li>
@@ -1083,6 +1164,82 @@ function DeleteUserBody(props: { readonly close: () => void; readonly state: Dir
               variant="filledRed"
             >
               {messageTranslate("admin.userProfile.deleteConfirmTitle")}
+            </AuthenticatedButton>
+          </div>
+        </form>
+      )}
+    </Show>
+  )
+}
+
+function PurgeUserDialog(props: { readonly state: DirectoryUserProfileViewState }) {
+  const page = () => props.state.page
+  const user = () => page().profileGet()?.user
+  const close = () => {
+    page().purgeConfirmSet("")
+    props.state.dialogOpenSet("purge")(false)
+  }
+  return (
+    <AuthenticatedDialog
+      description={messageTranslate("admin.userProfile.purgeWarning")}
+      onOpenChange={(open) => {
+        if (!open) close()
+      }}
+      open={props.state.dialog() === "purge" && user() !== undefined}
+      title={messageTranslate("admin.userProfile.purgeConfirmTitle")}
+    >
+      <PurgeUserBody close={close} state={props.state} />
+    </AuthenticatedDialog>
+  )
+}
+
+function PurgeUserBody(props: { readonly close: () => void; readonly state: DirectoryUserProfileViewState }) {
+  const page = () => props.state.page
+  const user = () => page().profileGet()?.user
+  return (
+    <Show when={user()}>
+      {(current) => (
+        <form
+          class="grid gap-4"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void (async () => {
+              const purged = await page().purgeSubmit()
+              if (purged) {
+                props.close()
+                window.location.assign(props.state.withActor(`${props.state.basePath}/users`))
+              }
+            })()
+          }}
+        >
+          <p class="text-sm text-muted-foreground">
+            {messageTranslate("admin.userProfile.purgeConfirm", { userName: current().userName })}
+          </p>
+          <p class="text-sm text-muted-foreground">
+            {messageTranslate("admin.userProfile.purgeConfirmType", { userName: current().userName })}
+          </p>
+          <div class="grid gap-1.5">
+            <Label class="text-[0.8125rem] font-medium" for="user-profile-purge-confirm">
+              {messageTranslate("admin.userProfile.username")}
+            </Label>
+            <AuthenticatedInput
+              autocomplete="off"
+              id="user-profile-purge-confirm"
+              onInput={(event) => page().purgeConfirmSet(event.currentTarget.value)}
+              value={page().purgeConfirmGet()}
+            />
+          </div>
+          <Show when={page().formErrorGet()}>
+            {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+          </Show>
+          <div class="flex justify-end gap-2">
+            <AuthenticatedButton
+              disabled={page().pendingIdGet() !== undefined}
+              icon={mdiDeleteOutline}
+              type="submit"
+              variant="filledRed"
+            >
+              {messageTranslate("admin.userProfile.purgeConfirmTitle")}
             </AuthenticatedButton>
           </div>
         </form>

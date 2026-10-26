@@ -1,6 +1,6 @@
 import * as v from "valibot"
 
-const dialogSchema = v.picklist(["edit-profile", "assign-roles", "set-password", "delete"])
+const dialogSchema = v.picklist(["edit-profile", "assign-roles", "set-password", "delete", "purge"])
 const tabSchema = v.picklist(["overview", "access", "security"])
 
 const dialogValueGet = (search: string): string | undefined => {

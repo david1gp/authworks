@@ -48,7 +48,7 @@ export function directoryUserProfileDemoStateCreate() {
     navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
   }
   const dialogOpenSet =
-    (dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | undefined) => (open: boolean) => {
+    (dialog: "edit-profile" | "assign-roles" | "set-password" | "delete" | "purge" | undefined) => (open: boolean) => {
       if (open) page.formErrorClear()
       paramsSet((next) => {
         if (open && dialog !== undefined) next.set("dialog", dialog)
