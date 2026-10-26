@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,Ausgesetzt
 admin.users.nickName,Spitzname
 admin.users.serviceAccountCreated,Der Maschinenbenutzer wurde erstellt.
 admin.users.serviceAccountInvalid,Geben Sie einen Anzeigenamen und einen Benutzernamen für den Maschinenbenutzer ein.
+admin.users.sessions.country,Land
 admin.users.sessions.created,Erstellt
 admin.users.sessions.expires,Läuft ab
 admin.users.sessions.ipAddress,IP-Adresse
 admin.users.sessions.lastUsed,Zuletzt verwendet
 admin.users.sessions.location,Standort
 admin.users.sessions.method,Anmeldemethode
+admin.users.sessions.region,Region
 admin.users.state,Status
 admin.users.title,Benutzer
 admin.users.unverifiedEmail,Unbestätigte E-Mail

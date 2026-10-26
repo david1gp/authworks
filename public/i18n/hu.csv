@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,Felfüggesztve
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,A szolgáltatásfiók létrejött.
 admin.users.serviceAccountInvalid,Adjon meg megjelenítendő nevet és felhasználónevet a szolgáltatásfiókhoz.
+admin.users.sessions.country,Ország
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,Hely
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,Régió
 admin.users.state,Állapot
 admin.users.title,Felhasználók
 admin.users.unverifiedEmail,Nem ellenőrzött e-mail

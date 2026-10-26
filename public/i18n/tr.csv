@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,Askıya alındı
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,Hizmet hesabı oluşturuldu.
 admin.users.serviceAccountInvalid,Hizmet hesabı için bir görünen ad ve kullanıcı adı girin.
+admin.users.sessions.country,Ülke
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,Konum
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,Bölge
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
 admin.users.unverifiedEmail,Doğrulanmamış e-posta

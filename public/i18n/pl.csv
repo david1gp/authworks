@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,Zawieszony
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,Konto usługowe zostało utworzone.
 admin.users.serviceAccountInvalid,Podaj nazwę wyświetlaną i nazwę użytkownika dla konta usługowego.
+admin.users.sessions.country,Kraj
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,Lokalizacja
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,Region
 admin.users.state,Status
 admin.users.title,Użytkownicy
 admin.users.unverifiedEmail,Niezweryfikowany adres e-mail

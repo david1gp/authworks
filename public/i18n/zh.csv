@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,已暂停
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,服务账号已创建。
 admin.users.serviceAccountInvalid,请输入服务账号的显示名称和用户名。
+admin.users.sessions.country,国家
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,位置
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,地区
 admin.users.state,状态
 admin.users.title,用户
 admin.users.unverifiedEmail,未验证的邮箱

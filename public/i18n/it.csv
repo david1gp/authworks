@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,Sospeso
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,L'account di servizio è stato creato.
 admin.users.serviceAccountInvalid,Inserisci un nome visualizzato e un nome utente per l'account di servizio.
+admin.users.sessions.country,Paese
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,Posizione
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,Regione
 admin.users.state,Stato
 admin.users.title,Utenti
 admin.users.unverifiedEmail,E-mail non verificata

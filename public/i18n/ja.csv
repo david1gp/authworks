@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,停止中
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,サービスアカウントを作成しました。
 admin.users.serviceAccountInvalid,サービスアカウントの表示名とユーザー名を入力してください。
+admin.users.sessions.country,国
 admin.users.sessions.created,Created
 admin.users.sessions.expires,Expires
 admin.users.sessions.ipAddress,IP address
 admin.users.sessions.lastUsed,Last used
 admin.users.sessions.location,場所
 admin.users.sessions.method,Sign-in method
+admin.users.sessions.region,地域
 admin.users.state,状態
 admin.users.title,ユーザー
 admin.users.unverifiedEmail,未確認のメール

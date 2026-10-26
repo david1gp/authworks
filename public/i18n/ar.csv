@@ -1241,12 +1241,14 @@ admin.users.lifecycle.suspended,موقوف
 admin.users.nickName,Nickname
 admin.users.serviceAccountCreated,تم إنشاء حساب الخدمة.
 admin.users.serviceAccountInvalid,أدخل اسماً معروضاً واسم مستخدم لحساب الخدمة.
+admin.users.sessions.country,البلد
 admin.users.sessions.created,تاريخ الإنشاء
 admin.users.sessions.expires,تنتهي في
 admin.users.sessions.ipAddress,عنوان IP
 admin.users.sessions.lastUsed,آخر استخدام
 admin.users.sessions.location,الموقع
 admin.users.sessions.method,طريقة تسجيل الدخول
+admin.users.sessions.region,المنطقة
 admin.users.state,الحالة
 admin.users.title,المستخدمون
 admin.users.unverifiedEmail,بريد إلكتروني غير مؤكد
