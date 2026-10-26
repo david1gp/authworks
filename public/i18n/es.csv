@@ -63,6 +63,11 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
+account.export.download,Download export
+account.export.downloading,Preparing download…
+account.export.title,Download your data
+account.export.unavailable,The data export is unavailable right now.
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,Autenticador
 account.factors.configured,Autenticador configurado
@@ -253,7 +258,9 @@ account.securityHistory.event.mfaFailed,A multi-factor challenge failed
 account.securityHistory.event.mfaStarted,A multi-factor challenge started
 account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
 account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
 account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
 account.securityHistory.event.passkeyCredentialUsed,A passkey was used
 account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
 account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
@@ -268,6 +275,7 @@ account.securityHistory.event.passwordUnlocked,The password account was unlocked
 account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
 account.securityHistory.event.recoveryCodeUsed,A recovery code was used
 account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
 account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
 account.securityHistory.event.sessionCreated,A session was created
 account.securityHistory.event.sessionRevoked,A session was revoked
@@ -276,6 +284,7 @@ account.securityHistory.event.sessionsRevoked,All sessions were revoked
 account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
 account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
 account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
 account.securityHistory.event.totpRenamed,An authenticator was renamed
 account.securityHistory.event.totpVerified,An authenticator challenge succeeded
 account.securityHistory.loadMore,Load more security activity
@@ -378,10 +387,15 @@ admin.configuration.typeNameInvalid,El nombre escrito no coincide con el nombre 
 admin.configuration.watermark,Ocultar la marca de agua de Authworks
 admin.events.actor,Actor
 admin.events.aggregate,Agregado
+admin.events.aggregateId,ID de agregado
 admin.events.count,{count} eventos
 admin.events.empty,Ningún evento coincide con el filtro actual.
+admin.events.export,Exportar
+admin.events.exported,{count} eventos exportados.
 admin.events.hide,Ocultar carga útil
 admin.events.occurred,Ocurrido
+admin.events.occurredFrom,Ocurrido desde
+admin.events.occurredTo,Ocurrido hasta
 admin.events.payload,Carga útil
 admin.events.redactionNotice,Los valores secretos se ocultan antes de almacenar un evento.
 admin.events.search,Buscar eventos
@@ -390,6 +404,7 @@ admin.events.show,Mostrar carga útil
 admin.events.systemActor,Sistema
 admin.events.title,Eventos de auditoría
 admin.events.type,Tipo de evento
+admin.events.userSubject,Sujeto de usuario
 admin.impersonation.activeTitle,Active impersonation
 admin.impersonation.actor,Administrator
 admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
@@ -499,6 +514,8 @@ admin.machine.users.created,El usuario de máquina fue creado.
 admin.machine.users.description,"Identidades no humanas que se autentican con credenciales de cliente, tokens o claves de API en este realm."
 admin.machine.users.detailTitle,Detalle del usuario máquina
 admin.machine.users.displayName,Nombre visible
+admin.machine.users.edit,Edit machine user
+admin.machine.users.editTitle,Edit machine user
 admin.machine.users.empty,Todavía no existe ningún usuario de máquina en este realm.
 admin.machine.users.identifier,Identificador de usuario de máquina
 admin.machine.users.invalid,"Introduzca un nombre visible y un nombre de usuario, y utilice solo valores de ámbito válidos."
@@ -509,6 +526,7 @@ admin.machine.users.scopes,Ámbitos
 admin.machine.users.scopesHint,Separe los ámbitos con espacios o comas. Los ámbitos se comparan de forma exacta.
 admin.machine.users.search,Buscar usuarios de máquina
 admin.machine.users.title,Usuarios de máquina
+admin.machine.users.updated,The machine user was updated.
 admin.machine.users.userName,Nombre de usuario
 admin.machine.users.userNameHint,Se usa como ID de cliente al intercambiar credenciales de cliente.
 admin.navigation.description,Choose an administration resource
@@ -517,10 +535,13 @@ admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Administrar la configuración de OpenID Connect requiere un inicio de sesión más fuerte y reciente. Vuelva a iniciar sesión para continuar.
 admin.oidc.assuranceRequiredTitle,Se requiere un inicio de sesión más fuerte
 admin.oidc.clients.consent,Consentimiento
+admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
 admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
+admin.oidc.clients.application,Application
+admin.oidc.clients.applicationNone,No application
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Obligatorio
 admin.oidc.clients.consentSkipped,No obligatorio
@@ -529,20 +550,33 @@ admin.oidc.clients.createDescription,Registre una aplicación que inicie sesión
 admin.oidc.clients.created,El cliente se registró.
 admin.oidc.clients.description,Aplicaciones que autentican a las personas mediante OpenID Connect en este dominio.
 admin.oidc.clients.detailTitle,Detalle del cliente OIDC
+admin.oidc.clients.devMode,Development mode
+admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
 admin.oidc.clients.empty,Todavía no hay clientes de OpenID Connect registrados en este dominio.
 admin.oidc.clients.emptySearch,Ningún cliente coincide con esta búsqueda.
 admin.oidc.clients.exactMatchHint,"Una URI por línea. Cada redirección se compara de forma exacta, por lo que se rechazan los comodines y las diferencias finales."
+admin.oidc.clients.grantTypes,Grant types
 admin.oidc.clients.identifier,Identificador del cliente
+admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
+admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
+admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
 admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
 admin.oidc.clients.invalid,"Introduzca un nombre de cliente, al menos un URI de redirección exacto y al menos un ámbito."
 admin.oidc.clients.lifecycleChanged,Se cambió el estado del cliente.
+admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
+admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
 admin.oidc.clients.missingId,Debe seleccionarse un cliente OIDC para este destino.
 admin.oidc.clients.name,Nombre del cliente
 admin.oidc.clients.postLogoutUris,URI de redirección tras el cierre de sesión
+admin.oidc.clients.project,Project
+admin.oidc.clients.projectNone,No project
 admin.oidc.clients.redirectUris,URI de redirección
+admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
 admin.oidc.clients.removeConfirm,¿Eliminar este cliente OIDC? Las aplicaciones que lo usan dejan de funcionar inmediatamente.
 admin.oidc.clients.requireConsent,Pedir a la persona que apruebe esta aplicación
+admin.oidc.clients.responseTypes,Response types
 admin.oidc.clients.saved,El cliente se guardó.
 admin.oidc.clients.scopes,Ámbitos permitidos
 admin.oidc.clients.search,Buscar clientes
@@ -565,6 +599,7 @@ admin.oidc.consents.empty,Esta persona todavía no ha aprobado ninguna aplicaci�
 admin.oidc.consents.granted,Aprobado
 admin.oidc.consents.revokeConfirm,¿Revocar este consentimiento? Se pedirá a la persona que apruebe la aplicación de nuevo.
 admin.oidc.consents.revoked,El consentimiento se revocó.
+admin.oidc.consents.searchUsers,Buscar personas por nombre o correo
 admin.oidc.consents.title,Consentimientos de aplicaciones
 admin.oidc.consents.user,Persona
 admin.oidc.created,Creado
@@ -719,6 +754,7 @@ admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,Proveedores de identidad externos
 admin.organizations.policy.factor.emailOtp,Email one-time code
 admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.recoveryCode,Recovery code
 admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,Heredado del realm
 admin.organizations.policy.minimumAssurance,Minimum step-up assurance
@@ -884,6 +920,7 @@ admin.projects.status,Estado
 admin.projects.statusValue.active,Activo
 admin.projects.statusValue.inactive,Inactivo
 admin.projects.statusValue.removed,Eliminada
+admin.sessions.revoked,La sesión fue revocada.
 admin.realm.confirmMismatch,El nombre del ámbito no coincide.
 admin.realm.description,Configuración de identidad e inicio de sesión del ámbito que está administrando.
 admin.realm.disableConfirm,Desactivar este ámbito detiene el inicio de sesión de todas sus aplicaciones. ¿Continuar?
@@ -1022,6 +1059,7 @@ admin.userProfile.deleted,{userName} fue eliminado.
 admin.userProfile.editProfile,Editar perfil
 admin.userProfile.editProfileTitle,Editar perfil
 admin.userProfile.email,Correo electrónico
+admin.userProfile.emailMissing,This user has no email address to verify.
 admin.userProfile.emailUnverified,Sin verificar
 admin.userProfile.emailVerified,Verificado
 admin.userProfile.impersonate,Actuar como usuario
@@ -1043,6 +1081,9 @@ admin.userProfile.organizationRoleChanged,El rol de organización se actualizó.
 admin.userProfile.organizationRoleDescription,Elige el rol principal para la organización activa.
 admin.userProfile.organizationRoleTitle,Rol de organización
 admin.userProfile.overviewTab,Resumen
+admin.userProfile.passkeyRevoke,Revoke passkey
+admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
+admin.userProfile.passkeyRevoked,The passkey was revoked.
 admin.userProfile.passwordConfirm,Confirma la nueva contraseña
 admin.userProfile.passwordMismatch,Las contraseñas no coinciden.
 admin.userProfile.passwordNew,Nueva contraseña
@@ -1058,13 +1099,25 @@ admin.userProfile.projectRolesRemoveConfirm,¿Quitar la asignación de {projectN
 admin.userProfile.projectRolesRemoved,La asignación de proyecto se quitó.
 admin.userProfile.projectRolesSaved,Las asignaciones de proyecto se guardaron.
 admin.userProfile.projectRolesTitle,Roles de proyecto
+admin.userProfile.purge,Purge user data
+admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
+admin.userProfile.purgeConfirmTitle,Purge this user
+admin.userProfile.purgeConfirmType,Type {userName} to confirm.
+admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
+admin.userProfile.purged,{userName} was purged.
 admin.userProfile.reactivate,Reactivar usuario
 admin.userProfile.reactivateConfirm,¿Reactivar a {userName}? El usuario podrá iniciar sesión de nuevo.
 admin.userProfile.reactivated,{userName} fue reactivado.
 admin.userProfile.realmAdminBadge,Administrador del realm
+admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
+admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
+admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
 admin.userProfile.removeRealmAdmin,Quitar administrador del realm
 admin.userProfile.removeRealmAdminConfirm,¿Quitar a {userName} los privilegios de administrador del realm?
 admin.userProfile.removeRealmAdminDone,{userName} ya no es administrador del realm.
+admin.userProfile.resendVerification,Resend verification email
+admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
+admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
 admin.userProfile.revokeAll,Revocar todo
 admin.userProfile.revokeAllConfirm,¿Revocar todas las sesiones de {userName}? El usuario cierra sesión en todas partes.
 admin.userProfile.revokeAllDone,Todas las sesiones fueron revocadas.
@@ -1079,10 +1132,22 @@ admin.userProfile.sessionsTitle,Sesiones y dispositivos
 admin.userProfile.setPassword,Definir contraseña
 admin.userProfile.setPasswordDescription,Sustituye la contraseña de inicio de sesión y elimina cualquier bloqueo.
 admin.userProfile.setPasswordTitle,Definir una nueva contraseña
+admin.userProfile.suspend,Suspend user
+admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
+admin.userProfile.suspended,{userName} was suspended.
+admin.userProfile.totpRemove,Remove TOTP enrollment
+admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
+admin.userProfile.totpRemoved,The TOTP enrollment was removed.
 admin.userProfile.unlock,Desbloquear usuario
 admin.userProfile.unlockConfirm,¿Desbloquear a {userName}? El usuario podrá iniciar sesión de nuevo.
 admin.userProfile.unlocked,{userName} fue desbloqueado.
 admin.userProfile.username,Nombre de usuario
+admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
+admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
+admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
+admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
+admin.userProfile.verificationOverrideVerify,Mark email verified (override)
+admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -1212,6 +1277,28 @@ common.theme.dark,Oscuro
 common.theme.light,Claro
 common.theme.system,Sistema
 common.urlPlaceholder,https://
+oidc.consent.address,Your address
+oidc.consent.approve,Approve
+oidc.consent.approving,Approving…
+oidc.consent.clientId,Client ID
+oidc.consent.deny,Deny
+oidc.consent.denying,Denying…
+oidc.consent.description,{client} is requesting access to your account.
+oidc.consent.email,Your email address
+oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
+oidc.consent.expiredTitle,Authorization request expired
+oidc.consent.missingDescription,Open this page from the application that requested access.
+oidc.consent.missingTitle,No authorization request
+oidc.consent.offlineAccess,Stay signed in when you are offline
+oidc.consent.openid,Verify your identity
+oidc.consent.phone,Your phone number
+oidc.consent.profile,Your basic profile
+oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
+oidc.consent.redirectUri,Redirect URI
+oidc.consent.resourceOwner,Your organization membership
+oidc.consent.scopeTitle,Requested access
+oidc.consent.signInDescription,Sign in to review this authorization request.
+oidc.consent.signInTitle,Sign-in required
 ui.authenticated.clearSearch,Borrar búsqueda
 ui.authenticated.demo.adminBlurb,Administración: gestiona miembros y proyectos y credenciales sin propietarios.
 ui.authenticated.demo.chipBlurb,Distintivos compactos de rol y estado y visibilidad del proyecto.
@@ -1570,6 +1657,7 @@ login.emailOtp.sending,Enviando...
 login.emailOtp.title,Iniciar sesión con un código de correo
 login.emailOtp.verify,Verificar código
 login.emailOtp.verifying,Verificando...
+login.error.codeInvalid,El código es incorrecto o ha caducado.
 login.error.codeRequired,Introduzca el código de verificación de seis dígitos.
 login.error.credentialsInvalid,El nombre de usuario o la contraseña no son correctos.
 login.error.credentialsRequired,Introduzca su nombre de usuario y contraseña.
@@ -1583,6 +1671,7 @@ login.error.passwordMismatch,Las contraseñas no coinciden.
 login.error.passwordRequired,Introduzca su contraseña.
 login.error.passwordTooShort,La contraseña debe contener al menos 8 caracteres.
 login.error.recoveryCodeRequired,Introduzca uno de sus códigos de recuperación guardados.
+login.error.rateLimited,Demasiados intentos. Inténtelo de nuevo en un momento.
 login.error.tokenMissing,Abra el enlace completo de su correo para continuar.
 login.logout.description,Puede finalizar esta sesión en este dispositivo.
 login.logout.doneDescription,Ha cerrado sesión en {organization}.
@@ -1857,3 +1946,33 @@ demo.hub.consentDescription,Review an OpenID Connect application access request 
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations
+admin.organizations.policy.autoLinking,Link external identities automatically
+admin.organizations.policy.whatsappOtp,WhatsApp one-time code
+admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
+admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
+admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
+admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
+admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
+admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
+admin.organizations.policy.forceMfaLocalOnly,Local MFA only
+admin.organizations.policy.providerAllowlist,Allowed providers
+admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
+admin.organizations.policy.providerAllowlistReset,Allow all providers
+admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
+admin.organizations.metadata.title,Organization metadata
+admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
+admin.organizations.metadata.key,Key
+admin.organizations.metadata.value,Value
+admin.organizations.metadata.save,Save entry
+admin.organizations.metadata.remove,Remove
+admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
+admin.organizations.metadata.empty,No metadata entries yet.
+admin.organizations.metadata.saved,The metadata entry was saved.
+admin.organizations.metadata.removed,The metadata entry was removed.
+admin.organizations.metadata.invalid,Enter a key and a value.
+admin.organizations.providers.issuer,Issuer
+admin.organizations.providers.issuerHint,Required for generic OIDC providers.
+admin.organizations.providers.scopes,Scopes
+admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
+admin.organizations.providers.save,Save provider
+common.remove,Remove

@@ -63,6 +63,11 @@ account.delete.emailMismatch,The email address does not match.
 account.delete.submit,Delete account permanently
 account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
+account.export.download,Download export
+account.export.downloading,Preparing download…
+account.export.title,Download your data
+account.export.unavailable,The data export is unavailable right now.
 account.factors.addTotp,Add authenticator
 account.factors.authenticator,Застосунок-автентифікатор
 account.factors.configured,Застосунок-автентифікатор налаштовано
@@ -253,7 +258,9 @@ account.securityHistory.event.mfaFailed,A multi-factor challenge failed
 account.securityHistory.event.mfaStarted,A multi-factor challenge started
 account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
 account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
 account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
 account.securityHistory.event.passkeyCredentialUsed,A passkey was used
 account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
 account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
@@ -268,6 +275,7 @@ account.securityHistory.event.passwordUnlocked,The password account was unlocked
 account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
 account.securityHistory.event.recoveryCodeUsed,A recovery code was used
 account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
 account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
 account.securityHistory.event.sessionCreated,A session was created
 account.securityHistory.event.sessionRevoked,A session was revoked
@@ -276,6 +284,7 @@ account.securityHistory.event.sessionsRevoked,All sessions were revoked
 account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
 account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
 account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
 account.securityHistory.event.totpRenamed,An authenticator was renamed
 account.securityHistory.event.totpVerified,An authenticator challenge succeeded
 account.securityHistory.loadMore,Load more security activity
@@ -378,10 +387,15 @@ admin.configuration.typeNameInvalid,Введена назва не збігає�
 admin.configuration.watermark,Приховати водяний знак Authworks
 admin.events.actor,Суб'єкт
 admin.events.aggregate,Агрегат
+admin.events.aggregateId,Ідентифікатор агрегату
 admin.events.count,Подій: {count}
 admin.events.empty,Жодна подія не відповідає поточному фільтру.
+admin.events.export,Експорт
+admin.events.exported,Експортовано подій: {count}.
 admin.events.hide,Приховати корисне навантаження
 admin.events.occurred,Сталося
+admin.events.occurredFrom,Сталося з
+admin.events.occurredTo,Сталося по
 admin.events.payload,Корисне навантаження
 admin.events.redactionNotice,Секретні значення приховуються перед збереженням події.
 admin.events.search,Пошук подій
@@ -390,6 +404,7 @@ admin.events.show,Показати корисне навантаження
 admin.events.systemActor,Система
 admin.events.title,Події аудиту
 admin.events.type,Тип події
+admin.events.userSubject,Суб'єкт користувача
 admin.impersonation.activeTitle,Active impersonation
 admin.impersonation.actor,Administrator
 admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
@@ -499,6 +514,8 @@ admin.machine.users.created,Машинного користувача створ
 admin.machine.users.description,"Нелюдські ідентичності, які автентифікуються в цьому realm за допомогою облікових даних клієнта, токенів або ключів API."
 admin.machine.users.detailTitle,Відомості про машинного користувача
 admin.machine.users.displayName,Відображуване ім'я
+admin.machine.users.edit,Edit machine user
+admin.machine.users.editTitle,Edit machine user
 admin.machine.users.empty,У цьому realm ще немає машинних користувачів.
 admin.machine.users.identifier,Ідентифікатор машинного користувача
 admin.machine.users.invalid,Введіть відображуване ім'я та ім'я користувача й використовуйте лише дійсні значення областей.
@@ -509,6 +526,7 @@ admin.machine.users.scopes,Області
 admin.machine.users.scopesHint,Розділяйте області пробілами або комами. Області зіставляються точно.
 admin.machine.users.search,Пошук машинних користувачів
 admin.machine.users.title,Машинні користувачі
+admin.machine.users.updated,The machine user was updated.
 admin.machine.users.userName,Ім'я користувача
 admin.machine.users.userNameHint,Використовується як ідентифікатор клієнта під час обміну облікових даних клієнта.
 admin.navigation.description,Choose an administration resource
@@ -517,10 +535,13 @@ admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Керування налаштуваннями OpenID Connect потребує надійнішого та новішого входу. Увійдіть знову, щоб продовжити."
 admin.oidc.assuranceRequiredTitle,Потрібен надійніший вхід
 admin.oidc.clients.consent,Згода
+admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
 admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
 admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.additionalOrigins,Additional browser origins
 admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
+admin.oidc.clients.application,Application
+admin.oidc.clients.applicationNone,No application
 admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Потрібна
 admin.oidc.clients.consentSkipped,Не потрібна
@@ -529,20 +550,33 @@ admin.oidc.clients.createDescription,"Зареєструйте застосун�
 admin.oidc.clients.created,Клієнта зареєстровано.
 admin.oidc.clients.description,"Застосунки, які автентифікують людей через OpenID Connect у цій області."
 admin.oidc.clients.detailTitle,Відомості про клієнта OIDC
+admin.oidc.clients.devMode,Development mode
+admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
 admin.oidc.clients.empty,У цій області ще не зареєстровано жодного клієнта OpenID Connect.
 admin.oidc.clients.emptySearch,Жоден клієнт не відповідає цьому пошуку.
 admin.oidc.clients.exactMatchHint,"По одному URI в рядку. Кожне перенаправлення звіряється точно, тому символи підстановки та відмінності в закінченні відхиляються."
+admin.oidc.clients.grantTypes,Grant types
 admin.oidc.clients.identifier,Ідентифікатор клієнта
+admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
+admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
+admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
 admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
 admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
 admin.oidc.clients.invalid,"Введіть назву клієнта, щонайменше один точний URI переспрямування та щонайменше одну область."
 admin.oidc.clients.lifecycleChanged,Стан клієнта змінено.
+admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
+admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
 admin.oidc.clients.missingId,Для цього розділу потрібно вибрати клієнта OIDC.
 admin.oidc.clients.name,Назва клієнта
 admin.oidc.clients.postLogoutUris,URI перенаправлення після виходу
+admin.oidc.clients.project,Project
+admin.oidc.clients.projectNone,No project
 admin.oidc.clients.redirectUris,URI перенаправлення
+admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
 admin.oidc.clients.removeConfirm,"Видалити цього клієнта OIDC? Застосунки, що його використовують, одразу припинять працювати."
 admin.oidc.clients.requireConsent,Просити людину підтвердити цей застосунок
+admin.oidc.clients.responseTypes,Response types
 admin.oidc.clients.saved,Клієнта збережено.
 admin.oidc.clients.scopes,Дозволені області доступу
 admin.oidc.clients.search,Пошук клієнтів
@@ -565,6 +599,7 @@ admin.oidc.consents.empty,Ця людина ще не підтвердила ж�
 admin.oidc.consents.granted,Підтверджено
 admin.oidc.consents.revokeConfirm,Відкликати цю згоду? Особу знову попросять схвалити застосунок.
 admin.oidc.consents.revoked,Згоду відкликано.
+admin.oidc.consents.searchUsers,Шукайте людей за ім’ям або email
 admin.oidc.consents.title,Згоди застосунків
 admin.oidc.consents.user,Людина
 admin.oidc.created,Створено
@@ -719,6 +754,7 @@ admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,Зовнішні провайдери ідентифікації
 admin.organizations.policy.factor.emailOtp,Email one-time code
 admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.recoveryCode,Recovery code
 admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,Успадковано від realm
 admin.organizations.policy.minimumAssurance,Minimum step-up assurance
@@ -884,6 +920,7 @@ admin.projects.status,Стан
 admin.projects.statusValue.active,Активна
 admin.projects.statusValue.inactive,Неактивний
 admin.projects.statusValue.removed,Видалена
+admin.sessions.revoked,Сеанс було відкликано.
 admin.realm.confirmMismatch,Назва області не збігається.
 admin.realm.description,"Налаштування ідентифікації та входу для області, якою ви керуєте."
 admin.realm.disableConfirm,Вимкнення цієї області припинить вхід для всіх її застосунків. Продовжити?
@@ -1022,6 +1059,7 @@ admin.userProfile.deleted,{userName} видалено.
 admin.userProfile.editProfile,Редагувати профіль
 admin.userProfile.editProfileTitle,Редагування профілю
 admin.userProfile.email,Адреса email
+admin.userProfile.emailMissing,This user has no email address to verify.
 admin.userProfile.emailUnverified,Не підтверджено
 admin.userProfile.emailVerified,Підтверджено
 admin.userProfile.impersonate,Видатися за користувача
@@ -1043,6 +1081,9 @@ admin.userProfile.organizationRoleChanged,Роль в організації о�
 admin.userProfile.organizationRoleDescription,Виберіть основну роль для активної організації.
 admin.userProfile.organizationRoleTitle,Роль в організації
 admin.userProfile.overviewTab,Огляд
+admin.userProfile.passkeyRevoke,Revoke passkey
+admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
+admin.userProfile.passkeyRevoked,The passkey was revoked.
 admin.userProfile.passwordConfirm,Підтвердьте новий пароль
 admin.userProfile.passwordMismatch,Паролі не збігаються.
 admin.userProfile.passwordNew,Новий пароль
@@ -1058,13 +1099,25 @@ admin.userProfile.projectRolesRemoveConfirm,Видалити призначен�
 admin.userProfile.projectRolesRemoved,Призначення проєкту видалено.
 admin.userProfile.projectRolesSaved,Призначення проєктів збережено.
 admin.userProfile.projectRolesTitle,Ролі проєктів
+admin.userProfile.purge,Purge user data
+admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
+admin.userProfile.purgeConfirmTitle,Purge this user
+admin.userProfile.purgeConfirmType,Type {userName} to confirm.
+admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
+admin.userProfile.purged,{userName} was purged.
 admin.userProfile.reactivate,Реактивувати користувача
 admin.userProfile.reactivateConfirm,Реактивувати {userName}? Користувач знову зможе увійти.
 admin.userProfile.reactivated,{userName} реактивовано.
 admin.userProfile.realmAdminBadge,Адміністратор realm
+admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
+admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
+admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
 admin.userProfile.removeRealmAdmin,Видалити адміністратора realm
 admin.userProfile.removeRealmAdminConfirm,Видалити права адміністратора realm у {userName}?
 admin.userProfile.removeRealmAdminDone,{userName} більше не адміністратор realm.
+admin.userProfile.resendVerification,Resend verification email
+admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
+admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
 admin.userProfile.revokeAll,Відкликати всі
 admin.userProfile.revokeAllConfirm,Відкликати всі сеанси {userName}? Користувач вийде скрізь.
 admin.userProfile.revokeAllDone,Усі сеанси відкликано.
@@ -1079,10 +1132,22 @@ admin.userProfile.sessionsTitle,Сеанси та пристрої
 admin.userProfile.setPassword,Встановити пароль
 admin.userProfile.setPasswordDescription,Замініть пароль для входу та зніміть блокування.
 admin.userProfile.setPasswordTitle,Встановлення нового пароля
+admin.userProfile.suspend,Suspend user
+admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
+admin.userProfile.suspended,{userName} was suspended.
+admin.userProfile.totpRemove,Remove TOTP enrollment
+admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
+admin.userProfile.totpRemoved,The TOTP enrollment was removed.
 admin.userProfile.unlock,Розблокувати користувача
 admin.userProfile.unlockConfirm,Розблокувати {userName}? Користувач знову зможе увійти.
 admin.userProfile.unlocked,{userName} розблоковано.
 admin.userProfile.username,Ім’я користувача
+admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
+admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
+admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
+admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
+admin.userProfile.verificationOverrideVerify,Mark email verified (override)
+admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
 admin.users.authentication.generated,Generated {date}
 admin.users.authentication.neverUsed,Never used
 admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
@@ -1212,6 +1277,28 @@ common.theme.dark,Темна
 common.theme.light,Світла
 common.theme.system,Система
 common.urlPlaceholder,https://
+oidc.consent.address,Your address
+oidc.consent.approve,Approve
+oidc.consent.approving,Approving…
+oidc.consent.clientId,Client ID
+oidc.consent.deny,Deny
+oidc.consent.denying,Denying…
+oidc.consent.description,{client} is requesting access to your account.
+oidc.consent.email,Your email address
+oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
+oidc.consent.expiredTitle,Authorization request expired
+oidc.consent.missingDescription,Open this page from the application that requested access.
+oidc.consent.missingTitle,No authorization request
+oidc.consent.offlineAccess,Stay signed in when you are offline
+oidc.consent.openid,Verify your identity
+oidc.consent.phone,Your phone number
+oidc.consent.profile,Your basic profile
+oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
+oidc.consent.redirectUri,Redirect URI
+oidc.consent.resourceOwner,Your organization membership
+oidc.consent.scopeTitle,Requested access
+oidc.consent.signInDescription,Sign in to review this authorization request.
+oidc.consent.signInTitle,Sign-in required
 ui.authenticated.clearSearch,Очистити пошук
 ui.authenticated.demo.adminBlurb,Адмін: керує учасниками і проєктами й обліковими даними без власників.
 ui.authenticated.demo.chipBlurb,Компактні мітки ролі й статусу й видимості проєкту.
@@ -1570,6 +1657,7 @@ login.emailOtp.sending,Надсилання...
 login.emailOtp.title,Увійти за допомогою коду з електронної пошти
 login.emailOtp.verify,Підтвердити код
 login.emailOtp.verifying,Перевірка...
+login.error.codeInvalid,Код неправильний або термін його дії сплив.
 login.error.codeRequired,Введіть шестицифровий код підтвердження.
 login.error.credentialsInvalid,Неправильне ім’я користувача або пароль.
 login.error.credentialsRequired,Введіть ім’я користувача та пароль.
@@ -1583,6 +1671,7 @@ login.error.passwordMismatch,Паролі не збігаються.
 login.error.passwordRequired,Введіть пароль.
 login.error.passwordTooShort,Пароль має містити щонайменше 8 символів.
 login.error.recoveryCodeRequired,Введіть один зі збережених кодів відновлення.
+login.error.rateLimited,Забагато спроб. Спробуйте ще раз за мить.
 login.error.tokenMissing,"Відкрийте повне посилання з електронного листа, щоб продовжити."
 login.logout.description,Ви можете завершити цей сеанс на цьому пристрої.
 login.logout.doneDescription,Ви вийшли з облікового запису {organization}.
@@ -1857,3 +1946,33 @@ demo.hub.consentDescription,Review an OpenID Connect application access request 
 demo.hub.consentOpen,Open consent
 demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
 demo.hub.invitationsOpen,Open invitations
+admin.organizations.policy.autoLinking,Link external identities automatically
+admin.organizations.policy.whatsappOtp,WhatsApp one-time code
+admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
+admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
+admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
+admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
+admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
+admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
+admin.organizations.policy.forceMfaLocalOnly,Local MFA only
+admin.organizations.policy.providerAllowlist,Allowed providers
+admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
+admin.organizations.policy.providerAllowlistReset,Allow all providers
+admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
+admin.organizations.metadata.title,Organization metadata
+admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
+admin.organizations.metadata.key,Key
+admin.organizations.metadata.value,Value
+admin.organizations.metadata.save,Save entry
+admin.organizations.metadata.remove,Remove
+admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
+admin.organizations.metadata.empty,No metadata entries yet.
+admin.organizations.metadata.saved,The metadata entry was saved.
+admin.organizations.metadata.removed,The metadata entry was removed.
+admin.organizations.metadata.invalid,Enter a key and a value.
+admin.organizations.providers.issuer,Issuer
+admin.organizations.providers.issuerHint,Required for generic OIDC providers.
+admin.organizations.providers.scopes,Scopes
+admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
+admin.organizations.providers.save,Save provider
+common.remove,Remove
