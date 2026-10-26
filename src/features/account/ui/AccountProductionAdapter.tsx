@@ -70,6 +70,8 @@ export function AccountProductionAdapter(props: {
             emailValidationMessage={state.emailValidationMessage.get()}
             emailVerified={state.user.get()?.emailVerified ?? false}
             errorMessage={state.errorMessage.get()}
+            exportErrorMessage={state.exportError.get()}
+            exportPending={state.exportPending.get()}
             firstName={state.firstName.get()}
             genderSignal={state.gender}
             kind={props.kind as "email" | "overview" | "profile"}
@@ -85,6 +87,7 @@ export function AccountProductionAdapter(props: {
             onEmailStart={state.emailAddressAddStart}
             onEmailTokenInput={state.emailToken.set}
             onEmailVerify={state.emailAddressAddVerify}
+            onExportDownload={() => void state.exportDownload()}
             onFirstNameInput={state.firstName.set}
             onLastNameInput={state.lastName.set}
             onNickNameInput={state.nickName.set}

@@ -160,6 +160,36 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
       emailAddresses = emailAddresses.filter((address) => address.id !== emailId)
       return resultCreate({ removed: true as const })
     },
+    exportData: async () => {
+      if (fixtureState() === "error") return error()
+      return resultCreate({
+        consents: [],
+        emails: emailAddresses.map((address) => ({
+          address: address.email,
+          primary: address.isPrimary,
+          verified: address.verified,
+        })),
+        externalIdentities: [],
+        memberships: [],
+        mfa: {
+          emailOtp: false,
+          passkeyCount: 0,
+          password: true,
+          recoveryCodesAvailable: false,
+          totpEnrolled: false,
+        },
+        passkeys: [],
+        phone:
+          fixtureUser.phoneNumber === undefined
+            ? null
+            : { number: fixtureUser.phoneNumber, verified: fixtureUser.phoneNumberVerifiedAt !== undefined },
+        profile: fixtureUser.profile,
+        sessions: [],
+        state: fixtureUser.state,
+        userId: fixtureUser.id,
+        userName: fixtureUser.userName,
+      })
+    },
     loadUser: async () => {
       if (fixtureState() === "error") return error()
       return resultCreate({ user: fixtureUser })
