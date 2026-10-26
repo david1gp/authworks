@@ -2,14 +2,24 @@ import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { externalIdentityProviderCreateRequestSchema } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
+import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import { type OrganizationBranding, organizationBrandingSchema } from "../public/organizationBrandingSchema.js"
 import { organizationCreateRequestSchema } from "../public/organizationCreateRequestSchema.js"
 import { organizationDomainClaimRequestSchema } from "../public/organizationDomainClaimRequestSchema.js"
 import { organizationInvitationCreateRequestSchema } from "../public/organizationInvitationCreateRequestSchema.js"
 import { organizationMembershipCreateRequestSchema } from "../public/organizationMembershipCreateRequestSchema.js"
+import { organizationMetadataKeySchema } from "../public/organizationMetadataKeySchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
+import {
+  type OrganizationAdminProviderCreateInput,
+  organizationAdminProviderCreateRequestBuild,
+} from "./organizationAdminProviderCreateRequestBuild.js"
+import {
+  type OrganizationAdminProviderEditDraft,
+  organizationAdminProviderEditDraftCreate,
+  organizationAdminProviderEditRequestBuild,
+} from "./organizationAdminProviderEditRequestBuild.js"
 
 const emailSchema = v.pipe(v.string(), v.email())
 
@@ -28,14 +38,23 @@ export function organizationAdminFormStateCreate() {
   const discoveryMessage = createSignalObject<string | undefined>(undefined)
   const branding = createSignalObject<OrganizationBranding | undefined>(undefined)
   const providerSecrets = createSignalObject<Record<string, string>>({})
-  const providerCreate = createSignalObject({
+  const providerCreate = createSignalObject<OrganizationAdminProviderCreateInput>({
     allowAccountCreation: false,
     clientId: "",
     clientSecret: "",
     displayName: "",
+    issuer: "",
     redirectUri: "",
+    scopesText: "",
     type: "google" as ExternalIdentityProviderType,
   })
+  const providerEdits = createSignalObject<Record<string, OrganizationAdminProviderEditDraft>>({})
+  const providerEditBeginLocal = (provider: ExternalIdentityProvider) => {
+    if (providerEdits.get()[provider.id] !== undefined) return
+    providerEdits.set({ ...providerEdits.get(), [provider.id]: organizationAdminProviderEditDraftCreate(provider) })
+  }
+  const metadataKey = createSignalObject("")
+  const metadataValue = createSignalObject("")
 
   const rolesToggle = (
     signal: { get: () => OrganizationRoleId[]; set: (value: OrganizationRoleId[]) => void },
@@ -127,10 +146,39 @@ export function organizationAdminFormStateCreate() {
     membershipRoles,
     membershipRolesToggle: (role: OrganizationRoleId) => rolesToggle(membershipRoles, role),
     membershipUserId,
+    metadataKey,
+    metadataValue,
     providerCreate,
+    providerCreateRequest: () => organizationAdminProviderCreateRequestBuild(providerCreate.get()),
+    providerEdits,
+    providerEditBegin: providerEditBeginLocal,
+    providerEditClear: (providerId: string) => {
+      const edits = { ...providerEdits.get() }
+      delete edits[providerId]
+      providerEdits.set(edits)
+    },
+    providerEditInput: (
+      provider: ExternalIdentityProvider,
+      key: keyof OrganizationAdminProviderEditDraft,
+      value: string,
+    ) => {
+      providerEditBeginLocal(provider)
+      const current = providerEdits.get()[provider.id]
+      if (current === undefined) return
+      providerEdits.set({ ...providerEdits.get(), [provider.id]: { ...current, [key]: value } })
+    },
+    providerEditRequest: (provider: ExternalIdentityProvider) => {
+      const edit = providerEdits.get()[provider.id]
+      if (edit === undefined) return undefined
+      return organizationAdminProviderEditRequestBuild(provider, edit)
+    },
     providerSecrets,
     providerSecretSet: (providerId: string, value: string) =>
       providerSecrets.set({ ...providerSecrets.get(), [providerId]: value }),
+    validateMetadata: () =>
+      v.safeParse(organizationMetadataKeySchema, metadataKey.get().trim()).success && metadataValue.get().length > 0
+        ? valid()
+        : invalid("admin.organizations.metadata.invalid"),
     validateDomainClaim: () =>
       v.safeParse(organizationDomainClaimRequestSchema, {
         domain: claimDomain.get(),
@@ -159,7 +207,14 @@ export function organizationAdminFormStateCreate() {
         ? valid()
         : invalid("admin.organizations.list.nameRequired"),
     validateProviderCreate: () =>
-      v.safeParse(externalIdentityProviderCreateRequestSchema, providerCreate.get()).success
+      organizationAdminProviderCreateRequestBuild(providerCreate.get()) !== undefined
+        ? valid()
+        : invalid("admin.organizations.providers.invalid"),
+    validateProviderEdit: (provider: ExternalIdentityProvider) =>
+      organizationAdminProviderEditRequestBuild(
+        provider,
+        providerEdits.get()[provider.id] ?? organizationAdminProviderEditDraftCreate(provider),
+      ) !== undefined
         ? valid()
         : invalid("admin.organizations.providers.invalid"),
     validationMessage,

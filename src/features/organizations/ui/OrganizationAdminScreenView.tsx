@@ -62,6 +62,7 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
           <OrganizationAdminLoginPolicyView
             error={state.page.error()}
             notice={state.page.notice()}
+            onMfaLifetimeInput={state.policyLifetimeSet}
             onPasswordPolicyLockoutMinutesInput={state.passwordPolicyLockoutMinutesSet}
             onPasswordPolicyMaximumAttemptsInput={state.passwordPolicyMaximumAttemptsSet}
             onPasswordPolicyMinimumLengthInput={state.passwordPolicyMinimumLengthSet}
@@ -69,15 +70,21 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             onPasswordPolicyToggle={state.passwordPolicyToggle}
             onPolicySubmit={state.policySubmit}
             onPolicyToggle={state.policyToggle}
+            onProviderAllowlistReset={state.policyProviderAllowlistReset}
+            onProviderAllowlistToggle={state.policyProviderAllowlistToggle}
             onProviderAccountCreationToggle={state.providerAccountCreationToggle}
             onProviderCreateInput={state.providerCreateInput}
             onProviderCreateSubmit={state.providerCreateSubmit}
             onProviderCreateTypeInput={state.providerCreateTypeSet}
             onProviderDisable={state.page.providerDisable}
+            onProviderEditInput={state.providerEditInput}
+            onProviderEditReset={state.providerEditReset}
+            onProviderEditSubmit={state.providerEditSubmit}
             onProviderEnabledToggle={state.providerEnabledToggle}
             onProviderSecretInput={state.form.providerSecretSet}
             onProviderSecretRotate={state.providerSecretRotate}
             onRetry={state.page.reload}
+            onSessionLifetimeInput={state.policySessionLifetimeSet}
             overrides={state.page.overrides()}
             passwordPolicy={state.passwordPolicyDraft()}
             passwordPolicyLockoutMinutes={state.passwordPolicyLockoutMinutes()}
@@ -87,6 +94,7 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             policyScope={state.policyScope()}
             policyValidationMessage={state.policyValidationMessage()}
             providerCreate={state.form.providerCreate.get()}
+            providerEdits={state.form.providerEdits.get()}
             providers={state.page.providers()}
             providerSecrets={state.form.providerSecrets.get()}
             status={state.page.status()}

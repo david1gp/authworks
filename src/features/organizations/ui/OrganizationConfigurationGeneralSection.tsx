@@ -3,7 +3,7 @@ import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
-import { Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -149,6 +149,83 @@ export function OrganizationConfigurationGeneralSection(props: {
                       : messageTranslate("admin.configuration.copy")}
                   </AuthenticatedButton>
                 </div>
+              </div>
+            </AuthenticatedSection>
+
+            <AuthenticatedSection
+              description={messageTranslate("admin.organizations.metadata.description")}
+              title={messageTranslate("admin.organizations.metadata.title")}
+            >
+              <div class="grid gap-4 px-5 py-4">
+                <Show
+                  when={props.page.metadata().length > 0}
+                  fallback={
+                    <p class="text-sm text-muted-foreground">
+                      {messageTranslate("admin.organizations.metadata.empty")}
+                    </p>
+                  }
+                >
+                  <ul class="divide-y divide-line-subtle rounded-control border border-line-subtle">
+                    <For each={props.page.metadata()}>
+                      {(entry) => (
+                        <li class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2.5">
+                          <div class="grid min-w-0 gap-0.5">
+                            <p class="min-w-0 truncate font-mono text-[0.8125rem] font-medium" title={entry.key}>
+                              {entry.key}
+                            </p>
+                            <p class="min-w-0 break-all text-xs text-muted-foreground">{entry.value}</p>
+                          </div>
+                          <Show when={props.canEdit}>
+                            <AuthenticatedButton
+                              disabled={props.page.pendingId() !== undefined}
+                              icon={mdiDelete}
+                              onClick={() => props.screen.metadataRemove(entry.key)}
+                              size="sm"
+                              variant="outlineRed"
+                            >
+                              {messageTranslate("admin.organizations.metadata.remove")}
+                            </AuthenticatedButton>
+                          </Show>
+                        </li>
+                      )}
+                    </For>
+                  </ul>
+                </Show>
+                <Show when={props.canEdit}>
+                  <form
+                    class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+                    onSubmit={props.screen.metadataSubmit}
+                  >
+                    <div class="grid min-w-0 gap-1.5">
+                      <Label class="text-[0.8125rem] font-medium" for="configuration-metadata-key">
+                        {messageTranslate("admin.organizations.metadata.key")}
+                      </Label>
+                      <AuthenticatedInput
+                        id="configuration-metadata-key"
+                        onInput={(event) => props.screen.metadataKeySet(event.currentTarget.value)}
+                        value={props.screen.form.metadataKey.get()}
+                      />
+                    </div>
+                    <div class="grid min-w-0 gap-1.5">
+                      <Label class="text-[0.8125rem] font-medium" for="configuration-metadata-value">
+                        {messageTranslate("admin.organizations.metadata.value")}
+                      </Label>
+                      <AuthenticatedInput
+                        id="configuration-metadata-value"
+                        onInput={(event) => props.screen.metadataValueSet(event.currentTarget.value)}
+                        value={props.screen.form.metadataValue.get()}
+                      />
+                    </div>
+                    <AuthenticatedButton
+                      disabled={props.page.pendingId() !== undefined}
+                      icon={mdiContentSave}
+                      type="submit"
+                      variant="filledBlue"
+                    >
+                      {messageTranslate("admin.organizations.metadata.save")}
+                    </AuthenticatedButton>
+                  </form>
+                </Show>
               </div>
             </AuthenticatedSection>
 

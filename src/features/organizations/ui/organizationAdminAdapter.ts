@@ -1,10 +1,11 @@
 import type { Result } from "#result"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
-import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { ExternalIdentityProviderCreateRequest } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
 import type { ExternalIdentityProviderListResponse } from "../../externalIdentities/public/externalIdentityProviderListResponseSchema.js"
 import type { ExternalIdentityProviderResponse } from "../../externalIdentities/public/externalIdentityProviderResponseSchema.js"
 import type { ExternalIdentityProviderUpdateRequest } from "../../externalIdentities/public/externalIdentityProviderUpdateRequestSchema.js"
+import type { PasswordPolicyResponse } from "../../passwords/public/passwordPolicyResponseSchema.js"
+import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 import type { OrganizationBrandingResponse } from "../public/organizationBrandingResponseSchema.js"
 import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
 import type { OrganizationCreateRequest } from "../public/organizationCreateRequestSchema.js"
@@ -16,6 +17,7 @@ import type { OrganizationInvitationCreateRequest } from "../public/organization
 import type { OrganizationInvitationCreateResponse } from "../public/organizationInvitationCreateResponseSchema.js"
 import type { OrganizationInvitationListResponse } from "../public/organizationInvitationListResponseSchema.js"
 import type { OrganizationLifecycleRequest } from "../public/organizationLifecycleRequestSchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { OrganizationListResponse } from "../public/organizationListResponseSchema.js"
 import type { OrganizationLoginPolicyResponse } from "../public/organizationLoginPolicyResponseSchema.js"
 import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
@@ -23,10 +25,12 @@ import type { OrganizationMembershipCreateRequest } from "../public/organization
 import type { OrganizationMembershipListResponse } from "../public/organizationMembershipListResponseSchema.js"
 import type { OrganizationMembershipResponse } from "../public/organizationMembershipResponseSchema.js"
 import type { OrganizationMembershipUpdateRequest } from "../public/organizationMembershipUpdateRequestSchema.js"
+import type { OrganizationMetadataListResponse } from "../public/organizationMetadataListResponseSchema.js"
+import type { OrganizationMetadataRemoveResponse } from "../public/organizationMetadataRemoveResponseSchema.js"
+import type { OrganizationMetadataResponse } from "../public/organizationMetadataResponseSchema.js"
+import type { OrganizationMetadataSetRequest } from "../public/organizationMetadataSetRequestSchema.js"
 import type { OrganizationResponse } from "../public/organizationResponseSchema.js"
 import type { OrganizationRoleListResponse } from "../public/organizationRoleListResponseSchema.js"
-import type { PasswordPolicyResponse } from "../../passwords/public/passwordPolicyResponseSchema.js"
-import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 
 /**
  * Every side effect an organization administration page performs. The production adapter binds these
@@ -80,6 +84,13 @@ export type OrganizationAdminAdapter = {
     membershipId: string,
     input: OrganizationMembershipUpdateRequest,
   ) => Promise<Result<OrganizationMembershipResponse>>
+  readonly metadataList: (organizationId: string) => Promise<Result<OrganizationMetadataListResponse>>
+  readonly metadataSet: (
+    organizationId: string,
+    key: string,
+    input: OrganizationMetadataSetRequest,
+  ) => Promise<Result<OrganizationMetadataResponse>>
+  readonly metadataRemove: (organizationId: string, key: string) => Promise<Result<OrganizationMetadataRemoveResponse>>
   readonly organizationCreate: (input: OrganizationCreateRequest) => Promise<Result<OrganizationResponse>>
   readonly organizationGet: (organizationId: string) => Promise<Result<OrganizationResponse>>
   readonly organizationLifecycleSet: (

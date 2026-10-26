@@ -80,6 +80,20 @@ export function organizationLoginPolicyViewCreate(
       organization?.sessionLifetimeSeconds ??
       realm?.sessionLifetimeSeconds ??
       organizationLoginPolicyDefaults.sessionLifetimeSeconds,
+    mfaInitSkipLifetimeSeconds:
+      organization?.mfaInitSkipLifetimeSeconds ??
+      realm?.mfaInitSkipLifetimeSeconds ??
+      organizationLoginPolicyDefaults.mfaInitSkipLifetimeSeconds,
+    secondFactorCheckLifetimeSeconds:
+      organization?.secondFactorCheckLifetimeSeconds ??
+      realm?.secondFactorCheckLifetimeSeconds ??
+      organizationLoginPolicyDefaults.secondFactorCheckLifetimeSeconds,
+    multiFactorCheckLifetimeSeconds:
+      organization?.multiFactorCheckLifetimeSeconds ??
+      realm?.multiFactorCheckLifetimeSeconds ??
+      organizationLoginPolicyDefaults.multiFactorCheckLifetimeSeconds,
+    forceMfaLocalOnly:
+      organization?.forceMfaLocalOnly ?? realm?.forceMfaLocalOnly ?? organizationLoginPolicyDefaults.forceMfaLocalOnly,
     requiredMfa,
     allowedFactors,
     preferredFactorOrder: organizationLoginPolicyFactorOrderResolve({

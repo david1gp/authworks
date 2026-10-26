@@ -10,6 +10,8 @@ const noticeKeys = {
   "domain-verified": "admin.organizations.domains.verifyDone",
   "invitation-created": "admin.organizations.invitations.sent",
   "invitation-revoked": "admin.organizations.invitations.revoked",
+  "metadata-removed": "admin.organizations.metadata.removed",
+  "metadata-saved": "admin.organizations.metadata.saved",
   "membership-added": "admin.organizations.memberships.added",
   "membership-removed": "admin.organizations.memberships.removed",
   "membership-updated": "admin.organizations.memberships.updated",

@@ -22,6 +22,16 @@ export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowRegistration: v.optional(v.nullable(v.boolean())),
   providerIds: v.optional(v.nullable(v.array(organizationLoginPolicyProviderIdSchema))),
   sessionLifetimeSeconds: v.optional(v.nullable(organizationLoginPolicySessionLifetimeSecondsSchema)),
+  mfaInitSkipLifetimeSeconds: v.optional(
+    v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(365 * 24 * 60 * 60))),
+  ),
+  secondFactorCheckLifetimeSeconds: v.optional(
+    v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(365 * 24 * 60 * 60))),
+  ),
+  multiFactorCheckLifetimeSeconds: v.optional(
+    v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(365 * 24 * 60 * 60))),
+  ),
+  forceMfaLocalOnly: v.optional(v.nullable(v.boolean())),
   requiredMfa: v.optional(v.nullable(v.boolean())),
   allowedFactors: v.optional(v.nullable(organizationLoginPolicyFactorListSchema)),
   preferredFactorOrder: v.optional(v.nullable(organizationLoginPolicyFactorListSchema)),

@@ -134,6 +134,21 @@ import {
   type OrganizationMeSwitchResponse,
   organizationMeSwitchResponseSchema,
 } from "../public/organizationMeSwitchResponseSchema.js"
+import type { OrganizationMetadataListQuery } from "../public/organizationMetadataListQuerySchema.js"
+import {
+  type OrganizationMetadataListResponse,
+  organizationMetadataListResponseSchema,
+} from "../public/organizationMetadataListResponseSchema.js"
+import {
+  type OrganizationMetadataRemoveResponse,
+  organizationMetadataRemoveResponseSchema,
+} from "../public/organizationMetadataRemoveResponseSchema.js"
+import {
+  type OrganizationMetadataResponse,
+  organizationMetadataResponseSchema,
+} from "../public/organizationMetadataResponseSchema.js"
+import type { OrganizationMetadataSetRequest } from "../public/organizationMetadataSetRequestSchema.js"
+import { organizationMetadataSetRequestSchema } from "../public/organizationMetadataSetRequestSchema.js"
 import {
   type OrganizationPurgeResponse,
   organizationPurgeResponseSchema,
@@ -340,6 +355,61 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/branding`,
         { ...jsonRequest(parsed.output), method: "PUT" },
         organizationBrandingResponseSchema,
+      )
+    },
+    organizationTenantMetadataList(
+      realmId: string,
+      organizationId: string,
+      query?: OrganizationMetadataListQuery,
+    ): Promise<Result<OrganizationMetadataListResponse>> {
+      return browserRequest(
+        organizationMetadataListPath(realmId, organizationId, query),
+        { method: "GET" },
+        organizationMetadataListResponseSchema,
+      )
+    },
+    organizationTenantMetadataGet(
+      realmId: string,
+      organizationId: string,
+      key: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<OrganizationMetadataResponse>> {
+      return browserGetRequest(
+        `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/metadata/${encodeURIComponent(key)}`,
+        organizationMetadataResponseSchema,
+        getOptions,
+      )
+    },
+    organizationTenantMetadataSet(
+      realmId: string,
+      organizationId: string,
+      key: string,
+      input: OrganizationMetadataSetRequest,
+    ): Promise<Result<OrganizationMetadataResponse>> {
+      const parsed = v.safeParse(organizationMetadataSetRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientTenantMetadataSet",
+            "The metadata is invalid.",
+            "organizations.invalid",
+          ),
+        )
+      return browserRequest(
+        `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/metadata/${encodeURIComponent(key)}`,
+        { ...jsonRequest(parsed.output), method: "PUT" },
+        organizationMetadataResponseSchema,
+      )
+    },
+    organizationTenantMetadataRemove(
+      realmId: string,
+      organizationId: string,
+      key: string,
+    ): Promise<Result<OrganizationMetadataRemoveResponse>> {
+      return browserRequest(
+        `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/metadata/${encodeURIComponent(key)}`,
+        { method: "DELETE" },
+        organizationMetadataRemoveResponseSchema,
       )
     },
     organizationTenantLoginPolicyGet(
@@ -1069,4 +1139,21 @@ function organizationListPathCreate(
 
 function organizationListPath(path: string, query: ListQuery | undefined): string {
   return organizationListPathCreate(path, query)
+}
+
+function organizationMetadataListPath(
+  realmId: string,
+  organizationId: string,
+  query: OrganizationMetadataListQuery | undefined,
+): string {
+  const base = `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/metadata`
+  if (query === undefined) return base
+  const params = new URLSearchParams()
+  if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
+  if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
+  if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
+  if (query.keyPrefix !== undefined) params.set("keyPrefix", query.keyPrefix)
+  const serialized = params.toString()
+  return serialized.length === 0 ? base : `${base}?${serialized}`
 }

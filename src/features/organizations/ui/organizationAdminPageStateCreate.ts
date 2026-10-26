@@ -2,23 +2,25 @@ import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import type { ExternalIdentityProviderCreateRequest } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
-import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import type { ExternalIdentityProviderUpdateRequest } from "../../externalIdentities/public/externalIdentityProviderUpdateRequestSchema.js"
+import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
+import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
 import type { OrganizationInvitation } from "../public/organizationInvitationSchema.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
-import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
+import type { OrganizationMetadata } from "../public/organizationMetadataSchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
 import type { OrganizationStatus } from "../public/organizationStatusSchema.js"
-import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
-import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
-import type { PasswordPolicySetRequest } from "../../passwords/public/passwordPolicySetRequestSchema.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 import { organizationAdminFailureStatusSelect } from "./organizationAdminFailureStatusSelect.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
@@ -33,11 +35,17 @@ const emptyPolicy: OrganizationLoginPolicy = {
   allowPassword: true,
   allowPasswordRecovery: true,
   allowRegistration: true,
+  allowWhatsappOtp: true,
   providerIds: null,
+  sessionLifetimeSeconds: 30 * 24 * 60 * 60,
   requiredMfa: false,
   allowedFactors: ["totp", "email_otp", "passkey"],
   preferredFactorOrder: ["totp", "email_otp", "passkey"],
   minimumStepUpAssurance: "authenticated",
+  mfaInitSkipLifetimeSeconds: null,
+  secondFactorCheckLifetimeSeconds: null,
+  multiFactorCheckLifetimeSeconds: null,
+  forceMfaLocalOnly: false,
 }
 
 /**
@@ -73,6 +81,7 @@ export function organizationAdminPageStateCreate(options: {
   const policy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
   const realmPolicy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
   const overrides = createSignalObject<OrganizationLoginPolicyOverride>({})
+  const metadataItems = createSignalObject<OrganizationMetadata[]>([])
   const passwordPolicy = createSignalObject<PasswordPolicy>({ ...passwordPolicyDefaults })
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<string[]>([])
@@ -90,17 +99,21 @@ export function organizationAdminPageStateCreate(options: {
   // section-level notice. The supplemental result runs outside the essential await chain so a
   // slow or failing optional read can never delay or break the page.
   const configurationSupplementalLoad = (configurationId: string) => {
-    void Promise.all([options.adapter.loginPolicyGet(""), options.adapter.providerList(configurationId)]).then(
-      ([realmPolicyResult, providerList]) => {
-        if (!realmPolicyResult.success || !providerList.success) {
-          providers.set(providerList.success ? [...providerList.data.items] : [])
-          configurationUnavailableNoticeSet()
-          return
-        }
-        realmPolicy.set(realmPolicyResult.data.policy)
-        providers.set([...providerList.data.items])
-      },
-    )
+    void Promise.all([
+      options.adapter.loginPolicyGet(""),
+      options.adapter.providerList(configurationId),
+      options.adapter.metadataList(configurationId),
+    ]).then(([realmPolicyResult, providerList, metadataList]) => {
+      if (!realmPolicyResult.success || !providerList.success || !metadataList.success) {
+        providers.set(providerList.success ? [...providerList.data.items] : [])
+        metadataItems.set(metadataList.success ? [...metadataList.data.items] : [])
+        configurationUnavailableNoticeSet()
+        return
+      }
+      realmPolicy.set(realmPolicyResult.data.policy)
+      providers.set([...providerList.data.items])
+      metadataItems.set([...metadataList.data.items])
+    })
   }
   const collectionStatus = (length: number) => status.set(length === 0 ? "empty" : "ready")
   const pageToken = () => pageTokens.get().at(-1)
@@ -292,6 +305,29 @@ export function organizationAdminPageStateCreate(options: {
       invitationToken.set(undefined)
     },
     memberships: memberships.get,
+    metadata: metadataItems.get,
+    metadataSet: async (key: string, value: string) => {
+      const saved = await mutate("metadata:set", () =>
+        options.adapter.metadataSet(options.organizationId(), key, { value }),
+      )
+      if (saved === undefined) return false
+      const items = metadataItems.get()
+      const index = items.findIndex((item) => item.key === key)
+      metadataItems.set(
+        index >= 0 ? items.map((item) => (item.key === key ? saved.metadata : item)) : [...items, saved.metadata],
+      )
+      notice.set("metadata-saved")
+      return true
+    },
+    metadataRemove: async (key: string) => {
+      if (!(await confirmed(messageTranslate("admin.organizations.metadata.removeConfirm", { key })))) return
+      const removed = await mutate(`metadata:${key}`, () =>
+        options.adapter.metadataRemove(options.organizationId(), key),
+      )
+      if (removed === undefined) return
+      metadataItems.set(metadataItems.get().filter((item) => item.key !== key))
+      notice.set("metadata-removed")
+    },
     membershipAdd: async (userId: string, membershipRoles: readonly OrganizationRoleId[]) => {
       const created = await mutate("membership:create", () =>
         options.adapter.membershipCreate(options.organizationId(), { roles: [...membershipRoles], userId }),
@@ -382,23 +418,11 @@ export function organizationAdminPageStateCreate(options: {
     },
     previousPageAvailable: () => pageTokens.get().length > 0,
     previousPageOpen: () => pageTokens.set(pageTokens.get().slice(0, -1)),
-    providerCreate: async (input: {
-      readonly allowAccountCreation: boolean
-      readonly clientId: string
-      readonly clientSecret: string
-      readonly displayName: string
-      readonly redirectUri: string
-      readonly type: ExternalIdentityProviderType
-    }) => {
+    providerCreate: async (input: Omit<ExternalIdentityProviderCreateRequest, "organizationId">) => {
       const organizationId = options.organizationId()
       const created = await mutate("provider:create", () =>
         options.adapter.providerCreate({
-          allowAccountCreation: input.allowAccountCreation,
-          clientId: input.clientId,
-          clientSecret: input.clientSecret,
-          displayName: input.displayName,
-          redirectUri: input.redirectUri,
-          type: input.type,
+          ...input,
           ...(organizationId.length === 0 ? {} : { organizationId }),
         }),
       )
@@ -422,11 +446,12 @@ export function organizationAdminPageStateCreate(options: {
       providers.set(providers.get().map((item) => (item.id === providerId ? rotated.provider : item)))
       notice.set("provider-secret-rotated")
     },
-    providerUpdate: async (providerId: string, input: { readonly displayName: string; readonly enabled: boolean }) => {
+    providerUpdate: async (providerId: string, input: ExternalIdentityProviderUpdateRequest) => {
       const updated = await mutate(`provider:${providerId}`, () => options.adapter.providerUpdate(providerId, input))
-      if (updated === undefined) return
+      if (updated === undefined) return false
       providers.set(providers.get().map((item) => (item.id === providerId ? updated.provider : item)))
       notice.set("provider-updated")
+      return true
     },
     reload: () => void load(),
     realmPolicy: realmPolicy.get,

@@ -16,4 +16,6 @@ export const organizationEventTypes = {
   domainRemoved: "organization.domain_removed",
   domainVerified: "organization.domain_verified",
   loginPolicyChanged: "organization.login_policy_changed",
+  metadataSet: "organization.metadata_set",
+  metadataRemoved: "organization.metadata_removed",
 } as const
