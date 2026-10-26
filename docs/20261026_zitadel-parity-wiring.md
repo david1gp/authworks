@@ -40,6 +40,6 @@ Non-goals (document only): SAML, SCIM, LDAP, Actions V2, webhooks, device grant,
 - [x] `bun run format` + `bun run check` green in worktree
 - [x] `bun run test:e2e:dev` green in worktree
 - [x] Conventional commits + push branch
-- [ ] Merge to `main`, push, cleanup worktree/branch
-- [ ] `bun run test:e2e:dev` on `main`
-- [ ] `bun run deploy` + production smoke/e2e
+- [x] Merge to `main` (e1c554e), push, cleanup worktree/branch
+- [x] `bun run test:e2e:dev` on `main` green (fresh state; first attempt failed on stale pre-merge `dist/` UI vs new discovery contract — strictObject rejected the 4 new MFA-lifetime policy fields; fixed with `bun run build:ui`, resume passed; checkpoint cleared, dev server log shows login/account/logout 200s with only benign 409-seed/401-anon-probe errors)
+- [x] `bun run deploy` + production smoke/e2e (deploy preflight `bun run check` green after one roster-test fix cc78f13; `prodctl list` shows authworks active at cc78f13 deployed 2026-10-26T11:32:57Z; production `/health` 200 and discovery serves the new policy fields)
