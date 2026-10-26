@@ -39,7 +39,7 @@ Non-goals (document only): SAML, SCIM, LDAP, Actions V2, webhooks, device grant,
 
 - [x] `bun run format` + `bun run check` green in worktree
 - [x] `bun run test:e2e:dev` green in worktree
-- [ ] Conventional commits + push branch
+- [x] Conventional commits + push branch
 - [ ] Merge to `main`, push, cleanup worktree/branch
 - [ ] `bun run test:e2e:dev` on `main`
 - [ ] `bun run deploy` + production smoke/e2e
