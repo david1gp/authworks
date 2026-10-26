@@ -4,6 +4,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
@@ -19,6 +20,7 @@ import { emailOtpEmailHashCreate } from "../domain/emailOtpEmailHashCreate.js"
 import { emailOtpEventTypes } from "../events/emailOtpEventTypes.js"
 import { emailOtpRequestedEventPayloadSchema } from "../events/emailOtpRequestedEventPayloadSchema.js"
 import { emailOtpRepositoryCreate } from "../persistence/emailOtpRepositoryCreate.js"
+import { emailOtpRateLimitConsume } from "./emailOtpRateLimitConsume.js"
 import type { EmailOtpDelivery } from "../public/emailOtpDeliverySchema.js"
 import type { EmailOtpSecurityNotification } from "../public/emailOtpSecurityNotificationSchema.js"
 import type { EmailOtpStartRequest } from "../public/emailOtpStartRequestSchema.js"
@@ -31,8 +33,10 @@ const emailOtpMaxAttempts = 5
 
 type EmailOtpStartOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
+  readonly clientIp?: string
   readonly database: StorageDatabase
   readonly input: EmailOtpStartRequest
+  readonly rateLimitSecret?: Secret | string
   readonly realmId: string
   readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -67,6 +71,23 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       retryAt: now + emailOtpCooldownMs,
     })
   const email = userEmailNormalize(parsed.output.email)
+  if (options.rateLimitSecret !== undefined) {
+    const limited = storageTransactionRun(options.database, (transaction) =>
+      emailOtpRateLimitConsume(transaction, {
+        clientIp: options.clientIp ?? "unknown",
+        identifier: email.success ? email.data : "invalid",
+        now,
+        operation: "start",
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: options.realmId,
+      }),
+    )
+    if (!limited.success) return limited
+    if (!limited.data.allowed)
+      return resultErrorCreate(op, "Too many email OTP requests.", "email-otp.rate-limited", {
+        retryAfterSeconds: Math.max(1, Math.ceil((limited.data.retryAt - now) / 1_000)),
+      })
+  }
   if (!email.success) return generic()
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active") return generic()
@@ -115,7 +136,12 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
     if (!previous.success) return previous
     const user = repository.emailOtpUserFindByEmail(options.realmId, email.data)
     if (!user.success) return user
-    const eligible = user.data !== null && user.data.user.state === "active" && user.data.user.deletedAt === null
+    // Locked accounts receive real challenges so a correct code can unlock them
+    // once every lock has expired; verification still rejects while any lock is active.
+    const eligible =
+      user.data !== null &&
+      (user.data.user.state === "active" || user.data.user.state === "locked") &&
+      user.data.user.deletedAt === null
     const expiresAt = now + emailOtpExpiryMs
     const cooldownUntil = now + emailOtpCooldownMs
     const created = repository.emailOtpChallengeCreate({
