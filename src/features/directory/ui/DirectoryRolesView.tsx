@@ -1,12 +1,8 @@
-import { mdiAccountCogOutline } from "@adaptive-ds/mdi/mdiAccountCogOutline.js"
-import { mdiAccountEyeOutline } from "@adaptive-ds/mdi/mdiAccountEyeOutline.js"
-import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -29,14 +25,15 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import type { DirectoryRolesProjectEntry } from "./directoryRolesAdapter.js"
+import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRolesMemberCountLabel } from "./directoryRolesMemberCountLabel.js"
 import type { DirectoryRolesViewState } from "./directoryRolesViewStateCreate.js"
 
 const organizationRoleIcons: Record<OrganizationRoleId, string> = {
-  admin: mdiAccountCogOutline,
-  guest: mdiAccountEyeOutline,
-  member: mdiAccountOutline,
-  owner: mdiShieldCrownOutline,
+  admin: directoryRoleIconGet("admin"),
+  guest: directoryRoleIconGet("guest"),
+  member: directoryRoleIconGet("member"),
+  owner: directoryRoleIconGet("owner"),
 }
 
 const organizationRoleBullets: Record<OrganizationRoleId, readonly string[]> = {

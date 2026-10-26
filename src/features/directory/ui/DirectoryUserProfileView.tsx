@@ -1,7 +1,4 @@
 import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
-import { mdiAccountCogOutline } from "@adaptive-ds/mdi/mdiAccountCogOutline.js"
-import { mdiAccountEyeOutline } from "@adaptive-ds/mdi/mdiAccountEyeOutline.js"
-import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiBriefcase } from "@adaptive-ds/mdi/mdiBriefcase.js"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
@@ -17,7 +14,6 @@ import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
 import { mdiShieldOutline } from "@adaptive-ds/mdi/mdiShieldOutline.js"
 import { mdiTwoFactorAuthentication } from "@adaptive-ds/mdi/mdiTwoFactorAuthentication.js"
 import { A } from "@solidjs/router"
@@ -59,8 +55,10 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { DirectoryUserProfilePageState } from "./directoryUserProfilePageStateCreate.js"
+import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
 import { directoryUserProfileStateTone } from "./directoryUserProfilePermissions.js"
+import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 
 export type DirectoryUserProfileViewState = {
   readonly asParam: (() => string | undefined) | undefined
@@ -78,17 +76,23 @@ export type DirectoryUserProfileViewState = {
 }
 
 const organizationRoleIcons: Record<OrganizationRoleId, string> = {
-  admin: mdiAccountCogOutline,
-  guest: mdiAccountEyeOutline,
-  member: mdiAccountOutline,
-  owner: mdiShieldCrownOutline,
+  admin: directoryRoleIconGet("admin"),
+  guest: directoryRoleIconGet("guest"),
+  member: directoryRoleIconGet("member"),
+  owner: directoryRoleIconGet("owner"),
 }
 
 function MembershipRoleChips(props: { readonly roles: readonly OrganizationRoleId[] }) {
   return (
     <span class="flex flex-wrap items-center gap-1.5">
       <For each={[...props.roles]}>
-        {(role) => <AuthenticatedChip label={messageTranslate(directoryRoleLabelKeyGet(role))} tone="accent" />}
+        {(role) => (
+          <AuthenticatedChip
+            icon={directoryRoleIconGet(role)}
+            label={messageTranslate(directoryRoleLabelKeyGet(role))}
+            tone="accent"
+          />
+        )}
       </For>
     </span>
   )
@@ -116,9 +120,24 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
   const tabHref = (tab: "overview" | "access" | "security") =>
     state.withActor(tab === "overview" ? baseHref() : `${baseHref()}?tab=${tab}`)
   const tabs: AuthenticatedTabItem[] = [
-    { href: tabHref("overview"), label: messageTranslate("admin.userProfile.overviewTab"), value: "overview" },
-    { href: tabHref("access"), label: messageTranslate("admin.userProfile.accessTab"), value: "access" },
-    { href: tabHref("security"), label: messageTranslate("admin.userProfile.securityTab"), value: "security" },
+    {
+      href: tabHref("overview"),
+      icon: authenticatedIconRegistry.userProfileTabOverview,
+      label: messageTranslate("admin.userProfile.overviewTab"),
+      value: "overview",
+    },
+    {
+      href: tabHref("access"),
+      icon: authenticatedIconRegistry.userProfileTabAccess,
+      label: messageTranslate("admin.userProfile.accessTab"),
+      value: "access",
+    },
+    {
+      href: tabHref("security"),
+      icon: authenticatedIconRegistry.userProfileTabSecurity,
+      label: messageTranslate("admin.userProfile.securityTab"),
+      value: "security",
+    },
   ]
   const backHref = () => state.withActor(`${state.basePath}/users`)
 
@@ -191,7 +210,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
       })
     if (can.grantRealmAdministrator)
       items.push({
-        icon: mdiShieldCrownOutline,
+        icon: directoryRoleIconGet("owner"),
         label: messageTranslate("admin.userProfile.makeRealmAdmin"),
         onSelect: () => void page().realmAdministratorGrant(),
       })
@@ -294,7 +313,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                       </For>
                       <Show when={page().profileGet()?.access?.realmAdministrator}>
                         <AuthenticatedChip
-                          icon={mdiShieldCrownOutline}
+                          icon={directoryRoleIconGet("owner")}
                           label={messageTranslate("admin.userProfile.realmAdminBadge")}
                           tone="accent"
                         />
