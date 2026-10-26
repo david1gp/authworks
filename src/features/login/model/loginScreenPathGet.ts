@@ -2,6 +2,7 @@ import type { LoginScreen } from "./loginScreenSchema.js"
 
 const loginScreenPaths: Readonly<Record<LoginScreen, string>> = {
   chooser: "/chooser",
+  consent: "/consent",
   "email-otp": "/email-otp",
   "email-otp-code": "/email-otp/code",
   loading: "/loading",

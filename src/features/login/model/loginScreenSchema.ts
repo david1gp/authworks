@@ -3,6 +3,7 @@ import * as v from "valibot"
 /** Every hosted login destination that a production route or a `/demo/login` fixture can render. */
 export const loginScreenSchema = v.picklist([
   "chooser",
+  "consent",
   "recent-accounts",
   "password",
   "password-change-required",
