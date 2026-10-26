@@ -88,14 +88,32 @@ export function OidcAdminClientDetailView(props: {
               >
                 <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={state.settingsSubmit}>
                   <OidcAdminClientFormFields
+                    accessTokenLifetimeSeconds={state.accessTokenLifetimeSeconds}
                     accessTokenRoleAssertion={state.accessTokenRoleAssertion}
                     additionalOrigins={state.additionalOrigins}
+                    applicationId={state.applicationId}
+                    applications={state.applications}
+                    applicationSelect={state.applicationSelect}
+                    devMode={state.devMode}
+                    grants={state.grants}
+                    grantsSupported={state.grantsSupported}
+                    grantToggle={state.grantToggle}
                     idPrefix="oidc-detail"
+                    idTokenLifetimeSeconds={state.idTokenLifetimeSeconds}
+                    idTokenRoleAssertion={state.idTokenRoleAssertion}
                     idTokenUserinfoAssertion={state.idTokenUserinfoAssertion}
                     name={state.name}
                     postLogoutRedirectUris={state.postLogoutRedirectUris}
+                    projectId={state.projectId}
+                    projects={state.projects}
+                    projectSelect={state.projectSelect}
                     redirectUris={state.redirectUris}
+                    refreshTokenAbsoluteLifetimeSeconds={state.refreshTokenAbsoluteLifetimeSeconds}
+                    refreshTokenIdleLifetimeSeconds={state.refreshTokenIdleLifetimeSeconds}
                     requireConsent={state.requireConsent}
+                    responseToggle={state.responseToggle}
+                    responses={state.responses}
+                    responsesSupported={state.responsesSupported}
                     scopeToggle={state.scopeToggle}
                     scopes={state.scopes}
                     scopesSupported={state.scopesSupported}

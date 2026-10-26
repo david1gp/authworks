@@ -30,4 +30,5 @@ export const organizationsErrorCatalog = [
   { code: "organizations.login-method-disabled", httpStatus: 409, retryable: false },
   { code: "organizations.provider-disabled", httpStatus: 409, retryable: false },
   { code: "organizations.policy-malformed", httpStatus: 500, retryable: false },
+  { code: "organizations.metadata-limit", httpStatus: 409, retryable: false },
 ] as const satisfies readonly ErrorCatalogEntry[]

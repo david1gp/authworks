@@ -16,6 +16,7 @@ import type { UserEmailAddressListResponse } from "../../users/public/userEmailA
 import type { UserEmailAddressPrimarySetResponse } from "../../users/public/userEmailAddressPrimarySetResponseSchema.js"
 import type { UserEmailAddressRemoveResponse } from "../../users/public/userEmailAddressRemoveResponseSchema.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
+import type { UserExportResponse } from "../../users/public/userExportResponseSchema.js"
 import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
 import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpdateRequestSchema.js"
 import type { UserResponse } from "../../users/public/userResponseSchema.js"
@@ -23,6 +24,7 @@ import type { User } from "../../users/public/userSchema.js"
 import { whatsappOtpPhoneChangeStartRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartRequestSchema.js"
 import type { WhatsappOtpPhoneChangeStartResponse } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartResponseSchema.js"
 import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
+import { accountExportFileDownload } from "./accountExportFileDownload.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
@@ -41,6 +43,7 @@ type AccountPageAdapter = {
   readonly emailAddressList: () => Promise<Result<UserEmailAddressListResponse>>
   readonly emailAddressPrimarySet: (emailId: string) => Promise<Result<UserEmailAddressPrimarySetResponse>>
   readonly emailAddressRemove: (emailId: string) => Promise<Result<UserEmailAddressRemoveResponse>>
+  readonly exportData?: () => Promise<Result<UserExportResponse>>
   readonly loadUser: () => Promise<Result<UserResponse>>
   readonly phoneChangeResend: (input: {
     challengeId: string
@@ -112,6 +115,8 @@ export function accountPageStateCreate(options: {
   const emailValidationMessage = createSignalObject<string | undefined>(undefined)
   const emailAddresses = createSignalObject<readonly UserEmailAddress[]>([])
   const emailActionId = createSignalObject<string | undefined>(undefined)
+  const exportPending = createSignalObject(false)
+  const exportError = createSignalObject<string | undefined>(undefined)
   const confirmation = confirmStateCreate()
   let loadGeneration = 0
 
@@ -192,6 +197,24 @@ export function accountPageStateCreate(options: {
     }
     userApply(result.data.user)
     pictureStatus.set("success")
+  }
+  const exportDownload = async () => {
+    if (exportPending.get()) return
+    const fetcher = options.adapter.exportData
+    if (fetcher === undefined) {
+      exportError.set(messageTranslate("account.export.unavailable"))
+      return
+    }
+    exportPending.set(true)
+    exportError.set(undefined)
+    const result = await fetcher()
+    exportPending.set(false)
+    if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
+      exportError.set(result.errorMessage)
+      return
+    }
+    accountExportFileDownload(result.data)
   }
   const load = async (force = false) => {
     if (options.initialStatus === "loading" && !force) return
@@ -598,6 +621,9 @@ export function accountPageStateCreate(options: {
     emailToken,
     emailValidationMessage,
     errorMessage,
+    exportDownload,
+    exportError,
+    exportPending,
     firstName,
     gender,
     lastName,

@@ -673,6 +673,114 @@ const organizationBrandingGetCommand = buildCommand({
   docs: { brief: "Get organization branding metadata" },
 })
 
+const organizationMetadataListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationNestedListCliFlags & { keyPrefix?: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationTenantMetadataList(
+        ids.realmId,
+        ids.organizationId,
+        organizationMetadataListQueryCreate(flags),
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      ...organizationListFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      keyPrefix: optionalTextFlag("Filter metadata keys by prefix"),
+    },
+  },
+  docs: { brief: "List organization metadata" },
+})
+
+const organizationMetadataGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationGetCliFlags & { key: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationTenantMetadataGet(
+        ids.realmId,
+        ids.organizationId,
+        flags.key,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      key: textFlag("Metadata key"),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
+  },
+  docs: { brief: "Get an organization metadata entry" },
+})
+
+const organizationMetadataSetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { key: string; value: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationTenantMetadataSet(
+        ids.realmId,
+        ids.organizationId,
+        flags.key,
+        { value: flags.value },
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      key: textFlag("Metadata key"),
+      value: textFlag("Metadata value"),
+    },
+  },
+  docs: { brief: "Set an organization metadata entry" },
+})
+
+const organizationMetadataRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { key: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationTenantMetadataRemove(
+        ids.realmId,
+        ids.organizationId,
+        flags.key,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      key: textFlag("Metadata key"),
+    },
+  },
+  docs: { brief: "Remove an organization metadata entry" },
+})
+
 const organizationDomainRemoveCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string }) {
     const resolved = await organizationCliScopeResolve(this, flags)
@@ -787,6 +895,71 @@ const organizationMeSwitchCommand = buildCommand({
   docs: { brief: "Switch my active organization" },
 })
 
+const organizationPurgeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationTenantPurge(ids.realmId, ids.organizationId),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+    },
+  },
+  docs: { brief: "Purge an organization and its membership data" },
+})
+
+const organizationDomainSeedCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string }) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationDomainRealmSeed(
+        ids.realmId,
+        ids.organizationId,
+        flags.domain,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      domain: textFlag("Organization domain"),
+    },
+  },
+  docs: { brief: "Seed realm data for an organization domain" },
+})
+
+const organizationInvitationMeInspectCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { invitationToken: string; realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationInvitationMeInspect(resolved.realmId, {
+        token: flags.invitationToken,
+      }),
+      [flags.invitationToken, resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), invitationToken: textFlag("Invitation token") },
+  },
+  docs: { brief: "Inspect my organization invitation" },
+})
+
 export const organizationCliCommands = buildRouteMap({
   routes: {
     create: organizationCreateCommand,
@@ -797,12 +970,14 @@ export const organizationCliCommands = buildRouteMap({
     memberList: organizationMemberListCommand,
     memberRemove: organizationMemberRemoveCommand,
     memberUpdate: organizationMemberUpdateCommand,
+    purge: organizationPurgeCommand,
     invitationAccept: organizationInvitationAcceptCommand,
     invitationCreate: organizationInvitationCreateCommand,
     invitationDecline: organizationInvitationDeclineCommand,
     invitationList: organizationInvitationListCommand,
     invitationMeAccept: organizationInvitationMeAcceptCommand,
     invitationMeDecline: organizationInvitationMeDeclineCommand,
+    invitationMeInspect: organizationInvitationMeInspectCommand,
     invitationMeList: organizationInvitationMeListCommand,
     invitationRevoke: organizationInvitationRevokeCommand,
     roles: organizationRolesCommand,
@@ -816,11 +991,16 @@ export const organizationCliCommands = buildRouteMap({
     domainDiscover: organizationDomainDiscoverCommand,
     domainList: organizationDomainListCommand,
     domainRemove: organizationDomainRemoveCommand,
+    domainSeed: organizationDomainSeedCommand,
     domainVerify: organizationDomainVerifyCommand,
     loginPolicySet: organizationLoginPolicySetCommand,
     loginPolicyGet: organizationLoginPolicyGetCommand,
     realmLoginPolicyGet: organizationRealmLoginPolicyGetCommand,
     realmLoginPolicySet: organizationRealmLoginPolicySetCommand,
+    metadataGet: organizationMetadataGetCommand,
+    metadataList: organizationMetadataListCommand,
+    metadataRemove: organizationMetadataRemoveCommand,
+    metadataSet: organizationMetadataSetCommand,
   },
   docs: { brief: "Organization administration" },
 })
@@ -1013,6 +1193,14 @@ function organizationCliErrorDetailsParse(errorData: string | null | undefined):
   } catch (_error) {
     return undefined
   }
+}
+
+function organizationMetadataListQueryCreate(
+  flags: OrganizationNestedListCliFlags & { readonly keyPrefix?: string },
+): (ListQuery & { readonly keyPrefix?: string }) | undefined {
+  const base = organizationListQueryCreate(flags)
+  if (flags.keyPrefix === undefined) return base
+  return { ...base, keyPrefix: flags.keyPrefix }
 }
 
 function organizationListQueryCreate(flags: OrganizationListCliFlags): ListQuery | undefined {

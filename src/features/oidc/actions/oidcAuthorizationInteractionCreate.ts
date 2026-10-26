@@ -9,6 +9,7 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionReturnPathValidate } from "../../sessions/domain/sessionReturnPathValidate.js"
+import { oidcAuthorizationPromptValidate } from "../domain/oidcAuthorizationPromptValidate.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcOpaqueSecretCreate } from "../domain/oidcOpaqueSecretCreate.js"
 import { oidcRedirectUriMatches } from "../domain/oidcRedirectUriMatches.js"
@@ -64,6 +65,11 @@ export function oidcAuthorizationInteractionCreate(options: OidcAuthorizationInt
   if (!allowedScopes.success) return resultErrorCreate(op, "The OIDC client configuration is invalid.")
   const scope = oidcAuthorizationScopeParse(parsed.output.scope, allowedScopes.data)
   if (!scope.success) return scope
+  const prompt = oidcAuthorizationPromptValidate({
+    ...(parsed.output.max_age === undefined ? {} : { max_age: parsed.output.max_age }),
+    ...(parsed.output.prompt === undefined ? {} : { prompt: parsed.output.prompt }),
+  })
+  if (!prompt.success) return prompt
 
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()

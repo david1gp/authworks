@@ -280,6 +280,76 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
   })
 })
 
+test("impersonation POST end and DELETE end reach the same handler", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "impersonation-delete-end.example.com")
+    const admin = createActiveUser(database, realm.id, "delete-admin")
+    const target = createActiveUser(database, realm.id, "delete-target")
+    const other = createActiveUser(database, realm.id, "delete-other")
+    const organization = organizationCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { name: "Support", ownerUserId: admin.id },
+      realmId: realm.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    for (const userId of [target.id, other.id]) {
+      organizationMembershipCreate({
+        context: realmTenantContextCreate(realm.id, admin.id),
+        database,
+        input: { roles: ["admin"], userId },
+        realmId: realm.id,
+        organizationId: organization.data.organization.id,
+      })
+    }
+    const adminSession = sessionIssue({
+      assurance: "multi_factor",
+      authenticationMethod: "password",
+      database,
+      mfaMethod: "totp",
+      realmId: realm.id,
+      userId: admin.id,
+    })
+    expect(adminSession.success).toBe(true)
+    if (!adminSession.success) return
+    const app = new Hono()
+    app.route("/", impersonationServerAppCreate({ database }))
+    app.route("/", sessionServerAppCreate({ database }))
+    const client = impersonationApiClientCreate({
+      baseUrl: "http://server.test",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: adminSession.data.token,
+    })
+    const first = await client.impersonationStart(realm.id, {
+      durationSeconds: 30,
+      organizationId: organization.data.organization.id,
+      reason: "Customer support",
+      targetUserId: target.id,
+    })
+    expect(first.success).toBe(true)
+    if (!first.success) return
+    const second = await client.impersonationStart(realm.id, {
+      durationSeconds: 30,
+      organizationId: organization.data.organization.id,
+      reason: "Customer support",
+      targetUserId: other.id,
+    })
+    expect(second.success).toBe(true)
+    if (!second.success) return
+    const postEnded = await client.impersonationEnd(realm.id, first.data.session.id)
+    const deleteEnded = await client.impersonationEndDelete(realm.id, second.data.session.id)
+    expect(postEnded).toEqual({
+      data: { ended: true, sessionId: first.data.session.id },
+      success: true,
+    })
+    expect(deleteEnded).toEqual({
+      data: { ended: true, sessionId: second.data.session.id },
+      success: true,
+    })
+  })
+})
+
 test("impersonation state and audit event roll back together", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "impersonation-atomic.example.com")
@@ -649,4 +719,37 @@ test("impersonation audit events distinguish the ending subject and commit atomi
         .filter((event) => event.aggregateType === "impersonation"),
     ).toHaveLength(2)
   })
+})
+
+test("impersonation security notifications log without secret material", async () => {
+  const { impersonationSecurityNotificationLogCreate } = await import(
+    "../../src/features/impersonation/server/impersonationSecurityNotificationLogCreate.js"
+  )
+  const logged: string[] = []
+  const originalInfo = console.info
+  console.info = (message?: unknown) => {
+    logged.push(String(message))
+  }
+  try {
+    impersonationSecurityNotificationLogCreate()({
+      actorId: "admin-id",
+      kind: "started",
+      realmId: "realm-id",
+      sessionId: "session-id",
+      subjectId: "subject-id",
+    })
+  } finally {
+    console.info = originalInfo
+  }
+  expect(logged).toHaveLength(1)
+  const parsed = JSON.parse(logged[0] ?? "{}") as Record<string, unknown>
+  expect(parsed).toMatchObject({
+    actorId: "admin-id",
+    event: "impersonation.security-notification",
+    kind: "started",
+    realmId: "realm-id",
+    sessionId: "session-id",
+    subjectId: "subject-id",
+  })
+  expect(JSON.stringify(parsed).toLowerCase()).not.toContain("secret")
 })

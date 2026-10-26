@@ -115,6 +115,9 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
     const filter = v.safeParse(projectListQuerySchema, {
       ...query.data,
       ...(searchParams.get("organizationId") === null ? {} : { organizationId: searchParams.get("organizationId") }),
+      ...(searchParams.get("grantedToOrganizationId") === null
+        ? {}
+        : { grantedToOrganizationId: searchParams.get("grantedToOrganizationId") }),
       ...(searchParams.get("status") === null ? {} : { status: searchParams.get("status") }),
     })
     if (!filter.success)
@@ -130,6 +133,9 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
         query: filter.output,
         realmId: projectParamGet(context, "realmId"),
         ...(filter.output.organizationId === undefined ? {} : { organizationId: filter.output.organizationId }),
+        ...(filter.output.grantedToOrganizationId === undefined
+          ? {}
+          : { grantedToOrganizationId: filter.output.grantedToOrganizationId }),
       }),
     )
   })

@@ -24,6 +24,10 @@ import type { UserEmailAddressAddStartResponse } from "../public/userEmailAddres
 import { userEmailAddressAddStartResponseSchema } from "../public/userEmailAddressAddStartResponseSchema.js"
 import type { UserEmailAddressAddVerifyRequest } from "../public/userEmailAddressAddVerifyRequestSchema.js"
 import { userEmailAddressAddVerifyRequestSchema } from "../public/userEmailAddressAddVerifyRequestSchema.js"
+import {
+  type UserEmailVerificationResendResponse,
+  userEmailVerificationResendResponseSchema,
+} from "../public/userEmailVerificationResendResponseSchema.js"
 import type { UserEmailAddressAddVerifyResponse } from "../public/userEmailAddressAddVerifyResponseSchema.js"
 import { userEmailAddressAddVerifyResponseSchema } from "../public/userEmailAddressAddVerifyResponseSchema.js"
 import type { UserEmailAddressListResponse } from "../public/userEmailAddressListResponseSchema.js"
@@ -46,9 +50,21 @@ import type { UserEmailChangeVerifyRequest } from "../public/userEmailChangeVeri
 import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
 import type { UserEmailChangeVerifyResponse } from "../public/userEmailChangeVerifyResponseSchema.js"
 import { userEmailChangeVerifyResponseSchema } from "../public/userEmailChangeVerifyResponseSchema.js"
+import { type UserExportResponse, userExportResponseSchema } from "../public/userExportResponseSchema.js"
 import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import type { UserListQuery } from "../public/userListQuerySchema.js"
 import { type UserListResponse, userListResponseSchema } from "../public/userListResponseSchema.js"
+import type { UserMetadataListQuery } from "../public/userMetadataListQuerySchema.js"
+import {
+  type UserMetadataListResponse,
+  userMetadataListResponseSchema,
+} from "../public/userMetadataListResponseSchema.js"
+import {
+  type UserMetadataRemoveResponse,
+  userMetadataRemoveResponseSchema,
+} from "../public/userMetadataRemoveResponseSchema.js"
+import { type UserMetadataResponse, userMetadataResponseSchema } from "../public/userMetadataResponseSchema.js"
+import { type UserMetadataSetRequest, userMetadataSetRequestSchema } from "../public/userMetadataSetRequestSchema.js"
 import {
   type UserProfileUpdateRequest,
   userProfileUpdateRequestSchema,
@@ -57,6 +73,7 @@ import { type UserPurgeResponse, userPurgeResponseSchema } from "../public/userP
 import { type UserResponse, userResponseSchema } from "../public/userResponseSchema.js"
 import { type UserVerificationRequest, userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
 import { userListQueryToSearchParams } from "./userListQueryToSearchParams.js"
+import { userMetadataListQueryToSearchParams } from "./userMetadataListQueryToSearchParams.js"
 
 type UserApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -191,6 +208,9 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         userAuthenticationMethodsSchema,
         getOptions,
       )
+    },
+    userMeExportGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserExportResponse>> {
+      return getRequest(`/realms/${encodeURIComponent(realmId)}/me/export`, userExportResponseSchema, getOptions)
     },
     userMeEmailAddressList(
       realmId: string,
@@ -513,6 +533,107 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         { method: "POST" },
         userPurgeResponseSchema,
       )
+    },
+    userTenantEmailAddressList(realmId: string, userId: string): Promise<Result<UserEmailAddressListResponse>> {
+      return tenantRead(tenantUserPath(realmId, userId, "/emails"), userEmailAddressListResponseSchema)
+    },
+    userTenantEmailVerificationResend(
+      realmId: string,
+      userId: string,
+      emailId: string,
+    ): Promise<Result<UserEmailVerificationResendResponse>> {
+      return tenantMutate(
+        realmId,
+        "userTenantEmailVerificationResend",
+        tenantUserPath(realmId, userId, `/emails/${encodeURIComponent(emailId)}/verification-resend`),
+        { method: "POST" },
+        userEmailVerificationResendResponseSchema,
+      )
+    },
+    userTenantMetadataList(
+      realmId: string,
+      userId: string,
+      query?: ListQuery | UserMetadataListQuery,
+    ): Promise<Result<UserMetadataListResponse>> {
+      return tenantRead(
+        tenantUserPath(realmId, userId, `/metadata${userMetadataListQueryToSearchParams(query)}`),
+        userMetadataListResponseSchema,
+      )
+    },
+    userTenantMetadataGet(realmId: string, userId: string, key: string): Promise<Result<UserMetadataResponse>> {
+      return tenantRead(
+        tenantUserPath(realmId, userId, `/metadata/${encodeURIComponent(key)}`),
+        userMetadataResponseSchema,
+      )
+    },
+    userTenantMetadataSet(
+      realmId: string,
+      userId: string,
+      key: string,
+      input: UserMetadataSetRequest,
+    ): Promise<Result<UserMetadataResponse>> {
+      const parsed = v.safeParse(userMetadataSetRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("userApiClientTenantMetadataSet", "The user metadata is invalid.", "users.invalid"),
+        )
+      return tenantMutate(
+        realmId,
+        "userTenantMetadataSet",
+        tenantUserPath(realmId, userId, `/metadata/${encodeURIComponent(key)}`),
+        { body: JSON.stringify(parsed.output), method: "PUT" },
+        userMetadataResponseSchema,
+      )
+    },
+    userTenantMetadataRemove(
+      realmId: string,
+      userId: string,
+      key: string,
+    ): Promise<Result<UserMetadataRemoveResponse>> {
+      return tenantMutate(
+        realmId,
+        "userTenantMetadataRemove",
+        tenantUserPath(realmId, userId, `/metadata/${encodeURIComponent(key)}`),
+        { method: "DELETE" },
+        userMetadataRemoveResponseSchema,
+      )
+    },
+    userMeMetadataList(
+      realmId: string,
+      query?: ListQuery | UserMetadataListQuery,
+    ): Promise<Result<UserMetadataListResponse>> {
+      if (options.token !== undefined)
+        return request(
+          `/realms/${encodeURIComponent(realmId)}/me/metadata${userMetadataListQueryToSearchParams(query)}`,
+          { method: "GET" },
+          userMetadataListResponseSchema,
+        )
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "GET" },
+        op: "userMeMetadataList",
+        path: `/realms/${encodeURIComponent(realmId)}/me/metadata${userMetadataListQueryToSearchParams(query)}`,
+        realmId,
+        schema: userMetadataListResponseSchema,
+      })
+    },
+    userMeMetadataGet(realmId: string, key: string): Promise<Result<UserMetadataResponse>> {
+      if (options.token !== undefined)
+        return request(
+          `/realms/${encodeURIComponent(realmId)}/me/metadata/${encodeURIComponent(key)}`,
+          { method: "GET" },
+          userMetadataResponseSchema,
+        )
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "GET" },
+        op: "userMeMetadataGet",
+        path: `/realms/${encodeURIComponent(realmId)}/me/metadata/${encodeURIComponent(key)}`,
+        realmId,
+        schema: userMetadataResponseSchema,
+      })
     },
     userMeDelete(realmId: string): Promise<Result<UserResponse>> {
       if (options.token !== undefined)

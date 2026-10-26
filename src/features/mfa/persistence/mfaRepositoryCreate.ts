@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull } from "drizzle-orm"
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -90,6 +90,30 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCreate("mfaChallengeUpdate", "The MFA challenge could not be updated.", "mfa.write-failed")
+      }
+    },
+    mfaChallengesInvalidateFactor(realmId: string, userId: string, factor: string, consumedAt: number): Result<number> {
+      try {
+        const consumed = database
+          .update(mfaChallengeTable)
+          .set({ consumedAt, version: sql`${mfaChallengeTable.version} + 1` })
+          .where(
+            and(
+              eq(mfaChallengeTable.realmId, realmId),
+              eq(mfaChallengeTable.userId, userId),
+              eq(mfaChallengeTable.factor, factor),
+              isNull(mfaChallengeTable.consumedAt),
+            ),
+          )
+          .returning({ id: mfaChallengeTable.id })
+          .all()
+        return resultCreate(consumed.length)
+      } catch (_error) {
+        return resultErrorCreate(
+          "mfaChallengesInvalidateFactor",
+          "The MFA challenges could not be invalidated.",
+          "mfa.write-failed",
+        )
       }
     },
     mfaEnrollmentCreate(input: typeof mfaTotpEnrollmentTable.$inferInsert): Result<MfaTotpEnrollmentRow> {

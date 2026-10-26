@@ -1,7 +1,7 @@
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import type { MfaFactor } from "../model/mfaFactorSchema.js"
 
-export function mfaCodePanelStateCreate(kind: () => Extract<MfaFactor, "recovery-code" | "totp">) {
+export function mfaCodePanelStateCreate(kind: () => Extract<MfaFactor, "recovery_code" | "totp">) {
   return {
     description: (): MessageKey =>
       kind() === "totp" ? "login.mfa.totpDescription" : "login.mfa.recoveryCodeDescription",

@@ -3,6 +3,7 @@ import { For } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -38,6 +39,17 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
         label={messageTranslate("admin.oidc.consents.title")}
         summary={messageTranslate("admin.oidc.consents.description")}
       >
+        <Label class="text-xs font-medium text-muted-foreground" for="oidc-consent-user-search">
+          {messageTranslate("admin.oidc.consents.searchUsers")}
+        </Label>
+        <div class="w-full sm:max-w-xs">
+          <AuthenticatedInput
+            id="oidc-consent-user-search"
+            onInput={(event) => state.userSearchSet(event.currentTarget.value)}
+            placeholder={messageTranslate("admin.oidc.consents.searchUsers")}
+            value={state.userSearch()}
+          />
+        </div>
         <Label class="text-xs font-medium text-muted-foreground" for="oidc-consent-user">
           {messageTranslate("admin.oidc.consents.user")}
         </Label>
@@ -47,6 +59,12 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
             id="oidc-consent-user"
             valueSignal={state.userIdSignal}
             valueText={(userId) => state.page.userLabel(userId)}
+          />
+          <AuthenticatedPagination
+            nextAvailable={state.userHasNextPage()}
+            onNext={state.userPageNext}
+            onPrevious={state.userPagePrevious}
+            previousAvailable={state.userHasPreviousPage()}
           />
         </div>
       </AuthenticatedToolbar>

@@ -10,6 +10,10 @@ const organizationLoginPolicySessionLifetimeSecondsSchema = v.pipe(
   v.maxValue(365 * 24 * 60 * 60),
 )
 
+const organizationLoginPolicyMfaLifetimeSecondsSchema = v.nullable(
+  v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(365 * 24 * 60 * 60)),
+)
+
 export const organizationLoginPolicySchema = v.strictObject({
   allowDomainDiscovery: v.boolean(),
   allowEmailOtp: v.boolean(),
@@ -26,6 +30,10 @@ export const organizationLoginPolicySchema = v.strictObject({
   allowedFactors: organizationLoginPolicyFactorListSchema,
   preferredFactorOrder: organizationLoginPolicyFactorListSchema,
   minimumStepUpAssurance: organizationLoginPolicyAssuranceSchema,
+  mfaInitSkipLifetimeSeconds: organizationLoginPolicyMfaLifetimeSecondsSchema,
+  secondFactorCheckLifetimeSeconds: organizationLoginPolicyMfaLifetimeSecondsSchema,
+  multiFactorCheckLifetimeSeconds: organizationLoginPolicyMfaLifetimeSecondsSchema,
+  forceMfaLocalOnly: v.boolean(),
 })
 
 export type OrganizationLoginPolicy = v.InferOutput<typeof organizationLoginPolicySchema>

@@ -4,7 +4,9 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { otpLockoutRepositoryCreate } from "../../../platform/lockout/otpLockoutRepositoryCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
@@ -18,13 +20,13 @@ import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepo
 import { userTable } from "../../users/persistence/userTable.js"
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
-import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
+import { passwordPolicyResolve } from "../domain/passwordPolicyResolve.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
 import { passwordCredentialChangedEventPayloadSchema } from "../events/passwordCredentialChangedEventPayloadSchema.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRecoveryEventPayloadSchema } from "../events/passwordRecoveryEventPayloadSchema.js"
 import { passwordUnlockedEventPayloadSchema } from "../events/passwordUnlockedEventPayloadSchema.js"
+import { passwordLoginRateLimitConsume } from "./passwordLoginRateLimitConsume.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import {
   type PasswordRecoveryCompleteRequest,
@@ -34,8 +36,10 @@ import type { PasswordRecoveryCompleteResponse } from "../public/passwordRecover
 
 type PasswordRecoveryCompleteOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
+  readonly clientIp?: string
   readonly database: StorageDatabase
   readonly input: PasswordRecoveryCompleteRequest
+  readonly rateLimitSecret?: Secret | string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -51,13 +55,33 @@ export function passwordRecoveryComplete(
     return resultErrorCreate(op, "The recovery is not available in this tenant context.", "passwords.tenant-mismatch")
   const parsed = v.safeParse(passwordRecoveryCompleteRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
+  if (options.rateLimitSecret !== undefined) {
+    const rateLimitRuntime = options.runtime ?? options.database.runtime
+    const rateLimitNow = rateLimitRuntime.now()
+    if (!Number.isSafeInteger(rateLimitNow) || rateLimitNow < 0)
+      return resultErrorCreate(op, "The recovery timestamp is invalid.", "passwords.invalid-timestamp")
+    const limited = storageTransactionRun(options.database, (transaction) =>
+      passwordLoginRateLimitConsume(transaction, {
+        clientIp: options.clientIp ?? "unknown",
+        identifier: parsed.output.token,
+        now: rateLimitNow,
+        operation: "recovery_complete",
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: options.realmId,
+      }),
+    )
+    if (!limited.success) return limited
+    if (!limited.data.allowed)
+      return resultErrorCreate(op, "Too many recovery requests.", "passwords.rate-limited", {
+        retryAfterSeconds: Math.max(1, Math.ceil((limited.data.retryAt - rateLimitNow) / 1_000)),
+      })
+  }
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
-  const repository = passwordRepositoryCreate(options.database.db)
-  const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
+  const resolved = passwordPolicyResolve({ executor: options.database.db, realmId: options.realmId })
+  if (!resolved.success) return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
+  const policy = resolved.data
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
@@ -114,6 +138,20 @@ export function passwordRecoveryComplete(
       version: (previousLockout.data?.version ?? 0) + 1,
     })
     if (!lockout.success) return lockout
+    const previousOtpLockout = otpLockoutRepositoryCreate(transaction).otpLockoutGet(options.realmId, user.data.id)
+    if (!previousOtpLockout.success)
+      return resultErrorCreate(op, "The recovery token is invalid.", "passwords.read-failed")
+    if (previousOtpLockout.data !== null) {
+      const otpReset = otpLockoutRepositoryCreate(transaction).otpLockoutSet({
+        failedAttempts: 0,
+        lockedUntil: null,
+        realmId: options.realmId,
+        updatedAt: now,
+        userId: user.data.id,
+        version: previousOtpLockout.data.version + 1,
+      })
+      if (!otpReset.success) return resultErrorCreate(op, "The recovery token is invalid.", "passwords.write-failed")
+    }
     let userVersion = user.data.version
     let userUnlocked = false
     if (user.data.state === "locked") {

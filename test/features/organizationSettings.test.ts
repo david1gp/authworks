@@ -430,6 +430,7 @@ test("organization login policy inherits, overrides, filters providers, and bloc
   await withDatabase(async (database) => {
     const { realm, organization } = await createOrganization(database)
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -564,13 +565,16 @@ test("organization login policy inherits, overrides, filters providers, and bloc
       },
     }
     expect(
-      externalIdentityStart({
-        database,
-        input: { organizationId: organization.id },
-        realmId: realm.id,
-        providerId: provider.data.provider.id,
-        providerPorts: ports,
-      }).success,
+      (
+        await externalIdentityStart({
+          allowDevelopmentFallback: true,
+          database,
+          input: { organizationId: organization.id },
+          realmId: realm.id,
+          providerId: provider.data.provider.id,
+          providerPorts: ports,
+        })
+      ).success,
     ).toBe(false)
   })
 })
@@ -579,6 +583,7 @@ test("organization discovery honors its domain policy and provider allowlist", a
   await withDatabase(async (database) => {
     const { realm, organization } = await createOrganization(database)
     const globalProvider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -592,6 +597,7 @@ test("organization discovery honors its domain policy and provider allowlist", a
       realmId: realm.id,
     })
     const organizationProvider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {

@@ -5,12 +5,15 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import { externalIdentityClientSecretProtect } from "../domain/externalIdentityClientSecretProtect.js"
+import { externalIdentityOidcIssuerValidate } from "../domain/externalIdentityOidcIssuerValidate.js"
 import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -22,8 +25,10 @@ import { externalIdentityProviderCreateRequestSchema } from "../public/externalI
 import type { ExternalIdentityProvider } from "../public/externalIdentityProviderSchema.js"
 
 type ExternalIdentityProviderCreateOptions = {
+  readonly allowDevelopmentFallback?: boolean
   readonly context: RealmSystemContext
   readonly database: StorageDatabase
+  readonly encryptionSecret?: Secret | string
   readonly input: ExternalIdentityProviderCreateRequest
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -54,6 +59,16 @@ export function externalIdentityProviderCreate(
   }
   const scopes = externalIdentityProviderScopesValidate(parsed.output.type, parsed.output.scopes)
   if (!scopes.success) return scopes
+  const issuer = parsed.output.type === "oidc" ? externalIdentityOidcIssuerValidate(parsed.output.issuer) : undefined
+  if (issuer !== undefined && !issuer.success) return issuer
+  const protectedSecret = externalIdentityClientSecretProtect(
+    "encrypt",
+    parsed.output.clientSecret,
+    options.realmId,
+    options.encryptionSecret,
+    options.allowDevelopmentFallback === true,
+  )
+  if (!protectedSecret.success) return protectedSecret
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
@@ -72,6 +87,9 @@ export function externalIdentityProviderCreate(
           parsed.output.organizationId === undefined
             ? isNull(externalIdentityProviderTable.organizationId)
             : eq(externalIdentityProviderTable.organizationId, parsed.output.organizationId),
+          issuer !== undefined && issuer.success
+            ? eq(externalIdentityProviderTable.issuer, issuer.data)
+            : isNull(externalIdentityProviderTable.issuer),
         ),
       )
       .get()
@@ -84,13 +102,14 @@ export function externalIdentityProviderCreate(
     const created = repository.externalIdentityProviderCreate({
       allowAccountCreation: parsed.output.allowAccountCreation,
       clientId: parsed.output.clientId,
-      clientSecret: parsed.output.clientSecret,
+      clientSecret: protectedSecret.data,
       createdAt: now,
       displayName: parsed.output.displayName,
       enabled: true,
       id: providerId,
       realmId: options.realmId,
       organizationId: parsed.output.organizationId ?? null,
+      issuer: issuer !== undefined && issuer.success ? issuer.data : null,
       redirectUri: parsed.output.redirectUri,
       scopes: JSON.stringify(scopes.data),
       type: parsed.output.type,

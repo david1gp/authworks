@@ -3,6 +3,7 @@ import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 
 export function passwordPolicyViewCreate(row: PasswordPolicyRow): PasswordPolicy {
   return {
+    maxAgeDays: row.maxAgeDays ?? null,
     lockoutDurationMs: row.lockoutDurationMs,
     maximumAttempts: row.maximumAttempts,
     minimumLength: row.minimumLength,

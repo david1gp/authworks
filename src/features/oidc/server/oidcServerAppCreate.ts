@@ -41,6 +41,7 @@ import { oidcClientUpdate } from "../actions/oidcClientUpdate.js"
 import { oidcConsentList } from "../actions/oidcConsentList.js"
 import { oidcConsentRevoke } from "../actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../actions/oidcDiscoveryGet.js"
+import { oidcInteractionDetailsGet } from "../actions/oidcInteractionDetailsGet.js"
 import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcLogout } from "../actions/oidcLogout.js"
 import { oidcMeAccessGet } from "../actions/oidcMeAccessGet.js"
@@ -48,13 +49,16 @@ import { oidcRefreshTokenFamiliesMeRevokeAll } from "../actions/oidcRefreshToken
 import { oidcRefreshTokenFamilyMeRevoke } from "../actions/oidcRefreshTokenFamilyMeRevoke.js"
 import { oidcRefreshTokenMeList } from "../actions/oidcRefreshTokenMeList.js"
 import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
+import { oidcSigningKeyDelete } from "../actions/oidcSigningKeyDelete.js"
 import { oidcSigningKeyEnsureActive } from "../actions/oidcSigningKeyEnsureActive.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
+import { oidcTokenIntrospect } from "../actions/oidcTokenIntrospect.js"
 import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
 import { oidcTokenRevoke } from "../actions/oidcTokenRevoke.js"
 import { oidcUserInfoGet } from "../actions/oidcUserInfoGet.js"
 import { oidcClientCorsOriginMatches } from "../domain/oidcClientCorsOriginMatches.js"
+import { oidcBasicCredentialsParse } from "../domain/oidcBasicCredentialsParse.js"
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
@@ -69,6 +73,7 @@ import { oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequest
 import { oidcClientLifecycleRequestSchema } from "../public/oidcClientLifecycleRequestSchema.js"
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import { oidcConsentRevokeRequestSchema } from "../public/oidcConsentRevokeRequestSchema.js"
+import { oidcIntrospectionRequestSchema } from "../public/oidcIntrospectionRequestSchema.js"
 import { oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { oidcSigningKeyLifecycleRequestSchema } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
 import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
@@ -93,11 +98,13 @@ type OidcServerEnv = {
 type OidcProtocolCorsEndpoint = {
   readonly methods: readonly ("GET" | "POST")[]
   readonly path: string
-  readonly kind: "authorization-code-redeem" | "revoke" | "token" | "userinfo"
+  readonly kind: "authorization-code-redeem" | "introspect" | "revoke" | "token" | "userinfo"
 }
 
 const oidcProtocolCorsEndpoints: readonly OidcProtocolCorsEndpoint[] = [
   { kind: "authorization-code-redeem", methods: ["POST"], path: "/oauth2/authorization-code/redeem" },
+  { kind: "introspect", methods: ["POST"], path: "/oauth2/introspect" },
+  { kind: "introspect", methods: ["POST"], path: "/oidc/introspect" },
   { kind: "revoke", methods: ["POST"], path: "/oauth2/revoke" },
   { kind: "token", methods: ["POST"], path: "/oauth2/token" },
   { kind: "userinfo", methods: ["GET", "POST"], path: "/oauth2/userinfo" },
@@ -301,6 +308,22 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     return context.redirect(redirect.toString(), 302)
   })
 
+  app.get("/oauth2/interaction", (context) => {
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
+    const details = oidcInteractionDetailsGet({
+      binding: oidcInteractionBindingGet(context),
+      database: options.database,
+      encryptionSecret: options.systemSecret,
+      handle: context.req.query("interaction") ?? "",
+      publicOrigin: options.publicOrigin ?? oidcRequestOriginGet(context),
+      realmId: realm.data.realmId,
+      sessionToken: oidcBrowserSessionTokenGet(context) ?? "",
+    })
+    if (!details.success) return oidcManagementErrorResponseCreate(context, details)
+    return context.json(details.data)
+  })
+
   app.post("/oauth2/consent", async (context) => {
     const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
     if (!realm.success) return oidcErrorResponseCreate(context, realm)
@@ -313,7 +336,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       readonly interaction?: string
       readonly request_id?: string
     }
-    const interactionHandle = oidcHtmlRequestIsBrowser(context) ? consentBody.interaction : undefined
+    const interactionHandle = typeof consentBody.interaction === "string" ? consentBody.interaction : undefined
     const interaction =
       interactionHandle === undefined
         ? undefined
@@ -373,7 +396,11 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       if (!completed.success) return oidcErrorResponseCreate(context, completed)
       oidcInteractionCookieClear(context)
     }
-    if (context.req.header("accept")?.includes("application/json")) return context.json(consent.data)
+    if (context.req.header("accept")?.includes("application/json")) {
+      // Browser clients follow the server-built redirect verbatim instead of rebuilding RP parameters.
+      if (interaction?.success) return context.json({ redirect: oidcConsentRedirectUrlCreate(consent.data) })
+      return context.json(consent.data)
+    }
     return oidcConsentRedirectCreate(context, consent.data)
   })
 
@@ -607,6 +634,48 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     context.header("pragma", "no-cache")
     return new Response(null, { status: 200 })
   })
+
+  const oidcIntrospectRoute = async (context: {
+    header: (name: string, value: string) => void
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: {
+      header: (name: string) => string | undefined
+      text: () => Promise<string>
+      url: string
+    }
+  }) => {
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success)
+      return oidcIntrospectionErrorResponseCreate(context, "invalid_request", "The introspection request is invalid.")
+    const body = await oidcTokenFormRead(context, "introspection")
+    if (!body.success) return oidcIntrospectionErrorResponseCreate(context, "invalid_request", body.errorMessage)
+    const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body.data)
+    if (!credentials.success)
+      return oidcIntrospectionErrorResponseCreate(context, "invalid_client", credentials.errorMessage)
+    const input = v.safeParse(oidcIntrospectionRequestSchema, {
+      ...body.data,
+      client_id: credentials.clientId,
+      ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }),
+    })
+    if (!input.success)
+      return oidcIntrospectionErrorResponseCreate(context, "invalid_request", "The introspection request is invalid.")
+    const introspected = oidcTokenIntrospect({
+      database: options.database,
+      input: input.output,
+      realmId: realm.data.realmId,
+    })
+    if (!introspected.success)
+      return oidcIntrospectionErrorResponseCreate(
+        context,
+        oidcIntrospectionErrorCodeResolve(introspected),
+        introspected.errorMessage,
+      )
+    context.header("cache-control", "no-store")
+    context.header("pragma", "no-cache")
+    return context.json(introspected.data)
+  }
+  app.post("/oauth2/introspect", oidcIntrospectRoute)
+  app.post("/oidc/introspect", oidcIntrospectRoute)
   return app
 }
 
@@ -1558,6 +1627,24 @@ function oidcManagementRoutesRegister(
       }),
     )
   })
+
+  app.delete(`${prefix}/signing-keys/:signingKeyId`, (context) => {
+    const authenticated = routeAuthenticate(
+      context,
+      authorizationPermissionDefinitions.oidcWrite,
+      administrator ? "multi_factor" : undefined,
+    )
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
+      context,
+      oidcSigningKeyDelete({
+        context: authenticated.data,
+        database: options.database,
+        realmId: oidcParamGet(context, "realmId"),
+        signingKeyId: oidcParamGet(context, "signingKeyId"),
+      }),
+    )
+  })
 }
 
 function oidcSystemAuthenticate(authorization: string | undefined, configuredSecret: Secret | string | undefined) {
@@ -1629,12 +1716,14 @@ function oidcBearerTokenGet(authorization: string | undefined): string | null {
 function oidcAuthorizationRequestInputCreate(context: {
   req: { query: (name: string) => string | undefined }
 }): Record<string, string> {
+  const maxAge = context.req.query("max_age")
   const nonce = context.req.query("nonce")
   const prompt = context.req.query("prompt")
   return {
     client_id: context.req.query("client_id") ?? "",
     code_challenge: context.req.query("code_challenge") ?? "",
     code_challenge_method: context.req.query("code_challenge_method") ?? "",
+    ...(maxAge === undefined ? {} : { max_age: maxAge }),
     ...(nonce === undefined ? {} : { nonce }),
     ...(prompt === undefined ? {} : { prompt }),
     redirect_uri: context.req.query("redirect_uri") ?? "",
@@ -1691,6 +1780,10 @@ function oidcConsentRedirectCreate(
   context: { redirect: (location: string, status?: 301 | 302 | 303 | 307 | 308) => Response },
   response: OidcAuthorizationConsentResponse,
 ) {
+  return context.redirect(oidcConsentRedirectUrlCreate(response), 302)
+}
+
+function oidcConsentRedirectUrlCreate(response: OidcAuthorizationConsentResponse): string {
   const redirect = new URL(response.redirect_uri)
   if (response.approved && response.code !== undefined) {
     redirect.searchParams.set("code", response.code)
@@ -1698,7 +1791,7 @@ function oidcConsentRedirectCreate(
     redirect.searchParams.set("error", response.error ?? "access_denied")
   }
   redirect.searchParams.set("state", response.state)
-  return context.redirect(redirect.toString(), 302)
+  return redirect.toString()
 }
 
 function oidcTokenErrorResponseCreate(
@@ -1712,6 +1805,7 @@ function oidcTokenErrorResponseCreate(
     | "invalid_request"
     | "invalid_scope"
     | "server_error"
+    | "unauthorized_client"
     | "unsupported_grant_type",
   message: string,
   realm = "oauth2/token",
@@ -1723,6 +1817,30 @@ function oidcTokenErrorResponseCreate(
     { error: code, error_description: message },
     (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
   )
+}
+
+function oidcIntrospectionErrorResponseCreate(
+  context: {
+    header: (name: string, value: string) => void
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+  },
+  code: "invalid_client" | "invalid_request" | "server_error",
+  message: string,
+) {
+  context.header("cache-control", "no-store")
+  context.header("pragma", "no-cache")
+  if (code === "invalid_client") context.header("www-authenticate", 'Basic realm="oauth2/introspect"')
+  return context.json(
+    { error: code, error_description: message },
+    (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
+  )
+}
+
+function oidcIntrospectionErrorCodeResolve(result: { errorMessage: string; op: string; code?: string }) {
+  if (result.code === "oidc.invalid-timestamp" || result.code === "oidc.internal") return "server_error" as const
+  if (result.op === "oidcTokenIntrospectInvalidClient") return "invalid_client" as const
+  if (result.op === "oidcTokenIntrospectInvalidRequest") return "invalid_request" as const
+  return "server_error" as const
 }
 
 function oidcMeAccessInsufficientScopeResponseCreate(context: {
@@ -1765,6 +1883,7 @@ function oidcTokenErrorCodeResolve(result: { errorMessage: string; op: string; c
   if (result.op === "oidcTokenInvalidScope") return "invalid_scope" as const
   if (result.op === "oidcTokenInvalidRequest") return "invalid_request" as const
   if (result.op === "oidcTokenInvalidGrant") return "invalid_grant" as const
+  if (result.op === "oidcTokenUnauthorizedClient") return "unauthorized_client" as const
   return "server_error" as const
 }
 
@@ -1778,6 +1897,7 @@ function oidcProtocolErrorCodeResolve(result: { op: string; code?: string }) {
   if (result.code === "oidc.authorization-interaction-required") return "interaction_required" as const
   if (result.code === "oidc.invalid-request") return "invalid_request" as const
   if (result.op === "oidcAuthorizationInteractionRequired") return "interaction_required" as const
+  if (result.op === "oidcAuthorizationUnsupportedResponseType") return "unsupported_response_type" as const
   if (result.op === "oidcLogout") return "invalid_request" as const
   if (result.op === "oidcAuthorizationCodeRedeem") return "invalid_grant" as const
   if (result.op === "oidcTokenIssue") return "server_error" as const
@@ -1871,39 +1991,7 @@ function oidcTokenClientCredentialsResolve(
 ):
   | { readonly clientId: string; readonly clientSecret?: string; readonly success: true }
   | { readonly errorMessage: string; readonly success: false } {
-  const bodyClientId = body.client_id
-  const bodyClientSecret = body.client_secret
-  if (authorization === undefined) {
-    if (bodyClientId === undefined) return { errorMessage: "Client authentication failed.", success: false }
-    return {
-      clientId: bodyClientId,
-      ...(bodyClientSecret === undefined ? {} : { clientSecret: bodyClientSecret }),
-      success: true,
-    }
-  }
-  const basic = /^Basic\s+(\S+)$/i.exec(authorization)
-  if (basic === null) return { errorMessage: "Client authentication failed.", success: false }
-  try {
-    const decoded = Buffer.from(basic[1] ?? "", "base64").toString("utf8")
-    const separator = decoded.indexOf(":")
-    if (separator < 1 || bodyClientSecret !== undefined)
-      return { errorMessage: "Client authentication failed.", success: false }
-    const clientId = oidcTokenClientCredentialDecode(decoded.slice(0, separator))
-    const clientSecret = oidcTokenClientCredentialDecode(decoded.slice(separator + 1))
-    if (clientId === null || clientSecret === null)
-      return { errorMessage: "Client authentication failed.", success: false }
-    if (bodyClientId !== undefined && bodyClientId !== clientId)
-      return { errorMessage: "Client authentication failed.", success: false }
-    return { clientId, clientSecret, success: true }
-  } catch (_error) {
-    return { errorMessage: "Client authentication failed.", success: false }
-  }
-}
-
-function oidcTokenClientCredentialDecode(value: string): string | null {
-  try {
-    return decodeURIComponent(value.replaceAll("+", " "))
-  } catch (_error) {
-    return null
-  }
+  const credentials = oidcBasicCredentialsParse(authorization, body)
+  if (!credentials.success) return { errorMessage: "Client authentication failed.", success: false }
+  return credentials
 }

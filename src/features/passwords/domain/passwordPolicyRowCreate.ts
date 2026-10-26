@@ -8,6 +8,7 @@ export function passwordPolicyRowCreate(
   version: number,
 ): typeof passwordPolicyTable.$inferInsert {
   return {
+    maxAgeDays: policy.maxAgeDays ?? null,
     realmId,
     lockoutDurationMs: policy.lockoutDurationMs,
     maximumAttempts: policy.maximumAttempts,

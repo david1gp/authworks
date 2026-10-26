@@ -131,6 +131,7 @@ export function oidcAuthorizationRequestConsent(
         null,
       projectId: client.data.projectId,
       realmId: options.realmId,
+      userId: authenticated.data.actor.actorId,
     })
     if (!clientContext.success) return resultErrorCreate(op, "The OIDC consent request is invalid.")
     const scope = oidcScopeParse(request.data.scope)

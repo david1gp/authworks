@@ -1,4 +1,7 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For, Show } from "solid-js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -12,6 +15,7 @@ import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 export function AdminSessionListView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
     <AuthenticatedSection title={messageTranslate("shell.nav.sessions")}>
+      <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
       <Show
         when={props.state.status() === "ready"}
         fallback={
@@ -33,7 +37,18 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
               const deviceLocation = () => sessionDeviceLocationGet(session.device)
               return (
                 <li class="grid gap-2 px-5 py-3.5" data-admin-session={session.id}>
-                  <h3 class="text-sm font-medium">{sessionDeviceLabelGet(session.device)}</h3>
+                  <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-medium">{sessionDeviceLabelGet(session.device)}</h3>
+                    <AuthenticatedButton
+                      size="sm"
+                      disabled={props.state.pendingId() !== undefined}
+                      icon={mdiCancel}
+                      onClick={() => void props.state.sessionRevoke(session.userId ?? session.subjectId, session.id)}
+                      variant="outline"
+                    >
+                      {messageTranslate("common.revoke")}
+                    </AuthenticatedButton>
+                  </div>
                   <p class="break-all font-mono text-xs text-muted-foreground">{session.id}</p>
                   <dl class="flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted-foreground [&_dt]:font-medium [&_dd]:mt-1 [&_dd]:text-[0.8125rem]">
                     <div>

@@ -45,8 +45,10 @@ import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
 import type { OidcTokenResponse } from "../public/oidcTokenResponseSchema.js"
 import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
-const oidcAccessTokenLifetimeMs = 5 * 60 * 1_000
-const oidcRefreshTokenLifetimeMs = 30 * 24 * 60 * 60 * 1_000
+const oidcAccessTokenLifetimeSecondsDefault = 300
+const oidcAccessTokenLifetimeSecondsMax = 86400
+const oidcRefreshTokenLifetimeSecondsDefault = 30 * 24 * 60 * 60
+const oidcRefreshTokenLifetimeSecondsMax = 31536000
 
 type OidcTokenIssueOptions = {
   readonly database: StorageDatabase
@@ -212,6 +214,11 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
       oidcTokenStageReport(options, "client_auth")
       return client
     }
+    const grant = oidcTokenGrantAuthorize(client.data, parsed.output.grant_type)
+    if (!grant.success) {
+      oidcTokenStageReport(options, "client_auth")
+      return grant
+    }
     if (parsed.output.grant_type === "authorization_code")
       return oidcTokenAuthorizationCodeExchange({
         client: client.data,
@@ -264,6 +271,41 @@ function oidcTokenClientAuthenticate(
   if (input.client_secret !== undefined)
     return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
   return resultCreate(client)
+}
+
+function oidcTokenGrantAuthorize(client: OidcClientRow, grantType: string): Result<void> {
+  let grantTypes: unknown
+  try {
+    grantTypes = JSON.parse(client.grantTypes)
+  } catch (_error) {
+    return resultErrorCreate("oidcTokenUnauthorizedClient", "The grant type is not authorized for this client.")
+  }
+  const allowed =
+    Array.isArray(grantTypes) && grantTypes.every((grant): grant is string => typeof grant === "string")
+      ? grantTypes
+      : ["authorization_code", "refresh_token"]
+  if (!allowed.includes(grantType))
+    return resultErrorCreate("oidcTokenUnauthorizedClient", "The grant type is not authorized for this client.")
+  return resultCreate(undefined)
+}
+
+function oidcTokenLifetimeResolve(client: OidcClientRow): {
+  readonly accessTokenLifetimeMs: number
+  readonly idTokenLifetimeMs: number
+  readonly refreshTokenAbsoluteLifetimeMs: number
+  readonly refreshTokenIdleLifetimeMs: number | null
+} {
+  const accessSeconds = client.accessTokenLifetimeSeconds ?? oidcAccessTokenLifetimeSecondsDefault
+  const idSeconds = client.idTokenLifetimeSeconds ?? accessSeconds
+  const absoluteSeconds = client.refreshTokenAbsoluteLifetimeSeconds ?? oidcRefreshTokenLifetimeSecondsDefault
+  const idleSeconds = client.refreshTokenIdleLifetimeSeconds
+  return {
+    accessTokenLifetimeMs: Math.min(accessSeconds, oidcAccessTokenLifetimeSecondsMax) * 1_000,
+    idTokenLifetimeMs: Math.min(idSeconds, oidcAccessTokenLifetimeSecondsMax) * 1_000,
+    refreshTokenAbsoluteLifetimeMs: Math.min(absoluteSeconds, oidcRefreshTokenLifetimeSecondsMax) * 1_000,
+    refreshTokenIdleLifetimeMs:
+      idleSeconds === null ? null : Math.min(idleSeconds, oidcRefreshTokenLifetimeSecondsMax) * 1_000,
+  }
 }
 
 type OidcTokenExchangeOptions = {
@@ -426,6 +468,28 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
   }
   if (refresh.data.expiresAt <= options.now)
     return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
+  const lifetimes = oidcTokenLifetimeResolve(options.client)
+  const bounds = options.repository.refreshTokenFamilyBoundsGet(
+    options.realmId,
+    options.client.id,
+    refresh.data.familyId,
+  )
+  if (!bounds.success) return bounds
+  const familyCreatedAt = bounds.data?.createdAt ?? refresh.data.createdAt
+  const familyLastActivityAt = bounds.data?.lastActivityAt ?? refresh.data.lastUsedAt ?? refresh.data.createdAt
+  if (familyCreatedAt + lifetimes.refreshTokenAbsoluteLifetimeMs <= options.now) {
+    const revoked = oidcTokenRefreshFamilyKill(options, refresh.data.clientId, refresh.data.familyId)
+    if (!revoked.success) return revoked
+    return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
+  }
+  if (
+    lifetimes.refreshTokenIdleLifetimeMs !== null &&
+    familyLastActivityAt + lifetimes.refreshTokenIdleLifetimeMs <= options.now
+  ) {
+    const revoked = oidcTokenRefreshFamilyKill(options, refresh.data.clientId, refresh.data.familyId)
+    if (!revoked.success) return revoked
+    return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
+  }
   const scope = oidcTokenRefreshScopeParse(input.scope, refresh.data.scope)
   if (!scope.success) return scope
   const nonce =
@@ -466,6 +530,7 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
     nonce: nonce.data,
     nonceEncrypted: refresh.data.nonceEncrypted,
     refreshFamilyId: refresh.data.familyId,
+    refreshFamilyCreatedAt: familyCreatedAt,
     rotatedFrom: refresh.data.id,
     scope: scope.data,
     subject: subject.data,
@@ -480,13 +545,27 @@ type OidcTokenArtifactsOptions = OidcTokenExchangeOptions & {
   readonly scope: string[]
   readonly subject: OidcTokenSubject
   readonly refreshFamilyId?: string
+  readonly refreshFamilyCreatedAt?: number
   readonly rotatedFrom?: string
   readonly refreshToken?: string
 }
 
+function oidcTokenRefreshFamilyKill(
+  options: OidcTokenExchangeOptions,
+  clientId: string,
+  familyId: string,
+): Result<void> {
+  const refreshRevoked = options.repository.refreshTokenFamilyRevoke(options.realmId, clientId, familyId, options.now)
+  if (!refreshRevoked.success) return refreshRevoked
+  const accessRevoked = options.repository.accessTokenFamilyRevoke(options.realmId, clientId, familyId, options.now)
+  if (!accessRevoked.success) return accessRevoked
+  return resultCreate(undefined)
+}
+
 function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<OidcTokenTransactionResult> {
-  const accessExpiresAt = options.now + oidcAccessTokenLifetimeMs
-  const refreshExpiresAt = options.now + oidcRefreshTokenLifetimeMs
+  const lifetimes = oidcTokenLifetimeResolve(options.client)
+  const accessExpiresAt = options.now + lifetimes.accessTokenLifetimeMs
+  const refreshExpiresAt = (options.refreshFamilyCreatedAt ?? options.now) + lifetimes.refreshTokenAbsoluteLifetimeMs
   if (!Number.isSafeInteger(accessExpiresAt) || !Number.isSafeInteger(refreshExpiresAt))
     return oidcTokenStageError(options, "token_schema", "The token expiry is invalid.")
   const key = oidcTokenSigningKeyGet(
@@ -519,24 +598,51 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   }
   const accessToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, accessClaims, key.data.privateKey)
   if (!accessToken.success) return oidcTokenStageResult(accessToken, options, "signing_key")
+  // The ID token expiry follows the client id-token lifetime (falling back
+  // to the access-token lifetime, then the 300s default); the authorization
+  // code lifetime stays a global 60s.
+  const idExpiresAt = options.now + lifetimes.idTokenLifetimeMs
+  if (!Number.isSafeInteger(idExpiresAt))
+    return oidcTokenStageError(options, "token_schema", "The token expiry is invalid.")
   const idClaims = oidcTokenClaimsCreate(
     options.subject,
     options.scope,
     options.issuer,
     options.client.id,
     options.now,
-    accessExpiresAt,
+    idExpiresAt,
   )
   idClaims.azp = options.client.id
   idClaims.sid = options.subject.session.id
   if (options.nonce !== null) idClaims.nonce = options.nonce
   if (options.client.idTokenUserinfoAssertion === 1)
     Object.assign(idClaims, oidcUserInfoClaimsCreate(options.subject, options.scope))
+  // The ID token carries the same project-role claim shape as the access
+  // token, gated by its own flag: idTokenRoleAssertion mirrors
+  // accessTokenRoleAssertion end to end, and role resolution stays
+  // claims-only (see oidcAccessTokenRoleClaimsCreate).
+  if (options.client.idTokenRoleAssertion === 1 && options.client.projectId !== null) {
+    const idProjectRoles = projectSubjectProjectRoleResolve({
+      executor: options.transaction,
+      projectId: options.client.projectId,
+      realmId: options.realmId,
+      userId: options.subject.user.id,
+    })
+    if (!idProjectRoles.success) return oidcTokenStageResult(idProjectRoles, options, "membership")
+    Object.assign(idClaims, oidcAccessTokenRoleClaimsCreate(idProjectRoles.data))
+  }
   const idToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, idClaims, key.data.privateKey)
   if (!idToken.success) return oidcTokenStageResult(idToken, options, "signing_key")
-  const refreshToken =
-    options.refreshToken === undefined ? oidcRefreshTokenCreate(options.runtime) : resultCreate(options.refreshToken)
-  if (!refreshToken.success) return oidcTokenStageResult(refreshToken, options, "token_schema")
+  // Refresh tokens are only minted when the granted scope includes
+  // offline_access (rotation always re-mints: the original grant had it).
+  const refreshIssue = options.refreshToken !== undefined || options.scope.includes("offline_access")
+  let refreshToken: string | null = null
+  if (refreshIssue) {
+    const created =
+      options.refreshToken === undefined ? oidcRefreshTokenCreate(options.runtime) : resultCreate(options.refreshToken)
+    if (!created.success) return oidcTokenStageResult(created, options, "token_schema")
+    refreshToken = created.data
+  }
   const refreshFamilyId = options.refreshFamilyId ?? uuidv7Create(options.runtime)
   const createdAccess = options.repository.accessTokenCreate({
     clientId: options.client.id,
@@ -544,7 +650,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     expiresAt: accessExpiresAt,
     id: uuidv7Create(options.runtime),
     realmId: options.realmId,
-    refreshFamilyId,
+    refreshFamilyId: refreshIssue ? refreshFamilyId : null,
     revokedAt: null,
     scope: JSON.stringify(options.scope),
     sessionId: options.subject.session.id,
@@ -552,23 +658,27 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     userId: options.subject.user.id,
   })
   if (!createdAccess.success) return oidcTokenStageResult(createdAccess, options, "token_persistence")
-  const createdRefresh = options.repository.refreshTokenCreate({
-    clientId: options.client.id,
-    createdAt: options.now,
-    expiresAt: refreshExpiresAt,
-    familyId: refreshFamilyId,
-    id: uuidv7Create(options.runtime),
-    lastUsedAt: null,
-    realmId: options.realmId,
-    nonceEncrypted: options.nonceEncrypted,
-    replacedByHash: null,
-    revokedAt: null,
-    scope: JSON.stringify(options.scope),
-    sessionId: options.subject.session.id,
-    tokenHash: oidcHashCreate(refreshToken.data),
-    userId: options.subject.user.id,
-  })
-  if (!createdRefresh.success) return oidcTokenStageResult(createdRefresh, options, "token_persistence")
+  const createdRefresh =
+    refreshIssue && refreshToken !== null
+      ? options.repository.refreshTokenCreate({
+          clientId: options.client.id,
+          createdAt: options.now,
+          expiresAt: refreshExpiresAt,
+          familyId: refreshFamilyId,
+          id: uuidv7Create(options.runtime),
+          lastUsedAt: null,
+          realmId: options.realmId,
+          nonceEncrypted: options.nonceEncrypted,
+          replacedByHash: null,
+          revokedAt: null,
+          scope: JSON.stringify(options.scope),
+          sessionId: options.subject.session.id,
+          tokenHash: oidcHashCreate(refreshToken),
+          userId: options.subject.user.id,
+        })
+      : null
+  if (createdRefresh !== null && !createdRefresh.success)
+    return oidcTokenStageResult(createdRefresh, options, "token_persistence")
   if (options.rotatedFrom !== undefined) {
     const rotatedPayload = v.safeParse(oidcRefreshTokenRotatedEventPayloadSchema, {
       clientId: options.client.id,
@@ -602,20 +712,23 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     clientId: options.client.id,
     expiresAt: accessExpiresAt,
     idTokenIssued: true,
-    refreshTokenIssued: true,
+    refreshTokenIssued: refreshIssue,
     scope: options.scope,
     sessionId: options.subject.session.id,
     userId: options.subject.user.id,
   })
-  const refreshPayload = v.safeParse(oidcRefreshTokenIssuedEventPayloadSchema, {
-    clientId: options.client.id,
-    expiresAt: refreshExpiresAt,
-    familyId: refreshFamilyId,
-    scope: options.scope,
-    sessionId: options.subject.session.id,
-    userId: options.subject.user.id,
-  })
-  if (!accessPayload.success || !refreshPayload.success)
+  const refreshPayload =
+    refreshIssue && createdRefresh !== null && refreshToken !== null
+      ? v.safeParse(oidcRefreshTokenIssuedEventPayloadSchema, {
+          clientId: options.client.id,
+          expiresAt: refreshExpiresAt,
+          familyId: refreshFamilyId,
+          scope: options.scope,
+          sessionId: options.subject.session.id,
+          userId: options.subject.user.id,
+        })
+      : null
+  if (!accessPayload.success || (refreshIssue && refreshPayload !== null && !refreshPayload.success))
     return oidcTokenStageError(options, "event_schema", "The token event payload is invalid.", "oidcTokenIssue")
   const accessEvent = storageEventAppend(
     options.transaction,
@@ -635,31 +748,33 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     options.runtime,
   )
   if (!accessEvent.success) return oidcTokenStageResult(accessEvent, options, "event_persistence")
-  const refreshEvent = storageEventAppend(
-    options.transaction,
-    {
-      actorId: options.subject.user.id,
-      aggregateId: createdRefresh.data.id,
-      aggregateType: "oidc_refresh_token",
-      aggregateVersion: 1,
-      commandIndex: 2,
-      correlationId: options.correlationId,
-      eventType: oidcEventTypes.refreshTokenIssued,
-      realmId: options.realmId,
-      metadata: { auditSafe: true, source: "oidc" },
-      occurredAt: options.now,
-      payload: refreshPayload.output,
-    },
-    options.runtime,
-  )
-  if (!refreshEvent.success) return oidcTokenStageResult(refreshEvent, options, "event_persistence")
+  if (refreshIssue && createdRefresh !== null && refreshPayload !== null && refreshPayload.success) {
+    const refreshEvent = storageEventAppend(
+      options.transaction,
+      {
+        actorId: options.subject.user.id,
+        aggregateId: createdRefresh.data.id,
+        aggregateType: "oidc_refresh_token",
+        aggregateVersion: 1,
+        commandIndex: 2,
+        correlationId: options.correlationId,
+        eventType: oidcEventTypes.refreshTokenIssued,
+        realmId: options.realmId,
+        metadata: { auditSafe: true, source: "oidc" },
+        occurredAt: options.now,
+        payload: refreshPayload.output,
+      },
+      options.runtime,
+    )
+    if (!refreshEvent.success) return oidcTokenStageResult(refreshEvent, options, "event_persistence")
+  }
   return resultCreate({
     kind: "issued",
     response: {
       access_token: accessToken.data,
       expires_in: Math.floor((accessExpiresAt - options.now) / 1_000),
       id_token: idToken.data,
-      refresh_token: refreshToken.data,
+      ...(refreshToken === null ? {} : { refresh_token: refreshToken }),
       scope: options.scope.join(" "),
       token_type: "Bearer",
     },

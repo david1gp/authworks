@@ -89,6 +89,34 @@ describe("loginProductionAdapterCreate login-MFA transports", () => {
     ])
   })
 
+  test("a forced password rotation survives the primary login outcome", async () => {
+    const { adapter } = adapterCreate({
+      passwordLogin: async () =>
+        resultCreate({ authentication, challenge: loginChallenge("p".repeat(43)), passwordChangeRequired: true }),
+    })
+
+    const login = await adapter.passwordLogin("alex@acme.example", "old-password")
+    expect(login).toMatchObject({
+      data: { passwordChangeRequired: true, userId: "user-1" },
+      success: true,
+    })
+  })
+
+  test("email second-factor enrollment reuses the login challenge start transport", async () => {
+    const seed = "e".repeat(43)
+    const { adapter, calls, realmId } = adapterCreate({
+      mfaEmailOtpChallengeStart: async (_realm: string, token: string) => {
+        expect(token).toBe(seed)
+        return resultCreate({ accepted: true as const, challengeId: "mfa-email-enroll-1", expiresAt: 2, retryAt: 0 })
+      },
+    })
+    adapter.mfaChallengeTokenSet?.(seed)
+
+    const enrolled = await adapter.mfaEmailOtpEnroll?.()
+    expect(enrolled?.success).toBe(true)
+    expect(calls.map((call) => [call.method, call.args[0]])).toEqual([["mfaEmailOtpChallengeStart", realmId]])
+  })
+
   test("a primary login challenge is recorded for later second factors", async () => {
     const primaryToken = "p".repeat(43)
     const { adapter, calls, realmId } = adapterCreate({

@@ -5,16 +5,21 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
+import { externalIdentityProviderAuthorizationUrlCreate } from "../domain/externalIdentityProviderAuthorizationUrlCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
 import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
+import { externalIdentityProviderSecretResolve } from "../domain/externalIdentityProviderSecretResolve.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
@@ -26,7 +31,9 @@ import type { ExternalIdentityStartResponse } from "../public/externalIdentitySt
 const externalIdentityLinkLifetimeMs = 10 * 60 * 1_000
 
 type ExternalIdentityLinkStartOptions = {
+  readonly allowDevelopmentFallback?: boolean
   readonly database: StorageDatabase
+  readonly encryptionSecret?: Secret | string
   readonly input: ExternalIdentityStartRequest
   readonly realmId: string
   readonly providerId: string
@@ -38,9 +45,9 @@ type ExternalIdentityLinkStartOptions = {
   readonly correlationId?: string
 }
 
-export function externalIdentityLinkStart(
+export async function externalIdentityLinkStart(
   options: ExternalIdentityLinkStartOptions,
-): Result<ExternalIdentityStartResponse> {
+): Promise<Result<ExternalIdentityStartResponse>> {
   const op = "externalIdentityLinkStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
   if (!parsed.success)
@@ -81,6 +88,22 @@ export function externalIdentityLinkStart(
     if (organization === undefined || organization.status !== "active")
       return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   }
+  const loginContext = organizationLoginContextResolve({
+    executor: options.database.db,
+    organizationId: provider.data.organizationId ?? parsed.output.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    realmId: options.realmId,
+    method: "external_identity",
+    organizationId: loginContext.data.organizationId,
+    providerId: options.providerId,
+  })
+  if (!policy.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const port = options.providerPorts[provider.data.type as keyof ExternalIdentityProviderPorts]
   if (port === undefined)
     return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
@@ -92,15 +115,25 @@ export function externalIdentityLinkStart(
   const pkceVerifier = externalIdentityOpaqueSecretCreate(runtime, 48)
   const pkceChallenge = externalIdentityPkceChallengeCreate(pkceVerifier)
   const scopes = externalIdentityProviderScopesValidate(
-    provider.data.type as "github" | "google" | "microsoft",
+    provider.data.type as "github" | "google" | "microsoft" | "oidc",
     provider.data.scopes,
   )
   if (!scopes.success)
     return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
-  const authorizationUrl = port.authorizationUrlCreate(
+  const clientSecret = externalIdentityProviderSecretResolve({
+    allowDevelopmentFallback: options.allowDevelopmentFallback,
+    encryptionSecret: options.encryptionSecret,
+    realmId: options.realmId,
+    storedSecret: provider.data.clientSecret,
+  })
+  if (!clientSecret.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  const authorizationUrl = await externalIdentityProviderAuthorizationUrlCreate(
+    port,
     {
       clientId: provider.data.clientId,
-      clientSecret: provider.data.clientSecret,
+      clientSecret: clientSecret.data,
+      ...(provider.data.issuer === null ? {} : { issuer: provider.data.issuer }),
       redirectUri: provider.data.redirectUri,
       scopes: scopes.data,
       type: provider.data.type as keyof ExternalIdentityProviderPorts,
@@ -131,7 +164,7 @@ export function externalIdentityLinkStart(
       intent: "link",
       nonce,
       nonceHash: nonce === undefined ? null : externalIdentitySecretHashCreate(nonce),
-      organizationId: provider.data?.organizationId ?? null,
+      organizationId: loginContext.data.organizationId ?? null,
       pkceVerifier,
       providerId: options.providerId,
       redirectUri: provider.data?.redirectUri ?? "",

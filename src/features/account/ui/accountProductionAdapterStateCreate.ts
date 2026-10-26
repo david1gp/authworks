@@ -62,6 +62,17 @@ export function accountProductionAdapterStateCreate(
           )
         return resultCreate(result.data)
       },
+      exportData: async () => {
+        const result = await users.userMeExportGet(await realmIdResolve())
+        if (!result.success) return result
+        if (result.status === "unchanged")
+          return resultErrorCodedCreate(
+            "accountExportGet",
+            "The account export response was unchanged.",
+            "platform.invalid-response",
+          )
+        return resultCreate(result.data)
+      },
       emailAddressPrimarySet: (emailId) =>
         userOperationRun(async () => users.userMeEmailAddressPrimarySet(await realmIdResolve(), emailId)),
       emailAddressRemove: async (emailId) => users.userMeEmailAddressRemove(await realmIdResolve(), emailId),

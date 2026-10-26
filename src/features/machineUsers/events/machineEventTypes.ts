@@ -4,4 +4,5 @@ export const machineEventTypes = {
   credentialRotated: "machine.credential_rotated",
   userCreated: "machine.user_created",
   userStatusChanged: "machine.user_status_changed",
+  userUpdated: "machine.user_updated",
 } as const

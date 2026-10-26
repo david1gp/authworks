@@ -38,6 +38,7 @@ import { mfaFactorAvailabilityResolve } from "./mfaFactorAvailabilityResolve.js"
 
 type MfaChallengeCompleteOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: MfaChallengeCompleteRequest
@@ -59,6 +60,7 @@ export function mfaChallengeComplete(options: MfaChallengeCompleteOptions): Resu
   return storageTransactionRun(options.database, (transaction) =>
     mfaChallengeCompleteTransaction({
       actorId: options.actorId,
+      allowDevelopmentFallback: options.allowDevelopmentFallback,
       correlationId,
       database: transaction,
       encryptionSecret: options.encryptionSecret,
@@ -74,6 +76,7 @@ export function mfaChallengeComplete(options: MfaChallengeCompleteOptions): Resu
 
 type MfaChallengeCompleteTransactionOptions = {
   readonly actorId?: string | null
+  readonly allowDevelopmentFallback?: boolean
   readonly correlationId: string
   readonly database: StorageTransaction
   readonly encryptionSecret?: Secret | string
@@ -171,7 +174,13 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
   const secret =
     active.data === null
       ? resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.not-found")
-      : mfaTotpSecretProtect("decrypt", active.data.encryptedSecret, options.realmId, options.encryptionSecret)
+      : mfaTotpSecretProtect(
+          "decrypt",
+          active.data.encryptedSecret,
+          options.realmId,
+          options.encryptionSecret,
+          options.allowDevelopmentFallback === true,
+        )
   if (selectedFactor === "totp" && !secret.success)
     return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.invalid")
   const totp =

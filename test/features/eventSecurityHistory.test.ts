@@ -169,6 +169,8 @@ test("the task-7 event inventory has production integration and an explicit subj
       "mfa.challenge.started",
       "mfa.recovery_code.used",
       "mfa.recovery_codes.generated",
+      "mfa.recovery_codes.invalidated",
+      "mfa.totp.administrator_removed",
       "mfa.totp.enrollment.confirmed",
       "mfa.totp.enrollment.started",
       "mfa.totp.removed",
@@ -178,6 +180,8 @@ test("the task-7 event inventory has production integration and an explicit subj
     passkeys: [
       "passkey.authentication_completed",
       "passkey.authentication_started",
+      "passkey.credential_administrator_revoked",
+      "passkey.credential_renamed",
       "passkey.credential_revoked",
       "passkey.credential_used",
       "passkey.registration_completed",

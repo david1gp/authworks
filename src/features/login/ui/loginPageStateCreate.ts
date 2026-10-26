@@ -19,6 +19,7 @@ import { loginPreferenceSave } from "../model/loginPreferenceSave.js"
 import type { LoginPreference } from "../model/loginPreferenceSchema.js"
 import { loginPrimaryMethodsGet } from "../model/loginPrimaryMethodsGet.js"
 import { loginProviderPathGet } from "../model/loginProviderPathGet.js"
+import { loginServerErrorKeyGet } from "../model/loginServerErrorKeyGet.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import { loginRetryAfterSecondsGet } from "../model/loginRetryAfterSecondsGet.js"
 import { loginScreenPathGet } from "../model/loginScreenPathGet.js"
@@ -305,6 +306,10 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     validationMessage.set(message)
     pending.set(false)
   }
+  const serverErrorMessage = (result: ResultErr) => {
+    const key = loginServerErrorKeyGet(result.code)
+    return key === undefined ? undefined : messageTranslate(key)
+  }
   const run = async <T>(
     operation: () => Promise<Result<T>>,
     failureMessage?: (result: ResultErr) => string | undefined,
@@ -315,7 +320,12 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     const result = await operation()
     pending.set(false)
     if (!result.success) {
-      fail(failureMessage?.(result) ?? result.errorMessage ?? messageTranslate("common.error"))
+      fail(
+        failureMessage?.(result) ??
+          serverErrorMessage(result) ??
+          result.errorMessage ??
+          messageTranslate("common.error"),
+      )
       return undefined
     }
     return result.data as T
@@ -337,8 +347,14 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   }
 
   const authenticationApply = (outcome: LoginAuthenticationOutcome) => {
+    // A forced rotation outranks second-factor selection: the password must change before the
+    // interaction can resume, and any pending challenge token is kept for the MFA step after it.
+    if (outcome.challenge !== undefined) challengeToken.set(outcome.challenge.token)
+    if (outcome.passwordChangeRequired === true) {
+      go("password-change-required")
+      return
+    }
     if (outcome.challenge !== undefined) {
-      challengeToken.set(outcome.challenge.token)
       go("mfa")
       return
     }
@@ -439,7 +455,12 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     password.set("")
     newPassword.set("")
     confirmPassword.set("")
-    if (changed !== undefined) interactionContinue()
+    // A rotation that was forced alongside a second-factor challenge still owes that factor:
+    // the token was recorded when the primary outcome applied, so continue there when present.
+    if (changed !== undefined) {
+      if (challengeToken.get().length > 0) go("mfa")
+      else interactionContinue()
+    }
   }
   const registerSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
@@ -640,7 +661,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const mfaSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
     if (options.screen() === "mfa-email-otp-code") return mfaEmailOtpSubmit(event)
-    const kind = options.screen() === "mfa-recovery-code" ? "recovery-code" : "totp"
+    const kind = options.screen() === "mfa-recovery-code" ? "recovery_code" : "totp"
     const value = mfaCodeNormalize(kind, code.get())
     code.set(value)
     const recovery = options.screen() === "mfa-recovery-code"
@@ -685,7 +706,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       go("mfa-email-otp")
       return
     }
-    const value = mfaCodeNormalize("email-otp", code.get())
+    const value = mfaCodeNormalize("email_otp", code.get())
     code.set(value)
     if (!/^\d{6}$/.test(value)) return invalid(messageTranslate("login.error.codeRequired"))
     const verify = options.adapter.mfaEmailOtpVerify
@@ -732,11 +753,23 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     if (screen === "mfa-satisfied") return "satisfied" as const
     return "select" as const
   }
-  const mfaFactors = (): readonly MfaFactor[] => ["totp", "email-otp", "passkey", "recovery-code"]
+  // The roster and its order come from the resolved login policy the discovery response
+  // carries: the server already intersects preferred order, allowed factors, and runtime
+  // availability. Recovery codes stay appended as the per-user emergency fallback — the server
+  // verifies them on the challenge even when no policy factor is selected for it.
+  const mfaFactors = (): readonly MfaFactor[] => {
+    const policy = discovery.get()?.policy
+    const order = policy?.preferredFactorOrder ?? (["totp", "email_otp", "passkey"] as const)
+    const allowed = new Set<MfaFactor>(policy?.allowedFactors ?? order)
+    const availability = mfaFactorAvailability()
+    const roster = order.filter((factor) => allowed.has(factor) && availability[factor] !== false)
+    if (!roster.includes("recovery_code") && availability.recovery_code !== false) roster.push("recovery_code")
+    return roster
+  }
   const mfaFactorAvailability = (): Partial<Record<MfaFactor, boolean>> => ({
-    "email-otp": options.adapter.mfaEmailOtpStart !== undefined,
+    email_otp: options.adapter.mfaEmailOtpStart !== undefined,
     passkey: options.adapter.mfaPasskeyAuthenticate !== undefined,
-    "recovery-code": true,
+    recovery_code: true,
     totp: true,
   })
   const passkeyAuthenticate = async () => {
@@ -862,6 +895,14 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     go("chooser", false)
   })
   createEffect(() => {
+    if (options.screen() !== "register") return
+    const found = discovery.get()
+    if (found === undefined) return
+    if (found.policy.allowRegistration !== false) return
+    if (activeScreen.get() === "chooser" && requestedScreen === "chooser") return
+    go("chooser", false)
+  })
+  createEffect(() => {
     const routeScreen = options.screen()
     const routeWasRequested = requestedScreen !== undefined
     if (requestedScreen !== undefined) {
@@ -952,7 +993,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     mfaSubmit,
     mfaCodeInputMode: () => (options.screen() === "mfa-recovery-code" ? "text" : "numeric"),
     mfaCodeSet: (value: string) => {
-      const kind = options.screen() === "mfa-recovery-code" ? "recovery-code" : "totp"
+      const kind = options.screen() === "mfa-recovery-code" ? "recovery_code" : "totp"
       code.set(mfaCodeNormalize(kind, value))
     },
     mfaCodeValid: () => {

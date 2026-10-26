@@ -26,6 +26,7 @@ import { organizationDomainTable } from "../../features/organizations/persistenc
 import { organizationInvitationTable } from "../../features/organizations/persistence/organizationInvitationTable.js"
 import { organizationLoginPolicyTable } from "../../features/organizations/persistence/organizationLoginPolicyTable.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
+import { organizationMetadataTable } from "../../features/organizations/persistence/organizationMetadataTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
 import { realmLoginPolicyTable } from "../../features/organizations/persistence/realmLoginPolicyTable.js"
 import { passkeyCeremonyTable } from "../../features/passkeys/persistence/passkeyCeremonyTable.js"
@@ -33,6 +34,7 @@ import { passkeyCredentialTable } from "../../features/passkeys/persistence/pass
 import { passwordChallengeTable } from "../../features/passwords/persistence/passwordChallengeTable.js"
 import { passwordCredentialTable } from "../../features/passwords/persistence/passwordCredentialTable.js"
 import { passwordLockoutTable } from "../../features/passwords/persistence/passwordLockoutTable.js"
+import { passwordOrgPolicyTable } from "../../features/passwords/persistence/passwordOrgPolicyTable.js"
 import { passwordPolicyTable } from "../../features/passwords/persistence/passwordPolicyTable.js"
 import { passwordRegistrationChallengeTable } from "../../features/passwords/persistence/passwordRegistrationChallengeTable.js"
 import { projectApplicationTable } from "../../features/projects/persistence/projectApplicationTable.js"
@@ -47,12 +49,14 @@ import { realmTable } from "../../features/realms/persistence/realmTable.js"
 import { sessionGeoCacheTable } from "../../features/sessions/persistence/sessionGeoCacheTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userEmailTable } from "../../features/users/persistence/userEmailTable.js"
+import { userMetadataTable } from "../../features/users/persistence/userMetadataTable.js"
 import { userProfilePictureCleanupTable } from "../../features/users/persistence/userProfilePictureCleanupTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
 import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistence/whatsappOtpChallengeTable.js"
 import { zitadelMigrationSourceRecordTable } from "../../features/zitadelMigration/persistence/zitadelMigrationSourceRecordTable.js"
+import { otpLockoutTable } from "../lockout/otpLockoutTable.js"
 import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageDataMigrationTable } from "./storageDataMigrationTable.js"
@@ -69,6 +73,7 @@ export const storageSchema = {
   realmTable,
   organizationInvitationTable,
   organizationBrandingTable,
+  organizationMetadataTable,
   organizationDomainTable,
   realmLoginPolicyTable,
   organizationLoginPolicyTable,
@@ -78,6 +83,7 @@ export const storageSchema = {
   passwordRegistrationChallengeTable,
   passwordCredentialTable,
   passwordLockoutTable,
+  passwordOrgPolicyTable,
   passwordPolicyTable,
   projectApplicationTable,
   projectGrantTable,
@@ -104,11 +110,13 @@ export const storageSchema = {
   mfaRecoveryCodeTable,
   mfaTotpEnrollmentTable,
   userEmailTable,
+  userMetadataTable,
   userProfilePictureCleanupTable,
   userProfileTable,
   userTable,
   wahaHealthCandidateTable,
   whatsappOtpChallengeTable,
+  otpLockoutTable,
   rateLimitTable,
   storageCurrentStateTable,
   storageDataMigrationTable,

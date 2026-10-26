@@ -15,6 +15,8 @@ export function oidcAdminConsentsViewStateCreate(options: {
     activeUserId,
     consentRevoke: (clientId: string) => void options.page.consentRevoke(activeUserId(), clientId),
     page: options.page,
+    userHasNextPage: options.page.userHasNextPage,
+    userHasPreviousPage: options.page.userHasPreviousPage,
     userIdSignal: {
       get: () => (selectedUserId.get() === "" ? activeUserId() : selectedUserId.get()),
       set: (userId: string) => {
@@ -22,5 +24,9 @@ export function oidcAdminConsentsViewStateCreate(options: {
         options.consentUserIdSet(userId)
       },
     },
+    userPageNext: options.page.userPageNext,
+    userPagePrevious: options.page.userPagePrevious,
+    userSearch: options.page.userSearch,
+    userSearchSet: options.page.userSearchSet,
   }
 }

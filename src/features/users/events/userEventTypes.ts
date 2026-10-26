@@ -13,6 +13,8 @@ export const userEventTypes = {
   emailAddressVerified: "user.email_address_verified",
   emailVerificationChanged: "user.email_verification_changed",
   phoneNumberChanged: "user.phone_number_changed",
+  metadataRemoved: "user.metadata_removed",
+  metadataSet: "user.metadata_set",
   profileUpdated: "user.profile_updated",
   registrationVerificationChanged: "user.registration_verification_changed",
   stateChanged: "user.state_changed",

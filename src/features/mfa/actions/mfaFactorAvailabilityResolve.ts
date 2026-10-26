@@ -2,6 +2,7 @@ import { and, eq, isNotNull } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { passkeyUserFactorAvailable } from "../../passkeys/server/passkeyUserFactorAvailable.js"
 import { userEmailTable } from "../../users/persistence/userEmailTable.js"
@@ -18,10 +19,12 @@ type MfaFactorAvailabilityResolveOptions = {
 }
 
 export function mfaFactorAvailabilityResolve(options: MfaFactorAvailabilityResolveOptions): Result<MfaPolicyFactor[]> {
-  const available =
+  const normalized =
     options.runtimeAvailableFactors === undefined
-      ? mfaFactorAvailabilityRead(options)
+      ? resultCreate(mfaFactorAvailabilityRead(options))
       : mfaFactorAvailabilityNormalize(options.runtimeAvailableFactors)
+  if (!normalized.success) return normalized
+  const available = normalized.data
   const distinct = available.filter(
     (factor) =>
       !(
@@ -32,14 +35,17 @@ export function mfaFactorAvailabilityResolve(options: MfaFactorAvailabilityResol
   return resultCreate(distinct)
 }
 
-function mfaFactorAvailabilityNormalize(values: readonly MfaPolicyFactor[]): MfaPolicyFactor[] {
-  const parsed = values.flatMap((value) => {
+function mfaFactorAvailabilityNormalize(values: readonly MfaPolicyFactor[]): Result<MfaPolicyFactor[]> {
+  const op = "mfaFactorAvailabilityResolve"
+  const parsed: MfaPolicyFactor[] = []
+  for (const value of values) {
     const factor = v.safeParse(mfaFactorSchema, value)
-    return factor.success ? [factor.output] : []
-  })
+    if (!factor.success) return resultErrorCreate(op, "The MFA factor is invalid.", "mfa.invalid")
+    parsed.push(factor.output)
+  }
   const available = new Set(parsed)
-  const canonical: readonly MfaPolicyFactor[] = ["passkey", "totp", "email_otp"]
-  return canonical.filter((factor) => available.has(factor))
+  const canonical: readonly MfaPolicyFactor[] = ["passkey", "totp", "email_otp", "recovery_code"]
+  return resultCreate(canonical.filter((factor) => available.has(factor)))
 }
 
 function mfaFactorAvailabilityRead(options: MfaFactorAvailabilityResolveOptions): MfaPolicyFactor[] {

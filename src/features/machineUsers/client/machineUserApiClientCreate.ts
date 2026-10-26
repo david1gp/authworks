@@ -10,6 +10,14 @@ import {
   machineApiKeyCreateRequestSchema,
 } from "../public/machineApiKeyCreateRequestSchema.js"
 import {
+  type MachineClientCredentialsRevokeRequest,
+  machineClientCredentialsRevokeRequestSchema,
+} from "../public/machineClientCredentialsRevokeRequestSchema.js"
+import {
+  type MachineClientCredentialsRevokeResponse,
+  machineClientCredentialsRevokeResponseSchema,
+} from "../public/machineClientCredentialsRevokeResponseSchema.js"
+import {
   type MachineCredentialIssueRequest,
   machineCredentialIssueRequestSchema,
 } from "../public/machineCredentialIssueRequestSchema.js"
@@ -46,6 +54,10 @@ import {
   type MachineUserLifecycleRequest,
   machineUserLifecycleRequestSchema,
 } from "../public/machineUserLifecycleRequestSchema.js"
+import {
+  type MachineUserUpdateRequest,
+  machineUserUpdateRequestSchema,
+} from "../public/machineUserUpdateRequestSchema.js"
 import { type MachineUserListResponse, machineUserListResponseSchema } from "../public/machineUserListResponseSchema.js"
 import { type MachineUserResponse, machineUserResponseSchema } from "../public/machineUserResponseSchema.js"
 import {
@@ -101,6 +113,27 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     request(path, browserRequestInit(init), schema)
 
   return {
+    machineClientCredentialsRevoke(
+      realmId: string,
+      input: MachineClientCredentialsRevokeRequest,
+    ): Promise<Result<MachineClientCredentialsRevokeResponse>> {
+      const parsedRealmId = v.safeParse(v.pipe(v.string(), v.minLength(1)), realmId)
+      const parsedInput = v.safeParse(machineClientCredentialsRevokeRequestSchema, input)
+      if (!parsedRealmId.success || !parsedInput.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientClientCredentialsRevoke",
+            "The client credentials revocation request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return managementRequest(
+        `${managementPath(parsedRealmId.output, "/machine-client-credentials/revoke")}`,
+        { body: JSON.stringify(parsedInput.output), method: "POST" },
+        machineClientCredentialsRevokeResponseSchema,
+      )
+    },
+
     machineApiKeyCreate(
       realmId: string,
       organizationId: string,
@@ -247,6 +280,28 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       )
     },
 
+    machineUserUpdate(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+      input: MachineUserUpdateRequest,
+    ): Promise<Result<MachineUserResponse>> {
+      const parsed = v.safeParse(machineUserUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientUpdate",
+            "The machine user request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return managementRequest(
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`)}${organizationQuery(organizationId)}`,
+        { body: JSON.stringify(parsed.output), method: "PATCH" },
+        machineUserResponseSchema,
+      )
+    },
+
     machineUserList(
       realmId: string,
       organizationId: string,
@@ -310,6 +365,28 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       return browserRequest(
         `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
+        machineUserResponseSchema,
+      )
+    },
+
+    machineUserTenantUpdate(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+      input: MachineUserUpdateRequest,
+    ): Promise<Result<MachineUserResponse>> {
+      const parsed = v.safeParse(machineUserUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantUpdate",
+            "The machine user request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`)}${organizationQuery(organizationId)}`,
+        { body: JSON.stringify(parsed.output), method: "PATCH" },
         machineUserResponseSchema,
       )
     },

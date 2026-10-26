@@ -4,6 +4,8 @@ import * as v from "valibot"
 import type { Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { trustedProxyIpResolve } from "../../../platform/http/trustedProxyIpResolve.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
@@ -18,9 +20,24 @@ import { emailOtpVerifyRequestSchema } from "../public/emailOtpVerifyRequestSche
 
 type EmailOtpServerAppCreateOptions = {
   readonly browserMode?: boolean
+  readonly clientIpResolve?: (context: EmailOtpRouteContext) => string | undefined
   readonly database: StorageDatabase
   readonly onDelivery?: (delivery: EmailOtpDelivery) => void | Promise<void>
   readonly onSecurityNotification?: (notification: EmailOtpSecurityNotification) => void | Promise<void>
+  readonly rateLimitSecret?: Secret | string
+  readonly trustedProxyAddresses?: readonly string[]
+}
+
+type EmailOtpRouteContext = {
+  get: (key: "authorizationActor") => unknown
+  json: (body: unknown, status?: ContentfulStatusCode) => Response
+  req: {
+    header: (name: string) => string | undefined
+    param: (name: string) => string
+    query: (name: string) => string | undefined
+    raw: Request
+    url: string
+  }
 }
 
 export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions) {
@@ -49,9 +66,11 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
     return emailOtpResultResponseCreate(
       context,
       emailOtpStart({
+        clientIp: emailOtpTrustedClientIpGet(context, options),
         context: tenant.data,
         database: options.database,
         input: input.output,
+        rateLimitSecret: options.rateLimitSecret,
         realmId: context.req.param("realmId"),
         onDelivery: options.onDelivery,
         onSecurityNotification: options.onSecurityNotification,
@@ -79,11 +98,14 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
         context,
         resultErrorCodedCreate("emailOtpVerify", "The email OTP code is invalid.", "email-otp.invalid"),
       )
+    const clientIp = emailOtpTrustedClientIpGet(context, options)
     const verified = emailOtpVerify({
+      clientIp,
       context: tenant.data,
       database: options.database,
-      deviceMetadata: emailOtpDeviceMetadataGet(context),
+      deviceMetadata: emailOtpDeviceMetadataGet(context, clientIp),
       input: input.output,
+      rateLimitSecret: options.rateLimitSecret,
       realmId: context.req.param("realmId"),
       onSecurityNotification: options.onSecurityNotification,
     })
@@ -120,13 +142,26 @@ function emailOtpTenantContextResolve(
   return tenant
 }
 
-function emailOtpDeviceMetadataGet(context: {
-  req: { header: (name: string) => string | undefined }
-}): SessionDeviceMetadata {
-  const forwardedFor = context.req.header("x-forwarded-for")?.split(",", 1)[0]?.trim()
+function emailOtpTrustedClientIpGet(
+  context: EmailOtpRouteContext,
+  options: Pick<EmailOtpServerAppCreateOptions, "clientIpResolve" | "trustedProxyAddresses">,
+): string {
+  return trustedProxyIpResolve({
+    directAddress: options.clientIpResolve?.(context),
+    forwardedFor: context.req.header("x-forwarded-for"),
+    trustedProxyAddresses: options.trustedProxyAddresses,
+  })
+}
+
+function emailOtpDeviceMetadataGet(
+  context: {
+    req: { header: (name: string) => string | undefined }
+  },
+  ipAddress: string,
+): SessionDeviceMetadata {
   return {
     ...(context.req.header("user-agent") === undefined ? {} : { userAgent: context.req.header("user-agent") }),
-    ...(forwardedFor === undefined || forwardedFor.length === 0 ? {} : { ipAddress: forwardedFor }),
+    ipAddress,
     ...(context.req.header("x-device-fingerprint") === undefined
       ? {}
       : { fingerprint: context.req.header("x-device-fingerprint") }),

@@ -88,6 +88,7 @@ test("an org owner can list providers for their org but not for another org or r
     const otherOrganizationId = other.data.organization.id
 
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: system,
       database,
       input: {

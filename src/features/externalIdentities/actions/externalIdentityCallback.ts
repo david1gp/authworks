@@ -5,6 +5,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -27,6 +28,7 @@ import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOp
 import type { ExternalIdentityProviderIdentity } from "../domain/externalIdentityProviderIdentity.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
 import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
+import { externalIdentityProviderSecretResolve } from "../domain/externalIdentityProviderSecretResolve.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityViewCreate } from "../domain/externalIdentityViewCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -39,8 +41,10 @@ import type { ExternalIdentityCallbackResponse } from "../public/externalIdentit
 const externalIdentityTransactionExpiryMessage = "The external identity callback is invalid."
 
 type ExternalIdentityCallbackOptions = {
+  readonly allowDevelopmentFallback?: boolean
   readonly code: string
   readonly database: StorageDatabase
+  readonly encryptionSecret?: Secret | string
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly realmId: string
   readonly providerId: string
@@ -119,15 +123,24 @@ export async function externalIdentityCallback(
   if (port === undefined)
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const scopes = externalIdentityProviderScopesValidate(
-    providerRow.type as "github" | "google" | "microsoft",
+    providerRow.type as "github" | "google" | "microsoft" | "oidc",
     providerRow.scopes,
   )
   if (!scopes.success)
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
+  const clientSecret = externalIdentityProviderSecretResolve({
+    allowDevelopmentFallback: options.allowDevelopmentFallback,
+    encryptionSecret: options.encryptionSecret,
+    realmId: options.realmId,
+    storedSecret: providerRow.clientSecret,
+  })
+  if (!clientSecret.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const identity = await port.callbackExchange(
     {
       clientId: providerRow.clientId,
-      clientSecret: providerRow.clientSecret,
+      clientSecret: clientSecret.data,
+      ...(providerRow.issuer === null ? {} : { issuer: providerRow.issuer }),
       redirectUri: transactionRow.redirectUri,
       scopes: scopes.data,
       type: providerRow.type as keyof ExternalIdentityProviderPorts,
@@ -394,7 +407,11 @@ function externalIdentitySignInCommit(
           ),
         )
         .get()
-      const providerSupportsAutoLinking = options.provider.type === "google" || options.provider.type === "github"
+      const providerSupportsAutoLinking =
+        options.provider.type === "google" ||
+        options.provider.type === "github" ||
+        options.provider.type === "microsoft" ||
+        options.provider.type === "oidc"
       if (eligibleEmail !== undefined && providerSupportsAutoLinking) {
         const policy = organizationLoginPolicyResolve({
           database: options.policyDatabase,

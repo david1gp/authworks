@@ -47,16 +47,31 @@ type OidcListRealmFlags = OidcListCliFlags & { readonly realmId?: string }
 type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
 type OidcClientGetFlags = OidcClientFlags & { readonly ifModifiedSince?: string }
 type OidcClientUpdateFlags = OidcClientFlags & {
+  readonly accessTokenLifetimeSeconds?: number
   readonly accessTokenRoleAssertion?: boolean
   readonly additionalOrigins?: string
   readonly allowedScopes?: string
+  readonly applicationId?: string
+  readonly clearAccessTokenLifetimeSeconds?: boolean
+  readonly clearApplicationId?: boolean
+  readonly clearIdTokenLifetimeSeconds?: boolean
   readonly clearProjectId?: boolean
+  readonly clearRefreshTokenAbsoluteLifetimeSeconds?: boolean
+  readonly clearRefreshTokenIdleLifetimeSeconds?: boolean
+  readonly devMode?: boolean
+  readonly grantTypes?: string
+  readonly idTokenLifetimeSeconds?: number
+  readonly idTokenRoleAssertion?: boolean
   readonly idTokenUserinfoAssertion?: boolean
   readonly name?: string
+  readonly noDevMode?: boolean
   readonly postLogoutRedirectUris?: string
   readonly projectId?: string
   readonly redirectUris?: string
+  readonly refreshTokenAbsoluteLifetimeSeconds?: number
+  readonly refreshTokenIdleLifetimeSeconds?: number
   readonly requireConsent?: boolean
+  readonly responseTypes?: string
   readonly trusted?: boolean
 }
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
@@ -76,10 +91,18 @@ const oidcClientCreateCommand = buildCommand({
       redirectUris: string
       postLogoutRedirectUris?: string
       allowedScopes?: string
+      accessTokenLifetimeSeconds?: number
       accessTokenRoleAssertion?: boolean
       additionalOrigins?: string
+      devMode?: boolean
+      grantTypes?: string
+      idTokenLifetimeSeconds?: number
+      idTokenRoleAssertion?: boolean
       idTokenUserinfoAssertion?: boolean
       projectId?: string
+      refreshTokenAbsoluteLifetimeSeconds?: number
+      refreshTokenIdleLifetimeSeconds?: number
+      responseTypes?: string
       trusted?: boolean
       requireConsent?: boolean
     },
@@ -95,14 +118,32 @@ const oidcClientCreateCommand = buildCommand({
       this,
       await oidcCliClientCreate(connection.data).oidcClientCreate(realmId, {
         allowedScopes: splitValues(flags.allowedScopes, ["openid"]),
+        ...(flags.accessTokenLifetimeSeconds === undefined
+          ? {}
+          : { accessTokenLifetimeSeconds: flags.accessTokenLifetimeSeconds }),
         clientType: flags.clientType,
         name: flags.name,
         postLogoutRedirectUris: splitValues(flags.postLogoutRedirectUris, []),
         redirectUris: splitValues(flags.redirectUris, []),
         accessTokenRoleAssertion: flags.accessTokenRoleAssertion,
         additionalOrigins: splitValues(flags.additionalOrigins, []),
+        ...(flags.devMode === undefined ? {} : { devMode: flags.devMode }),
+        ...(flags.grantTypes === undefined
+          ? {}
+          : { grantTypes: splitValues(flags.grantTypes, []) as ("authorization_code" | "refresh_token")[] }),
+        ...(flags.idTokenLifetimeSeconds === undefined ? {} : { idTokenLifetimeSeconds: flags.idTokenLifetimeSeconds }),
+        idTokenRoleAssertion: flags.idTokenRoleAssertion,
         idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion,
         ...(flags.projectId === undefined ? {} : { projectId: flags.projectId }),
+        ...(flags.refreshTokenAbsoluteLifetimeSeconds === undefined
+          ? {}
+          : { refreshTokenAbsoluteLifetimeSeconds: flags.refreshTokenAbsoluteLifetimeSeconds }),
+        ...(flags.refreshTokenIdleLifetimeSeconds === undefined
+          ? {}
+          : { refreshTokenIdleLifetimeSeconds: flags.refreshTokenIdleLifetimeSeconds }),
+        ...(flags.responseTypes === undefined
+          ? {}
+          : { responseTypes: splitValues(flags.responseTypes, []) as "code"[] }),
         requireConsent: flags.requireConsent,
         trusted: flags.trusted,
       }),
@@ -123,12 +164,34 @@ const oidcClientCreateCommand = buildCommand({
       redirectUris: oidcTextFlag("Comma-separated exact redirect URIs"),
       postLogoutRedirectUris: { ...oidcTextFlag("Comma-separated post-logout redirect URIs"), optional: true as const },
       allowedScopes: { ...oidcTextFlag("Comma-separated allowed scopes"), optional: true as const },
+      accessTokenLifetimeSeconds: { ...oidcLifetimeFlag("Access token lifetime in seconds"), optional: true as const },
+      idTokenLifetimeSeconds: { ...oidcLifetimeFlag("ID token lifetime in seconds"), optional: true as const },
+      refreshTokenIdleLifetimeSeconds: {
+        ...oidcLifetimeFlag("Refresh token idle lifetime in seconds"),
+        optional: true as const,
+      },
+      refreshTokenAbsoluteLifetimeSeconds: {
+        ...oidcLifetimeFlag("Refresh token absolute lifetime in seconds"),
+        optional: true as const,
+      },
+      grantTypes: { ...oidcTextFlag("Comma-separated grant types"), optional: true as const },
+      responseTypes: { ...oidcTextFlag("Comma-separated response types"), optional: true as const },
+      devMode: {
+        brief: "Allow plain-http redirects (development only)",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
       accessTokenRoleAssertion: {
         brief: "Include project roles in access tokens",
         kind: "boolean" as const,
         optional: true as const,
       },
       additionalOrigins: { ...oidcTextFlag("Comma-separated additional browser origins"), optional: true as const },
+      idTokenRoleAssertion: {
+        brief: "Include project roles in ID tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
       idTokenUserinfoAssertion: {
         brief: "Include scoped claims from UserInfo in ID tokens",
         kind: "boolean" as const,
@@ -205,6 +268,44 @@ const oidcClientUpdateCommand = buildCommand({
       this.process.exitCode = 1
       return
     }
+    if (flags.applicationId !== undefined && flags.clearApplicationId === true) {
+      this.process.stderr.write("--application-id and --clear-application-id are mutually exclusive.\n")
+      this.process.exitCode = 1
+      return
+    }
+    for (const [value, clear, name] of [
+      [
+        flags.accessTokenLifetimeSeconds,
+        flags.clearAccessTokenLifetimeSeconds,
+        "--access-token-lifetime-seconds/--clear-access-token-lifetime-seconds",
+      ],
+      [
+        flags.idTokenLifetimeSeconds,
+        flags.clearIdTokenLifetimeSeconds,
+        "--id-token-lifetime-seconds/--clear-id-token-lifetime-seconds",
+      ],
+      [
+        flags.refreshTokenIdleLifetimeSeconds,
+        flags.clearRefreshTokenIdleLifetimeSeconds,
+        "--refresh-token-idle-lifetime-seconds/--clear-refresh-token-idle-lifetime-seconds",
+      ],
+      [
+        flags.refreshTokenAbsoluteLifetimeSeconds,
+        flags.clearRefreshTokenAbsoluteLifetimeSeconds,
+        "--refresh-token-absolute-lifetime-seconds/--clear-refresh-token-absolute-lifetime-seconds",
+      ],
+    ] as const) {
+      if (value !== undefined && clear === true) {
+        this.process.stderr.write(`${name} are mutually exclusive.\n`)
+        this.process.exitCode = 1
+        return
+      }
+    }
+    if (flags.devMode === true && flags.noDevMode === true) {
+      this.process.stderr.write("--dev-mode and --no-dev-mode are mutually exclusive.\n")
+      this.process.exitCode = 1
+      return
+    }
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcClientUpdate(realmId, flags.clientId, {
@@ -216,6 +317,31 @@ const oidcClientUpdateCommand = buildCommand({
           : { additionalOrigins: splitValues(flags.additionalOrigins, []) }),
         ...(flags.allowedScopes === undefined ? {} : { allowedScopes: splitValues(flags.allowedScopes, []) }),
         ...(flags.clearProjectId === true ? { projectId: null } : {}),
+        ...(flags.clearApplicationId === true ? { applicationId: null } : {}),
+        ...(flags.clearAccessTokenLifetimeSeconds === true ? { accessTokenLifetimeSeconds: null } : {}),
+        ...(flags.clearIdTokenLifetimeSeconds === true ? { idTokenLifetimeSeconds: null } : {}),
+        ...(flags.clearRefreshTokenIdleLifetimeSeconds === true ? { refreshTokenIdleLifetimeSeconds: null } : {}),
+        ...(flags.clearRefreshTokenAbsoluteLifetimeSeconds === true
+          ? { refreshTokenAbsoluteLifetimeSeconds: null }
+          : {}),
+        ...(flags.accessTokenLifetimeSeconds === undefined
+          ? {}
+          : { accessTokenLifetimeSeconds: flags.accessTokenLifetimeSeconds }),
+        ...(flags.idTokenLifetimeSeconds === undefined ? {} : { idTokenLifetimeSeconds: flags.idTokenLifetimeSeconds }),
+        ...(flags.refreshTokenIdleLifetimeSeconds === undefined
+          ? {}
+          : { refreshTokenIdleLifetimeSeconds: flags.refreshTokenIdleLifetimeSeconds }),
+        ...(flags.refreshTokenAbsoluteLifetimeSeconds === undefined
+          ? {}
+          : { refreshTokenAbsoluteLifetimeSeconds: flags.refreshTokenAbsoluteLifetimeSeconds }),
+        ...(flags.devMode === true || flags.noDevMode === true ? { devMode: flags.devMode === true } : {}),
+        ...(flags.grantTypes === undefined
+          ? {}
+          : { grantTypes: splitValues(flags.grantTypes, []) as ("authorization_code" | "refresh_token")[] }),
+        ...(flags.responseTypes === undefined
+          ? {}
+          : { responseTypes: splitValues(flags.responseTypes, []) as "code"[] }),
+        ...(flags.idTokenRoleAssertion === undefined ? {} : { idTokenRoleAssertion: flags.idTokenRoleAssertion }),
         ...(flags.idTokenUserinfoAssertion === undefined
           ? {}
           : { idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion }),
@@ -224,6 +350,7 @@ const oidcClientUpdateCommand = buildCommand({
           ? {}
           : { postLogoutRedirectUris: splitValues(flags.postLogoutRedirectUris, []) }),
         ...(flags.projectId === undefined ? {} : { projectId: flags.projectId }),
+        ...(flags.applicationId === undefined ? {} : { applicationId: flags.applicationId }),
         ...(flags.redirectUris === undefined ? {} : { redirectUris: splitValues(flags.redirectUris, []) }),
         ...(flags.requireConsent === undefined ? {} : { requireConsent: flags.requireConsent }),
         ...(flags.trusted === undefined ? {} : { trusted: flags.trusted }),
@@ -237,6 +364,48 @@ const oidcClientUpdateCommand = buildCommand({
       realmId: oidcRealmIdFlag(),
       clientId: oidcIdFlag("Client UUID"),
       name: { ...oidcTextFlag("Client display name"), optional: true as const },
+      accessTokenLifetimeSeconds: { ...oidcLifetimeFlag("Access token lifetime in seconds"), optional: true as const },
+      clearAccessTokenLifetimeSeconds: {
+        brief: "Clear the access token lifetime back to the default",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      idTokenLifetimeSeconds: { ...oidcLifetimeFlag("ID token lifetime in seconds"), optional: true as const },
+      clearIdTokenLifetimeSeconds: {
+        brief: "Clear the ID token lifetime back to the default",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      refreshTokenIdleLifetimeSeconds: {
+        ...oidcLifetimeFlag("Refresh token idle lifetime in seconds"),
+        optional: true as const,
+      },
+      clearRefreshTokenIdleLifetimeSeconds: {
+        brief: "Clear the refresh token idle lifetime",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      refreshTokenAbsoluteLifetimeSeconds: {
+        ...oidcLifetimeFlag("Refresh token absolute lifetime in seconds"),
+        optional: true as const,
+      },
+      clearRefreshTokenAbsoluteLifetimeSeconds: {
+        brief: "Clear the refresh token absolute lifetime back to the default",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      grantTypes: { ...oidcTextFlag("Comma-separated grant types"), optional: true as const },
+      responseTypes: { ...oidcTextFlag("Comma-separated response types"), optional: true as const },
+      devMode: {
+        brief: "Allow plain-http redirects (development only)",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      noDevMode: {
+        brief: "Require https redirects",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
       redirectUris: { ...oidcTextFlag("Comma-separated exact redirect URIs"), optional: true as const },
       postLogoutRedirectUris: { ...oidcTextFlag("Comma-separated post-logout redirect URIs"), optional: true as const },
       allowedScopes: { ...oidcTextFlag("Comma-separated allowed scopes"), optional: true as const },
@@ -246,6 +415,11 @@ const oidcClientUpdateCommand = buildCommand({
         optional: true as const,
       },
       additionalOrigins: { ...oidcTextFlag("Comma-separated additional browser origins"), optional: true as const },
+      idTokenRoleAssertion: {
+        brief: "Include project roles in ID tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
       idTokenUserinfoAssertion: {
         brief: "Include scoped claims from UserInfo in ID tokens",
         kind: "boolean" as const,
@@ -257,6 +431,15 @@ const oidcClientUpdateCommand = buildCommand({
       },
       clearProjectId: {
         brief: "Clear the linked project",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      applicationId: {
+        ...oidcTextFlag("Linked application ID (UUIDv7)"),
+        optional: true as const,
+      },
+      clearApplicationId: {
+        brief: "Clear the linked application",
         kind: "boolean" as const,
         optional: true as const,
       },
@@ -643,6 +826,31 @@ const oidcSigningKeyListCommand = buildCommand({
   },
   parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC signing keys" },
+})
+
+const oidcSigningKeyDeleteCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcRealmFlags & { signingKeyId: string }) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcSigningKeyDelete(realmId, flags.signingKeyId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      signingKeyId: oidcIdFlag("Signing key UUID"),
+    },
+  },
+  docs: { brief: "Delete a retired OIDC signing key" },
 })
 
 const oidcSigningKeyRetireCommand = buildCommand({
@@ -1082,6 +1290,7 @@ export const oidcCliCommands = buildRouteMap({
     keyCreate: oidcSigningKeyCreateCommand,
     keyList: oidcSigningKeyListCommand,
     keyRetire: oidcSigningKeyRetireCommand,
+    keyDelete: oidcSigningKeyDeleteCommand,
     keyLifecycleSet: oidcSigningKeyLifecycleSetCommand,
     keyEnsureActive: oidcSigningKeyEnsureActiveCommand,
     productionSigningKeyEnsure: oidcProductionSigningKeyEnsureCommand,
@@ -1218,6 +1427,19 @@ function ifModifiedSinceFlag() {
     optional: true as const,
     parse: (value: string) => value,
     placeholder: "HTTP-DATE",
+  }
+}
+
+function oidcLifetimeFlag(brief: string) {
+  return {
+    brief,
+    kind: "parsed" as const,
+    parse: (value: string) => {
+      const parsed = Number(value)
+      if (!Number.isInteger(parsed)) throw new Error(`Expected an integer number of seconds for ${brief}.`)
+      return parsed
+    },
+    placeholder: "SECONDS",
   }
 }
 

@@ -52,9 +52,9 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
     authenticatedUserContext &&
     (options.context.actor.actorId !== options.context.actorId || options.context.actor.realmId !== options.realmId)
   )
-    return resultErrorCodedCreate(op, "The authenticated session context is invalid.", "sessions.unauthorized")
+    return resultErrorCodedCreate(op, "The authenticated session context is invalid.", "organizations.unauthorized")
   if (!authenticatedUserContext && options.sessionId !== undefined)
-    return resultErrorCodedCreate(op, "The authenticated session context is invalid.", "sessions.unauthorized")
+    return resultErrorCodedCreate(op, "The authenticated session context is invalid.", "organizations.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const switchedAt = runtime.now()
   if (!Number.isSafeInteger(switchedAt) || switchedAt < 0)

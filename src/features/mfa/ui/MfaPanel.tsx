@@ -18,9 +18,9 @@ import type { MfaPanelMode } from "../model/mfaPanelModeSchema.js"
 import { mfaPanelStateCreate } from "./mfaPanelStateCreate.js"
 
 const factorIcons: Readonly<Record<MfaFactor, string>> = {
-  "email-otp": mdiEmailOutline,
+  email_otp: mdiEmailOutline,
   passkey: mdiFingerprint,
-  "recovery-code": mdiLifebuoy,
+  recovery_code: mdiLifebuoy,
   totp: mdiCellphoneKey,
 }
 

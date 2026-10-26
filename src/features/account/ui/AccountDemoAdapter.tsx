@@ -88,6 +88,8 @@ export function AccountDemoAdapter(props: {
             emailValidationMessage={page.emailValidationMessage.get()}
             emailVerified={page.user.get()?.emailVerified ?? false}
             errorMessage={page.errorMessage.get()}
+            exportErrorMessage={page.exportError.get()}
+            exportPending={page.exportPending.get()}
             firstName={page.firstName.get()}
             genderSignal={page.gender}
             kind={props.kind as "email" | "overview" | "profile"}
@@ -103,6 +105,7 @@ export function AccountDemoAdapter(props: {
             onEmailStart={page.emailAddressAddStart}
             onEmailTokenInput={page.emailToken.set}
             onEmailVerify={page.emailAddressAddVerify}
+            onExportDownload={() => void page.exportDownload()}
             onFirstNameInput={page.firstName.set}
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}

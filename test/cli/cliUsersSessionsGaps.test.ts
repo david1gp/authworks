@@ -44,6 +44,28 @@ test("CLI users and sessions gap commands expose help", async () => {
     expect(sessions.stdout).toContain(route)
   }
 
+  const create = await cliRun("users", "create", "--help")
+  expect(create.exitCode).toBe(0)
+  for (const flag of [
+    "--display-name VALUE",
+    "--email VALUE",
+    "--first-name VALUE",
+    "--gender VALUE",
+    "--last-name VALUE",
+    "--nick-name VALUE",
+    "--phone-number VALUE",
+    "--preferred-language VALUE",
+    "--user-name VALUE",
+  ]) {
+    expect(create.stdout).toContain(flag)
+  }
+
+  const tenantCreate = await cliRun("users", "tenant-create", "--help")
+  expect(tenantCreate.exitCode).toBe(0)
+  for (const flag of ["--first-name VALUE", "--last-name VALUE", "--phone-number VALUE"]) {
+    expect(tenantCreate.stdout).toContain(flag)
+  }
+
   const me = await cliRun("users", "me", "--help")
   expect(me.stdout).toContain("--realm-id REALM_ID")
   const bootstrap = await cliRun("sessions", "bootstrap-sign-in", "--help")
@@ -67,6 +89,35 @@ test("CLI users and sessions gap commands require a realm before any request", a
     expect(result.stdout).toBe("")
     expect(result.stderr).toBe("Expected input for flag --realm-id\n")
   }
+}, 30_000)
+
+test("CLI user create validates required flags before any request", async () => {
+  const unavailableServer = "http://127.0.0.1:1"
+  const missingUserName = await cliRunWithEnvironment(
+    { AUTHWORKS_REALM_ID: "11111111-1111-1111-1111-111111111111" },
+    "users",
+    "create",
+    "--server",
+    unavailableServer,
+    "--email",
+    "missing-user-name@example.com",
+  )
+  expect(missingUserName.exitCode).not.toBe(0)
+  expect(missingUserName.stdout).toBe("")
+  expect(missingUserName.stderr).toBe("Expected input for flag --user-name\n")
+
+  const missingTenantUserName = await cliRunWithEnvironment(
+    { AUTHWORKS_REALM_ID: "11111111-1111-1111-1111-111111111111" },
+    "users",
+    "tenant-create",
+    "--server",
+    unavailableServer,
+    "--email",
+    "missing-tenant-user-name@example.com",
+  )
+  expect(missingTenantUserName.exitCode).not.toBe(0)
+  expect(missingTenantUserName.stdout).toBe("")
+  expect(missingTenantUserName.stderr).toBe("Expected input for flag --user-name\n")
 }, 30_000)
 
 test("CLI users me, profile, emails, and tenant commands round trip through the composed server", async () => {
@@ -109,9 +160,18 @@ test("CLI users me, profile, emails, and tenant commands round trip through the 
       "gaps-user",
       "--email",
       "gaps-user@example.com",
+      "--first-name",
+      "Gaps",
+      "--last-name",
+      "User",
+      "--phone-number",
+      "+15551234567",
     )
     expect(userCreate.exitCode).toBe(0)
     const userId = (JSON.parse(userCreate.stdout) as { user: { id: string } }).user.id
+    expect(JSON.parse(userCreate.stdout)).toMatchObject({
+      user: { profile: { firstName: "Gaps", lastName: "User" } },
+    })
 
     for (const args of [
       ["users", "lifecycle", ...system, "--realm-id", realmId, "--user-id", userId, "--state", "active"],

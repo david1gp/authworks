@@ -17,6 +17,7 @@ const factors: readonly MfaPolicyFactor[] = ["passkey", "totp", "email_otp"]
 const factorLabelKeys = {
   email_otp: "admin.organizations.policy.factor.emailOtp",
   passkey: "admin.organizations.policy.factor.passkey",
+  recovery_code: "admin.organizations.policy.factor.recoveryCode",
   totp: "admin.organizations.policy.factor.totp",
 } as const satisfies Readonly<Record<MfaPolicyFactor, MessageKey>>
 const fieldsetClass = "min-w-0 rounded-control border border-line-subtle px-4 py-4"

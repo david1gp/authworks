@@ -24,7 +24,7 @@ describe("production login adapter", () => {
     expect(result.success).toBe(false)
     if (!result.success) expect(result.code).toBe("organizations.not-found")
     expect(adapter.mfaEmailOtpStart).toBeDefined()
-    expect(adapter.mfaEmailOtpEnroll).toBeUndefined()
+    expect(adapter.mfaEmailOtpEnroll).toBeDefined()
     expect(adapter.mfaEmailOtpResend).toBeDefined()
     expect(adapter.mfaEmailOtpVerify).toBeDefined()
     expect(adapter.mfaPasskeyAuthenticate).toBeDefined()

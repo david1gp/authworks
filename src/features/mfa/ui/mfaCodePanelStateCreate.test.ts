@@ -9,7 +9,7 @@ describe("mfaCodePanelStateCreate", () => {
   })
 
   test("keeps recovery code challenge copy unchanged", () => {
-    const state = mfaCodePanelStateCreate(() => "recovery-code")
+    const state = mfaCodePanelStateCreate(() => "recovery_code")
 
     expect(state.title()).toBe("login.mfa.recoveryCode")
   })

@@ -4,30 +4,40 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
-import { organizationAdminListStatusSelect } from "./organizationAdminListStatusSelect.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationBrandingTheme } from "../public/organizationBrandingThemeSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
-import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { organizationAdminFormStateCreate } from "./organizationAdminFormStateCreate.js"
-import { organizationAdminPasswordPolicyValidate } from "./organizationAdminPasswordPolicyValidate.js"
+import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
+import { organizationAdminListStatusSelect } from "./organizationAdminListStatusSelect.js"
 import type { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
+import { organizationAdminPasswordPolicyValidate } from "./organizationAdminPasswordPolicyValidate.js"
+import { organizationAdminPolicyLifetimeValidate } from "./organizationAdminPolicyLifetimeValidate.js"
 import { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
 
 type PolicyKey = keyof Omit<
   OrganizationLoginPolicy,
   | "allowedFactors"
   | "minimumStepUpAssurance"
+  | "mfaInitSkipLifetimeSeconds"
+  | "multiFactorCheckLifetimeSeconds"
   | "preferredFactorOrder"
   | "providerIds"
   | "requiredMfa"
+  | "secondFactorCheckLifetimeSeconds"
   | "sessionLifetimeSeconds"
 >
+
+type PolicyMfaLifetimeKey =
+  | "mfaInitSkipLifetimeSeconds"
+  | "secondFactorCheckLifetimeSeconds"
+  | "multiFactorCheckLifetimeSeconds"
+
 type ThemeKey = "dark" | "light"
 type ThemeColorKey = "backgroundColor" | "fontColor" | "primaryColor" | "warnColor"
 
@@ -170,8 +180,39 @@ export function organizationAdminScreenStateCreate(options: {
     machineCredentialsHref: () => `${options.basePath}/machine-credentials`,
     machinesHref: () => `${options.basePath}/machine-users`,
     page: options.page,
+    policyLifetimeSet: (key: PolicyMfaLifetimeKey, rawValue: string) => {
+      if (rawValue.trim().length === 0) {
+        policyDraftSignal.set({ ...policyDraft(), [key]: null })
+        return
+      }
+      policyDraftSignal.set({ ...policyDraft(), [key]: Math.trunc(Number(rawValue)) })
+    },
+    policyLifetimeValidate: () => organizationAdminPolicyLifetimeValidate(policyDraft()),
+    policyProviderAllowlistReset: () => policyDraftSignal.set({ ...policyDraft(), providerIds: null }),
+    policyProviderAllowlistToggle: (providerId: string) => {
+      const draft = policyDraft()
+      const configured = options.page.providers().map((provider) => provider.id)
+      const selected = new Set(draft.providerIds ?? configured)
+      if (selected.has(providerId)) selected.delete(providerId)
+      else selected.add(providerId)
+      const next = configured.filter((id) => selected.has(id))
+      policyDraftSignal.set({
+        ...draft,
+        providerIds: next.length === configured.length ? null : next,
+      })
+    },
+    policySessionLifetimeSet: (rawValue: string) => {
+      if (rawValue.trim().length === 0) {
+        policyDraftSignal.set({ ...policyDraft(), sessionLifetimeSeconds: undefined })
+        return
+      }
+      policyDraftSignal.set({ ...policyDraft(), sessionLifetimeSeconds: Math.trunc(Number(rawValue)) })
+    },
     policySubmit: (event: SubmitEvent) => {
       event.preventDefault()
+      const lifetimeKey = organizationAdminPolicyLifetimeValidate(policyDraft())
+      policyValidationMessage.set(lifetimeKey === undefined ? undefined : messageTranslate(lifetimeKey))
+      if (lifetimeKey !== undefined) return
       const validationKey = securityPolicy.validationKey()
       policyValidationMessage.set(validationKey === undefined ? undefined : messageTranslate(validationKey))
       if (validationKey !== undefined) return
@@ -181,10 +222,18 @@ export function organizationAdminScreenStateCreate(options: {
           allowDomainDiscovery: draft.allowDomainDiscovery,
           allowEmailOtp: draft.allowEmailOtp,
           allowExternalIdentity: draft.allowExternalIdentity,
+          allowExternalIdentityAutoLinking: draft.allowExternalIdentityAutoLinking,
           allowPasskey: draft.allowPasskey,
           allowPassword: draft.allowPassword,
           allowPasswordRecovery: draft.allowPasswordRecovery,
           allowRegistration: draft.allowRegistration,
+          allowWhatsappOtp: draft.allowWhatsappOtp,
+          forceMfaLocalOnly: draft.forceMfaLocalOnly,
+          mfaInitSkipLifetimeSeconds: draft.mfaInitSkipLifetimeSeconds,
+          multiFactorCheckLifetimeSeconds: draft.multiFactorCheckLifetimeSeconds,
+          providerIds: draft.providerIds,
+          secondFactorCheckLifetimeSeconds: draft.secondFactorCheckLifetimeSeconds,
+          sessionLifetimeSeconds: draft.sessionLifetimeSeconds,
           ...securityPolicy.draft(),
         })
         if (!saved) return
@@ -221,12 +270,16 @@ export function organizationAdminScreenStateCreate(options: {
         ...form.providerCreate.get(),
         allowAccountCreation: !form.providerCreate.get().allowAccountCreation,
       }),
-    providerCreateInput: (key: "clientId" | "clientSecret" | "displayName" | "redirectUri", value: string) =>
-      form.providerCreate.set({ ...form.providerCreate.get(), [key]: value }),
+    providerCreateInput: (
+      key: "clientId" | "clientSecret" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+      value: string,
+    ) => form.providerCreate.set({ ...form.providerCreate.get(), [key]: value }),
     providerCreateSubmit: (event: SubmitEvent) => {
       event.preventDefault()
       if (!form.validateProviderCreate()) return
-      void options.page.providerCreate(form.providerCreate.get())
+      const request = form.providerCreateRequest()
+      if (request === undefined) return
+      void options.page.providerCreate(request)
       form.providerCreate.set({ ...form.providerCreate.get(), clientSecret: "" })
     },
     providerCreateTypeSet: (value: ExternalIdentityProviderType) =>
@@ -236,6 +289,40 @@ export function organizationAdminScreenStateCreate(options: {
         displayName: provider.displayName,
         enabled: !provider.enabled,
       }),
+    providerEditBegin: (provider: ExternalIdentityProvider) => form.providerEditBegin(provider),
+    providerEditInput: (
+      provider: ExternalIdentityProvider,
+      key: "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+      value: string,
+    ) => form.providerEditInput(provider, key, value),
+    providerEditReset: (providerId: string) => form.providerEditClear(providerId),
+    providerEditSubmit: (provider: ExternalIdentityProvider) => {
+      if (!form.validateProviderEdit(provider)) return
+      const request = form.providerEditRequest(provider)
+      if (request === undefined) return
+      void (async () => {
+        const saved = await options.page.providerUpdate(provider.id, request)
+        if (!saved) return
+        form.providerEditClear(provider.id)
+      })()
+    },
+    metadataKeySet: (value: string) => form.metadataKey.set(value),
+    metadataRemove: (key: string) => {
+      void options.page.metadataRemove(key)
+    },
+    metadataSubmit: (event: SubmitEvent) => {
+      event.preventDefault()
+      if (!form.validateMetadata()) return
+      const key = form.metadataKey.get().trim()
+      const value = form.metadataValue.get()
+      void (async () => {
+        const saved = await options.page.metadataSet(key, value)
+        if (!saved) return
+        form.metadataKey.set("")
+        form.metadataValue.set("")
+      })()
+    },
+    metadataValueSet: (value: string) => form.metadataValue.set(value),
     providerSecretRotate: (providerId: string) => {
       const secret = form.providerSecrets.get()[providerId] ?? ""
       if (secret.length === 0) return

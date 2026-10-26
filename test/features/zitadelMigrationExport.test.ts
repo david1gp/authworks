@@ -426,6 +426,7 @@ test("maps supported OIDC settings and retains unsupported semantics", async () 
       sourceId: "app-1",
       status: "inactive",
       tokenEndpointAuthMethod: "client_secret_post",
+      idTokenRoleAssertion: true,
       idTokenUserinfoAssertion: true,
       trusted: true,
       createdAt: 1,
@@ -434,7 +435,6 @@ test("maps supported OIDC settings and retains unsupported semantics", async () 
   ])
   expect(result.data.snapshot.completeness.oidcApplications).toEqual({ complete: false, count: 1 })
   expect(result.data.report.unsupported).toEqual([
-    { entity: "oidcApplication", reason: "unsupported-oidc-setting:id-token-role-assertion", sourceId: "app-1" },
     { entity: "oidcApplication", reason: "unsupported-oidc-setting:login-version", sourceId: "app-1" },
   ])
 })

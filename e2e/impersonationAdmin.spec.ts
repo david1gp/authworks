@@ -64,7 +64,7 @@ test("a reasoned impersonation exposes its outcome, audit events, and end action
       exact: true,
     })
     .first()
-  await expect(auditLink).toHaveAttribute("href", `/demo/admin/events?q=${sessionId}`)
+  await expect(auditLink).toHaveAttribute("href", `/demo/admin/events?aggregateId=${sessionId}`)
   await auditLink.click()
   // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
   await expect(page.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()

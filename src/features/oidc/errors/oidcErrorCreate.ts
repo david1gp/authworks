@@ -16,6 +16,7 @@ function oidcErrorCodeResolve(op: string): string {
     return "oidc.invalid-request"
   if (op === "oidcAuthorizationCodeRedeem") return "oidc.invalid-grant"
   if (op === "oidcAuthorizationInsufficientAssurance") return "oidc.authorization-interaction-required"
+  if (op === "oidcAuthorizationPromptValidate") return "oidc.invalid-request"
   if (op === "oidcAuthorizationConsentRequired") return "oidc.authorization-consent-required"
   if (op === "oidcLogout") return "oidc.invalid-request"
   if (op === "oidcTokenIssue") return "oidc.internal"

@@ -1092,6 +1092,56 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    refreshTokenFamilyBoundsGet(
+      realmId: string,
+      clientId: string,
+      familyId: string,
+    ): Result<{ readonly createdAt: number; readonly lastActivityAt: number } | null> {
+      try {
+        const row = database
+          .select({
+            createdAt: sql<number>`min(${oidcRefreshTokenTable.createdAt})`,
+            lastActivityAt: sql<number>`max(coalesce(${oidcRefreshTokenTable.lastUsedAt}, ${oidcRefreshTokenTable.createdAt}))`,
+            rowCount: sql<number>`count(*)`,
+          })
+          .from(oidcRefreshTokenTable)
+          .where(
+            and(
+              eq(oidcRefreshTokenTable.realmId, realmId),
+              eq(oidcRefreshTokenTable.clientId, clientId),
+              eq(oidcRefreshTokenTable.familyId, familyId),
+            ),
+          )
+          .get()
+        if (row === undefined || row.rowCount === 0) return resultCreate(null)
+        return resultCreate({ createdAt: row.createdAt, lastActivityAt: row.lastActivityAt })
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenFamilyBoundsGet",
+          "The refresh token family could not be read.",
+          "oidc.read-failed",
+        )
+      }
+    },
+
+    signingKeyDelete(realmId: string, signingKeyId: string): Result<OidcSigningKeyRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(oidcSigningKeyTable)
+            .where(and(eq(oidcSigningKeyTable.realmId, realmId), eq(oidcSigningKeyTable.id, signingKeyId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcSigningKeyDelete",
+          "The OIDC signing key could not be deleted.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
     signingKeyUpdate(
       realmId: string,
       signingKeyId: string,

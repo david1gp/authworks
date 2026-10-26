@@ -27,4 +27,5 @@ export const usersErrorCatalog = [
   { code: "users.event-invalid", httpStatus: 500, retryable: false },
   { code: "users.internal", httpStatus: 500, retryable: false },
   { code: "users.rate-limited", httpStatus: 429, retryable: true },
+  { code: "users.metadata-limit", httpStatus: 409, retryable: false },
 ] as const satisfies readonly ErrorCatalogEntry[]

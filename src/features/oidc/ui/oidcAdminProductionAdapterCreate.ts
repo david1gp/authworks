@@ -1,11 +1,13 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { projectApiClientCreate } from "../../projects/client/projectApiClientCreate.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import type { OidcAdminAdapter } from "./oidcAdminAdapter.js"
 import { oidcAdminApiCreate } from "./oidcAdminApiCreate.js"
 
 const pageSize = 25
+const projectPageSize = 100
 
 /**
  * Production adapter. Every call is realm-scoped and cookie-authenticated, so tenant
@@ -26,6 +28,9 @@ export function oidcAdminProductionAdapterCreate(options: {
     })
   const api = () => apiCreate(options.csrfToken?.())
   const realm = () => options.realmId()
+  const browserFetch = (input: string | URL | Request, init?: RequestInit) =>
+    (options.fetch ?? fetch)(input, { ...init, credentials: "same-origin" })
+  const projects = () => projectApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const listQuery = (pageToken?: string) => (pageToken === undefined ? { pageSize } : { pageSize, pageToken })
   const unwrap = async <TResponse, TValue>(
     operation: Promise<Result<TResponse>>,
@@ -55,6 +60,13 @@ export function oidcAdminProductionAdapterCreate(options: {
   }
 
   return {
+    applicationList: async (projectId) => {
+      const result = await projects().projectTenantApplicationList(realm(), projectId, {
+        pageSize: projectPageSize,
+      })
+      if (!result.success) return result
+      return resultCreate(result.data.items)
+    },
     clientCreate: (input) =>
       mutate(
         (client) => client.oidc.oidcClientTenantCreate(realm(), input),
@@ -100,6 +112,11 @@ export function oidcAdminProductionAdapterCreate(options: {
       ),
     discoveryGet: () => api().oidc.oidcDiscoveryGet(),
     jwksGet: () => api().oidc.oidcJwksGet(),
+    projectList: async () => {
+      const result = await projects().projectTenantList(realm(), { pageSize: projectPageSize })
+      if (!result.success) return result
+      return resultCreate(result.data.items)
+    },
     signingKeyCreate: () =>
       mutate(
         (client) => client.oidc.oidcSigningKeyTenantCreate(realm()),
@@ -116,10 +133,17 @@ export function oidcAdminProductionAdapterCreate(options: {
         (client) => client.oidc.oidcSigningKeyTenantRotate(realm()),
         (data) => data.signingKey,
       ),
-    users: async () => {
-      const result = await api().users.userTenantList(realm(), { pageSize: 100 })
-      if (!result.success) return result
-      return resultCreate(result.data.items.map((item) => ({ id: item.id, label: item.email })))
-    },
+    users: (query) =>
+      unwrap(
+        api().users.userTenantList(realm(), {
+          pageSize,
+          ...(query?.pageToken === undefined ? {} : { pageToken: query.pageToken }),
+          ...(query?.search === undefined ? {} : { search: query.search }),
+        }),
+        (data) => ({
+          items: data.items.map((item) => ({ id: item.id, label: item.email })),
+          ...(data.nextPageToken === undefined ? {} : { nextPageToken: data.nextPageToken }),
+        }),
+      ),
   }
 }

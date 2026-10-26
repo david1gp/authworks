@@ -57,7 +57,7 @@ export async function passkeyAuthenticationStart(
   let mfaChallengeId: string | undefined
   let userId = options.userId
   if (options.purpose === "mfa" && options.mfaChallengeToken !== undefined) {
-    const challenge = mfaLoginChallengeContextGet({
+    let challenge = mfaLoginChallengeContextGet({
       executor: options.database.db,
       expectedFactor: "passkey",
       expectedPurpose: "login",
@@ -65,7 +65,18 @@ export async function passkeyAuthenticationStart(
       realmId: options.realmId,
       token: options.mfaChallengeToken,
     })
-    if (!challenge.success) return challenge
+    if (!challenge.success) {
+      const stepUpChallenge = mfaLoginChallengeContextGet({
+        executor: options.database.db,
+        expectedFactor: "passkey",
+        expectedPurpose: "step_up",
+        now,
+        realmId: options.realmId,
+        token: options.mfaChallengeToken,
+      })
+      if (!stepUpChallenge.success) return challenge
+      challenge = stepUpChallenge
+    }
     if (userId !== undefined && userId !== challenge.data.userId)
       return resultErrorCreate(op, "The passkey MFA challenge is invalid.", "passkeys.unauthorized")
     userId = challenge.data.userId

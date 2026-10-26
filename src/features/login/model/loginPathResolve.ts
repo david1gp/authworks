@@ -21,6 +21,7 @@ const loginPathTable: Readonly<Record<string, LoginPathResolution>> = {
   "": { screen: "chooser" },
   "/chooser": { screen: "chooser" },
   "/chooser/recent-accounts": { screen: "recent-accounts" },
+  "/consent": { screen: "consent" },
   "/continuing": { screen: "loading", state: "continuing" },
   "/email-otp": { screen: "email-otp" },
   "/email-otp/code": { screen: "email-otp-code" },

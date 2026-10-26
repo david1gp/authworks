@@ -12,7 +12,7 @@ import { mfaCodePanelStateCreate } from "./mfaCodePanelStateCreate.js"
 type MfaCodePanelProps = {
   readonly code: string
   readonly errorMessage?: string
-  readonly kind: Extract<MfaFactor, "recovery-code" | "totp">
+  readonly kind: Extract<MfaFactor, "recovery_code" | "totp">
   readonly onBack: () => void
   readonly onCode: (value: string) => void
   readonly onSubmit: (event: SubmitEvent) => void

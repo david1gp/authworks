@@ -233,6 +233,16 @@ function organizationLoginPolicyOverrideValues(input: OrganizationLoginPolicySet
       ? {}
       : { providerIds: input.providerIds === null ? null : JSON.stringify(input.providerIds) }),
     ...(input.sessionLifetimeSeconds === undefined ? {} : { sessionLifetimeSeconds: input.sessionLifetimeSeconds }),
+    ...(input.mfaInitSkipLifetimeSeconds === undefined
+      ? {}
+      : { mfaInitSkipLifetimeSeconds: input.mfaInitSkipLifetimeSeconds }),
+    ...(input.secondFactorCheckLifetimeSeconds === undefined
+      ? {}
+      : { secondFactorCheckLifetimeSeconds: input.secondFactorCheckLifetimeSeconds }),
+    ...(input.multiFactorCheckLifetimeSeconds === undefined
+      ? {}
+      : { multiFactorCheckLifetimeSeconds: input.multiFactorCheckLifetimeSeconds }),
+    ...(input.forceMfaLocalOnly === undefined ? {} : { forceMfaLocalOnly: input.forceMfaLocalOnly }),
     ...(input.requiredMfa === undefined ? {} : { requiredMfa: input.requiredMfa }),
     ...(input.allowedFactors === undefined
       ? {}
@@ -263,6 +273,19 @@ function organizationLoginPolicyRealmValues(
     allowRegistration: input.allowRegistration ?? current.allowRegistration,
     sessionLifetimeSeconds:
       input.sessionLifetimeSeconds === undefined ? current.sessionLifetimeSeconds : input.sessionLifetimeSeconds,
+    mfaInitSkipLifetimeSeconds:
+      input.mfaInitSkipLifetimeSeconds === undefined
+        ? current.mfaInitSkipLifetimeSeconds
+        : input.mfaInitSkipLifetimeSeconds,
+    secondFactorCheckLifetimeSeconds:
+      input.secondFactorCheckLifetimeSeconds === undefined
+        ? current.secondFactorCheckLifetimeSeconds
+        : input.secondFactorCheckLifetimeSeconds,
+    multiFactorCheckLifetimeSeconds:
+      input.multiFactorCheckLifetimeSeconds === undefined
+        ? current.multiFactorCheckLifetimeSeconds
+        : input.multiFactorCheckLifetimeSeconds,
+    forceMfaLocalOnly: input.forceMfaLocalOnly ?? current.forceMfaLocalOnly,
     requiredMfa:
       input.requiredMfa === undefined
         ? current.requiredMfa

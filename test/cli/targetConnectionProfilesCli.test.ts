@@ -123,7 +123,7 @@ test("remaining target command trees preserve profile scope resolution without u
       },
       {
         authorization: undefined,
-        body: `{"authorizationRequired":false,"name":"Profile project","organizationId":"${organizationId}","projectAccessRequired":false}`,
+        body: `{"name":"Profile project","organizationId":"${organizationId}"}`,
         pathname: `/system/realms/${realmId}/projects`,
       },
       {
@@ -161,7 +161,7 @@ test("remaining target command trees preserve profile scope resolution without u
       },
       {
         authorization: "Bearer flag-system-token",
-        body: `{"authorizationRequired":false,"name":"Flag project","organizationId":"${organizationId}","projectAccessRequired":false}`,
+        body: `{"name":"Flag project","organizationId":"${organizationId}"}`,
         pathname: `/system/realms/${realmId}/projects`,
       },
     ])

@@ -779,6 +779,10 @@ function importLoginPolicy(
   const values = {
     allowPassword: input.allowUsernamePassword,
     allowExternalIdentity: input.allowExternalIdp,
+    forceMfaLocalOnly: input.forceMfaLocalOnly === true,
+    mfaInitSkipLifetimeSeconds: input.mfaInitSkipLifetimeSeconds ?? null,
+    multiFactorCheckLifetimeSeconds: input.multiFactorCheckLifetimeSeconds ?? null,
+    secondFactorCheckLifetimeSeconds: input.secondFactorCheckLifetimeSeconds ?? null,
     organizationId,
     realmId,
     updatedAt: sourceTimestamp(input.updatedAt ?? input.createdAt, input),
@@ -792,7 +796,11 @@ function importLoginPolicy(
   if (current.data === null) countCreated(state, "loginPolicies")
   else if (
     current.data.allowPassword === input.allowUsernamePassword &&
-    current.data.allowExternalIdentity === input.allowExternalIdp
+    current.data.allowExternalIdentity === input.allowExternalIdp &&
+    current.data.forceMfaLocalOnly === values.forceMfaLocalOnly &&
+    current.data.mfaInitSkipLifetimeSeconds === values.mfaInitSkipLifetimeSeconds &&
+    current.data.multiFactorCheckLifetimeSeconds === values.multiFactorCheckLifetimeSeconds &&
+    current.data.secondFactorCheckLifetimeSeconds === values.secondFactorCheckLifetimeSeconds
   )
     countUnchanged(state, "loginPolicies")
   else countUpdated(state, "loginPolicies")
@@ -1530,6 +1538,7 @@ function importOidcApplication(
   const compatibility = oidcClientCompatibilitySettingsValidate({
     accessTokenRoleAssertion: input.accessTokenRoleAssertion,
     additionalOrigins: input.additionalOrigins,
+    idTokenRoleAssertion: input.idTokenRoleAssertion,
     idTokenUserinfoAssertion: input.idTokenUserinfoAssertion,
   })
   if (!compatibility.success) return compatibility
@@ -1546,6 +1555,7 @@ function importOidcApplication(
     projectId,
     redirectUris: JSON.stringify(redirectUris),
     additionalOrigins: JSON.stringify(compatibility.data.additionalOrigins),
+    idTokenRoleAssertion: compatibility.data.idTokenRoleAssertion ? 1 : 0,
     idTokenUserinfoAssertion: compatibility.data.idTokenUserinfoAssertion ? 1 : 0,
     requireConsent: requireConsent ? 1 : 0,
     secretHash: existingClient?.secretHash ?? null,

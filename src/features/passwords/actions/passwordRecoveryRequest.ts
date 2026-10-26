@@ -4,6 +4,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
@@ -17,6 +18,7 @@ import { passwordTokenCreate } from "../domain/passwordTokenCreate.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRecoveryEventPayloadSchema } from "../events/passwordRecoveryEventPayloadSchema.js"
+import { passwordLoginRateLimitConsume } from "./passwordLoginRateLimitConsume.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import { type PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
 import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
@@ -24,8 +26,10 @@ import type { PasswordRecoveryResponse } from "../public/passwordRecoveryRespons
 
 type PasswordRecoveryRequestOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
+  readonly clientIp?: string
   readonly database: StorageDatabase
   readonly input: PasswordRecoveryRequest
+  readonly rateLimitSecret?: Secret | string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -41,6 +45,28 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   const parsed = v.safeParse(passwordRecoveryRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The recovery request is invalid.", "passwords.invalid")
   const email = userEmailNormalize(parsed.output.email)
+  if (options.rateLimitSecret !== undefined) {
+    const rateLimitIdentifier = email.success ? email.data : "invalid"
+    const rateLimitRuntime = options.runtime ?? options.database.runtime
+    const rateLimitNow = rateLimitRuntime.now()
+    if (!Number.isSafeInteger(rateLimitNow) || rateLimitNow < 0)
+      return resultErrorCreate(op, "The recovery timestamp is invalid.", "passwords.invalid-timestamp")
+    const limited = storageTransactionRun(options.database, (transaction) =>
+      passwordLoginRateLimitConsume(transaction, {
+        clientIp: options.clientIp ?? "unknown",
+        identifier: rateLimitIdentifier,
+        now: rateLimitNow,
+        operation: "recovery_request",
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: options.realmId,
+      }),
+    )
+    if (!limited.success) return limited
+    // The recovery request contract is always-accepted, so a 429 would leak
+    // enumeration signal. When limited, return accepted without creating or
+    // delivering a token instead.
+    if (!limited.data.allowed) return resultCreate({ accepted: true })
+  }
   if (!email.success) return resultCreate({ accepted: true })
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return resultCreate({ accepted: true })

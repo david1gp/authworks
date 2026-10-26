@@ -44,6 +44,7 @@ export function adminApiCreate(options: { readonly baseUrl: string; readonly fet
         realmId,
         schema: sessionRevocationResponseSchema,
       }),
+    eventExport: events.eventTenantExport,
     eventList: events.eventTenantList,
     realmGet: realms.realmTenantGet,
     realmUpdate: realms.realmTenantUpdate,

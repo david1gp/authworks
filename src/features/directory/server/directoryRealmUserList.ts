@@ -1,6 +1,5 @@
 import * as v from "valibot"
 import type { Result } from "#result"
-import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationRolesDecode } from "../../organizations/domain/organizationRolesDecode.js"
@@ -8,7 +7,7 @@ import { organizationRepositoryCreate } from "../../organizations/persistence/or
 import { organizationMembershipListByOrganization } from "../../organizations/server/organizationMembershipListByOrganization.js"
 import type { RealmTenantContext } from "../../realms/server/index.js"
 import type { User } from "../../users/public/userSchema.js"
-import { userBulkRead } from "../../users/server/userBulkRead.js"
+import { userRealmList } from "../../users/server/userRealmList.js"
 import { directoryUserViewCreate } from "../domain/directoryUserViewCreate.js"
 import type { DirectoryMembership } from "../public/directoryMembershipSchema.js"
 import { directoryMembershipSchema } from "../public/directoryMembershipSchema.js"
@@ -36,21 +35,18 @@ export function directoryRealmUserList(options: DirectoryRealmUserListOptions): 
       .filter((organization) => organization.status === "active")
       .map((organization) => [organization.id, organization.name] as const),
   )
-  const activeOrganizationIds = [...activeOrganizationNames.keys()]
-  const memberships =
-    activeOrganizationIds.length === 0
-      ? resultCreate([] as { createdAt: number; id: string; organizationId: string; roles: string; userId: string }[])
-      : organizationMembershipListByOrganization({
-          database: options.database,
-          organizationIds: activeOrganizationIds,
-          realmId: options.realmId,
-        })
+  const memberships = organizationMembershipListByOrganization({
+    database: options.database,
+    organizationIds: [...activeOrganizationNames.keys()],
+    realmId: options.realmId,
+  })
   if (!memberships.success) return memberships
-  if (memberships.data.length === 0) return resultCreate({ items: [] })
-  const memberUserIds = [...new Set(memberships.data.map((row) => row.userId))]
-  const users = userBulkRead({ database: options.database, realmId: options.realmId, userIds: memberUserIds })
+  const users = userRealmList({
+    database: options.database,
+    ...(parsed.output.state === "deleted" ? { includeDeleted: true } : {}),
+    realmId: options.realmId,
+  })
   if (!users.success) return users
-  if (users.data.length === 0) return resultCreate({ items: [] })
   const usersById = new Map<string, User>()
   for (const user of users.data) usersById.set(user.id, user)
   const rowsByUser = new Map<string, typeof memberships.data>()
@@ -79,7 +75,6 @@ export function directoryRealmUserList(options: DirectoryRealmUserListOptions): 
         return resultErrorCodedCreate(op, "The directory membership is invalid.", "directory.invalid")
       items.push(candidate.output)
     }
-    if (items.length === 0) continue
     items.sort((left, right) => left.organizationId.localeCompare(right.organizationId))
     const userView = directoryUserViewCreate(user)
     if (!userView.success) return userView

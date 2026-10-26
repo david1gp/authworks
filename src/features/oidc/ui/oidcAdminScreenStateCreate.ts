@@ -45,12 +45,20 @@ export function oidcAdminScreenStateCreate(options: {
     })
   const search = () => new URLSearchParams(location.search).get("q") ?? ""
   const consentUserId = () => new URLSearchParams(location.search).get("userId") ?? undefined
+  const consentUserSearch = () => new URLSearchParams(location.search).get("userSearch") ?? undefined
+  const consentUserSearchSet = (value: string) =>
+    searchParamsSet((params) => {
+      if (value.length === 0) params.delete("userSearch")
+      else params.set("userSearch", value)
+    })
 
   const page = oidcAdminPageStateCreate({
     adapter: options.adapter,
     clientId: options.clientId,
     confirm: confirmState.confirm,
     consentUserId,
+    consentUserSearch,
+    consentUserSearchSet,
     ...(options.issuedSecretSeed === undefined ? {} : { issuedSecretSeed: options.issuedSecretSeed }),
     ...(options.onIssuedSecretAcknowledge === undefined
       ? {}
@@ -66,14 +74,18 @@ export function oidcAdminScreenStateCreate(options: {
       page,
     }),
     detail: oidcAdminClientDetailViewStateCreate({
+      applicationList: (projectId) => options.adapter.applicationList(projectId),
       onRemoved: () => navigate(`${options.basePath}/oidc-clients`),
       page,
+      projectList: () => options.adapter.projectList(),
     }),
     list: oidcAdminClientListViewStateCreate({
+      applicationList: (projectId) => options.adapter.applicationList(projectId),
       clientOpen: (clientId) => navigate(`${options.basePath}/oidc-clients/${clientId}`),
       createOpen: () => dialogOpen("client"),
       createOpenSet: dialogOpenSet("client"),
       page,
+      projectList: () => options.adapter.projectList(),
       search,
       searchSet: (value: string) =>
         searchParamsSet((params) => {

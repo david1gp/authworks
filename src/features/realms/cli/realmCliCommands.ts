@@ -309,6 +309,169 @@ const realmUpdateCommand = buildCommand({
   docs: { brief: "Update a realm" },
 })
 
+const realmTenantGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: RealmCliFlags & { readonly realmId?: string }) {
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    const result = await realmCliClientCreate(connection).realmTenantGet(realmId)
+    realmCliResultWrite(this, result, [connection.token])
+  },
+  parameters: {
+    flags: {
+      ...connectionProfileCliCentralFlags(),
+      realmId: {
+        brief: "Realm UUID",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "REALM_ID",
+      },
+      server: {
+        brief: "Authworks server URL",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "URL",
+      },
+      token: {
+        brief: "Bearer [REDACTED]",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "TOKEN",
+      },
+    },
+  },
+  docs: { brief: "Get a tenant realm" },
+})
+
+const realmTenantUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: RealmUpdateCliFlags) {
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    const result = await realmCliClientCreate(connection).realmTenantUpdate(realmId, {
+      ...(flags.name === undefined ? {} : { name: flags.name }),
+      ...(flags.domain === undefined ? {} : { domain: flags.domain }),
+      ...(flags.status === undefined ? {} : { status: flags.status }),
+    })
+    realmCliResultWrite(this, result, [connection.token])
+  },
+  parameters: {
+    flags: {
+      ...connectionProfileCliCentralFlags(),
+      realmId: {
+        brief: "Realm UUID",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "REALM_ID",
+      },
+      server: {
+        brief: "Authworks server URL",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "URL",
+      },
+      token: {
+        brief: "Bearer [REDACTED]",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "TOKEN",
+      },
+      name: {
+        brief: "Realm display name",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "NAME",
+      },
+      domain: {
+        brief: "Primary realm domain",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value,
+        placeholder: "DOMAIN",
+      },
+      status: {
+        brief: "Realm status",
+        kind: "parsed",
+        optional: true,
+        parse: (value: string) => value as "active" | "disabled",
+        placeholder: "STATUS",
+      },
+    },
+  },
+  docs: { brief: "Update a tenant realm" },
+})
+
+const realmTenantAdministratorCommand = (action: "list" | "grant" | "revoke") =>
+  buildCommand({
+    async func(this: ApplicationContext, flags: RealmAdministratorCliFlags) {
+      const connection = await realmCliConnectionResolve(this, flags)
+      if (connection === undefined) return
+      const realmId = scopeIdResolve(this, connection.realmId, "realm")
+      if (realmId === undefined) return
+      const client = realmCliClientCreate(connection)
+      if (action === "list") {
+        realmCliResultWrite(this, await client.realmTenantAdministratorList(realmId), [connection.token])
+        return
+      }
+      if (flags.userId === undefined || flags.userId.trim().length === 0) {
+        this.process.stderr.write("Expected input for flag --user-id\n")
+        this.process.exitCode = 1
+        return
+      }
+      if (action === "grant")
+        realmCliResultWrite(this, await client.realmTenantAdministratorGrant(realmId, { userId: flags.userId }), [
+          connection.token,
+        ])
+      else
+        realmCliResultWrite(this, await client.realmTenantAdministratorRevoke(realmId, flags.userId), [
+          connection.token,
+        ])
+    },
+    parameters: {
+      flags: {
+        ...connectionProfileCliCentralFlags(),
+        realmId: {
+          brief: "Realm UUID",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "REALM_ID",
+        },
+        server: {
+          brief: "Authworks server URL",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "URL",
+        },
+        token: {
+          brief: "Bearer [REDACTED]",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "TOKEN",
+        },
+        userId: {
+          brief: "User UUID",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "USER_ID",
+        },
+      },
+    },
+    docs: { brief: `Tenant realm administrators ${action}` },
+  })
+
 export const realmCliCommands = buildRouteMap({
   routes: {
     administrators: buildRouteMap({
@@ -323,6 +486,11 @@ export const realmCliCommands = buildRouteMap({
     create: realmCreateCommand,
     get: realmGetCommand,
     list: realmListCommand,
+    tenantAdministratorGrant: realmTenantAdministratorCommand("grant"),
+    tenantAdministratorList: realmTenantAdministratorCommand("list"),
+    tenantAdministratorRevoke: realmTenantAdministratorCommand("revoke"),
+    tenantGet: realmTenantGetCommand,
+    tenantUpdate: realmTenantUpdateCommand,
     update: realmUpdateCommand,
   },
   docs: { brief: "Realm administration" },

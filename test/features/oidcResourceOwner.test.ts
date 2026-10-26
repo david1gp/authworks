@@ -259,7 +259,12 @@ test("OIDC resource-owner claims require valid membership and use an explicit ac
         headers: { authorization: `Bearer ${standardMembership.token.access_token}` },
       }),
     )
-    expect(await standardUserInfo.json()).toEqual({ sub: authenticated.userId })
+    expect(await standardUserInfo.json()).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
+      sub: authenticated.userId,
+    })
 
     const oneMembership = await createOidcTokenFixture(database, authenticated)
     const oneIdToken = oidcJwtVerify(oneMembership.token.id_token, oneMembership.key.publicJwk)
@@ -273,6 +278,9 @@ test("OIDC resource-owner claims require valid membership and use an explicit ac
       }),
     )
     expect(v.parse(oidcUserInfoSchema, await oneUserInfo.json())).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
       [oidcResourceOwnerClaim]: firstOrganization.data.organization.id,
       sub: authenticated.userId,
     })
@@ -296,7 +304,12 @@ test("OIDC resource-owner claims require valid membership and use an explicit ac
         headers: { authorization: `Bearer ${ambiguous.token.access_token}` },
       }),
     )
-    expect(await ambiguousUserInfo.json()).toEqual({ sub: authenticated.userId })
+    expect(await ambiguousUserInfo.json()).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
+      sub: authenticated.userId,
+    })
 
     const bootstrap = realmBootstrapAdminCreate({
       context: realmSystemContextCreate("system"),
@@ -339,6 +352,9 @@ test("OIDC resource-owner claims require valid membership and use an explicit ac
       }),
     )
     expect(v.parse(oidcUserInfoSchema, await selectedUserInfo.json())).toEqual({
+      acr: "authenticated",
+      amr: ["impersonation"],
+      auth_time: 1_700_000_000,
       [oidcResourceOwnerClaim]: firstOrganization.data.organization.id,
       act: { sub: bootstrapContext.data.actor.actorId },
       sub: authenticated.userId,

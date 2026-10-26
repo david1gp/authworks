@@ -44,7 +44,7 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The user is not available in this tenant context.", "users.tenant-mismatch")
   const parsed = v.safeParse(userProfileUpdateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The patch is invalid.", "platform.invalid")
+  if (!parsed.success) return resultErrorCreate(op, "The patch is invalid.", "users.invalid")
   if (options.picture === undefined && Object.keys(parsed.output).length === 0)
     return resultErrorCreate(op, "The patch is empty.", "users.empty-patch")
   const profile = userProfileNormalize({

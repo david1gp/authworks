@@ -45,6 +45,18 @@ export function organizationLoginPolicyOverrideViewCreate(
     ...(policy.sessionLifetimeSeconds === null || policy.sessionLifetimeSeconds === undefined
       ? {}
       : { sessionLifetimeSeconds: policy.sessionLifetimeSeconds }),
+    ...(policy.mfaInitSkipLifetimeSeconds === null || policy.mfaInitSkipLifetimeSeconds === undefined
+      ? {}
+      : { mfaInitSkipLifetimeSeconds: policy.mfaInitSkipLifetimeSeconds }),
+    ...(policy.secondFactorCheckLifetimeSeconds === null || policy.secondFactorCheckLifetimeSeconds === undefined
+      ? {}
+      : { secondFactorCheckLifetimeSeconds: policy.secondFactorCheckLifetimeSeconds }),
+    ...(policy.multiFactorCheckLifetimeSeconds === null || policy.multiFactorCheckLifetimeSeconds === undefined
+      ? {}
+      : { multiFactorCheckLifetimeSeconds: policy.multiFactorCheckLifetimeSeconds }),
+    ...(policy.forceMfaLocalOnly === null || policy.forceMfaLocalOnly === undefined
+      ? {}
+      : { forceMfaLocalOnly: policy.forceMfaLocalOnly }),
     ...(policy.requiredMfa === null || policy.requiredMfa === undefined ? {} : { requiredMfa: policy.requiredMfa }),
     ...(allowedFactors.data === null ? {} : { allowedFactors: allowedFactors.data }),
     ...(preferredFactorOrder.data === null ? {} : { preferredFactorOrder: preferredFactorOrder.data }),

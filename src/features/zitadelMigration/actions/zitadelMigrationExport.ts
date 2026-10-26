@@ -5,6 +5,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { oidcOriginValidate } from "../../oidc/public/oidcOriginValidate.js"
 import { zitadelApiClientCreate } from "../client/zitadelApiClientCreate.js"
+import { zitadelMigrationDurationSecondsGet } from "../domain/zitadelMigrationDurationSecondsGet.js"
 import type { ZitadelMigrationIssue } from "../public/zitadelMigrationIssue.js"
 import { zitadelMigrationResultIssueClassify } from "../public/zitadelMigrationResultIssueClassify.js"
 import {
@@ -702,6 +703,7 @@ function oidcApplicationMap(
     sourceId,
     tokenEndpointAuthMethod,
     ...(trusted === undefined ? {} : { trusted }),
+    idTokenRoleAssertion: compatibility.idTokenRoleAssertion,
     idTokenUserinfoAssertion: compatibility.idTokenUserinfoAssertion,
     updatedAt,
     status,
@@ -826,7 +828,6 @@ function oidcApplicationUnsupportedSettings(
   if (oidc.nonCompliant === true) unsupported.push("non-compliant")
   const compatibility = oidcApplicationCompatibilityMap(raw, oidc)
   unsupported.push(...compatibility.unsupported)
-  if (oidc.idTokenRoleAssertion === true) unsupported.push("id-token-role-assertion")
   if (oidc.skipNativeAppSuccessPage === true) unsupported.push("skip-native-app-success-page")
   if (stringGet(oidc.backChannelLogoutUri) !== undefined) unsupported.push("back-channel-logout-uri")
   if (oidc.loginVersion !== undefined) unsupported.push("login-version")
@@ -843,22 +844,29 @@ function oidcApplicationCompatibilityMap(
 ): {
   readonly accessTokenRoleAssertion: boolean
   readonly additionalOrigins: string[]
+  readonly idTokenRoleAssertion: boolean
   readonly idTokenUserinfoAssertion: boolean
   readonly unsupported: readonly string[]
 } {
   const accessTokenRoleAssertionValue = oidcApplicationSettingGet(raw, oidc, "accessTokenRoleAssertion")
+  const idTokenRoleAssertionValue = oidcApplicationSettingGet(raw, oidc, "idTokenRoleAssertion")
   const idTokenUserinfoAssertionValue = oidcApplicationSettingGet(raw, oidc, "idTokenUserinfoAssertion")
   const additionalOriginsValue = oidcApplicationSettingGet(raw, oidc, "additionalOrigins")
   const accessTokenRoleAssertion = booleanGet(accessTokenRoleAssertionValue)
+  const idTokenRoleAssertion = booleanGet(idTokenRoleAssertionValue)
   const idTokenUserinfoAssertion = booleanGet(idTokenUserinfoAssertionValue)
   const additionalOrigins = oidcAdditionalOriginsMap(additionalOriginsValue)
   return {
     accessTokenRoleAssertion: accessTokenRoleAssertion ?? false,
     additionalOrigins: additionalOrigins ?? [],
+    idTokenRoleAssertion: idTokenRoleAssertion ?? false,
     idTokenUserinfoAssertion: idTokenUserinfoAssertion ?? false,
     unsupported: [
       ...(accessTokenRoleAssertionValue !== undefined && accessTokenRoleAssertion === undefined
         ? ["access-token-role-assertion"]
+        : []),
+      ...(idTokenRoleAssertionValue !== undefined && idTokenRoleAssertion === undefined
+        ? ["id-token-role-assertion"]
         : []),
       ...(idTokenUserinfoAssertionValue !== undefined && idTokenUserinfoAssertion === undefined
         ? ["id-token-userinfo-assertion"]
@@ -1090,6 +1098,11 @@ function loginPolicyMap(
     return undefined
   const createdAt = timestampGet(objectGet(raw.details)?.creationDate ?? raw.creationDate ?? raw.createdAt)
   const updatedAt = timestampGet(objectGet(raw.details)?.changeDate ?? raw.changeDate ?? raw.updatedAt) ?? createdAt
+  const mfaInitSkipLifetimeSeconds = zitadelMigrationDurationSecondsGet(raw.mfaInitSkipLifetime)
+  const secondFactorCheckLifetimeSeconds = zitadelMigrationDurationSecondsGet(raw.secondFactorCheckLifetime)
+  const multiFactorCheckLifetimeSeconds = zitadelMigrationDurationSecondsGet(
+    raw.multiFactorCheckLifetime ?? raw.multifactorCheckLifetime,
+  )
   return {
     allowExternalIdp: allowExternalIdp === true,
     allowUsernamePassword: allowUsernamePassword === true,
@@ -1097,6 +1110,10 @@ function loginPolicyMap(
     sourceId: organizationId,
     ...(createdAt === undefined ? {} : { createdAt }),
     ...(updatedAt === undefined ? {} : { updatedAt }),
+    ...(mfaInitSkipLifetimeSeconds === undefined ? {} : { mfaInitSkipLifetimeSeconds }),
+    ...(secondFactorCheckLifetimeSeconds === undefined ? {} : { secondFactorCheckLifetimeSeconds }),
+    ...(multiFactorCheckLifetimeSeconds === undefined ? {} : { multiFactorCheckLifetimeSeconds }),
+    ...(raw.forceMfaLocalOnly === true ? { forceMfaLocalOnly: true } : {}),
   }
 }
 

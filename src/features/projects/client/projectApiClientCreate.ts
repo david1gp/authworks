@@ -896,6 +896,8 @@ function projectListPath(path: string, query: ListQuery | ProjectListQuery | und
   if (query.search !== undefined) params.set("search", query.search)
   if ("organizationId" in query && query.organizationId !== undefined)
     params.set("organizationId", query.organizationId)
+  if ("grantedToOrganizationId" in query && query.grantedToOrganizationId !== undefined)
+    params.set("grantedToOrganizationId", query.grantedToOrganizationId)
   if ("status" in query && query.status !== undefined) params.set("status", query.status)
   if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
   if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)

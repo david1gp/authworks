@@ -12,8 +12,13 @@ import { passkeyAuthenticationCompleteResponseSchema } from "../public/passkeyAu
 import type { PasskeyAuthenticationStartRequest } from "../public/passkeyAuthenticationStartRequestSchema.js"
 import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
 import { passkeyAuthenticationStartResponseSchema } from "../public/passkeyAuthenticationStartResponseSchema.js"
+import type { PasskeyMfaAuthenticationStartRequest } from "../public/passkeyMfaAuthenticationStartRequestSchema.js"
+import { passkeyMfaAuthenticationStartRequestSchema } from "../public/passkeyMfaAuthenticationStartRequestSchema.js"
 import type { PasskeyCredentialListResponse } from "../public/passkeyCredentialListResponseSchema.js"
 import { passkeyCredentialListResponseSchema } from "../public/passkeyCredentialListResponseSchema.js"
+import type { PasskeyCredentialRenameRequest } from "../public/passkeyCredentialRenameRequestSchema.js"
+import { passkeyCredentialRenameRequestSchema } from "../public/passkeyCredentialRenameRequestSchema.js"
+import { passkeyCredentialRenameResponseSchema } from "../public/passkeyCredentialRenameResponseSchema.js"
 import type { PasskeyCredentialRevokeRequest } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyCredentialRevokeRequestSchema } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyCredentialRevokeResponseSchema } from "../public/passkeyCredentialRevokeResponseSchema.js"
@@ -96,6 +101,32 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
         passkeyAuthenticationCompleteResponseSchema,
       )
     },
+    passkeyMfaLoginStart(realmId: string, token: string) {
+      const checked = parsed<PasskeyMfaAuthenticationStartRequest>(
+        passkeyMfaAuthenticationStartRequestSchema,
+        { token },
+        "The MFA passkey login request is invalid.",
+      )
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/passkeys/mfa/login/start`,
+        json(checked.data),
+        passkeyAuthenticationStartResponseSchema,
+      )
+    },
+    passkeyMfaLoginComplete(realmId: string, input: PasskeyAuthenticationCompleteRequest) {
+      const checked = parsed(
+        passkeyAuthenticationCompleteRequestSchema,
+        input,
+        "The passkey authentication response is invalid.",
+      )
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/passkeys/mfa/login/complete`,
+        json(checked.data),
+        passkeyAuthenticationCompleteResponseSchema,
+      )
+    },
     passkeyMfaStart(realmId: string) {
       return request(
         `/realms/${encodeURIComponent(realmId)}/passkeys/mfa/start`,
@@ -141,6 +172,22 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/passkeys${listQueryToSearchParams(query)}`,
         { method: "GET" },
         passkeyCredentialListResponseSchema,
+      )
+    },
+    passkeyCredentialRename(realmId: string, credentialId: string, input: PasskeyCredentialRenameRequest) {
+      const checked = parsed(passkeyCredentialRenameRequestSchema, input, "The passkey credential nickname is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/passkeys/${encodeURIComponent(credentialId)}`,
+        { ...json(checked.data), method: "PATCH" },
+        passkeyCredentialRenameResponseSchema,
+      )
+    },
+    passkeyCredentialAdministratorRevoke(realmId: string, userId: string, credentialId: string) {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/passkeys/${encodeURIComponent(credentialId)}`,
+        { method: "DELETE" },
+        passkeyCredentialRevokeResponseSchema,
       )
     },
     passkeyCredentialRevoke(realmId: string, input: PasskeyCredentialRevokeRequest) {

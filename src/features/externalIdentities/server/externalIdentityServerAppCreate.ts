@@ -44,6 +44,7 @@ import { externalIdentityLinkBrowserResponseCreate } from "./externalIdentityLin
 
 type ExternalIdentityServerAppCreateOptions = {
   readonly accountUiOrigin?: string
+  readonly allowDevelopmentFallback?: boolean
   readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly profilePictureImport?: (input: {
@@ -97,9 +98,11 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
             success: false,
           }
         : await externalIdentityCallback({
+            allowDevelopmentFallback: options.allowDevelopmentFallback === true,
             code: input.code,
             database: options.database,
             deviceMetadata: externalIdentityDeviceMetadataGet(context),
+            encryptionSecret: options.systemSecret,
             realmId: input.realmId,
             providerId: input.providerId,
             providerPorts,
@@ -278,8 +281,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderCreate({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         context: systemContext,
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
       }),
@@ -308,8 +313,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderCreate({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         context: realmSystemContextCreate(authorized.data.actorId),
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
       }),
@@ -377,8 +384,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderUpdate({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         context: systemContext,
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
@@ -407,8 +416,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderUpdate({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         context: realmSystemContextCreate(authorized.data.actorId),
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
@@ -475,8 +486,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       })
     return externalIdentityResultResponseCreate(
       context,
-      externalIdentityStart({
+      await externalIdentityStart({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
@@ -564,8 +577,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       if (!callbackOrigin.success) return externalIdentityErrorResponseCreate(context, callbackOrigin)
       return externalIdentityResultResponseCreate(
         context,
-        externalIdentityLinkStart({
+        await externalIdentityLinkStart({
+          allowDevelopmentFallback: options.allowDevelopmentFallback === true,
           database: options.database,
+          encryptionSecret: options.systemSecret,
           input: input.output,
           realmId: context.req.param("realmId"),
           providerId: context.req.param("providerId"),
@@ -642,8 +657,10 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     if (!callbackOrigin.success) return externalIdentityErrorResponseCreate(context, callbackOrigin)
     return externalIdentityResultResponseCreate(
       context,
-      externalIdentityLinkStart({
+      await externalIdentityLinkStart({
+        allowDevelopmentFallback: options.allowDevelopmentFallback === true,
         database: options.database,
+        encryptionSecret: options.systemSecret,
         input: input.output,
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),

@@ -201,6 +201,39 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    passkeyCredentialRename(
+      realmId: string,
+      userId: string,
+      id: string,
+      expectedVersion: number,
+      nickname: string,
+    ): Result<PasskeyCredentialRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(passkeyCredentialTable)
+            .set({ nickname, version: expectedVersion + 1 })
+            .where(
+              and(
+                eq(passkeyCredentialTable.realmId, realmId),
+                eq(passkeyCredentialTable.userId, userId),
+                eq(passkeyCredentialTable.id, id),
+                eq(passkeyCredentialTable.version, expectedVersion),
+                isNull(passkeyCredentialTable.revokedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passkeyCredentialRename",
+          "The passkey credential could not be renamed.",
+          "passkeys.write-failed",
+        )
+      }
+    },
+
     passkeyCredentialRevoke(
       realmId: string,
       userId: string,

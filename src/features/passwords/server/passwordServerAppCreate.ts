@@ -24,6 +24,8 @@ import { passwordChange } from "../actions/passwordChange.js"
 import { passwordCredentialReplace } from "../actions/passwordCredentialReplace.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
 import { passwordLogin } from "../actions/passwordLogin.js"
+import { passwordOrgPolicyGet } from "../actions/passwordOrgPolicyGet.js"
+import { passwordOrgPolicySet } from "../actions/passwordOrgPolicySet.js"
 import { passwordPolicyGet } from "../actions/passwordPolicyGet.js"
 import { passwordPolicySet } from "../actions/passwordPolicySet.js"
 import { passwordRecoveryComplete } from "../actions/passwordRecoveryComplete.js"
@@ -210,9 +212,11 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     if (!input.success)
       return passwordErrorResponseCreate(context, { errorMessage: "The credentials are invalid.", op: "passwordLogin" })
     const loggedIn = passwordLogin({
+      clientIp: passwordTrustedClientIpGet(context, options),
       context: tenant.data,
       database: options.database,
       input: input.output,
+      rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
       realmId: context.req.param("realmId"),
       organizationId: input.output.organizationId,
       deviceMetadata: passwordDeviceMetadataGet(context),
@@ -269,9 +273,11 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordRecoveryRequest({
+        clientIp: passwordTrustedClientIpGet(context, options),
         context: tenant.data,
         database: options.database,
         input: input.output,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
         realmId: context.req.param("realmId"),
         onRecoveryToken: options.onRecoveryToken,
       }),
@@ -297,9 +303,11 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordRecoveryComplete({
+        clientIp: passwordTrustedClientIpGet(context, options),
         context: tenant.data,
         database: options.database,
         input: input.output,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
         realmId: context.req.param("realmId"),
       }),
     )
@@ -375,6 +383,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: subject.data,
         database: options.database,
         input: input.output,
+        organizationId: context.get("session").organizationId,
         realmId: context.req.param("realmId"),
         userId: subject.data.actorId,
       }),
@@ -452,6 +461,47 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     )
   })
 
+  app.get("/realms/:realmId/organizations/:organizationId/password-policy", protectedMiddleware, (context) => {
+    const tenant = passwordOrgAdminContextResolve(context, context.req.param("realmId"))
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+    return passwordResultResponseCreate(
+      context,
+      passwordOrgPolicyGet({
+        context: tenant.data,
+        database: options.database,
+        organizationId: context.req.param("organizationId"),
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.patch(
+    "/realms/:realmId/organizations/:organizationId/password-policy",
+    policyWriteMiddleware,
+    async (context) => {
+      const tenant = passwordOrgAdminContextResolve(context, context.req.param("realmId"))
+      if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+      const body = await passwordRequestJsonRead(context)
+      if (!body.success) return passwordErrorResponseCreate(context, body)
+      const input = v.safeParse(passwordPolicySetRequestSchema, body.data)
+      if (!input.success)
+        return passwordErrorResponseCreate(context, {
+          errorMessage: "The password policy is invalid.",
+          op: "passwordOrgPolicySet",
+        })
+      return passwordResultResponseCreate(
+        context,
+        passwordOrgPolicySet({
+          context: tenant.data,
+          database: options.database,
+          input: input.output,
+          organizationId: context.req.param("organizationId"),
+          realmId: context.req.param("realmId"),
+        }),
+      )
+    },
+  )
+
   app.get("/system/realms/:realmId/password-policy", (context) => {
     const authorization = passwordSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return passwordErrorResponseCreate(context, authorization)
@@ -488,6 +538,29 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   return app
+}
+
+function passwordOrgAdminContextResolve(
+  context: { readonly get: (key: "authorizationActor") => AuthorizationActorContext },
+  realmId: string,
+) {
+  const actor = context.get("authorizationActor")
+  if (actor.realmId !== realmId)
+    return {
+      errorMessage: "The actor is not available in this tenant context.",
+      op: "passwordOrgAdminContextResolve",
+      success: false as const,
+    }
+  if (actor.kind !== "user" && actor.kind !== "bootstrap_admin")
+    return {
+      errorMessage: "The actor is not authorized for organization password policy administration.",
+      op: "passwordOrgAdminContextResolve",
+      success: false as const,
+    }
+  return {
+    data: { actor, actorId: actor.actorId, kind: "tenant" as const, realmId },
+    success: true as const,
+  }
 }
 
 function passwordTenantContextResolve(

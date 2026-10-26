@@ -14,6 +14,7 @@ export const adminDemoUserAuthenticationMethodsFixture: UserAuthenticationMethod
         deviceType: "multiDevice",
         id: "passkey-admin-demo",
         lastUsedAt: now - 60_000,
+        nickname: null,
         revokedAt: null,
         transports: ["internal", "hybrid"],
       },

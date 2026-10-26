@@ -2,11 +2,11 @@ import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
-import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import { externalIdentityApiClientCreate } from "../../externalIdentities/client/externalIdentityApiClientCreate.js"
 import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
+import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 
 type OrganizationAdminFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -109,6 +109,16 @@ export function organizationAdminApiCreate(options: {
     membershipRemove: (organizationId, membershipId) =>
       write((clients) =>
         clients.organizations.organizationTenantMembershipRemove(options.realmId(), organizationId, membershipId),
+      ),
+    metadataList: (organizationId) =>
+      readClients().organizations.organizationTenantMetadataList(options.realmId(), organizationId),
+    metadataRemove: (organizationId, key) =>
+      write((clients) =>
+        clients.organizations.organizationTenantMetadataRemove(options.realmId(), organizationId, key),
+      ),
+    metadataSet: (organizationId, key, input) =>
+      write((clients) =>
+        clients.organizations.organizationTenantMetadataSet(options.realmId(), organizationId, key, input),
       ),
     membershipUpdate: (organizationId, membershipId, input) =>
       write((clients) =>

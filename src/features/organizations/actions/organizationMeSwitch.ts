@@ -21,7 +21,7 @@ export function organizationMeSwitch(options: OrganizationMeSwitchOptions): Resu
   const subject = organizationSubjectUserGet(options)
   if (!subject.success) return subject
   if (options.sessionId === undefined)
-    return resultErrorCodedCreate(op, "The authenticated session is required.", "sessions.unauthorized")
+    return resultErrorCodedCreate(op, "The authenticated session is required.", "organizations.unauthorized")
   const parsed = v.safeParse(organizationMeSwitchRequestSchema, options.input)
   if (!parsed.success)
     return resultErrorCodedCreate(op, "The organization switch request is invalid.", "organizations.invalid")

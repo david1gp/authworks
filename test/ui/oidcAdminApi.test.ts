@@ -7,17 +7,25 @@ const userId = "018f0000-0000-7000-8000-000000000021"
 
 const client = {
   allowedScopes: ["openid"],
+  accessTokenLifetimeSeconds: null,
   accessTokenRoleAssertion: false,
   clientType: "confidential",
   additionalOrigins: [],
   createdAt: 1,
+  devMode: false,
+  grantTypes: ["authorization_code", "refresh_token"],
   id: clientId,
+  idTokenLifetimeSeconds: null,
+  idTokenRoleAssertion: false,
   idTokenUserinfoAssertion: false,
   name: "Acme Web Portal",
   postLogoutRedirectUris: [],
   realmId,
   redirectUris: ["https://portal.acme.example/callback"],
+  refreshTokenAbsoluteLifetimeSeconds: null,
+  refreshTokenIdleLifetimeSeconds: null,
   requireConsent: true,
+  responseTypes: ["code"],
   status: "active",
   trusted: false,
   updatedAt: 1,
@@ -158,6 +166,45 @@ describe("OIDC administration production adapter", () => {
       `/realms/${realmId}/oidc/consents/${userId}/${clientId}/revoke`,
     )
     expect(revoked.success && revoked.data.revoked).toBe(true)
+  })
+
+  test("reads projects and applications from realm-scoped tenant paths", async () => {
+    const projectId = "018f0000-0000-7000-8000-000000000031"
+    const project = {
+      authorizationRequired: true,
+      createdAt: 1,
+      id: projectId,
+      name: "Acme Portal",
+      organizationId: "018f0000-0000-7000-8000-000000000011",
+      projectAccessRequired: false,
+      realmId,
+      status: "active",
+      updatedAt: 1,
+    }
+    const application = {
+      applicationType: "oidc",
+      createdAt: 1,
+      id: "018f0000-0000-7000-8000-000000000051",
+      name: "Acme Web Portal",
+      projectId,
+      realmId,
+      status: "active",
+      updatedAt: 1,
+    }
+    const { adapter, requests } = adapterCreate((url) =>
+      url.includes("/applications") ? Response.json({ items: [application] }) : Response.json({ items: [project] }),
+    )
+
+    const projects = await adapter.projectList()
+    const applications = await adapter.applicationList(projectId)
+
+    expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
+      `/realms/${realmId}/projects`,
+      `/realms/${realmId}/projects/${projectId}/applications`,
+    ])
+    for (const request of requests) expect(request.init?.credentials).toBe("same-origin")
+    expect(projects.success && projects.data).toHaveLength(1)
+    expect(applications.success && applications.data).toHaveLength(1)
   })
 
   test("reads discovery and JWKS from the read-only well-known endpoints", async () => {

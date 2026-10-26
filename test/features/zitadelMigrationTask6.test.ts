@@ -50,6 +50,7 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
       accessTokenRoleAssertion: 1,
       additionalOrigins: JSON.stringify(["https://origin.example"]),
       allowedScopes: JSON.stringify(["openid", "profile"]),
+      idTokenRoleAssertion: 0,
       idTokenUserinfoAssertion: 1,
       requireConsent: 0,
       trusted: 1,
@@ -78,6 +79,7 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
         clientType: "public",
         createdAt: 1,
         id: "native-client",
+        idTokenRoleAssertion: 1,
         idTokenUserinfoAssertion: 1,
         name: "Native",
         postLogoutRedirectUris: "[]",
@@ -122,12 +124,14 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
     expect(updatedClient).toMatchObject({
       accessTokenRoleAssertion: 0,
       additionalOrigins: "[]",
+      idTokenRoleAssertion: 0,
       idTokenUserinfoAssertion: 0,
     })
     expect(oidc.clientGet(realmId, "native-client")).toMatchObject({
       data: {
         accessTokenRoleAssertion: 1,
         additionalOrigins: JSON.stringify(["https://native.example"]),
+        idTokenRoleAssertion: 1,
         idTokenUserinfoAssertion: 1,
       },
     })
@@ -152,6 +156,7 @@ test("old snapshots default OIDC compatibility settings to disabled and empty", 
       const record = application as unknown as Record<string, unknown>
       delete record.accessTokenRoleAssertion
       delete record.additionalOrigins
+      delete record.idTokenRoleAssertion
       delete record.idTokenUserinfoAssertion
     }
     const imported = zitadelMigrationImport({ database, realmId, snapshot: oldSnapshot })
@@ -164,6 +169,7 @@ test("old snapshots default OIDC compatibility settings to disabled and empty", 
       expect.objectContaining({
         accessTokenRoleAssertion: 0,
         additionalOrigins: "[]",
+        idTokenRoleAssertion: 0,
         idTokenUserinfoAssertion: 0,
       }),
     )
@@ -209,6 +215,7 @@ function applicationSnapshot(): Snapshot {
       sourceId: "app-public",
       status: "active",
       tokenEndpointAuthMethod: "none",
+      idTokenRoleAssertion: false,
       idTokenUserinfoAssertion: true,
       requireConsent: false,
       trusted: true,
@@ -228,6 +235,7 @@ function applicationSnapshot(): Snapshot {
       sourceId: "client-confidential",
       status: "active",
       tokenEndpointAuthMethod: "client_secret_basic",
+      idTokenRoleAssertion: false,
       idTokenUserinfoAssertion: false,
       updatedAt: 1,
     },

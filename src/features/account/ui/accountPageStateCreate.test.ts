@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test"
+import { Window } from "happy-dom"
 import { createRoot } from "solid-js"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { UserExportResponse } from "../../users/public/userExportResponseSchema.js"
 import { accountDemoAdapterCreate } from "./accountDemoAdapterCreate.js"
+import { accountDemoUserFixture } from "./accountDemoUserFixture.js"
 import { accountPageStateCreate } from "./accountPageStateCreate.js"
 
 const cleanups: (() => void)[] = []
@@ -152,5 +157,122 @@ describe("account password change", () => {
     await state.passwordSubmit(submitEvent)
     expect(state.status.get()).toBe("error")
     expect(notifications).toBe(0)
+  })
+})
+
+describe("account export download", () => {
+  const exportFixture: UserExportResponse = {
+    consents: [],
+    emails: [],
+    externalIdentities: [],
+    memberships: [],
+    mfa: { emailOtp: false, passkeyCount: 0, password: true, recoveryCodesAvailable: false, totpEnrolled: false },
+    passkeys: [],
+    phone: null,
+    profile: accountDemoUserFixture.profile,
+    sessions: [],
+    state: "active",
+    userId: accountDemoUserFixture.id,
+    userName: accountDemoUserFixture.userName,
+  }
+
+  const domInstall = () => {
+    const browserWindow = new Window()
+    const globalValues = globalThis as unknown as Record<string, unknown>
+    const previous = new Map<string, unknown>()
+    for (const name of ["document", "window"] as const) {
+      previous.set(name, globalValues[name])
+      globalValues[name] = name === "document" ? browserWindow.document : browserWindow
+    }
+    const restore = () => {
+      for (const [name, value] of previous) {
+        if (value === undefined) delete globalValues[name]
+        else globalValues[name] = value
+      }
+    }
+    cleanups.push(restore)
+    return restore
+  }
+
+  test("downloads the export payload through the adapter exactly once", async () => {
+    const restore = domInstall()
+    let exportCalls = 0
+    const downloaded: string[] = []
+    const createdUrls: string[] = []
+    const urlGlobals = URL as unknown as { revokeObjectURL?: (url: string) => void }
+    const originalRevokeObjectURL = urlGlobals.revokeObjectURL
+    const originalCreateObjectURL = URL.createObjectURL.bind(URL)
+    URL.createObjectURL = (() => {
+      createdUrls.push("blob:account-export")
+      return "blob:account-export"
+    }) as typeof URL.createObjectURL
+    urlGlobals.revokeObjectURL = () => {}
+    const originalCreateElement = document.createElement.bind(document)
+    document.createElement = ((tagName: string, options?: ElementCreationOptions) => {
+      const element = originalCreateElement(tagName, options)
+      if (tagName === "a") {
+        element.addEventListener("click", () => downloaded.push((element as HTMLAnchorElement).href))
+      }
+      return element
+    }) as typeof document.createElement
+    try {
+      const adapter = {
+        ...accountDemoAdapterCreate(() => "success"),
+        exportData: async () => {
+          exportCalls += 1
+          return resultCreate(exportFixture)
+        },
+      }
+      const state = createRoot((dispose) => {
+        cleanups.push(dispose)
+        return accountPageStateCreate({ adapter, initialStatus: "ready", kind: "overview" })
+      })
+      await state.load(true)
+
+      await state.exportDownload()
+
+      expect(exportCalls).toBe(1)
+      expect(state.exportPending.get()).toBe(false)
+      expect(state.exportError.get()).toBeUndefined()
+      expect(downloaded).toEqual(["blob:account-export"])
+      expect(createdUrls).toEqual(["blob:account-export"])
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL
+      if (originalRevokeObjectURL === undefined) delete urlGlobals.revokeObjectURL
+      else urlGlobals.revokeObjectURL = originalRevokeObjectURL
+      document.createElement = originalCreateElement
+      restore()
+    }
+  })
+
+  test("surfaces adapter failures without downloading", async () => {
+    const adapter = {
+      ...accountDemoAdapterCreate(() => "success"),
+      exportData: async () => resultErrorCodedCreate("accountExportGet", "The export failed.", "users.read-failed"),
+    }
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountPageStateCreate({ adapter, initialStatus: "ready", kind: "overview" })
+    })
+    await state.load(true)
+
+    await state.exportDownload()
+
+    expect(state.exportPending.get()).toBe(false)
+    expect(state.exportError.get()).toBe("The export failed.")
+  })
+
+  test("reports an unavailable export when the adapter has no export transport", async () => {
+    const { exportData: _removed, ...adapter } = accountDemoAdapterCreate(() => "success")
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountPageStateCreate({ adapter, initialStatus: "ready", kind: "overview" })
+    })
+    await state.load(true)
+
+    await state.exportDownload()
+
+    expect(state.exportPending.get()).toBe(false)
+    expect(state.exportError.get()).toBe("The data export is unavailable right now.")
   })
 })

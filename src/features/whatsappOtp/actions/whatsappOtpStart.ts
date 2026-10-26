@@ -206,9 +206,11 @@ function whatsappOtpStartTransaction(options: WhatsappOtpStartTransactionOptions
   if (!previous.success) return previous
   const user = users.userFindByVerifiedPhoneNumber(options.realmId, options.phoneNumber)
   if (!user.success) return user
+  // Locked accounts receive real challenges so a correct code can unlock them
+  // once every lock has expired; verification still rejects while any lock is active.
   const eligibleUser =
     user.data !== null &&
-    user.data.state === "active" &&
+    (user.data.state === "active" || user.data.state === "locked") &&
     user.data.deletedAt === null &&
     user.data.phoneNumber === options.phoneNumber &&
     user.data.phoneNumberVerifiedAt !== null

@@ -1,5 +1,7 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiChevronUp } from "@adaptive-ds/mdi/mdiChevronUp.js"
+import { mdiDownloadOutline } from "@adaptive-ds/mdi/mdiDownloadOutline.js"
+import { mdiFilterRemoveOutline } from "@adaptive-ds/mdi/mdiFilterRemoveOutline.js"
 import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -8,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -27,18 +30,96 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
       <AuthenticatedToolbar
         label={messageTranslate("admin.events.title")}
         summary={messageTranslate("admin.events.count", { count: props.state.events().length })}
+        actions={
+          <>
+            <AuthenticatedButton
+              size="sm"
+              disabled={props.state.pendingId() !== undefined}
+              icon={mdiDownloadOutline}
+              onClick={() => void props.state.eventsExport()}
+              variant="outline"
+            >
+              {messageTranslate("admin.events.export")}
+            </AuthenticatedButton>
+            <AuthenticatedButton
+              size="sm"
+              icon={mdiFilterRemoveOutline}
+              onClick={() => props.state.eventFiltersClear()}
+              variant="outline"
+            >
+              {messageTranslate("admin.users.directoryClearFilters")}
+            </AuthenticatedButton>
+          </>
+        }
       >
-        <Label class="sr-only" for="admin-event-search">
-          {messageTranslate("admin.events.search")}
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-type">
+          {messageTranslate("admin.events.type")}
         </Label>
         <AuthenticatedInput
-          class="w-full sm:w-72"
-          id="admin-event-search"
-          onInput={(event) => props.state.searchTerm.set(event.currentTarget.value)}
-          placeholder={messageTranslate("admin.events.searchPlaceholder")}
-          value={props.state.searchTerm.get()}
+          class="w-full sm:w-44"
+          id="admin-event-type"
+          onInput={(event) => props.state.eventFilterSet("eventType", event.currentTarget.value)}
+          value={props.state.eventFilters().eventType ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-aggregate-type">
+          {messageTranslate("admin.events.aggregate")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-44"
+          id="admin-event-aggregate-type"
+          onInput={(event) => props.state.eventFilterSet("aggregateType", event.currentTarget.value)}
+          value={props.state.eventFilters().aggregateType ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-aggregate-id">
+          {messageTranslate("admin.events.aggregateId")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-44"
+          id="admin-event-aggregate-id"
+          onInput={(event) => props.state.eventFilterSet("aggregateId", event.currentTarget.value)}
+          value={props.state.eventFilters().aggregateId ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-actor">
+          {messageTranslate("admin.events.actor")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-44"
+          id="admin-event-actor"
+          onInput={(event) => props.state.eventFilterSet("actorId", event.currentTarget.value)}
+          value={props.state.eventFilters().actorId ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-user-subject">
+          {messageTranslate("admin.events.userSubject")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-44"
+          id="admin-event-user-subject"
+          onInput={(event) => props.state.eventFilterSet("userSubjectId", event.currentTarget.value)}
+          value={props.state.eventFilters().userSubjectId ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-occurred-from">
+          {messageTranslate("admin.events.occurredFrom")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-40"
+          id="admin-event-occurred-from"
+          onInput={(event) => props.state.eventFilterSet("occurredFrom", event.currentTarget.value)}
+          type="date"
+          value={props.state.eventFilters().occurredFrom ?? ""}
+        />
+        <Label class="text-xs font-medium text-muted-foreground" for="admin-event-occurred-to">
+          {messageTranslate("admin.events.occurredTo")}
+        </Label>
+        <AuthenticatedInput
+          class="w-full sm:w-40"
+          id="admin-event-occurred-to"
+          onInput={(event) => props.state.eventFilterSet("occurredTo", event.currentTarget.value)}
+          type="date"
+          value={props.state.eventFilters().occurredTo ?? ""}
         />
       </AuthenticatedToolbar>
+
+      <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
 
       <Show
         when={props.state.status() === "ready"}

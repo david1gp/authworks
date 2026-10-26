@@ -36,49 +36,98 @@ const passwordPolicyGetCommand = buildCommand({
   docs: { brief: "Read the password policy" },
 })
 
+type PasswordPolicySetCliFlags = PasswordPolicyCliFlags & {
+  lockoutDurationMs: number
+  maximumAttempts: number
+  maxAgeDays?: number
+  minimumLength: number
+  requireLowercase: boolean
+  requireNumber: boolean
+  requireSymbol: boolean
+  requireUppercase: boolean
+}
+
+function passwordPolicySetFlags() {
+  return {
+    ...passwordCommonFlags(),
+    realmId: passwordRealmIdFlag(),
+    minimumLength: passwordNumberFlag("Minimum password length"),
+    requireLowercase: passwordBooleanFlag("Require lowercase characters"),
+    requireUppercase: passwordBooleanFlag("Require uppercase characters"),
+    requireNumber: passwordBooleanFlag("Require numbers"),
+    requireSymbol: passwordBooleanFlag("Require symbols"),
+    maximumAttempts: passwordNumberFlag("Maximum failed attempts"),
+    lockoutDurationMs: passwordNumberFlag("Lockout duration in milliseconds"),
+    maxAgeDays: passwordOptionalNumberFlag("Maximum password age in days (omit to never expire)"),
+  }
+}
+
+function passwordPolicySetInput(flags: PasswordPolicySetCliFlags) {
+  return {
+    lockoutDurationMs: flags.lockoutDurationMs,
+    ...(flags.maxAgeDays === undefined ? {} : { maxAgeDays: flags.maxAgeDays }),
+    maximumAttempts: flags.maximumAttempts,
+    minimumLength: flags.minimumLength,
+    requireLowercase: flags.requireLowercase,
+    requireNumber: flags.requireNumber,
+    requireSymbol: flags.requireSymbol,
+    requireUppercase: flags.requireUppercase,
+  }
+}
+
 const passwordPolicySetCommand = buildCommand({
-  async func(
-    this: ApplicationContext,
-    flags: PasswordPolicyCliFlags & {
-      lockoutDurationMs: number
-      maximumAttempts: number
-      minimumLength: number
-      requireLowercase: boolean
-      requireNumber: boolean
-      requireSymbol: boolean
-      requireUppercase: boolean
-    },
-  ) {
+  async func(this: ApplicationContext, flags: PasswordPolicySetCliFlags) {
     const resolved = await passwordCliConnectionResolve(this, flags)
     if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(resolved.connection).passwordPolicySet(resolved.realmId, {
-        lockoutDurationMs: flags.lockoutDurationMs,
-        maximumAttempts: flags.maximumAttempts,
-        minimumLength: flags.minimumLength,
-        requireLowercase: flags.requireLowercase,
-        requireNumber: flags.requireNumber,
-        requireSymbol: flags.requireSymbol,
-        requireUppercase: flags.requireUppercase,
-      }),
+      await passwordCliClientCreate(resolved.connection).passwordPolicySet(
+        resolved.realmId,
+        passwordPolicySetInput(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: { flags: passwordPolicySetFlags() },
+  docs: { brief: "Set the password policy" },
+})
+
+type PasswordOrgPolicyCliFlags = PasswordPolicySetCliFlags & { organizationId: string }
+
+const passwordOrgPolicyGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: PasswordPolicyCliFlags & { organizationId: string }) {
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordOrgPolicyGet(resolved.realmId, flags.organizationId),
       [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
-    flags: {
-      ...passwordCommonFlags(),
-      realmId: passwordRealmIdFlag(),
-      minimumLength: passwordNumberFlag("Minimum password length"),
-      requireLowercase: passwordBooleanFlag("Require lowercase characters"),
-      requireUppercase: passwordBooleanFlag("Require uppercase characters"),
-      requireNumber: passwordBooleanFlag("Require numbers"),
-      requireSymbol: passwordBooleanFlag("Require symbols"),
-      maximumAttempts: passwordNumberFlag("Maximum failed attempts"),
-      lockoutDurationMs: passwordNumberFlag("Lockout duration in milliseconds"),
-    },
+    flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag(), organizationId: passwordOrganizationIdFlag() },
   },
-  docs: { brief: "Set the password policy" },
+  docs: { brief: "Read the organization password policy override" },
+})
+
+const passwordOrgPolicySetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: PasswordOrgPolicyCliFlags) {
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordOrgPolicySet(
+        resolved.realmId,
+        flags.organizationId,
+        passwordPolicySetInput(flags),
+      ),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...passwordPolicySetFlags(), organizationId: passwordOrganizationIdFlag() },
+  },
+  docs: { brief: "Set the organization password policy override" },
 })
 
 const passwordRegisterCommand = buildCommand({
@@ -410,6 +459,8 @@ export const passwordCliCommands = buildRouteMap({
         get: passwordPolicyGetCommand,
         set: passwordPolicySetCommand,
         systemGet: passwordPolicySystemGetCommand,
+        orgGet: passwordOrgPolicyGetCommand,
+        orgSet: passwordOrgPolicySetCommand,
       },
       docs: { brief: "Manage the password policy" },
     }),
@@ -569,6 +620,19 @@ function passwordVerificationMethodFlag() {
 
 function passwordNumberFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => Number(value), placeholder: "NUMBER" }
+}
+
+function passwordOptionalNumberFlag(brief: string) {
+  return { ...passwordNumberFlag(brief), optional: true as const }
+}
+
+function passwordOrganizationIdFlag() {
+  return {
+    brief: "Organization UUID",
+    kind: "parsed" as const,
+    parse: (value: string) => value,
+    placeholder: "ORGANIZATION_ID",
+  }
 }
 
 function passwordOptionalBooleanFlag(brief: string) {

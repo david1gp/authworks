@@ -272,6 +272,46 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         passwordPolicyResponseSchema,
       )
     },
+    passwordOrgPolicyTenantGet(realmId: string, organizationId: string): Promise<Result<PasswordPolicyResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/password-policy`,
+        browserRequest({ method: "GET" }),
+        passwordPolicyResponseSchema,
+      )
+    },
+    passwordOrgPolicyTenantSet(
+      realmId: string,
+      organizationId: string,
+      input: PasswordPolicySetRequest,
+    ): Promise<Result<PasswordPolicyResponse>> {
+      const parsed = parsedRequest(passwordPolicySetRequestSchema, input, "The password policy is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/password-policy`,
+        browserRequest(patchRequest(parsed.data)),
+        passwordPolicyResponseSchema,
+      )
+    },
+    passwordOrgPolicyGet(realmId: string, organizationId: string): Promise<Result<PasswordPolicyResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/password-policy`,
+        { method: "GET" },
+        passwordPolicyResponseSchema,
+      )
+    },
+    passwordOrgPolicySet(
+      realmId: string,
+      organizationId: string,
+      input: PasswordPolicySetRequest,
+    ): Promise<Result<PasswordPolicyResponse>> {
+      const parsed = parsedRequest(passwordPolicySetRequestSchema, input, "The password policy is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/password-policy`,
+        patchRequest(parsed.data),
+        passwordPolicyResponseSchema,
+      )
+    },
     passwordPolicyTenantSet(realmId: string, input: PasswordPolicySetRequest): Promise<Result<PasswordPolicyResponse>> {
       const parsed = parsedRequest(passwordPolicySetRequestSchema, input, "The password policy is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)

@@ -26,6 +26,8 @@ export function userList(options: UserListOptions): Result<{ items: User[]; next
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The users are not available in this tenant context.", "users.tenant-mismatch")
   const queryState = options.query !== undefined && "state" in options.query ? options.query.state : undefined
+  const queryVerified =
+    options.query !== undefined && "emailVerified" in options.query ? options.query.emailVerified : undefined
   const deletedOnly = queryState === "deleted"
   if (deletedOnly) {
     const allowed = userListDeletedAccessCheck({
@@ -42,6 +44,8 @@ export function userList(options: UserListOptions): Result<{ items: User[]; next
   const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "userName", "lastSignInAt"], "createdAt")
   if (!sortBy.success) return sortBy
   let rows = users.data.map(userPublicViewCreate)
+  if (queryState !== undefined && queryState !== "deleted") rows = rows.filter((user) => user.state === queryState)
+  if (queryVerified !== undefined) rows = rows.filter((user) => user.emailVerified === queryVerified)
   const search = options.query?.search?.trim()
   if (search !== undefined && search.length > 0) rows = rows.filter((user) => userRecordMatchesSearch(user, search))
   return listRowsPage({
@@ -86,6 +90,7 @@ function userRecordMatchesSearch(user: User, search: string): boolean {
   const haystacks = [
     user.userName,
     user.email,
+    user.phoneNumber,
     user.profile.displayName,
     user.profile.firstName,
     user.profile.lastName,

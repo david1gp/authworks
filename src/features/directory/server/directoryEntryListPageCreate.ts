@@ -37,12 +37,24 @@ export function directoryEntryListPageCreate(input: {
   const sortDirection =
     input.query?.sortDirection ?? input.fallbackSortDirection ?? (fallbackSortBy === "userName" ? "asc" : "desc")
   const search = input.query?.search?.trim()
+  const state = input.query !== undefined && "state" in input.query ? input.query.state : undefined
+  const emailVerified =
+    input.query !== undefined && "emailVerified" in input.query ? input.query.emailVerified : undefined
   let entries = [...input.entries]
   if (search !== undefined && search.length > 0) {
     entries = entries.filter((entry) => {
       const user = input.usersById.get(entry.user.id)
       if (user === undefined) return false
       return directoryUserMatchesSearch(user, search)
+    })
+  }
+  if (state !== undefined || emailVerified !== undefined) {
+    entries = entries.filter((entry) => {
+      const user = input.usersById.get(entry.user.id)
+      if (user === undefined) return false
+      if (state !== undefined && user.state !== state) return false
+      if (emailVerified !== undefined && user.emailVerified !== emailVerified) return false
+      return true
     })
   }
   const page = listRowsPage({

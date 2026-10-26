@@ -12,6 +12,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientCompatibilitySettingsValidate } from "../domain/oidcClientCompatibilitySettingsValidate.js"
+import { oidcClientPolicyValidate } from "../domain/oidcClientPolicyValidate.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
 import { oidcClientUpdatedEventPayloadSchema } from "../events/oidcClientUpdatedEventPayloadSchema.js"
@@ -59,15 +60,23 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
     if (!clientContext.success) return clientContext
     const updated = repository.clientUpdate(options.realmId, options.clientId, {
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
+      accessTokenLifetimeSeconds: configuration.data.policy.accessTokenLifetimeSeconds,
       accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion ? 1 : 0,
       applicationId: parsed.data.applicationId === undefined ? current.data.applicationId : parsed.data.applicationId,
       additionalOrigins: JSON.stringify(configuration.data.additionalOrigins),
+      devMode: configuration.data.devMode ? 1 : 0,
+      grantTypes: JSON.stringify(configuration.data.policy.grantTypes),
+      idTokenLifetimeSeconds: configuration.data.policy.idTokenLifetimeSeconds,
+      idTokenRoleAssertion: configuration.data.idTokenRoleAssertion ? 1 : 0,
       idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion ? 1 : 0,
       name: parsed.data.name ?? current.data.name,
       postLogoutRedirectUris: JSON.stringify(configuration.data.postLogoutRedirectUris),
       projectId: parsed.data.projectId === undefined ? current.data.projectId : parsed.data.projectId,
       redirectUris: JSON.stringify(configuration.data.redirectUris),
+      refreshTokenAbsoluteLifetimeSeconds: configuration.data.policy.refreshTokenAbsoluteLifetimeSeconds,
+      refreshTokenIdleLifetimeSeconds: configuration.data.policy.refreshTokenIdleLifetimeSeconds,
       requireConsent: configuration.data.requireConsent ? 1 : 0,
+      responseTypes: JSON.stringify(configuration.data.policy.responseTypes),
       trusted: configuration.data.trusted ? 1 : 0,
       updatedAt,
       version: current.data.version + 1,
@@ -76,14 +85,22 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
     if (updated.data === null) return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     const payload = v.safeParse(oidcClientUpdatedEventPayloadSchema, {
       allowedScopes: configuration.data.allowedScopes,
+      accessTokenLifetimeSeconds: configuration.data.policy.accessTokenLifetimeSeconds,
       accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion,
       clientType: updated.data.clientType,
       additionalOrigins: configuration.data.additionalOrigins,
+      devMode: configuration.data.devMode,
+      grantTypes: configuration.data.policy.grantTypes,
+      idTokenLifetimeSeconds: configuration.data.policy.idTokenLifetimeSeconds,
+      idTokenRoleAssertion: configuration.data.idTokenRoleAssertion,
       idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion,
       name: updated.data.name,
       postLogoutRedirectUris: configuration.data.postLogoutRedirectUris,
       redirectUris: configuration.data.redirectUris,
+      refreshTokenAbsoluteLifetimeSeconds: configuration.data.policy.refreshTokenAbsoluteLifetimeSeconds,
+      refreshTokenIdleLifetimeSeconds: configuration.data.policy.refreshTokenIdleLifetimeSeconds,
       requireConsent: configuration.data.requireConsent,
+      responseTypes: configuration.data.policy.responseTypes,
       trusted: configuration.data.trusted,
     })
     if (!payload.success)
@@ -115,20 +132,38 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
 function oidcClientUpdateConfigurationValidate(
   input: OidcClientUpdateRequest,
   current: {
+    accessTokenLifetimeSeconds: number | null
     accessTokenRoleAssertion: number
     additionalOrigins: string
+    devMode: number
+    grantTypes: string
+    idTokenLifetimeSeconds: number | null
+    idTokenRoleAssertion: number
     idTokenUserinfoAssertion: number
     allowedScopes: string
     postLogoutRedirectUris: string
     redirectUris: string
+    refreshTokenAbsoluteLifetimeSeconds: number | null
+    refreshTokenIdleLifetimeSeconds: number | null
     requireConsent: number
+    responseTypes: string
     trusted: number
   },
 ): Result<{
   accessTokenRoleAssertion: boolean
   additionalOrigins: string[]
+  devMode: boolean
+  idTokenRoleAssertion: boolean
   idTokenUserinfoAssertion: boolean
   allowedScopes: string[]
+  policy: {
+    accessTokenLifetimeSeconds: number | null
+    grantTypes: string[]
+    idTokenLifetimeSeconds: number | null
+    refreshTokenAbsoluteLifetimeSeconds: number | null
+    refreshTokenIdleLifetimeSeconds: number | null
+    responseTypes: string[]
+  }
   postLogoutRedirectUris: string[]
   redirectUris: string[]
   requireConsent: boolean
@@ -139,11 +174,15 @@ function oidcClientUpdateConfigurationValidate(
   let postLogoutRedirectUris: string[]
   let redirectUris: string[]
   let additionalOrigins: unknown
+  let storedGrantTypes: unknown
+  let storedResponseTypes: unknown
   try {
     allowedScopes = input.allowedScopes ?? (JSON.parse(current.allowedScopes) as string[])
     postLogoutRedirectUris = input.postLogoutRedirectUris ?? (JSON.parse(current.postLogoutRedirectUris) as string[])
     redirectUris = input.redirectUris ?? (JSON.parse(current.redirectUris) as string[])
     additionalOrigins = JSON.parse(current.additionalOrigins ?? "[]")
+    storedGrantTypes = JSON.parse(current.grantTypes)
+    storedResponseTypes = JSON.parse(current.responseTypes)
   } catch (_error) {
     return resultErrorCodedCreate(op, "The OIDC client configuration is invalid.", "oidc.configuration-invalid")
   }
@@ -156,24 +195,52 @@ function oidcClientUpdateConfigurationValidate(
     return resultErrorCodedCreate(op, "OIDC redirect URIs must be unique.", "oidc.conflict")
   if (
     !Array.isArray(additionalOrigins) ||
-    !additionalOrigins.every((origin): origin is string => typeof origin === "string")
+    !additionalOrigins.every((origin): origin is string => typeof origin === "string") ||
+    !Array.isArray(storedGrantTypes) ||
+    !storedGrantTypes.every((grant): grant is string => typeof grant === "string") ||
+    !Array.isArray(storedResponseTypes) ||
+    !storedResponseTypes.every((response): response is string => typeof response === "string")
   )
     return resultErrorCodedCreate(op, "The OIDC client configuration is invalid.", "oidc.configuration-invalid")
+  const devMode = input.devMode ?? current.devMode === 1
   for (const uri of [...redirectUris, ...postLogoutRedirectUris]) {
-    const valid = oidcRedirectUriValidate(uri)
+    const valid = oidcRedirectUriValidate(uri, true, devMode)
     if (!valid.success) return valid
   }
   const compatibility = oidcClientCompatibilitySettingsValidate({
     accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? current.accessTokenRoleAssertion === 1,
     additionalOrigins: input.additionalOrigins ?? additionalOrigins,
+    idTokenRoleAssertion: input.idTokenRoleAssertion ?? current.idTokenRoleAssertion === 1,
     idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? current.idTokenUserinfoAssertion === 1,
   })
   if (!compatibility.success) return compatibility
+  const policy = oidcClientPolicyValidate({
+    accessTokenLifetimeSeconds:
+      input.accessTokenLifetimeSeconds === undefined
+        ? current.accessTokenLifetimeSeconds
+        : input.accessTokenLifetimeSeconds,
+    grantTypes: input.grantTypes ?? storedGrantTypes,
+    idTokenLifetimeSeconds:
+      input.idTokenLifetimeSeconds === undefined ? current.idTokenLifetimeSeconds : input.idTokenLifetimeSeconds,
+    refreshTokenAbsoluteLifetimeSeconds:
+      input.refreshTokenAbsoluteLifetimeSeconds === undefined
+        ? current.refreshTokenAbsoluteLifetimeSeconds
+        : input.refreshTokenAbsoluteLifetimeSeconds,
+    refreshTokenIdleLifetimeSeconds:
+      input.refreshTokenIdleLifetimeSeconds === undefined
+        ? current.refreshTokenIdleLifetimeSeconds
+        : input.refreshTokenIdleLifetimeSeconds,
+    responseTypes: input.responseTypes ?? storedResponseTypes,
+  })
+  if (!policy.success) return policy
   return resultCreate({
     allowedScopes,
     accessTokenRoleAssertion: compatibility.data.accessTokenRoleAssertion,
     additionalOrigins: compatibility.data.additionalOrigins,
+    devMode,
+    idTokenRoleAssertion: compatibility.data.idTokenRoleAssertion,
     idTokenUserinfoAssertion: compatibility.data.idTokenUserinfoAssertion,
+    policy: policy.data,
     postLogoutRedirectUris,
     redirectUris,
     requireConsent: input.requireConsent ?? current.requireConsent === 1,

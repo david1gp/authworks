@@ -9,6 +9,7 @@ import type { ProjectUserAssignment } from "../../projects/public/projectUserAss
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { UserState } from "../../users/public/userStateSchema.js"
+import type { UserVerificationState } from "../../users/public/userVerificationStateSchema.js"
 import type { DirectoryProjectAssignment } from "../public/directoryUserAccessSchema.js"
 import type { DirectoryUserProfile, DirectoryUserProfileAdapter } from "./directoryUserProfileAdapter.js"
 import { directoryUserProfilePermissionsResolve } from "./directoryUserProfilePermissions.js"
@@ -66,10 +67,33 @@ export function directoryUserProfilePageStateCreate(
   const password = createSignalObject("")
   const passwordConfirm = createSignalObject("")
   const deleteConfirm = createSignalObject("")
+  const purgeConfirm = createSignalObject("")
 
   const fail = (failure: FailedResult) => {
     error.set(failure.errorMessage)
     status.set(failureStatusSelect(failure))
+  }
+
+  const methodsLoad = async () => {
+    const userId = options.userId()
+    if (userId === undefined) return
+    const methodsResult = await adapter.authenticationMethodsGet(userId)
+    if (!methodsResult.success) {
+      methodsError.set(methodsResult.errorMessage)
+      methodsStatus.set("error")
+      return
+    }
+    methods.set(methodsResult.data)
+    const current = methodsResult.data
+    methodsStatus.set(
+      !current.emailOtp.available &&
+        current.passkeys.credentials.length === 0 &&
+        !current.password.available &&
+        !current.recoveryCodes.available &&
+        !current.totp.enrolled
+        ? "empty"
+        : "ready",
+    )
   }
 
   const load = async () => {
@@ -81,29 +105,13 @@ export function directoryUserProfilePageStateCreate(
     }
     status.set("loading")
     error.set(undefined)
-    const [userResult, methodsResult, sessionsResult] = await Promise.all([
+    const [userResult, , sessionsResult] = await Promise.all([
       adapter.userGet(userId),
-      adapter.authenticationMethodsGet(userId),
+      methodsLoad(),
       adapter.sessionsList(userId),
     ])
     if (!userResult.success) return fail(userResult)
     profile.set(userResult.data)
-    if (methodsResult.success) {
-      methods.set(methodsResult.data)
-      const current = methodsResult.data
-      methodsStatus.set(
-        !current.emailOtp.available &&
-          current.passkeys.credentials.length === 0 &&
-          !current.password.available &&
-          !current.recoveryCodes.available &&
-          !current.totp.enrolled
-          ? "empty"
-          : "ready",
-      )
-    } else {
-      methodsError.set(methodsResult.errorMessage)
-      methodsStatus.set("error")
-    }
     if (sessionsResult.success) {
       sessions.set(sessionsResult.data.filter((session) => session.revokedAt === null))
       sessionsStatus.set(sessions.get().length === 0 ? "empty" : "ready")
@@ -260,6 +268,21 @@ export function directoryUserProfilePageStateCreate(
       notice.set(messageTranslate("admin.userProfile.deleted", { userName: user.userName }))
       return true
     },
+    purgeConfirmGet: purgeConfirm.get,
+    purgeConfirmSet: purgeConfirm.set,
+    purgeSubmit: async () => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return false
+      formError.set(undefined)
+      if (purgeConfirm.get().trim() !== user.userName) {
+        formError.set(messageTranslate("admin.userProfile.deleteConfirmMismatch"))
+        return false
+      }
+      if (!(await mutateVoid(`user:purge:${userId}`, () => adapter.userPurge(userId)))) return false
+      notice.set(messageTranslate("admin.userProfile.purged", { userName: user.userName }))
+      return true
+    },
     errorGet: error.get,
     formErrorClear: () => formError.set(undefined),
     formErrorGet: formError.get,
@@ -272,7 +295,9 @@ export function directoryUserProfilePageStateCreate(
           ? "admin.userProfile.unlockConfirm"
           : state === "active"
             ? "admin.userProfile.reactivateConfirm"
-            : "admin.userProfile.deactivateConfirm"
+            : state === "suspended"
+              ? "admin.userProfile.suspendConfirm"
+              : "admin.userProfile.deactivateConfirm"
       const accepted = await confirmed({ message: messageTranslate(key, { userName: user.userName }) })
       if (!accepted) return
       const updated = await mutate(`user:lifecycle:${userId}`, () => adapter.userLifecycleSet(userId, { state }))
@@ -283,7 +308,9 @@ export function directoryUserProfilePageStateCreate(
           ? "admin.userProfile.unlocked"
           : state === "active"
             ? "admin.userProfile.reactivated"
-            : "admin.userProfile.deactivated"
+            : state === "suspended"
+              ? "admin.userProfile.suspended"
+              : "admin.userProfile.deactivated"
       notice.set(messageTranslate(done, { userName: user.userName }))
     },
     membershipAdd: async () => {
@@ -299,8 +326,45 @@ export function directoryUserProfilePageStateCreate(
     },
     methodsGet: methods.get,
     methodsErrorGet: methodsError.get,
+    methodsRefresh: () => methodsLoad(),
     methodsReload: () => void load(),
     methodsStatusGet: methodsStatus.get,
+    passkeyRevoke: async (credentialId: string) => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return
+      const accepted = await confirmed({
+        message: messageTranslate("admin.userProfile.passkeyRevokeConfirm", { userName: user.userName }),
+      })
+      if (!accepted) return
+      if (!(await mutateVoid(`user:passkey:${credentialId}`, () => adapter.passkeyRevoke(userId, credentialId)))) return
+      notice.set(messageTranslate("admin.userProfile.passkeyRevoked"))
+      await methodsLoad()
+    },
+    recoveryCodesInvalidate: async () => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return
+      const accepted = await confirmed({
+        message: messageTranslate("admin.userProfile.recoveryCodesInvalidateConfirm", { userName: user.userName }),
+      })
+      if (!accepted) return
+      if (!(await mutateVoid(`user:recovery-codes:${userId}`, () => adapter.recoveryCodesInvalidate(userId)))) return
+      notice.set(messageTranslate("admin.userProfile.recoveryCodesInvalidated"))
+      await methodsLoad()
+    },
+    totpRemove: async () => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return
+      const accepted = await confirmed({
+        message: messageTranslate("admin.userProfile.totpRemoveConfirm", { userName: user.userName }),
+      })
+      if (!accepted) return
+      if (!(await mutateVoid(`user:totp:${userId}`, () => adapter.totpRemove(userId)))) return
+      notice.set(messageTranslate("admin.userProfile.totpRemoved"))
+      await methodsLoad()
+    },
     noticeGet: notice.get,
     organizationMembershipGet: organizationMembership,
     organizationRoleSingleSet: async (role: OrganizationRoleId) => {
@@ -474,6 +538,51 @@ export function directoryUserProfilePageStateCreate(
     },
     statusGet: status.get,
     targetRolesGet: targetRoles,
+    verificationOverrideSet: async (state: UserVerificationState) => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return
+      const key =
+        state === "verified"
+          ? "admin.userProfile.verificationOverrideVerifyConfirm"
+          : "admin.userProfile.verificationOverrideUnverifyConfirm"
+      const accepted = await confirmed({ message: messageTranslate(key, { email: user.email }) })
+      if (!accepted) return
+      const updated = await mutate(`user:verification:${userId}`, () => adapter.verificationSet(userId, { state }))
+      if (updated === undefined) return
+      profile.set(updated)
+      const done =
+        state === "verified"
+          ? "admin.userProfile.verificationOverrideVerified"
+          : "admin.userProfile.verificationOverrideUnverified"
+      notice.set(messageTranslate(done, { email: user.email }))
+    },
+    verificationResend: async () => {
+      const userId = options.userId()
+      const user = profile.get()?.user
+      if (userId === undefined || user === undefined) return
+      formError.set(undefined)
+      const listed = await adapter.emailList(userId)
+      if (!listed.success) {
+        formError.set(listed.errorMessage)
+        return
+      }
+      const target =
+        listed.data.items.find((item) => item.isPrimary) ?? listed.data.items.find((item) => item.email === user.email)
+      if (target === undefined) {
+        formError.set(messageTranslate("admin.userProfile.emailMissing"))
+        return
+      }
+      const accepted = await confirmed({
+        message: messageTranslate("admin.userProfile.resendVerificationConfirm", { email: target.email }),
+      })
+      if (!accepted) return
+      const sent = await mutate(`user:verification-resend:${userId}`, () =>
+        adapter.resendVerification(userId, target.id),
+      )
+      if (sent === undefined) return
+      notice.set(messageTranslate("admin.userProfile.resendVerificationDone", { email: target.email }))
+    },
     userAssignmentOf: (assignment: DirectoryProjectAssignment): ProjectUserAssignment => ({
       createdAt: 0,
       id: assignment.assignmentId,

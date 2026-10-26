@@ -153,6 +153,9 @@ const demoRoles: ProjectRole[] = [
 ]
 
 const demoRealmAdministrators = new Set<string>([demoUsers[1]?.id ?? ""])
+const demoTotpRemoved = new Set<string>()
+const demoRecoveryInvalidated = new Set<string>()
+const demoPasskeysRevoked = new Set<string>()
 
 /**
  * Fixture-backed adapter. It performs no network access and derives every success, empty,
@@ -296,8 +299,45 @@ export function directoryUserProfileDemoAdapterCreate(
             recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
             totp: { enrolled: false, enrollments: [] },
           })
-        void userId
-        return resultCreate(adminDemoUserAuthenticationMethodsFixture)
+        const fixture = adminDemoUserAuthenticationMethodsFixture
+        return resultCreate({
+          ...fixture,
+          passkeys: {
+            credentials: fixture.passkeys.credentials.filter(
+              (credential) => !demoPasskeysRevoked.has(`${userId}:${credential.id}`),
+            ),
+          },
+          recoveryCodes: demoRecoveryInvalidated.has(userId)
+            ? { available: false, generatedAt: fixture.recoveryCodes.generatedAt, remaining: 0 }
+            : fixture.recoveryCodes,
+          totp: demoTotpRemoved.has(userId) ? { enrolled: false, enrollments: [] } : fixture.totp,
+        })
+      }),
+    emailList: (userId) =>
+      gate("directoryUserProfileDemoEmailList", () => {
+        const user = demoUsers.find((item) => item.id === userId)
+        if (user === undefined)
+          return resultErrorCodedCreate(
+            "directoryUserProfileDemoEmailList",
+            "The user was not found.",
+            "users.not-found",
+          )
+        return resultCreate({
+          items: [
+            {
+              createdAt: user.createdAt,
+              email: user.email,
+              id: `${user.id}-email`,
+              isPrimary: true,
+              updatedAt: user.updatedAt,
+              verified: user.emailVerifiedAt !== null && user.emailVerifiedAt !== undefined,
+              ...(user.emailVerifiedAt === undefined || user.emailVerifiedAt === null
+                ? { verifiedAt: null }
+                : { verifiedAt: user.emailVerifiedAt }),
+              version: 1,
+            },
+          ],
+        })
       }),
     membershipCreate: (organizationId, input) =>
       gate("directoryUserProfileDemoMembershipCreate", () => {
@@ -351,6 +391,12 @@ export function directoryUserProfileDemoAdapterCreate(
         membership.updatedAt = demoNow
         return resultCreate({ ...membership, roles: [...membership.roles] })
       }),
+    passkeyRevoke: (userId, credentialId) =>
+      gate("directoryUserProfileDemoPasskeyRevoke", () => {
+        if (!mayManage(userId)) return forbidden("directoryUserProfileDemoPasskeyRevoke")
+        demoPasskeysRevoked.add(`${userId}:${credentialId}`)
+        return resultCreate(undefined)
+      }),
     passwordSet: (userId, password) =>
       gate("directoryUserProfileDemoPasswordSet", () => {
         if (demoAccess() !== "realm-admin") return forbidden("directoryUserProfileDemoPasswordSet")
@@ -389,6 +435,28 @@ export function directoryUserProfileDemoAdapterCreate(
         demoRealmAdministrators.delete(userId)
         return resultCreate(undefined)
       }),
+    recoveryCodesInvalidate: (userId) =>
+      gate("directoryUserProfileDemoRecoveryCodesInvalidate", () => {
+        if (!mayManage(userId)) return forbidden("directoryUserProfileDemoRecoveryCodesInvalidate")
+        demoRecoveryInvalidated.add(userId)
+        return resultCreate(undefined)
+      }),
+    resendVerification: (userId, emailId) =>
+      gate("directoryUserProfileDemoResendVerification", () => {
+        if (!mayManage(userId)) return forbidden("directoryUserProfileDemoResendVerification")
+        if (emailId.length === 0)
+          return resultErrorCodedCreate(
+            "directoryUserProfileDemoResendVerification",
+            "The email address was not found.",
+            "users.not-found",
+          )
+        return resultCreate({
+          accepted: true as const,
+          challengeId: demoResourceIdGenerate(),
+          expiresAt: demoNow + 600_000,
+          retryAt: demoNow + 60_000,
+        })
+      }),
     sessionRevoke: (userId, sessionId) =>
       gate("directoryUserProfileDemoSessionRevoke", () => {
         if (!mayManage(userId)) return forbidden("directoryUserProfileDemoSessionRevoke")
@@ -411,6 +479,12 @@ export function directoryUserProfileDemoAdapterCreate(
       gate("directoryUserProfileDemoUserAccessGet", () => profileOf(userId)).then((result) => {
         if (!result.success) return result
         return resultCreate(result.data.access ?? accessOf(userId))
+      }),
+    totpRemove: (userId) =>
+      gate("directoryUserProfileDemoTotpRemove", () => {
+        if (!mayManage(userId)) return forbidden("directoryUserProfileDemoTotpRemove")
+        demoTotpRemoved.add(userId)
+        return resultCreate(undefined)
       }),
     userDelete: (userId) =>
       gate("directoryUserProfileDemoUserDelete", () => {
@@ -453,6 +527,31 @@ export function directoryUserProfileDemoAdapterCreate(
             preferredLanguage: input.preferredLanguage ?? current.profile.preferredLanguage,
           },
           updatedAt: demoNow,
+        }
+        return profileOf(userId)
+      }),
+    userPurge: (userId) =>
+      gate("directoryUserProfileDemoUserPurge", () => {
+        if (demoAccess() !== "realm-admin") return forbidden("directoryUserProfileDemoUserPurge")
+        void userId
+        return resultCreate(undefined)
+      }),
+    verificationSet: (userId, input) =>
+      gate("directoryUserProfileDemoVerificationSet", () => {
+        if (demoAccess() !== "realm-admin") return forbidden("directoryUserProfileDemoVerificationSet")
+        const index = demoUsers.findIndex((user) => user.id === userId)
+        if (index < 0)
+          return resultErrorCodedCreate(
+            "directoryUserProfileDemoVerificationSet",
+            "The user was not found.",
+            "users.not-found",
+          )
+        const verified = input.state === "verified"
+        demoUsers[index] = {
+          ...demoUsers[index]!,
+          ...(verified ? { emailVerifiedAt: demoNow } : { emailVerifiedAt: undefined }),
+          updatedAt: demoNow,
+          verificationState: verified ? "verified" : "unverified",
         }
         return profileOf(userId)
       }),

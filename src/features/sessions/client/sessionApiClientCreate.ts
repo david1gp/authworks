@@ -10,6 +10,8 @@ import type { SessionBootstrapAdminSignInResponse } from "../public/sessionBoots
 import { sessionBootstrapAdminSignInResponseSchema } from "../public/sessionBootstrapAdminSignInResponseSchema.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
 import { sessionCredentialResponseSchema } from "../public/sessionCredentialResponseSchema.js"
+import type { SessionCsrfResponse } from "../public/sessionCsrfResponseSchema.js"
+import { sessionCsrfResponseSchema } from "../public/sessionCsrfResponseSchema.js"
 import type { SessionListResponse } from "../public/sessionListResponseSchema.js"
 import { sessionListResponseSchema } from "../public/sessionListResponseSchema.js"
 import type { SessionMeListResponse } from "../public/sessionMeListResponseSchema.js"
@@ -19,6 +21,8 @@ import { sessionRecentListResponseSchema } from "../public/sessionRecentListResp
 import type { SessionRecentResumeRequest } from "../public/sessionRecentResumeRequestSchema.js"
 import type { SessionRecentResumeResponse } from "../public/sessionRecentResumeResponseSchema.js"
 import { sessionRecentResumeResponseSchema } from "../public/sessionRecentResumeResponseSchema.js"
+import type { SessionProtectedResponse } from "../public/sessionProtectedResponseSchema.js"
+import { sessionProtectedResponseSchema } from "../public/sessionProtectedResponseSchema.js"
 import type { SessionResponse } from "../public/sessionResponseSchema.js"
 import { sessionResponseSchema } from "../public/sessionResponseSchema.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
@@ -64,6 +68,31 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         { method: "GET" },
         sessionResponseSchema,
       )
+    },
+    sessionCsrfGet(realmId: string): Promise<Result<SessionCsrfResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/sessions/csrf`,
+        { credentials: "include", method: "GET" },
+        sessionCsrfResponseSchema,
+      )
+    },
+    sessionProtectedGet(realmId: string): Promise<Result<SessionProtectedResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/protected`,
+        { method: "GET" },
+        sessionProtectedResponseSchema,
+      )
+    },
+    sessionLogout(realmId: string): Promise<Result<SessionRevocationResponse>> {
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "POST" },
+        op: "sessionLogout",
+        path: `/realms/${encodeURIComponent(realmId)}/sessions/logout`,
+        realmId,
+        schema: sessionRevocationResponseSchema,
+      })
     },
     sessionList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
       return request(

@@ -19,6 +19,7 @@ export function adminProductionAdapterCreate(options: {
 
   return {
     ...adminSessionProductionAdapterCreate({ api, realmId: options.realmId }),
+    eventExport: (query) => realmRequired("adminEventExport", (realmId) => api.eventExport(realmId, query)),
     eventList: (query) => realmRequired("adminEventList", (realmId) => api.eventList(realmId, query)),
     realmGet: () => realmRequired("adminRealmGet", (realmId) => api.realmGet(realmId)),
     realmUpdate: (input) => realmRequired("adminRealmUpdate", (realmId) => api.realmUpdate(realmId, input)),

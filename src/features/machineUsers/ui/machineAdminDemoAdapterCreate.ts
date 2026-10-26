@@ -162,6 +162,31 @@ export function machineAdminDemoAdapterCreate(fixtureState: () => DemoFixtureSta
         return resultCreate(updated)
       }),
     machineUserList: () => collection(machineUsers),
+    machineUserUpdate: (machineUserId, input) =>
+      gate(() => {
+        const index = machineUsers.findIndex((item) => item.id === machineUserId)
+        const existing = machineUsers[index]
+        if (existing === undefined)
+          return resultErrorCodedCreate(
+            "machineAdminDemo",
+            "The machine user was not found.",
+            "machine-users.not-found",
+          )
+        if (existing.status === "removed")
+          return resultErrorCodedCreate(
+            "machineAdminDemo",
+            "A removed machine user cannot be updated.",
+            "machine-users.not-active",
+          )
+        const updated = {
+          ...existing,
+          displayName: input.displayName,
+          ...(input.scopes === undefined ? {} : { scopes: [...input.scopes] }),
+          updatedAt: timestamp,
+        }
+        machineUsers[index] = updated
+        return resultCreate(updated)
+      }),
     personalAccessTokenCreate: (machineUserId, input) => credentialIssue(machineUserId, "personal_access_token", input),
   }
 }

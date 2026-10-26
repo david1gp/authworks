@@ -17,6 +17,7 @@ import { sessionEventTypes } from "../../sessions/events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../../sessions/events/sessionRevokedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../../sessions/persistence/sessionRepositoryCreate.js"
 import { oidcBase64UrlDecode } from "../domain/oidcBase64UrlDecode.js"
+import { oidcClockSkewMs } from "../domain/oidcClockSkewMs.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
 import { oidcJwtVerify } from "../domain/oidcJwtVerify.js"
 import { oidcRedirectUriMatches } from "../domain/oidcRedirectUriMatches.js"
@@ -315,16 +316,19 @@ function oidcLogoutIdTokenVerify(
     if (key.data === null) return resultErrorCreate("oidcLogout", "The logout request is invalid.")
     const publicJwk = v.safeParse(oidcPublicJwkSchema, JSON.parse(key.data.publicJwk))
     if (!publicJwk.success) return resultErrorCreate("oidcLogout", "The logout request is invalid.")
-    const verified = oidcJwtVerify(token, publicJwk.output)
+    const verified = oidcJwtVerify(token, publicJwk.output, { now })
     if (!verified.success) return resultErrorCreate("oidcLogout", "The logout request is invalid.")
     const claims = verified.data
+    // Expired hints stay rejected (with 5s skew), unlike the MAY-accept
+    // allowance in OIDC RP-Initiated Logout: logout must not revive sessions
+    // on the strength of a stale hint alone.
     if (
       claims.iss !== issuer ||
       typeof claims.aud !== "string" ||
       typeof claims.sub !== "string" ||
       typeof claims.sid !== "string" ||
       typeof claims.exp !== "number" ||
-      claims.exp <= Math.floor(now / 1_000)
+      claims.exp * 1_000 + oidcClockSkewMs <= now
     )
       return resultErrorCreate("oidcLogout", "The logout request is invalid.")
     return resultCreate({ clientId: claims.aud, sessionId: claims.sid, userId: claims.sub })

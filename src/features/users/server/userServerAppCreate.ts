@@ -29,16 +29,23 @@ import { userDelete } from "../actions/userDelete.js"
 import { userEmailAddressAddResend } from "../actions/userEmailAddressAddResend.js"
 import { userEmailAddressAddStart } from "../actions/userEmailAddressAddStart.js"
 import { userEmailAddressAddVerify } from "../actions/userEmailAddressAddVerify.js"
+import { userEmailAddressAdministratorList } from "../actions/userEmailAddressAdministratorList.js"
 import { userEmailAddressList } from "../actions/userEmailAddressList.js"
 import { userEmailAddressPrimarySet } from "../actions/userEmailAddressPrimarySet.js"
 import { userEmailAddressRemove } from "../actions/userEmailAddressRemove.js"
 import { userEmailChangeResend } from "../actions/userEmailChangeResend.js"
 import { userEmailChangeStart } from "../actions/userEmailChangeStart.js"
 import { userEmailChangeVerify } from "../actions/userEmailChangeVerify.js"
+import { userEmailVerificationResend } from "../actions/userEmailVerificationResend.js"
 import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
+import { userExportGet } from "../actions/userExportGet.js"
 import { userGet } from "../actions/userGet.js"
 import { userLifecycleSet } from "../actions/userLifecycleSet.js"
 import { userList } from "../actions/userList.js"
+import { userMetadataGet } from "../actions/userMetadataGet.js"
+import { userMetadataList } from "../actions/userMetadataList.js"
+import { userMetadataRemove } from "../actions/userMetadataRemove.js"
+import { userMetadataSet } from "../actions/userMetadataSet.js"
 import { userProfilePictureRemove } from "../actions/userProfilePictureRemove.js"
 import { userProfilePictureUpload } from "../actions/userProfilePictureUpload.js"
 import { userProfileUpdate } from "../actions/userProfileUpdate.js"
@@ -58,6 +65,9 @@ import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVer
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import type { UserListQuery } from "../public/userListQuerySchema.js"
 import { userListQuerySchema } from "../public/userListQuerySchema.js"
+import type { UserMetadataListQuery } from "../public/userMetadataListQuerySchema.js"
+import { userMetadataListQuerySchema } from "../public/userMetadataListQuerySchema.js"
+import { userMetadataSetRequestSchema } from "../public/userMetadataSetRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
 
@@ -287,6 +297,53 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userAuthenticationMethodsGet({
         context: subject.data,
         database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/me/export", authenticatedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userExportGet({
+        context: subject.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/me/metadata", protectedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const query = userMetadataListQueryRead(context.req.url)
+    if (!query.success) return userErrorResponseCreate(context, query)
+    return userResultResponseCreate(
+      context,
+      userMetadataList({
+        context: subject.data,
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/me/metadata/:key", protectedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userMetadataGet({
+        context: subject.data,
+        database: options.database,
+        key: context.req.param("key"),
         realmId: context.req.param("realmId"),
         userId: subject.data.actorId,
       }),
@@ -528,6 +585,50 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       }),
     ),
   )
+
+  app.get("/realms/:realmId/users/:userId/emails", userReadMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userRead,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    return userResultResponseCreate(
+      context,
+      userEmailAddressAdministratorList({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/users/:userId/emails/:emailId/verification-resend", userManageMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    return userResultResponseCreate(
+      context,
+      userEmailVerificationResend({
+        clientIp: options.clientIpResolve?.(context),
+        context: authenticated.data,
+        database: options.database,
+        emailId: context.req.param("emailId"),
+        onDelivery: options.onEmailAddressVerificationDelivery,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
 
   app.patch("/realms/:realmId/me", protectedMiddleware, async (context) => {
     const subject = userSubjectContextResolve(context, context.req.param("realmId"))
@@ -804,6 +905,102 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
+  app.get("/realms/:realmId/users/:userId/metadata", userReadMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userRead,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    const query = userMetadataListQueryRead(context.req.url)
+    if (!query.success) return userErrorResponseCreate(context, query)
+    return userResultResponseCreate(
+      context,
+      userMetadataList({
+        context: authenticated.data,
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/users/:userId/metadata/:key", userReadMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userRead,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    return userResultResponseCreate(
+      context,
+      userMetadataGet({
+        context: authenticated.data,
+        database: options.database,
+        key: context.req.param("key"),
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.put("/realms/:realmId/users/:userId/metadata/:key", userManageMiddleware, async (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userMetadataSetRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The user metadata is invalid.",
+        op: "userMetadataSet",
+      })
+    return userResultResponseCreate(
+      context,
+      userMetadataSet({
+        context: authenticated.data,
+        database: options.database,
+        input: input.output,
+        key: context.req.param("key"),
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/users/:userId/metadata/:key", userManageMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
+      options.database,
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
+    )
+    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    return userResultResponseCreate(
+      context,
+      userMetadataRemove({
+        context: authenticated.data,
+        database: options.database,
+        key: context.req.param("key"),
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
   return app
 }
 
@@ -1012,16 +1209,41 @@ function userAdministratorAuthorize(
   })
 }
 
+function userMetadataListQueryRead(requestUrl: string): Result<UserMetadataListQuery> {
+  const op = "userMetadataListQueryRead"
+  const searchParams = new URL(requestUrl).searchParams
+  const keyPrefix = searchParams.get("keyPrefix")
+  const withoutKeyPrefix = new URLSearchParams(searchParams)
+  withoutKeyPrefix.delete("keyPrefix")
+  const parsed = listQueryFromSearchParams(withoutKeyPrefix)
+  if (!parsed.success) return resultErrorCodedCreate(op, "The metadata list query is invalid.", "users.invalid")
+  const query = v.safeParse(userMetadataListQuerySchema, {
+    ...parsed.data,
+    ...(keyPrefix === null ? {} : { keyPrefix }),
+  })
+  if (!query.success) return resultErrorCodedCreate(op, "The metadata list query is invalid.", "users.invalid")
+  return resultCreate(query.output)
+}
+
 function userListQueryRead(requestUrl: string): Result<UserListQuery> {
   const op = "userListQueryRead"
   const searchParams = new URL(requestUrl).searchParams
   const state = searchParams.get("state")
-  const withoutState = new URLSearchParams(searchParams)
-  withoutState.delete("state")
-  const parsed = listQueryFromSearchParams(withoutState)
+  const emailVerifiedParam = searchParams.get("emailVerified")
+  const withoutFilters = new URLSearchParams(searchParams)
+  withoutFilters.delete("state")
+  withoutFilters.delete("emailVerified")
+  const parsed = listQueryFromSearchParams(withoutFilters)
   if (!parsed.success) return parsed
+  let emailVerified: boolean | undefined
+  if (emailVerifiedParam !== null) {
+    if (emailVerifiedParam === "true") emailVerified = true
+    else if (emailVerifiedParam === "false") emailVerified = false
+    else return resultErrorCodedCreate(op, "The user list query is invalid.", "users.invalid")
+  }
   const query = v.safeParse(userListQuerySchema, {
     ...parsed.data,
+    ...(emailVerified === undefined ? {} : { emailVerified }),
     ...(state === null ? {} : { state }),
   })
   if (!query.success) return resultErrorCodedCreate(op, "The user list query is invalid.", "users.invalid")

@@ -5,6 +5,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
@@ -16,8 +17,10 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
+import { externalIdentityProviderAuthorizationUrlCreate } from "../domain/externalIdentityProviderAuthorizationUrlCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
+import { externalIdentityProviderSecretResolve } from "../domain/externalIdentityProviderSecretResolve.js"
 import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -30,7 +33,9 @@ import type { ExternalIdentityStartResponse } from "../public/externalIdentitySt
 const externalIdentityStateLifetimeMs = 10 * 60 * 1_000
 
 type ExternalIdentityStartOptions = {
+  readonly allowDevelopmentFallback?: boolean
   readonly database: StorageDatabase
+  readonly encryptionSecret?: Secret | string
   readonly input: ExternalIdentityStartRequest
   readonly realmId: string
   readonly providerId: string
@@ -39,7 +44,9 @@ type ExternalIdentityStartOptions = {
   readonly correlationId?: string
 }
 
-export function externalIdentityStart(options: ExternalIdentityStartOptions): Result<ExternalIdentityStartResponse> {
+export async function externalIdentityStart(
+  options: ExternalIdentityStartOptions,
+): Promise<Result<ExternalIdentityStartResponse>> {
   const op = "externalIdentityStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
   if (!parsed.success)
@@ -115,15 +122,25 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
   const nonceHash = nonce === undefined ? null : externalIdentitySecretHashCreate(nonce)
   const pkceChallenge = externalIdentityPkceChallengeCreate(pkceVerifier)
   const scopes = externalIdentityProviderScopesValidate(
-    provider.data.type as "github" | "google" | "microsoft",
+    provider.data.type as "github" | "google" | "microsoft" | "oidc",
     provider.data.scopes,
   )
   if (!scopes.success)
     return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
-  const authorizationUrl = port.authorizationUrlCreate(
+  const clientSecret = externalIdentityProviderSecretResolve({
+    allowDevelopmentFallback: options.allowDevelopmentFallback,
+    encryptionSecret: options.encryptionSecret,
+    realmId: options.realmId,
+    storedSecret: provider.data.clientSecret,
+  })
+  if (!clientSecret.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  const authorizationUrl = await externalIdentityProviderAuthorizationUrlCreate(
+    port,
     {
       clientId: provider.data.clientId,
-      clientSecret: provider.data.clientSecret,
+      clientSecret: clientSecret.data,
+      ...(provider.data.issuer === null ? {} : { issuer: provider.data.issuer }),
       redirectUri: provider.data.redirectUri,
       scopes: scopes.data,
       type: provider.data.type as keyof ExternalIdentityProviderPorts,

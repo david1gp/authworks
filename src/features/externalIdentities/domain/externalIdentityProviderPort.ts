@@ -5,6 +5,7 @@ import type { ExternalIdentityProviderIdentity } from "./externalIdentityProvide
 export type ExternalIdentityProviderPortConfiguration = {
   readonly clientId: string
   readonly clientSecret: string
+  readonly issuer?: string
   readonly redirectUri: string
   readonly scopes: readonly string[]
   readonly type: ExternalIdentityProviderType
@@ -28,6 +29,10 @@ export type ExternalIdentityProviderPort = {
     configuration: ExternalIdentityProviderPortConfiguration,
     input: ExternalIdentityProviderPortStartInput,
   ) => Result<string>
+  readonly authorizationUrlCreateAsync?: (
+    configuration: ExternalIdentityProviderPortConfiguration,
+    input: ExternalIdentityProviderPortStartInput,
+  ) => Promise<Result<string>>
   readonly callbackExchange: (
     configuration: ExternalIdentityProviderPortConfiguration,
     input: ExternalIdentityProviderPortCallbackInput,

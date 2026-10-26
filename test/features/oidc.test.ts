@@ -202,7 +202,7 @@ async function oidcTokenRequest(
 async function createOidcTokenFixture(
   database: StorageDatabase,
   domain: string,
-  scope = "openid profile email",
+  scope = "openid profile email offline_access",
   idTokenUserinfoAssertion = false,
 ) {
   const authenticated = await createAuthenticatedSession(database, domain)
@@ -210,7 +210,7 @@ async function createOidcTokenFixture(
     context: realmSystemContextCreate(),
     database,
     input: {
-      allowedScopes: ["openid", "profile", "email"],
+      allowedScopes: ["openid", "profile", "email", "offline_access"],
       clientType: "confidential",
       idTokenUserinfoAssertion,
       name: `${domain} client`,
@@ -260,6 +260,11 @@ async function createOidcTokenFixture(
     clientSecret: client.data.clientSecret,
     token: v.parse(oidcTokenResponseSchema, await response.json()),
   }
+}
+
+function refreshTokenRequire(token: { readonly refresh_token?: string }): string {
+  if (typeof token.refresh_token !== "string") throw new Error("The OIDC fixture token has no refresh token.")
+  return token.refresh_token
 }
 
 function refreshTokenFamilyInsert(
@@ -464,7 +469,7 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(oldSecret.status).toBe(401)
     expect(await oldSecret.json()).toMatchObject({ error: "invalid_client" })
@@ -472,7 +477,7 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
       client_id: fixture.client.id,
       client_secret: rotated.data.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(newSecret.status).toBe(200)
     const events = JSON.stringify(database.sqlite.query("SELECT payload, metadata FROM events").all())
@@ -854,7 +859,7 @@ test("inactive clients cannot authorize or refresh existing grants", async () =>
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(refreshed.status).toBe(401)
     expect(await refreshed.json()).toMatchObject({ error: "invalid_client" })
@@ -1067,7 +1072,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       context: realmSystemContextCreate(),
       database,
       input: {
-        allowedScopes: ["openid", "profile", "email"],
+        allowedScopes: ["openid", "profile", "email", "offline_access"],
         clientType: "confidential",
         idTokenUserinfoAssertion: true,
         name: "Token client",
@@ -1097,7 +1102,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
         nonce: "token-nonce",
         redirect_uri: "https://client.example/callback",
         response_type: "code",
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         state: "token-state",
       },
       realmId: authenticated.realm.id,
@@ -1126,7 +1131,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
     })
     expect(response.status).toBe(200)
     const token = v.parse(oidcTokenResponseSchema, await response.json())
-    expect(token.scope).toBe("openid profile email")
+    expect(token.scope).toBe("openid profile email offline_access")
     expect(token.token_type).toBe("Bearer")
     const idClaims = oidcJwtVerify(token.id_token, key.data.signingKey.publicJwk)
     const accessClaims = oidcJwtVerify(token.access_token, key.data.signingKey.publicJwk)
@@ -1147,7 +1152,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       data: {
         aud: client.data.client.id,
         client_id: client.data.client.id,
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         sub: authenticated.userId,
       },
       success: true,
@@ -1156,12 +1161,12 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       client_id: client.data.client.id,
       client_secret: client.data.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: token.refresh_token,
+      refresh_token: refreshTokenRequire(token),
       scope: "openid",
     })
     expect(rotatedResponse.status).toBe(200)
     const rotated = v.parse(oidcTokenResponseSchema, await rotatedResponse.json())
-    expect(rotated.refresh_token).not.toBe(token.refresh_token)
+    expect(refreshTokenRequire(rotated)).not.toBe(refreshTokenRequire(token))
     const refreshMetadata = oidcRefreshTokenMeList({
       database,
       realmId: authenticated.realm.id,
@@ -1175,7 +1180,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       client_id: client.data.client.id,
       client_secret: client.data.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: rotated.refresh_token,
+      refresh_token: refreshTokenRequire(rotated),
       scope: "openid profile email custom",
     })
     expect(expandedScope.status).toBe(400)
@@ -1184,7 +1189,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       client_id: client.data.client.id,
       client_secret: client.data.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: token.refresh_token,
+      refresh_token: refreshTokenRequire(token),
     })
     expect(replay.status).toBe(400)
     expect(await replay.json()).toMatchObject({ error: "invalid_grant" })
@@ -1192,7 +1197,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       client_id: client.data.client.id,
       client_secret: client.data.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: rotated.refresh_token,
+      refresh_token: refreshTokenRequire(rotated),
     })
     expect(familyReplay.status).toBe(400)
     expect(await familyReplay.json()).toMatchObject({ error: "invalid_grant" })
@@ -1209,7 +1214,7 @@ test("ID-token UserInfo assertions follow granted scopes for authorization-code 
     const fixture = await createOidcTokenFixture(
       database,
       "userinfo-assertion.example.com",
-      "openid profile email",
+      "openid profile email offline_access",
       true,
     )
     const jwksResponse = await fixture.app.fetch(
@@ -1242,7 +1247,7 @@ test("ID-token UserInfo assertions follow granted scopes for authorization-code 
         auth_time: 1_700_000_000,
         aud: fixture.client.id,
         client_id: fixture.client.id,
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         sub: fixture.authenticated.userId,
       },
       success: true,
@@ -1257,7 +1262,7 @@ test("ID-token UserInfo assertions follow granted scopes for authorization-code 
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
       scope: "openid",
     })
     expect(refreshedResponse.status).toBe(200)
@@ -1332,7 +1337,7 @@ test("disabled ID-token UserInfo assertions omit optional claims in authorizatio
         auth_time: 1_700_000_000,
         aud: fixture.client.id,
         client_id: fixture.client.id,
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         sub: fixture.authenticated.userId,
       },
       success: true,
@@ -1347,7 +1352,7 @@ test("disabled ID-token UserInfo assertions omit optional claims in authorizatio
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(refreshedResponse.status).toBe(200)
     const refreshed = v.parse(oidcTokenResponseSchema, await refreshedResponse.json())
@@ -1377,7 +1382,7 @@ test("disabled ID-token UserInfo assertions omit optional claims in authorizatio
         auth_time: 1_700_000_000,
         aud: fixture.client.id,
         client_id: fixture.client.id,
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
         sub: fixture.authenticated.userId,
       },
       success: true,
@@ -1702,6 +1707,9 @@ test("UserInfo validates bearer tokens, isolates tenants, and filters claims by 
     )
     expect(getResponse.status).toBe(200)
     expect(v.parse(oidcUserInfoSchema, await getResponse.json())).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
       email: "userinfo-example-com@example.com",
       email_verified: true,
       name: "OIDC User",
@@ -1716,6 +1724,9 @@ test("UserInfo validates bearer tokens, isolates tenants, and filters claims by 
     )
     expect(postResponse.status).toBe(200)
     expect(await postResponse.json()).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
       email: "userinfo-example-com@example.com",
       email_verified: true,
       name: "OIDC User",
@@ -1733,7 +1744,12 @@ test("UserInfo validates bearer tokens, isolates tenants, and filters claims by 
       }),
     )
     expect(openidResponse.status).toBe(200)
-    expect(await openidResponse.json()).toEqual({ sub: openidOnly.authenticated.userId })
+    expect(await openidResponse.json()).toEqual({
+      acr: "authenticated",
+      amr: ["password"],
+      auth_time: 1_700_000_000,
+      sub: openidOnly.authenticated.userId,
+    })
     const openidJwks = await openidOnly.app.fetch(
       new Request("https://userinfo-openid.example.com/.well-known/jwks.json"),
     )
@@ -1840,7 +1856,7 @@ test("OIDC revocation authenticates clients, is idempotent, isolates tenants, an
     )
     expect(afterRevoke.status).toBe(401)
 
-    const refreshRevoked = await revoke({ token: fixture.token.refresh_token, token_type_hint: "refresh_token" })
+    const refreshRevoked = await revoke({ token: refreshTokenRequire(fixture.token), token_type_hint: "refresh_token" })
     expect(refreshRevoked.status).toBe(200)
     expect(
       (
@@ -1865,7 +1881,7 @@ test("OIDC revocation authenticates clients, is idempotent, isolates tenants, an
     )
     const failed = await atomic.app.fetch(
       new Request("https://revoke-atomic.example.com/oauth2/revoke", {
-        body: new URLSearchParams({ token: atomic.token.refresh_token }),
+        body: new URLSearchParams({ token: refreshTokenRequire(atomic.token) }),
         headers: {
           authorization: `Basic ${atomicBasic}`,
           "content-type": "application/x-www-form-urlencoded",
@@ -2307,7 +2323,7 @@ test("RP-initiated logout validates exact redirects, revokes the session and OID
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(refresh.status).toBe(400)
     expect(await refresh.json()).toMatchObject({ error: "invalid_grant" })
@@ -2486,7 +2502,7 @@ test("account refresh-token management returns safe family metadata and invalida
       clientName: "refresh-management.example.com client",
       familyId,
       lastUsedAt: null,
-      scope: ["openid", "profile", "email"],
+      scope: ["openid", "profile", "email", "offline_access"],
       status: "active",
     })
     expect(listed.data.items[0]).not.toHaveProperty("userId")
@@ -2569,7 +2585,7 @@ test("account refresh-token management returns safe family metadata and invalida
       client_id: fixture.client.id,
       client_secret: fixture.clientSecret,
       grant_type: "refresh_token",
-      refresh_token: fixture.token.refresh_token,
+      refresh_token: refreshTokenRequire(fixture.token),
     })
     expect(refresh.status).toBe(400)
     expect(await refresh.json()).toMatchObject({ error: "invalid_grant" })
@@ -2941,7 +2957,9 @@ test("account refresh-token family metadata uses bounded stable cursor pages", a
       const item = page.data.items[0]
       if (item === undefined) return
       familyIds.push(item.familyId)
-      expect(item.scope).toEqual(item.familyId === originalFamilyId ? ["openid", "profile", "email"] : ["openid"])
+      expect(item.scope).toEqual(
+        item.familyId === originalFamilyId ? ["openid", "profile", "email", "offline_access"] : ["openid"],
+      )
       expect(page.data.nextPageToken).toBeString()
       pageToken = page.data.nextPageToken
     }

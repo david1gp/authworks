@@ -8,6 +8,7 @@ import { MfaEmailOtpPanel } from "../../mfa/ui/MfaEmailOtpPanel.js"
 import { MfaPanel } from "../../mfa/ui/MfaPanel.js"
 import { MfaPasskeyEnrollPanel } from "../../mfa/ui/MfaPasskeyEnrollPanel.js"
 import { MfaTotpEnrollPanel } from "../../mfa/ui/MfaTotpEnrollPanel.js"
+import { ConsentProductionAdapter } from "../../oidc/ui/ConsentProductionAdapter.js"
 import { PasskeyPanel } from "../../passkeys/ui/PasskeyPanel.js"
 import { PasswordChangeRequiredPanel } from "../../passwords/ui/PasswordChangeRequiredPanel.js"
 import { PasswordPanel } from "../../passwords/ui/PasswordPanel.js"
@@ -278,6 +279,9 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                   )}
                 </Show>
               </Match>
+              <Match when={state.screen() === "consent"}>
+                <ConsentProductionAdapter />
+              </Match>
               <Match
                 when={
                   state.screen() === "mfa" ||
@@ -302,7 +306,7 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                         ? state.screen() === "mfa-enroll" || state.screen() === "mfa-optional"
                           ? "mfa-totp-enroll"
                           : "mfa-totp"
-                        : factor === "email-otp"
+                        : factor === "email_otp"
                           ? state.screen() === "mfa-enroll" || state.screen() === "mfa-optional"
                             ? "mfa-email-otp-enroll"
                             : "mfa-email-otp"
@@ -321,7 +325,7 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                 <MfaCodePanel
                   code={state.code.get()}
                   errorMessage={state.errorMessage()}
-                  kind={state.screen() === "mfa-totp" ? "totp" : "recovery-code"}
+                  kind={state.screen() === "mfa-totp" ? "totp" : "recovery_code"}
                   onBack={() => state.go("mfa")}
                   onCode={state.mfaCodeSet}
                   onSubmit={state.mfaSubmit}

@@ -7,14 +7,14 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordHashVerify } from "../domain/passwordHashVerify.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
-import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
+import { passwordPolicyResolve } from "../domain/passwordPolicyResolve.js"
 import { passwordCredentialChangedEventPayloadSchema } from "../events/passwordCredentialChangedEventPayloadSchema.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
@@ -30,6 +30,7 @@ type PasswordChangeOptions = {
   readonly database: StorageDatabase
   readonly input: { readonly currentPassword?: string; readonly newPassword: string } & Record<string, unknown>
   readonly realmId: string
+  readonly organizationId?: string
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -48,6 +49,14 @@ export function passwordChange(options: PasswordChangeOptions): Result<PasswordC
   if (!realm.success) return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
   if (realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
+  const loginPolicy = organizationLoginPolicyEnforce({
+    database: options.database,
+    method: "password",
+    organizationId: options.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginPolicy.success)
+    return resultErrorCreate(op, "Password changes are disabled for this organization.", "passwords.forbidden")
   const repository = passwordRepositoryCreate(options.database.db)
   const credential = repository.passwordCredentialGet(options.realmId, options.userId)
   if (!credential.success)
@@ -62,11 +71,10 @@ export function passwordChange(options: PasswordChangeOptions): Result<PasswordC
     if (!current.success || !current.data)
       return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
   }
-  const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success)
+  const resolved = passwordPolicyResolve({ executor: options.database.db, realmId: options.realmId })
+  if (!resolved.success)
     return resultErrorCreate(op, "The password change could not be completed.", "passwords.write-failed")
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
-  const checked = passwordPolicyCheck(parsed.output.newPassword, policy)
+  const checked = passwordPolicyCheck(parsed.output.newPassword, resolved.data)
   if (!checked.success) return checked
   const hash = passwordHashCreate(parsed.output.newPassword, options.runtime ?? options.database.runtime)
   if (!hash.success) return hash

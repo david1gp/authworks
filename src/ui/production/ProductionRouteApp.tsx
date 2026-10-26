@@ -11,6 +11,7 @@ import { ImpersonationAdminProductionAdapter } from "../../features/impersonatio
 import { LoginProductionAdapter } from "../../features/login/ui/LoginProductionAdapter.js"
 import { MachineAdminProductionAdapter } from "../../features/machineUsers/ui/MachineAdminProductionAdapter.js"
 import { machineAdminScreenSchema } from "../../features/machineUsers/ui/machineAdminScreenSchema.js"
+import { ConsentProductionAdapter } from "../../features/oidc/ui/ConsentProductionAdapter.js"
 import { OidcAdminProductionAdapter } from "../../features/oidc/ui/OidcAdminProductionAdapter.js"
 import { oidcAdminScreenSchema } from "../../features/oidc/ui/oidcAdminScreenSchema.js"
 import { OrganizationAdminProductionAdapter } from "../../features/organizations/ui/OrganizationAdminProductionAdapter.js"
@@ -188,6 +189,9 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
         }
       >
         <AccountWorkspaceProductionAdapter realmId={realmId() as string} />
+      </Match>
+      <Match when={props.state.screen()?.key === "consent" && props.state.shellKind() === "focus"}>
+        <ConsentProductionAdapter />
       </Match>
       <Match when={props.state.api.content === "loading"}>
         <ProductionStatePanel state="loading" />

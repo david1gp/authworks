@@ -17,4 +17,8 @@ export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowedFactors: [...organizationLoginPolicyCanonicalFactorOrder],
   preferredFactorOrder: [...organizationLoginPolicyCanonicalFactorOrder],
   minimumStepUpAssurance: "authenticated",
+  mfaInitSkipLifetimeSeconds: null,
+  secondFactorCheckLifetimeSeconds: null,
+  multiFactorCheckLifetimeSeconds: null,
+  forceMfaLocalOnly: false,
 }

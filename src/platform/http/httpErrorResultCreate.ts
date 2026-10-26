@@ -18,6 +18,7 @@ export function httpErrorResultCreate(input: {
   const code =
     input.result.code === "passwords.rate-limited" ||
     input.result.code === "users.rate-limited" ||
+    input.result.code === "email-otp.rate-limited" ||
     input.result.code === "whatsapp-otp.rate-limited"
       ? "rate_limited"
       : catalogEntry === undefined

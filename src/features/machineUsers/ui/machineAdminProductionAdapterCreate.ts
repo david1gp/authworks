@@ -92,6 +92,11 @@ export function machineAdminProductionAdapterCreate(options: {
         (data) => data.machineUser,
       ),
     machineUserList: (pageToken) => api().machineUserTenantList(realm(), organization(), listQuery(pageToken)),
+    machineUserUpdate: (machineUserId, input) =>
+      mutate(
+        (client) => client.machineUserTenantUpdate(realm(), organization(), machineUserId, input),
+        (data) => data.machineUser,
+      ),
     personalAccessTokenCreate: (machineUserId, input) =>
       mutate(
         (client) => client.machineUserTenantPersonalAccessTokenCreate(realm(), organization(), machineUserId, input),

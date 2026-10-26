@@ -6,6 +6,7 @@ import type { MachinePersonalAccessTokenCreateRequest } from "../public/machineP
 import type { MachineUserCreateRequest } from "../public/machineUserCreateRequestSchema.js"
 import type { MachineUserLifecycleRequest } from "../public/machineUserLifecycleRequestSchema.js"
 import type { MachineUserListResponse } from "../public/machineUserListResponseSchema.js"
+import type { MachineUserUpdateRequest } from "../public/machineUserUpdateRequestSchema.js"
 import type { MachineUser } from "../public/machineUserSchema.js"
 
 /**
@@ -44,6 +45,7 @@ export type MachineAdminAdapter = {
     input: MachineUserLifecycleRequest,
   ) => Promise<Result<MachineUser>>
   readonly machineUserList: (pageToken?: string) => Promise<Result<MachineUserListResponse>>
+  readonly machineUserUpdate: (machineUserId: string, input: MachineUserUpdateRequest) => Promise<Result<MachineUser>>
   readonly personalAccessTokenCreate: (
     machineUserId: string,
     input: MachinePersonalAccessTokenCreateRequest,

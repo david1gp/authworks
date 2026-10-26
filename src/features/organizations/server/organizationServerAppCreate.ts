@@ -47,6 +47,10 @@ import { organizationMembershipList } from "../actions/organizationMembershipLis
 import { organizationMembershipRemove } from "../actions/organizationMembershipRemove.js"
 import { organizationMembershipUpdate } from "../actions/organizationMembershipUpdate.js"
 import { organizationMeSwitch } from "../actions/organizationMeSwitch.js"
+import { organizationMetadataGet } from "../actions/organizationMetadataGet.js"
+import { organizationMetadataList } from "../actions/organizationMetadataList.js"
+import { organizationMetadataRemove } from "../actions/organizationMetadataRemove.js"
+import { organizationMetadataSet } from "../actions/organizationMetadataSet.js"
 import { organizationPurge } from "../actions/organizationPurge.js"
 import { organizationRealmLoginPolicyGet } from "../actions/organizationRealmLoginPolicyGet.js"
 import { organizationRealmLoginPolicySet } from "../actions/organizationRealmLoginPolicySet.js"
@@ -64,12 +68,15 @@ import { organizationInvitationMeAcceptRequestSchema } from "../public/organizat
 import { organizationInvitationMeDeclineRequestSchema } from "../public/organizationInvitationMeDeclineRequestSchema.js"
 import { organizationInvitationMeInspectRequestSchema } from "../public/organizationInvitationMeInspectRequestSchema.js"
 import { organizationLifecycleRequestSchema } from "../public/organizationLifecycleRequestSchema.js"
-import { organizationListQuerySchema } from "../public/organizationListQuerySchema.js"
 import type { OrganizationListQuery } from "../public/organizationListQuerySchema.js"
+import { organizationListQuerySchema } from "../public/organizationListQuerySchema.js"
 import { organizationLoginPolicySetRequestSchema } from "../public/organizationLoginPolicySetRequestSchema.js"
 import { organizationMembershipCreateRequestSchema } from "../public/organizationMembershipCreateRequestSchema.js"
 import { organizationMembershipUpdateRequestSchema } from "../public/organizationMembershipUpdateRequestSchema.js"
 import { organizationMeSwitchRequestSchema } from "../public/organizationMeSwitchRequestSchema.js"
+import type { OrganizationMetadataListQuery } from "../public/organizationMetadataListQuerySchema.js"
+import { organizationMetadataListQuerySchema } from "../public/organizationMetadataListQuerySchema.js"
+import { organizationMetadataSetRequestSchema } from "../public/organizationMetadataSetRequestSchema.js"
 import { organizationSwitchRequestSchema } from "../public/organizationSwitchRequestSchema.js"
 import { organizationUpdateRequestSchema } from "../public/organizationUpdateRequestSchema.js"
 
@@ -1054,6 +1061,77 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
+  app.get("/realms/:realmId/organizations/:organizationId/metadata", protectedMiddleware, (context) => {
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
+    if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
+    const query = organizationMetadataListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
+    return organizationResultResponseCreate(
+      context,
+      organizationMetadataList({
+        context: authenticated.data,
+        database: options.database,
+        organizationId: context.req.param("organizationId"),
+        query: query.data,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, (context) => {
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
+    if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
+    return organizationResultResponseCreate(
+      context,
+      organizationMetadataGet({
+        context: authenticated.data,
+        database: options.database,
+        key: context.req.param("key"),
+        organizationId: context.req.param("organizationId"),
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.put("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, async (context) => {
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
+    if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationMetadataSetRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationMetadataSet", "The metadata is invalid.", "organizations.invalid"),
+      )
+    return organizationResultResponseCreate(
+      context,
+      organizationMetadataSet({
+        context: authenticated.data,
+        database: options.database,
+        input: input.output,
+        key: context.req.param("key"),
+        organizationId: context.req.param("organizationId"),
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, (context) => {
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
+    if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
+    return organizationResultResponseCreate(
+      context,
+      organizationMetadataRemove({
+        context: authenticated.data,
+        database: options.database,
+        key: context.req.param("key"),
+        organizationId: context.req.param("organizationId"),
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
   app.get("/realms/:realmId/organizations/:organizationId/login-policy", protectedMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
@@ -1410,6 +1488,22 @@ function organizationBearerTokenGet(authorization: string | undefined): string |
   if (authorization === undefined) return null
   const match = /^Bearer (.+)$/.exec(authorization)
   return match?.[1] ?? null
+}
+
+function organizationMetadataListQueryRead(requestUrl: string): Result<OrganizationMetadataListQuery> {
+  const op = "organizationMetadataListQueryRead"
+  const searchParams = new URL(requestUrl).searchParams
+  const keyPrefix = searchParams.get("keyPrefix")
+  const withoutKeyPrefix = new URLSearchParams(searchParams)
+  withoutKeyPrefix.delete("keyPrefix")
+  const parsed = listQueryFromSearchParams(withoutKeyPrefix)
+  if (!parsed.success) return resultErrorCodedCreate(op, "The metadata list query is invalid.", "organizations.invalid")
+  const query = v.safeParse(organizationMetadataListQuerySchema, {
+    ...parsed.data,
+    ...(keyPrefix === null ? {} : { keyPrefix }),
+  })
+  if (!query.success) return resultErrorCodedCreate(op, "The metadata list query is invalid.", "organizations.invalid")
+  return resultCreate(query.output)
 }
 
 function organizationListQueryRead(requestUrl: string): Result<ListQuery> {

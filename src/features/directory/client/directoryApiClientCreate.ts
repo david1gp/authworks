@@ -30,8 +30,10 @@ type DirectoryApiClientCreateOptions = {
 function directoryQueryToSearchParams(query: DirectoryUserListQuery | ListQuery | undefined): string {
   if (query === undefined) return ""
   const params = new URLSearchParams(listQueryToSearchParams(query).replace(/^\?/, ""))
-  const role = (query as DirectoryUserListQuery).role
-  if (role !== undefined) params.set("role", role)
+  const filters = query as DirectoryUserListQuery
+  if (filters.emailVerified !== undefined) params.set("emailVerified", filters.emailVerified ? "true" : "false")
+  if (filters.role !== undefined) params.set("role", filters.role)
+  if (filters.state !== undefined) params.set("state", filters.state)
   const encoded = params.toString()
   return encoded.length === 0 ? "" : `?${encoded}`
 }

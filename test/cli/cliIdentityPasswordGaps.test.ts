@@ -12,6 +12,11 @@ type CliRun = {
 
 const gapHelpRoutes: Array<{ readonly args: string[]; readonly flag: string }> = [
   { args: ["external-identities", "provider-update"], flag: "--provider-id" },
+  { args: ["external-identities", "tenant-provider-create"], flag: "--display-name" },
+  { args: ["external-identities", "tenant-provider-list"], flag: "--realm-id" },
+  { args: ["external-identities", "tenant-provider-get"], flag: "--provider-id" },
+  { args: ["external-identities", "tenant-provider-update"], flag: "--provider-id" },
+  { args: ["external-identities", "tenant-provider-disable"], flag: "--provider-id" },
   { args: ["external-identities", "provider-public-list"], flag: "--realm-id" },
   { args: ["external-identities", "provider-me-list"], flag: "--realm-id" },
   { args: ["external-identities", "link-start"], flag: "--user-id" },
@@ -45,6 +50,8 @@ test("CLI identity and password gap commands require a realm before any request"
   for (const args of [
     ["external-identities", "provider-public-list", "--server", unavailableServer],
     ["external-identities", "provider-me-list", "--server", unavailableServer],
+    ["external-identities", "tenant-provider-list", "--server", unavailableServer],
+    ["external-identities", "tenant-provider-get", "--server", unavailableServer, "--provider-id", "provider-id"],
     ["external-identities", "me-list", "--server", unavailableServer],
     [
       "external-identities",

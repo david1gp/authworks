@@ -2,6 +2,7 @@ import { expect, test } from "bun:test"
 import * as account from "../src/outputs/library/account.js"
 import * as authorization from "../src/outputs/library/authorization.js"
 import * as configuration from "../src/outputs/library/configuration.js"
+import * as directory from "../src/outputs/library/directory.js"
 import * as email from "../src/outputs/library/email.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
 import * as events from "../src/outputs/library/events.js"
@@ -39,9 +40,8 @@ test("every completed feature has a public library subpath and client", () => {
   expect(authorization.authorizationActorContextSchema).toBeDefined()
   expect(configuration.authworksConfigurationResolve).toBeFunction()
   expect(configuration.localCredentialLookup).toBeFunction()
+  expect(directory.directoryApiClientCreate).toBeFunction()
   expect(email.emailGeneratorApiClientCreate).toBeFunction()
-  expect(email.imapMailReceivePortCreate).toBeFunction()
-  expect(email.smtpMailDeliveryPortCreate).toBeFunction()
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
   expect(whatsappOtp.whatsappOtpApiClientCreate).toBeFunction()
   expect(events.eventApiClientCreate).toBeFunction()
@@ -113,13 +113,14 @@ test("every API client publishes its complete method set", () => {
     "realmTenantUpdate",
     "realmUpdate",
   ])
-  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(59)
+  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(63)
   expect(Object.keys(users.userApiClientCreate(options))).toEqual([
     "userCreate",
     "userGet",
     "userList",
     "userMeGet",
     "userMeAuthenticationMethodsGet",
+    "userMeExportGet",
     "userMeEmailAddressList",
     "userMeEmailAddressAddStart",
     "userMeEmailAddressAddResend",
@@ -145,6 +146,14 @@ test("every API client publishes its complete method set", () => {
     "userTenantVerificationSet",
     "userTenantDelete",
     "userTenantPurge",
+    "userTenantEmailAddressList",
+    "userTenantEmailVerificationResend",
+    "userTenantMetadataList",
+    "userTenantMetadataGet",
+    "userTenantMetadataSet",
+    "userTenantMetadataRemove",
+    "userMeMetadataList",
+    "userMeMetadataGet",
     "userMeDelete",
   ])
   expect(Object.keys(passwords.passwordApiClientCreate(options))).toEqual([
@@ -161,6 +170,10 @@ test("every API client publishes its complete method set", () => {
     "passwordPolicyGet",
     "passwordPolicySystemGet",
     "passwordPolicyTenantGet",
+    "passwordOrgPolicyTenantGet",
+    "passwordOrgPolicyTenantSet",
+    "passwordOrgPolicyGet",
+    "passwordOrgPolicySet",
     "passwordPolicyTenantSet",
     "passwordPolicySet",
   ])
@@ -175,9 +188,16 @@ test("every API client publishes its complete method set", () => {
     "impersonationEndedRender",
     "impersonationStartedRender",
   ])
+  expect(Object.keys(email).sort()).not.toContain("imapMailReceivePortCreate")
+  expect(Object.keys(email).sort()).not.toContain("smtpMailDeliveryPortCreate")
+  expect(email).not.toHaveProperty("imapMailReceivePortCreate")
+  expect(email).not.toHaveProperty("smtpMailDeliveryPortCreate")
   expect(Object.keys(sessions.sessionApiClientCreate(options))).toEqual([
     "sessionBootstrapAdminSignIn",
     "sessionCurrent",
+    "sessionCsrfGet",
+    "sessionProtectedGet",
+    "sessionLogout",
     "sessionList",
     "sessionUserList",
     "sessionMeList",
@@ -200,14 +220,20 @@ test("every API client publishes its complete method set", () => {
     "whatsappOtpPhoneChangeResend",
     "whatsappOtpPhoneChangeVerify",
   ])
-  expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
+  expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(4)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(21)
-  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(43)
-  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(16)
-  expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
-  expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)
+  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(48)
+  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(18)
+  expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(14)
+  expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(23)
   expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(52)
-  expect(Object.keys(impersonation.impersonationApiClientCreate(options))).toHaveLength(2)
+  expect(Object.keys(impersonation.impersonationApiClientCreate(options))).toHaveLength(3)
+  expect(Object.keys(directory.directoryApiClientCreate(options))).toEqual([
+    "directoryOrganizationUserList",
+    "directoryOrganizationUserSummary",
+    "directoryRealmUserList",
+    "directoryUserAccess",
+  ])
 })
 
 test("package exports name every library feature boundary", async () => {
@@ -219,6 +245,7 @@ test("package exports name every library feature boundary", async () => {
     "./authorization",
     "./cli",
     "./configuration",
+    "./directory",
     "./email",
     "./emailOtp",
     "./events",

@@ -84,7 +84,11 @@ test("realm policy and provider administration is session-bound, permissioned, s
     app.route("/", mfaServerAppCreate({ database, publicOrigin: "https://realm-policy-admin.example.com" }))
     app.route(
       "/",
-      externalIdentityServerAppCreate({ database, publicOrigin: "https://realm-policy-admin.example.com" }),
+      externalIdentityServerAppCreate({
+        allowDevelopmentFallback: true,
+        database,
+        publicOrigin: "https://realm-policy-admin.example.com",
+      }),
     )
 
     const bootstrapSignIn = await app.request(

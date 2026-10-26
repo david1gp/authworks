@@ -1,11 +1,14 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { userApiClientCreate } from "../client/userApiClientCreate.js"
+import type { UserCreateRequest } from "../public/userCreateRequestSchema.js"
+import type { UserListQuery } from "../public/userListQuerySchema.js"
+import type { UserMetadataListQuery } from "../public/userMetadataListQuerySchema.js"
+import type { UserState } from "../public/userStateSchema.js"
 
 type UserCliFlags = {
   readonly profile?: string
@@ -14,11 +17,13 @@ type UserCliFlags = {
   readonly token?: string
 }
 type UserListCliFlags = UserCliFlags & {
+  readonly emailVerified?: boolean
   readonly pageSize?: number
   readonly pageToken?: string
   readonly search?: string
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
+  readonly state?: UserState
 }
 
 type UserIdCliFlags = UserCliFlags & {
@@ -30,21 +35,27 @@ type UserGetCliFlags = UserIdCliFlags & { readonly ifModifiedSince?: string }
 const userCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: UserCliFlags & { displayName?: string; email: string; realmId?: string; userName: string },
+    flags: UserCliFlags & {
+      displayName?: string
+      email: string
+      firstName?: string
+      gender?: string
+      lastName?: string
+      nickName?: string
+      phoneNumber?: string
+      preferredLanguage?: string
+      realmId?: string
+      userName: string
+    },
   ) {
     const connection = await userCliConnectionResolve(this, flags)
     if (connection === undefined) return
     const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(
-      this,
-      await userCliClientCreate(connection).userCreate(realmId, {
-        email: flags.email,
-        profile: { displayName: flags.displayName },
-        userName: flags.userName,
-      }),
-      [connection.token, connection.systemToken],
-    )
+    userCliResultWrite(this, await userCliClientCreate(connection).userCreate(realmId, userCreateInputCreate(flags)), [
+      connection.token,
+      connection.systemToken,
+    ])
   },
   parameters: {
     flags: {
@@ -52,7 +63,13 @@ const userCreateCommand = buildCommand({
       realmId: userRealmIdFlag(),
       userName: textFlag("User name"),
       email: textFlag("Email address"),
+      phoneNumber: optionalTextFlag("Phone number"),
       displayName: optionalTextFlag("Display name"),
+      firstName: optionalTextFlag("First name"),
+      lastName: optionalTextFlag("Last name"),
+      nickName: optionalTextFlag("Nickname"),
+      gender: optionalTextFlag("Gender"),
+      preferredLanguage: optionalTextFlag("Preferred language"),
     },
   },
   docs: { brief: "Create a user" },
@@ -258,6 +275,21 @@ const userMeAuthMethodsCommand = buildCommand({
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "Read the current user authentication methods" },
+})
+
+const userExportMeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(connection).userMeExportGet(realmId), [
+      connection.token,
+      connection.systemToken,
+    ])
+  },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
+  docs: { brief: "Export the current user data" },
 })
 
 const userEmailsListCommand = buildCommand({
@@ -502,7 +534,18 @@ const userTenantGetCommand = buildCommand({
 const userTenantCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: UserCliFlags & { displayName?: string; email: string; realmId?: string; userName: string },
+    flags: UserCliFlags & {
+      displayName?: string
+      email: string
+      firstName?: string
+      gender?: string
+      lastName?: string
+      nickName?: string
+      phoneNumber?: string
+      preferredLanguage?: string
+      realmId?: string
+      userName: string
+    },
   ) {
     const connection = await userCliConnectionResolve(this, flags)
     if (connection === undefined) return
@@ -510,11 +553,7 @@ const userTenantCreateCommand = buildCommand({
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(connection).userTenantCreate(realmId, {
-        email: flags.email,
-        profile: { displayName: flags.displayName },
-        userName: flags.userName,
-      }),
+      await userCliClientCreate(connection).userTenantCreate(realmId, userCreateInputCreate(flags)),
       [connection.token, connection.systemToken],
     )
   },
@@ -524,7 +563,13 @@ const userTenantCreateCommand = buildCommand({
       realmId: userRealmIdFlag(),
       userName: textFlag("User name"),
       email: textFlag("Email address"),
+      phoneNumber: optionalTextFlag("Phone number"),
       displayName: optionalTextFlag("Display name"),
+      firstName: optionalTextFlag("First name"),
+      lastName: optionalTextFlag("Last name"),
+      nickName: optionalTextFlag("Nickname"),
+      gender: optionalTextFlag("Gender"),
+      preferredLanguage: optionalTextFlag("Preferred language"),
     },
   },
   docs: { brief: "Create a tenant user" },
@@ -635,6 +680,101 @@ const userTenantDeleteCommand = buildCommand({
   docs: { brief: "Delete a tenant user" },
 })
 
+const userTenantMetadataListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & UserListCliFlags & { keyPrefix?: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantMetadataList(
+        realmId,
+        flags.userId,
+        userMetadataListQueryCreate(flags),
+      ),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      ...userListFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      keyPrefix: optionalTextFlag("Filter metadata keys by prefix"),
+    },
+  },
+  docs: { brief: "List tenant user metadata" },
+})
+
+const userTenantMetadataGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & { key: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantMetadataGet(realmId, flags.userId, flags.key),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag(), key: textFlag("Metadata key") },
+  },
+  docs: { brief: "Get a tenant user metadata entry" },
+})
+
+const userTenantMetadataSetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & { key: string; value: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantMetadataSet(realmId, flags.userId, flags.key, {
+        value: flags.value,
+      }),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      key: textFlag("Metadata key"),
+      value: textFlag("Metadata value"),
+    },
+  },
+  docs: { brief: "Set a tenant user metadata entry" },
+})
+
+const userTenantMetadataRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: UserIdCliFlags & { key: string }) {
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(connection).userTenantMetadataRemove(realmId, flags.userId, flags.key),
+      [connection.token, connection.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      key: textFlag("Metadata key"),
+    },
+  },
+  docs: { brief: "Remove a tenant user metadata entry" },
+})
+
 const userTenantPurgeCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
     const connection = await userCliConnectionResolve(this, flags)
@@ -663,6 +803,7 @@ export const userCliCommands = buildRouteMap({
     emailsList: userEmailsListCommand,
     emailsPrimarySet: userEmailsPrimarySetCommand,
     emailsRemove: userEmailsRemoveCommand,
+    exportMe: userExportMeCommand,
     get: userGetCommand,
     list: userListCommand,
     lifecycle: userLifecycleCommand,
@@ -677,6 +818,10 @@ export const userCliCommands = buildRouteMap({
     tenantGet: userTenantGetCommand,
     tenantLifecycle: userTenantLifecycleCommand,
     tenantList: userTenantListCommand,
+    tenantMetadataGet: userTenantMetadataGetCommand,
+    tenantMetadataList: userTenantMetadataListCommand,
+    tenantMetadataRemove: userTenantMetadataRemoveCommand,
+    tenantMetadataSet: userTenantMetadataSetCommand,
     tenantProfile: userTenantProfileCommand,
     tenantPurge: userTenantPurgeCommand,
     tenantVerify: userTenantVerifyCommand,
@@ -767,6 +912,18 @@ function userCommonFlags() {
 
 function userListFlags() {
   return {
+    emailVerified: {
+      brief: "Filter by email verification",
+      kind: "boolean" as const,
+      optional: true as const,
+    },
+    state: {
+      brief: "Filter by lifecycle state",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as UserState,
+      placeholder: "STATE",
+    },
     pageSize: {
       brief: "Maximum items per page",
       kind: "parsed" as const,
@@ -805,21 +962,64 @@ function userListFlags() {
   }
 }
 
-function userListQueryCreate(flags: UserListCliFlags): ListQuery | undefined {
+function userMetadataListQueryCreate(
+  flags: UserListCliFlags & { readonly keyPrefix?: string },
+): UserMetadataListQuery | undefined {
+  const base = userListQueryCreate(flags)
+  if (base === undefined && flags.keyPrefix === undefined) return undefined
+  return {
+    ...(base ?? {}),
+    ...(flags.keyPrefix === undefined ? {} : { keyPrefix: flags.keyPrefix }),
+  }
+}
+
+function userCreateInputCreate(
+  flags: Readonly<{
+    displayName?: string
+    email: string
+    firstName?: string
+    gender?: string
+    lastName?: string
+    nickName?: string
+    phoneNumber?: string
+    preferredLanguage?: string
+    userName: string
+  }>,
+): UserCreateRequest {
+  return {
+    email: flags.email,
+    ...(flags.phoneNumber === undefined ? {} : { phoneNumber: flags.phoneNumber }),
+    profile: {
+      ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
+      ...(flags.firstName === undefined ? {} : { firstName: flags.firstName }),
+      ...(flags.gender === undefined ? {} : { gender: flags.gender }),
+      ...(flags.lastName === undefined ? {} : { lastName: flags.lastName }),
+      ...(flags.nickName === undefined ? {} : { nickName: flags.nickName }),
+      ...(flags.preferredLanguage === undefined ? {} : { preferredLanguage: flags.preferredLanguage }),
+    },
+    userName: flags.userName,
+  }
+}
+
+function userListQueryCreate(flags: UserListCliFlags): UserListQuery | undefined {
   if (
+    flags.emailVerified === undefined &&
     flags.pageSize === undefined &&
     flags.pageToken === undefined &&
     flags.search === undefined &&
     flags.sortBy === undefined &&
-    flags.sortDirection === undefined
+    flags.sortDirection === undefined &&
+    flags.state === undefined
   )
     return undefined
   return {
+    ...(flags.emailVerified === undefined ? {} : { emailVerified: flags.emailVerified }),
     ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
     ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
     ...(flags.search === undefined ? {} : { search: flags.search }),
     ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
     ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
+    ...(flags.state === undefined ? {} : { state: flags.state }),
   }
 }
 

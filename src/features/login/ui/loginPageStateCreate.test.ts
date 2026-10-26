@@ -496,7 +496,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.code.get()).toBe("654321")
     expect(state.whatsappOtpVerifyRetryCountdown()).toBeGreaterThan(0)
     expect(state.whatsappOtpVerifyAllowed()).toBe(false)
-    expect(state.errorMessage()).toBe("Too many requests.")
+    expect(state.errorMessage()).toBe("Too many attempts. Try again in a moment.")
   })
 
   test("moves the dedicated invalid recovery-token error to the invalid-link screen", async () => {
@@ -662,5 +662,207 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(discoveryCount).toBe(2)
     expect(state.screen()).toBe("whatsapp-otp")
     expect(navigated).toEqual(["/demo/login/chooser"])
+  })
+})
+
+describe("loginPageStateCreate item-26 polish", () => {
+  test("routes a forced password change to the change-required screen instead of resuming", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    const navigated: string[] = []
+    const resumed: string[] = []
+    const state = stateCreate(
+      route,
+      "ready",
+      () => resumed.push("resumed"),
+      "success",
+      {
+        passwordLogin: async () => resultCreate({ passwordChangeRequired: true as const, userId: "user-1" }),
+      },
+      demoLoginBootstrap,
+      (path) => navigated.push(path),
+    )
+    await flushEffects()
+
+    state.identifier.set("alex@acme.example")
+    state.password.set("old-password")
+    await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.screen()).toBe("password-change-required")
+    expect(navigated).toEqual(["/demo/login/password/change-required"])
+    expect(resumed).toEqual([])
+  })
+
+  test("continues to the pending MFA challenge after completing a forced password change", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    const navigated: string[] = []
+    const resumed: string[] = []
+    const loginChallengeToken = `c${"h".repeat(42)}`
+    const state = stateCreate(
+      route,
+      "ready",
+      () => resumed.push("resumed"),
+      "success",
+      {
+        passwordLogin: async () =>
+          resultCreate({
+            challenge: {
+              challenge: {
+                expiresAt: 2,
+                id: "challenge-1",
+                purpose: "login" as const,
+                requiredAssurance: "multi_factor" as const,
+              },
+              token: loginChallengeToken,
+            },
+            passwordChangeRequired: true as const,
+            userId: "user-1",
+          }),
+      },
+      demoLoginBootstrap,
+      (path) => navigated.push(path),
+    )
+    await flushEffects()
+
+    state.identifier.set("alex@acme.example")
+    state.password.set("old-password")
+    await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+    expect(state.screen()).toBe("password-change-required")
+
+    state.password.set("old-password")
+    state.newPassword.set("new-password-1")
+    state.confirmPassword.set("new-password-1")
+    await state.passwordChangeSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.screen()).toBe("mfa")
+    expect(navigated.at(-1)).toBe("/demo/login/mfa")
+    expect(resumed).toEqual([])
+  })
+
+  test("resumes the interaction after a forced password change with no pending challenge", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    const resumed: string[] = []
+    const state = stateCreate(
+      route,
+      "ready",
+      () => resumed.push("resumed"),
+      "success",
+      {
+        passwordLogin: async () => resultCreate({ passwordChangeRequired: true as const, userId: "user-1" }),
+      },
+      demoLoginBootstrap,
+    )
+    await flushEffects()
+
+    state.identifier.set("alex@acme.example")
+    state.password.set("old-password")
+    await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+    expect(state.screen()).toBe("password-change-required")
+
+    state.password.set("old-password")
+    state.newPassword.set("new-password-1")
+    state.confirmPassword.set("new-password-1")
+    await state.passwordChangeSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(resumed).toEqual(["resumed"])
+  })
+
+  test("returns a direct register route to the chooser when the policy forbids registration", async () => {
+    const [route] = createSignal<LoginScreen>("register")
+    const navigated: string[] = []
+    const state = stateCreate(
+      route,
+      "ready",
+      undefined,
+      "success",
+      {},
+      { ...demoLoginBootstrap, policy: { ...demoLoginBootstrap.policy, allowRegistration: false } },
+      (path) => navigated.push(path),
+    )
+    await flushEffects()
+
+    expect(state.screen()).toBe("chooser")
+    expect(navigated).toEqual(["/demo/login/chooser"])
+  })
+
+  test("keeps the direct register route usable when the policy allows registration", async () => {
+    const [route] = createSignal<LoginScreen>("register")
+    const navigated: string[] = []
+    const state = stateCreate(route, "ready", undefined, "success", {}, demoLoginBootstrap, (path) =>
+      navigated.push(path),
+    )
+    await flushEffects()
+
+    expect(state.screen()).toBe("register")
+    expect(navigated).toEqual([])
+  })
+
+  test("drives the MFA roster and order from the discovery policy", async () => {
+    const [route] = createSignal<LoginScreen>("mfa")
+    const reordered = {
+      ...demoLoginBootstrap,
+      policy: {
+        ...demoLoginBootstrap.policy,
+        allowedFactors: ["passkey", "totp"] as unknown as typeof demoLoginBootstrap.policy.allowedFactors,
+        preferredFactorOrder: ["passkey", "totp"] as unknown as typeof demoLoginBootstrap.policy.preferredFactorOrder,
+      },
+    }
+    const state = stateCreate(route, "ready", undefined, "success", {}, reordered)
+    await flushEffects()
+
+    expect(state.mfaFactors()).toEqual(["passkey", "totp", "recovery_code"])
+  })
+
+  test("drops policy-disallowed factors while keeping the recovery-code fallback", async () => {
+    const [route] = createSignal<LoginScreen>("mfa")
+    const restricted = {
+      ...demoLoginBootstrap,
+      policy: {
+        ...demoLoginBootstrap.policy,
+        allowedFactors: ["totp"] as unknown as typeof demoLoginBootstrap.policy.allowedFactors,
+        preferredFactorOrder: ["totp", "email_otp"] as unknown as typeof demoLoginBootstrap.policy.preferredFactorOrder,
+      },
+    }
+    const state = stateCreate(route, "ready", undefined, "success", {}, restricted)
+    await flushEffects()
+
+    expect(state.mfaFactors()).toEqual(["totp", "recovery_code"])
+  })
+
+  test("keeps the default policy roster with the recovery-code fallback", async () => {
+    const [route] = createSignal<LoginScreen>("mfa")
+    const state = stateCreate(route)
+    await flushEffects()
+
+    expect(state.mfaFactors()).toEqual(["totp", "email_otp", "passkey", "recovery_code"])
+  })
+
+  test("renders a mapped catalog message for a stable server error code", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      passwordLogin: async () =>
+        resultErrorCodedCreate("loginPasswordLogin", "The server refused the password.", "passwords.policy-rejected"),
+    })
+    await flushEffects()
+
+    state.identifier.set("alex@acme.example")
+    state.password.set("weak")
+    await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.errorMessage()).toBe("Choose a password that meets the requirements.")
+  })
+
+  test("keeps the raw server message for error codes without a catalog mapping", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      passwordLogin: async () =>
+        resultErrorCodedCreate("loginPasswordLogin", "The session request failed.", "sessions.invalid"),
+    })
+    await flushEffects()
+
+    state.identifier.set("alex@acme.example")
+    state.password.set("demo-password")
+    await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.errorMessage()).toBe("The session request failed.")
   })
 })

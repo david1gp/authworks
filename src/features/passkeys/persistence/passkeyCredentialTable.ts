@@ -12,6 +12,7 @@ export const passkeyCredentialTable = sqliteTable(
     id: text("id").primaryKey(),
     realmId: text("realm_id").notNull(),
     lastUsedAt: integer("last_used_at"),
+    nickname: text("nickname"),
     publicKey: blob("public_key", { mode: "buffer" }).notNull(),
     revokedAt: integer("revoked_at"),
     rpId: text("rp_id").notNull(),

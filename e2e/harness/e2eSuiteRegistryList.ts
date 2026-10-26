@@ -17,7 +17,12 @@ type E2eSuiteRegistryListOptions = {
 
 const localSuites: readonly E2eSuite[] = [
   {
-    files: ["e2e/loginDemo.spec.ts", "e2e/loginParity.spec.ts", "e2e/loginProduction.spec.ts"],
+    files: [
+      "e2e/loginDemo.spec.ts",
+      "e2e/loginParity.spec.ts",
+      "e2e/loginProduction.spec.ts",
+      "e2e/consentProduction.spec.ts",
+    ],
     kind: "local",
     name: "login",
     targets: ["production", "dev"],
@@ -34,6 +39,7 @@ const localSuites: readonly E2eSuite[] = [
       "e2e/machineAdminProduction.spec.ts",
       "e2e/oidcAdminDemo.spec.ts",
       "e2e/oidcAdminProduction.spec.ts",
+      "e2e/organizationAdminProduction.spec.ts",
       "e2e/impersonationAdmin.spec.ts",
       "e2e/productionShells.spec.ts",
     ],

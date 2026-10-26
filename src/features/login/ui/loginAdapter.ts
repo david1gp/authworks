@@ -13,6 +13,8 @@ export type LoginDiscovery = Extract<OrganizationDiscoveryResponse, { found: tru
 /** Result of any primary or second-factor authentication attempt in the hosted login. */
 export type LoginAuthenticationOutcome = {
   readonly challenge?: MfaChallengeResponse
+  /** Set when the credential itself must be rotated before the interaction can resume. */
+  readonly passwordChangeRequired?: true
   readonly userId: string
 }
 
@@ -30,8 +32,9 @@ export type LoginAdapter = {
   /** Tracks the active login challenge token so token-scoped second factors can complete it. */
   readonly mfaChallengeTokenSet?: (token: string) => void
   /**
-   * Optional MFA email transport. Production binds start, resend, and verify against the tracked
-   * login challenge token; enrollment stays demo-only until a login-scoped contract exists.
+   * Optional MFA email transport. Production binds start, resend, verify, and enroll against the
+   * tracked login challenge token: the challenge start delivers a code to the verified account
+   * email, so enrolling and verifying share the same login-scoped contract.
    */
   readonly mfaEmailOtpEnroll?: () => Promise<Result<EmailOtpStartResponse>>
   readonly mfaEmailOtpResend?: (challengeId: string) => Promise<Result<EmailOtpStartResponse>>

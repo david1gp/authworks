@@ -17,6 +17,8 @@
   not import another feature's internals.
 - `src/outputs/server.ts`, `src/outputs/library.ts`, and `src/outputs/cli.ts` are thin static compositions. They must
   not contain feature behavior or access SQLite directly.
+- The only CLI exception is `zitadelMigrationCliCommands` (import/export): it opens the SQLite database directly
+  because it is an offline maintenance tool; no other CLI may.
 - Keep public transport schemas separate from private Drizzle persistence schemas. Do not expose database rows as
   public contracts by default.
 - Use explicit relative `.js` specifiers for internal TypeScript imports. Consumers use only the package exports in

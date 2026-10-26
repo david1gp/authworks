@@ -4,7 +4,9 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { projectSubjectProjectRoleResolve } from "../../projects/server/projectSubjectProjectRoleResolve.js"
 import { userProfileTable } from "../../users/persistence/userProfileTable.js"
+import { oidcAccessTokenRoleClaimsCreate } from "../domain/oidcAccessTokenRoleClaimsCreate.js"
 import { oidcResourceOwnerOrganizationIdResolve } from "../domain/oidcResourceOwnerOrganizationIdResolve.js"
 import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
 import { oidcUserInfoClaimsCreate } from "../domain/oidcUserInfoClaimsCreate.js"
@@ -19,6 +21,10 @@ type OidcUserInfoGetOptions = {
   readonly token: string
 }
 
+// UserInfo role claims follow the access-token assertion, not the ID-token
+// one: the access token authorizes UserInfo, so the roles visible there match
+// the access token's claim exactly. Roles resolve at request time (never from
+// stored token claims) so revocations and grants take effect immediately.
 export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUserInfo> {
   const context = oidcAccessTokenContextResolve({
     database: options.database,
@@ -44,16 +50,25 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
         })
       : resultCreate<string | undefined>(undefined)
     if (!resourceOwnerOrganizationId.success) return resourceOwnerOrganizationId
-    return resultCreate(
-      oidcUserInfoClaimsCreate(
-        {
-          profile,
-          resourceOwnerOrganizationId: resourceOwnerOrganizationId.data,
-          session: context.data.session,
-          user: context.data.user,
-        },
-        context.data.scope,
-      ),
+    const claims = oidcUserInfoClaimsCreate(
+      {
+        profile,
+        resourceOwnerOrganizationId: resourceOwnerOrganizationId.data,
+        session: context.data.session,
+        user: context.data.user,
+      },
+      context.data.scope,
     )
+    if (context.data.client.accessTokenRoleAssertion === 1 && context.data.client.projectId !== null) {
+      const projectRoles = projectSubjectProjectRoleResolve({
+        executor: transaction,
+        projectId: context.data.client.projectId,
+        realmId: options.realmId,
+        userId: context.data.user.id,
+      })
+      if (!projectRoles.success) return projectRoles
+      Object.assign(claims, oidcAccessTokenRoleClaimsCreate(projectRoles.data))
+    }
+    return resultCreate(claims)
   })
 }

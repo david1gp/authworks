@@ -1,8 +1,10 @@
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
+import * as v from "valibot"
 import type { Result } from "#result"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -15,7 +17,9 @@ import { realmSystemContextCreate } from "../../realms/domain/realmSystemContext
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { eventExport } from "../actions/eventExport.js"
 import { eventList } from "../actions/eventList.js"
+import { eventListQuerySchema, type EventListQuery } from "../public/eventListQuerySchema.js"
 
 type EventServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -42,11 +46,27 @@ export function eventServerAppCreate(options: EventServerAppCreateOptions) {
   app.get("/system/realms/:realmId/events", (context) => {
     const authorization = eventSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return eventErrorResponseCreate(context, authorization)
-    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    const query = eventListQueryFromUrl(context.req.url)
     if (!query.success) return eventErrorResponseCreate(context, query)
     return eventResultResponseCreate(
       context,
       eventList({
+        context: systemContext,
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.get("/system/realms/:realmId/events/export", (context) => {
+    const authorization = eventSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return eventErrorResponseCreate(context, authorization)
+    const query = eventListQueryFromUrl(context.req.url)
+    if (!query.success) return eventErrorResponseCreate(context, query)
+    return eventResultResponseCreate(
+      context,
+      eventExport({
         context: systemContext,
         database: options.database,
         query: query.data,
@@ -73,7 +93,7 @@ export function eventServerAppCreate(options: EventServerAppCreateOptions) {
         realmId,
       })
       if (!authorized.success) return eventErrorResponseCreate(context, authorized)
-      const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+      const query = eventListQueryFromUrl(context.req.url)
       if (!query.success) return eventErrorResponseCreate(context, query)
       return eventResultResponseCreate(
         context,
@@ -82,7 +102,53 @@ export function eventServerAppCreate(options: EventServerAppCreateOptions) {
     },
   )
 
+  app.get(
+    "/realms/:realmId/events/export",
+    async (context, next) => {
+      if (context.req.header("authorization") === undefined) return protectedMiddleware(context, next)
+      const authenticated = eventBearerAuthenticate(options.database, context)
+      if (!authenticated.success) return eventErrorResponseCreate(context, authenticated)
+      context.set("authorizationActor", authenticated.data.actor)
+      return next()
+    },
+    (context) => {
+      const realmId = context.req.param("realmId")
+      const authorized = realmAdministratorContextAuthorize({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        permission: authorizationPermissionDefinitions.eventRead,
+        realmId,
+      })
+      if (!authorized.success) return eventErrorResponseCreate(context, authorized)
+      const query = eventListQueryFromUrl(context.req.url)
+      if (!query.success) return eventErrorResponseCreate(context, query)
+      return eventResultResponseCreate(
+        context,
+        eventExport({ context: authorized.data, database: options.database, query: query.data, realmId }),
+      )
+    },
+  )
+
   return app
+}
+
+function eventListQueryFromUrl(url: string): Result<EventListQuery> {
+  const params = new URL(url).searchParams
+  const base = listQueryFromSearchParams(params)
+  if (!base.success) return base
+  const filters: Record<string, unknown> = {}
+  for (const key of ["actorId", "aggregateId", "aggregateType", "eventType", "userSubjectId"] as const) {
+    const value = params.get(key)
+    if (value !== null) filters[key] = value
+  }
+  for (const key of ["occurredFrom", "occurredTo"] as const) {
+    const value = params.get(key)
+    if (value !== null) filters[key] = value.length === 0 ? value : Number(value)
+  }
+  const parsed = v.safeParse(eventListQuerySchema, { ...base.data, ...filters })
+  if (!parsed.success)
+    return resultErrorCodedCreate("eventListQueryFromUrl", "The event query is invalid.", "events.invalid")
+  return { data: parsed.output, success: true as const }
 }
 
 function eventBearerAuthenticate(

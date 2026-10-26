@@ -27,6 +27,10 @@ const discovery = {
     preferredFactorOrder: ["passkey", "totp", "email_otp"],
     providerIds: [],
     requiredMfa: false,
+    mfaInitSkipLifetimeSeconds: null,
+    secondFactorCheckLifetimeSeconds: null,
+    multiFactorCheckLifetimeSeconds: null,
+    forceMfaLocalOnly: false,
   },
   providers: [],
 }
@@ -156,7 +160,7 @@ test("production focus and authenticated shells render without network adapters"
   await page.goto("/consent")
   await expect(page.getByRole("heading", { name: "Application consent", exact: true })).toBeVisible()
   await expect(page.locator('[data-shell="focus"]')).toBeVisible()
-  await expect(page.locator('[data-content-state="empty"]')).toBeVisible()
+  await expect(page.getByRole("heading", { name: "No authorization request", exact: true })).toBeVisible()
   await expect(page.getByText("Production route placeholder")).toHaveCount(0)
 
   await page.goto("/account#devices-applications")
@@ -206,6 +210,15 @@ test("unauthenticated protected routes redirect to login with their destination 
 
   await expect(page).toHaveURL("/login?return_to=%2Fadmin%2Fnot-a-screen%3Ffrom%3Dbookmark%23details")
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
+})
+
+test("an unauthenticated invitation link lands on login with its token preserved", async ({ page }) => {
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) => route.fulfill({ body: "", status: 401 }))
+
+  await page.goto("/invitations/accept?token=invite-token-fixture")
+
+  await expect(page).toHaveURL("/login?return_to=%2Finvitations%2Faccept%3Ftoken%3Dinvite-token-fixture")
+  expect(new URL(page.url()).searchParams.get("return_to")).toBe("/invitations/accept?token=invite-token-fixture")
 })
 
 test("account workspace exposes its sections and toolbar controls on mobile", async ({ page }) => {

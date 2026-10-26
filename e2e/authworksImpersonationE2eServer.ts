@@ -16,7 +16,7 @@ const fixture = fixtureResult.data
 const policy = await fixture.clients.mfa.mfaPolicySet(fixture.realm.id, {
   lockoutDurationMs: 15 * 60 * 1_000,
   maxAttempts: 5,
-  mode: "disabled",
+  mode: "optional",
   totpWindow: 1,
 })
 if (!policy.success) {

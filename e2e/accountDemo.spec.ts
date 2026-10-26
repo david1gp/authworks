@@ -475,6 +475,7 @@ async function productionSecurityCompositionBootstrap(page: import("@playwright/
     deviceType: "multiDevice",
     id: "composition-passkey",
     lastUsedAt: 1_777_000_100_000,
+    nickname: null,
     revokedAt: null,
     transports: ["internal"],
   }

@@ -5,6 +5,7 @@ export function directoryUserMatchesSearch(user: User, search: string): boolean 
   const haystacks = [
     user.userName,
     user.email,
+    user.phoneNumber,
     user.profile.displayName,
     user.profile.firstName,
     user.profile.lastName,

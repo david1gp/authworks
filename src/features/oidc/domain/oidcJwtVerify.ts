@@ -3,8 +3,18 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcBase64UrlDecode } from "./oidcBase64UrlDecode.js"
+import { oidcClockSkewMs } from "./oidcClockSkewMs.js"
 
-export function oidcJwtVerify(token: string, publicJwk: Record<string, unknown>): Result<Record<string, unknown>> {
+type OidcJwtVerifyClock = {
+  readonly now?: number
+  readonly skewMs?: number
+}
+
+export function oidcJwtVerify(
+  token: string,
+  publicJwk: Record<string, unknown>,
+  clock?: OidcJwtVerifyClock,
+): Result<Record<string, unknown>> {
   const op = "oidcJwtVerify"
   try {
     const parts = token.split(".")
@@ -44,6 +54,18 @@ export function oidcJwtVerify(token: string, publicJwk: Record<string, unknown>)
       Buffer.from(signature),
     )
     if (!valid) return resultErrorCreate(op, "The token is invalid.", "oidc.invalid")
+    if (clock?.now !== undefined) {
+      const skew = clock.skewMs ?? oidcClockSkewMs
+      const exp = payload.exp
+      if (typeof exp !== "number" || !Number.isSafeInteger(exp) || exp * 1_000 + skew <= clock.now)
+        return resultErrorCreate(op, "The token is invalid.", "oidc.invalid")
+      const nbf = payload.nbf
+      if (
+        nbf !== undefined &&
+        (typeof nbf !== "number" || !Number.isSafeInteger(nbf) || nbf * 1_000 - skew > clock.now)
+      )
+        return resultErrorCreate(op, "The token is invalid.", "oidc.invalid")
+    }
     return resultCreate(payload)
   } catch (_error) {
     return resultErrorCreate(op, "The token is invalid.", "oidc.invalid")

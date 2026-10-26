@@ -10,6 +10,8 @@ import { demoAdminOrganizations } from "../../demo/demoAdminOrganizations.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
+import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
@@ -17,9 +19,8 @@ import type { OrganizationInvitation } from "../public/organizationInvitationSch
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
+import type { OrganizationMetadata } from "../public/organizationMetadataSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
-import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
-import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 
 const demoRealmId = "01900000-0000-7000-8000-000000000001"
@@ -42,6 +43,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     ...organizationBrandingDefaultCreate(),
     light: { ...organizationBrandingDefaultCreate().light, primaryColor: "#2563eb" },
   }
+  const metadataEntries = new Map<string, OrganizationMetadata>()
   let realmPolicy: OrganizationLoginPolicy = {
     allowDomainDiscovery: true,
     allowEmailOtp: true,
@@ -51,11 +53,17 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     allowPassword: true,
     allowPasswordRecovery: true,
     allowRegistration: false,
+    allowWhatsappOtp: true,
     providerIds: null,
+    sessionLifetimeSeconds: 30 * 24 * 60 * 60,
     requiredMfa: true,
     allowedFactors: ["passkey", "totp", "email_otp"],
     preferredFactorOrder: ["passkey", "totp", "email_otp"],
     minimumStepUpAssurance: "multi_factor",
+    mfaInitSkipLifetimeSeconds: null,
+    secondFactorCheckLifetimeSeconds: null,
+    multiFactorCheckLifetimeSeconds: null,
+    forceMfaLocalOnly: false,
   }
   let organizationOverrides: OrganizationLoginPolicyOverride = {
     allowRegistration: false,
@@ -207,7 +215,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         if (organizationId.length === 0) {
           realmPolicy = {
             ...realmPolicy,
-            ...Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== null)),
+            ...Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined)),
           }
         } else {
           organizationOverrides = { ...organizationOverrides, ...input }
@@ -305,6 +313,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
           displayName: input.displayName,
           enabled: true,
           id: demoResourceIdGenerate(),
+          ...(input.issuer === undefined ? {} : { issuer: input.issuer }),
           organizationId: demoOrganizationId,
           realmId: demoRealmId,
           redirectUri: input.redirectUri,
@@ -327,10 +336,51 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     providerUpdate: (providerId, input) =>
       guard("organizationAdminDemoProviderUpdate", () => {
         const found = providers.find((item) => item.id === providerId) ?? providers[0]!
+        if (input.allowAccountCreation !== undefined) found.allowAccountCreation = input.allowAccountCreation
+        if (input.clientId !== undefined) found.clientId = input.clientId
         if (input.displayName !== undefined) found.displayName = input.displayName
         if (input.enabled !== undefined) found.enabled = input.enabled
+        if (input.issuer !== undefined) found.issuer = input.issuer
+        if (input.redirectUri !== undefined) found.redirectUri = input.redirectUri
+        if (input.scopes !== undefined) found.scopes = [...input.scopes]
         found.version += 1
         return { provider: { ...found } }
+      }),
+    metadataList: (organizationId) =>
+      guard("organizationAdminDemoMetadataList", () => ({
+        items: [...metadataEntries.values()].filter((item) => item.organizationId === organizationId),
+      })),
+    metadataSet: (organizationId, key, input) => {
+      const storageKey = `${organizationId}:${key}`
+      if (!metadataEntries.has(storageKey)) {
+        const owned = [...metadataEntries.values()].filter((item) => item.organizationId === organizationId).length
+        if (owned >= 50)
+          return Promise.resolve(
+            resultErrorCodedCreate(
+              "organizationAdminDemoMetadataSet",
+              "The organization metadata limit was reached.",
+              "organizations.metadata-limit",
+            ),
+          )
+      }
+      return guard("organizationAdminDemoMetadataSet", () => {
+        const current = metadataEntries.get(storageKey)
+        const metadata: OrganizationMetadata = {
+          createdAt: current?.createdAt ?? now,
+          key,
+          organizationId,
+          updatedAt: now,
+          value: input.value,
+          version: (current?.version ?? 0) + 1,
+        }
+        metadataEntries.set(storageKey, metadata)
+        return { metadata }
+      })
+    },
+    metadataRemove: (organizationId, key) =>
+      guard("organizationAdminDemoMetadataRemove", () => {
+        metadataEntries.delete(`${organizationId}:${key}`)
+        return { removed: true as const }
       }),
     roleList: () => guard("organizationAdminDemoRoleList", () => ({ items: [...demoAdminOrganizationRoles] })),
     passwordPolicyGet: () => guard("organizationAdminDemoPasswordPolicyGet", () => ({ policy: { ...passwordPolicy } })),

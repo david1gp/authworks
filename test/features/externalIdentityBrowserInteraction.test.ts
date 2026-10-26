@@ -72,6 +72,7 @@ test("browser external callbacks issue only a cookie and resume opaque interacti
     expect(realm.success).toBe(true)
     if (!realm.success) return
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -87,6 +88,7 @@ test("browser external callbacks issue only a cookie and resume opaque interacti
     expect(provider.success).toBe(true)
     if (!provider.success) return
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { google: providerPort() },
@@ -126,6 +128,7 @@ test("direct browser callbacks redirect into the UI instead of rendering raw JSO
     expect(realm.success).toBe(true)
     if (!realm.success) return
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -141,6 +144,7 @@ test("direct browser callbacks redirect into the UI instead of rendering raw JSO
     expect(provider.success).toBe(true)
     if (!provider.success) return
     const github = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -156,6 +160,7 @@ test("direct browser callbacks redirect into the UI instead of rendering raw JSO
     expect(github.success).toBe(true)
     if (!github.success) return
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { github: providerPort("github"), google: providerPort() },
@@ -259,6 +264,7 @@ test("authenticated link callbacks use the browser response after server-side st
     expect(realm.success).toBe(true)
     if (!realm.success) return
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -333,6 +339,7 @@ test("authenticated link callbacks use the browser response after server-side st
       },
     }
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       accountUiOrigin: "https://account.example.com",
       browserMode: true,
       database,
@@ -374,6 +381,7 @@ test("authenticated link callbacks use the browser response after server-side st
     expect(callbackInput?.nonce).toBe(authorizationInput?.nonce)
 
     const missingAccountUiOriginApp = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { google: linkingProviderPort },
@@ -404,6 +412,7 @@ test("shared external callback resolves Google and GitHub transactions without w
     const sharedRedirectUri = "https://shared-callback.example.com/idps/callback"
     const createProvider = async (type: "github" | "google") => {
       const provider = externalIdentityProviderCreate({
+        allowDevelopmentFallback: true,
         context: realmSystemContextCreate(),
         database,
         input: {
@@ -423,6 +432,7 @@ test("shared external callback resolves Google and GitHub transactions without w
     const google = await createProvider("google")
     const github = await createProvider("github")
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       database,
       providerPorts: { github: providerPort("github"), google: providerPort("google") },
     })
@@ -587,6 +597,7 @@ test("direct browser callbacks thread an org-forced MFA challenge through the lo
     // completing the login challenge. Without this the same code would be rejected as a replay.
     testkit.advance(30_000)
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -603,6 +614,7 @@ test("direct browser callbacks thread an org-forced MFA challenge through the lo
     expect(provider.success).toBe(true)
     if (!provider.success) return
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { google: mfaChallengePort(email) },
@@ -674,6 +686,7 @@ test("interaction browser callbacks keep the MFA challenge alongside the OIDC re
     // completing the login challenge. Without this the same code would be rejected as a replay.
     testkit.advance(30_000)
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -689,6 +702,7 @@ test("interaction browser callbacks keep the MFA challenge alongside the OIDC re
     expect(provider.success).toBe(true)
     if (!provider.success) return
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       browserMode: true,
       database,
       providerPorts: { google: mfaChallengePort(email) },
@@ -748,6 +762,7 @@ test("link callbacks report exchange failures and provider denials to the opener
     expect(realm.success).toBe(true)
     if (!realm.success) return
     const provider = externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
       context: realmSystemContextCreate(),
       database,
       input: {
@@ -806,6 +821,7 @@ test("link callbacks report exchange failures and provider denials to the opener
       },
     }
     const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
       accountUiOrigin: "https://account.example.com",
       browserMode: true,
       database,

@@ -58,6 +58,7 @@ async function createRealm(database: StorageDatabase, domain: string) {
 
 async function createProvider(database: StorageDatabase, realmId: string, type: "github" | "google") {
   const created = externalIdentityProviderCreate({
+    allowDevelopmentFallback: true,
     context: realmSystemContextCreate(),
     database,
     input: {
@@ -132,7 +133,8 @@ async function callbackRun(options: {
     readonly userId: string
   }) => Promise<Result<void>>
 }) {
-  const started = externalIdentityStart({
+  const started = await externalIdentityStart({
+    allowDevelopmentFallback: true,
     database: options.database,
     input: {},
     providerId: options.providerId,
@@ -144,6 +146,7 @@ async function callbackRun(options: {
   if (!started.success) throw new Error(started.errorMessage)
   const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
   return externalIdentityCallback({
+    allowDevelopmentFallback: true,
     code: "provider-code",
     database: options.database,
     profilePictureImport: options.profilePictureImport,
@@ -377,7 +380,8 @@ for (const matrixCase of externalIdentityPictureMatrix) {
           providerType: matrixCase.providerType,
           subject: linkSubject,
         })
-      const linkStarted = externalIdentityLinkStart({
+      const linkStarted = await externalIdentityLinkStart({
+        allowDevelopmentFallback: true,
         database,
         input: {},
         providerId: provider.id,
@@ -391,6 +395,7 @@ for (const matrixCase of externalIdentityPictureMatrix) {
       if (!linkStarted.success) return
       const linkState = new URL(linkStarted.data.authorizationUrl).searchParams.get("state") ?? ""
       const linkedCallback = await externalIdentityCallback({
+        allowDevelopmentFallback: true,
         code: "link-code",
         database,
         profilePictureImport: importer,

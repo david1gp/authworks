@@ -1,5 +1,6 @@
 import { mdiAccountMultipleOutline } from "@adaptive-ds/mdi/mdiAccountMultipleOutline.js"
 import { mdiAccountStarOutline } from "@adaptive-ds/mdi/mdiAccountStarOutline.js"
+import { mdiAccountSwitchOutline } from "@adaptive-ds/mdi/mdiAccountSwitchOutline.js"
 import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
 import { mdiCheckDecagramOutline } from "@adaptive-ds/mdi/mdiCheckDecagramOutline.js"
 import { mdiClipboardTextOutline } from "@adaptive-ds/mdi/mdiClipboardTextOutline.js"
@@ -11,6 +12,7 @@ import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
+import { mdiRobotOutline } from "@adaptive-ds/mdi/mdiRobotOutline.js"
 import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
 import { mdiTuneVariant } from "@adaptive-ds/mdi/mdiTuneVariant.js"
 import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
@@ -37,6 +39,18 @@ export const productionShellNavigationGroups = {
           href: "/admin/projects",
           icon: mdiApplicationOutline,
           label: "shell.nav.projects",
+        },
+        {
+          access: "organization-admin",
+          href: "/admin/machine-credentials",
+          icon: mdiRobotOutline,
+          label: "shell.nav.machineCredentials",
+        },
+        {
+          access: "organization-admin",
+          href: "/admin/impersonation",
+          icon: mdiAccountSwitchOutline,
+          label: "shell.nav.impersonation",
         },
         {
           access: "organization-admin",

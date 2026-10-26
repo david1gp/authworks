@@ -71,6 +71,14 @@ test("CLI realm, organization, and user commands expose the profile flag", async
   }
 })
 
+test("CLI user list exposes state and email verification filters", async () => {
+  const result = await cliRun("users", "list", "--help")
+  expect(result.exitCode).toBe(0)
+  expect(result.stderr).toBe("")
+  expect(result.stdout).toContain("--state STATE")
+  expect(result.stdout).toContain("--email-verified")
+})
+
 test("CLI password, session, email OTP, and external identity commands expose the profile flag", async () => {
   for (const args of [
     ["passwords", "policy", "get"],

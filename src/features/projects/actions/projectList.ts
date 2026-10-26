@@ -18,6 +18,7 @@ type ProjectListOptions = {
   readonly query?: ProjectListQuery
   readonly realmId: string
   readonly organizationId?: string
+  readonly grantedToOrganizationId?: string
 }
 
 export function projectList(options: ProjectListOptions): Result<{ items: ProjectListItem[]; nextPageToken?: string }> {
@@ -30,12 +31,13 @@ export function projectList(options: ProjectListOptions): Result<{ items: Projec
     )
   const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
   if (!sortBy.success) return sortBy
+  const organizationFilter = options.organizationId ?? options.grantedToOrganizationId
   const repository = projectRepositoryCreate(options.database.db)
   const rows = repository.projectList(options.realmId)
   if (!rows.success) return rows
   const grantedProjectIds = new Set<string>()
-  if (options.organizationId !== undefined) {
-    const grants = repository.projectGrantActiveListByGrantedOrganization(options.realmId, options.organizationId)
+  if (organizationFilter !== undefined) {
+    const grants = repository.projectGrantActiveListByGrantedOrganization(options.realmId, organizationFilter)
     if (!grants.success) return grants
     for (const grant of grants.data) grantedProjectIds.add(grant.projectId)
   }
@@ -49,8 +51,8 @@ export function projectList(options: ProjectListOptions): Result<{ items: Projec
       if (!`${project.name} ${project.id}`.toLowerCase().includes(search)) continue
     }
     if (
-      options.organizationId !== undefined &&
-      project.organizationId !== options.organizationId &&
+      organizationFilter !== undefined &&
+      project.organizationId !== organizationFilter &&
       !grantedProjectIds.has(project.id)
     )
       continue

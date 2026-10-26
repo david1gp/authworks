@@ -11,6 +11,7 @@ const credential = (id: string): PasskeyCredential => ({
   deviceType: "multiDevice",
   id,
   lastUsedAt: null,
+  nickname: null,
   revokedAt: null,
   transports: ["internal"],
 })

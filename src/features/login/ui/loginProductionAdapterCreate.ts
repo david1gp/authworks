@@ -85,6 +85,16 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
     mfaChallengeTokenSet: (token: string) => {
       challengeToken = token
     },
+    mfaEmailOtpEnroll: async () => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginMfaEmailOtpEnroll")
+      const token = challengeTokenRequired("loginMfaEmailOtpEnroll")
+      if (!token.success) return token
+      // Enrolling an email second factor is the same login-scoped challenge start as verifying:
+      // it delivers a code to the verified account email, and completing the challenge proves
+      // control of that address. No separate enroll contract exists on the backend.
+      return api.mfaEmailOtpChallengeStart(realm, token.data)
+    },
     mfaEmailOtpResend: async () => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginMfaEmailOtpResend")
@@ -194,7 +204,11 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       const result = await api.passwordLogin(realm, identifier, password, organizationId())
       if (!result.success) return result
       return resultCreate(
-        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+        challengeRecord({
+          challenge: result.data.challenge,
+          ...(result.data.passwordChangeRequired === true ? { passwordChangeRequired: true as const } : {}),
+          userId: result.data.authentication.userId,
+        }),
       )
     },
     providerStart: async (providerId) => {

@@ -198,7 +198,7 @@ test("composed clients preserve tenant and organization boundaries across featur
     expect(oidcClient.success).toBe(true)
     const machine = await machines.machineUserCreate(fixture.alpha.id, alphaOrganization.data.organization.id, {
       displayName: "Alpha machine",
-      scopes: ["api.read"],
+      scopes: ["event.read"],
       userName: "alpha-machine",
     })
     expect(machine.success).toBe(true)
@@ -210,7 +210,7 @@ test("composed clients preserve tenant and organization boundaries across featur
       {
         machineUserId: machine.data.machineUser.id,
         name: "Alpha PAT",
-        scopes: ["api.read"],
+        scopes: ["event.read"],
       },
     )
     expect(credential.success).toBe(true)

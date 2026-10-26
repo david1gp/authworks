@@ -10,6 +10,7 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { machineScopesPermissionValidate } from "../domain/machineScopesPermissionValidate.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
 import { machineSecretHashCreate } from "../domain/machineSecretHashCreate.js"
 import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
@@ -49,6 +50,8 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
   if (!/^[a-z][a-z0-9._:-]*$/.test(userName))
     return resultErrorCreate(op, "The machine user request is invalid.", "machine-users.invalid")
   const scopes = [...new Set(parsed.output.scopes ?? [])]
+  const catalogScopes = machineScopesPermissionValidate(scopes)
+  if (!catalogScopes.success) return catalogScopes
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)

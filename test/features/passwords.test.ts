@@ -1807,6 +1807,7 @@ test("password server and client expose generic public contracts", async () => {
       data: {
         policy: {
           lockoutDurationMs: 900000,
+          maxAgeDays: null,
           maximumAttempts: 5,
           minimumLength: 12,
           requireLowercase: false,
@@ -1973,6 +1974,7 @@ test("password policy system reads succeed on origins whose host serves no realm
       data: {
         policy: {
           lockoutDurationMs: 900000,
+          maxAgeDays: null,
           maximumAttempts: 5,
           minimumLength: 12,
           requireLowercase: false,

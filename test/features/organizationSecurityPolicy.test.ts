@@ -51,9 +51,8 @@ async function realmAndOrganizationCreate(database: StorageDatabase, suffix: str
 
 test("security policy contracts reject unknown and duplicate factors", () => {
   expect(v.safeParse(organizationLoginPolicySetRequestSchema, { allowedFactors: ["totp", "totp"] }).success).toBe(false)
-  expect(v.safeParse(organizationLoginPolicySetRequestSchema, { allowedFactors: ["recovery_code"] }).success).toBe(
-    false,
-  )
+  expect(v.safeParse(organizationLoginPolicySetRequestSchema, { allowedFactors: ["sms"] }).success).toBe(false)
+  expect(v.safeParse(organizationLoginPolicySetRequestSchema, { allowedFactors: ["recovery_code"] }).success).toBe(true)
   expect(
     v.safeParse(organizationLoginPolicySetRequestSchema, { preferredFactorOrder: ["email_otp", "email_otp"] }).success,
   ).toBe(false)

@@ -225,6 +225,12 @@ export const demoLoginScenarioGroups: DemoFixtureScenarioGroup[] = [
     key: "interaction",
     scenarios: [
       scenario("signed-in", "Interaction complete", "Show the resumed-interaction confirmation.", ["success"]),
+      scenario(
+        "consent",
+        "Application consent",
+        "Approve or decline an OpenID Connect application access request using a fixture-backed interaction.",
+        ["success"],
+      ),
       scenario("logout", "Logout", "Confirm sign-out for the current browser session.", formStates),
       scenario("logout/done", "Signed out", "Confirm a completed sign-out and validated return path.", ["success"]),
     ],

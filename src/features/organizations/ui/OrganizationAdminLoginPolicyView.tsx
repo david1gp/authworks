@@ -1,14 +1,13 @@
 import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
-import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiToggleSwitch } from "@adaptive-ds/mdi/mdiToggleSwitch.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -21,13 +20,14 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
-import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminPasswordPolicyView } from "./OrganizationAdminPasswordPolicyView.js"
 import { OrganizationAdminSecurityPolicyView } from "./OrganizationAdminSecurityPolicyView.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
+import type { OrganizationAdminProviderEditDraft } from "./organizationAdminProviderEditRequestBuild.js"
 import type { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
 
@@ -39,23 +39,51 @@ type PolicyKey = keyof Omit<
   | "providerIds"
   | "requiredMfa"
   | "sessionLifetimeSeconds"
+  | "mfaInitSkipLifetimeSeconds"
+  | "secondFactorCheckLifetimeSeconds"
+  | "multiFactorCheckLifetimeSeconds"
 >
+
+type PolicyMfaLifetimeKey =
+  | "mfaInitSkipLifetimeSeconds"
+  | "secondFactorCheckLifetimeSeconds"
+  | "multiFactorCheckLifetimeSeconds"
 
 const policyFields: readonly { key: PolicyKey; labelKey: MessageKey }[] = [
   { key: "allowPassword", labelKey: "admin.organizations.policy.password" },
   { key: "allowPasswordRecovery", labelKey: "admin.organizations.policy.passwordRecovery" },
   { key: "allowPasskey", labelKey: "admin.organizations.policy.passkey" },
   { key: "allowEmailOtp", labelKey: "admin.organizations.policy.emailOtp" },
+  { key: "allowWhatsappOtp", labelKey: "admin.organizations.policy.whatsappOtp" },
   { key: "allowExternalIdentity", labelKey: "admin.organizations.policy.externalIdentity" },
+  { key: "allowExternalIdentityAutoLinking", labelKey: "admin.organizations.policy.autoLinking" },
+  { key: "forceMfaLocalOnly", labelKey: "admin.organizations.policy.forceMfaLocalOnly" },
   { key: "allowRegistration", labelKey: "admin.organizations.policy.registration" },
   { key: "allowDomainDiscovery", labelKey: "admin.organizations.policy.domainDiscovery" },
 ]
 
-const providerTypes: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft"]
+const policyMfaLifetimeFields: readonly { key: PolicyMfaLifetimeKey; labelKey: MessageKey }[] = [
+  { key: "mfaInitSkipLifetimeSeconds", labelKey: "admin.organizations.policy.mfaInitSkipLifetime" },
+  { key: "secondFactorCheckLifetimeSeconds", labelKey: "admin.organizations.policy.secondFactorLifetime" },
+  { key: "multiFactorCheckLifetimeSeconds", labelKey: "admin.organizations.policy.multiFactorLifetime" },
+]
+
+const providerTypes: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft", "oidc"]
+
+function OrganizationAdminPolicyInheritedBadge(props: { readonly show: boolean }) {
+  return (
+    <Show when={props.show}>
+      <span class="col-start-2">
+        <AuthenticatedStatus label={messageTranslate("admin.organizations.policy.inherited")} tone="neutral" />
+      </span>
+    </Show>
+  )
+}
 
 export function OrganizationAdminLoginPolicyView(props: {
   readonly error?: string
   readonly notice?: string
+  readonly onMfaLifetimeInput: (key: PolicyMfaLifetimeKey, value: string) => void
   readonly onPasswordPolicyLockoutMinutesInput: (minutes: number) => void
   readonly onPasswordPolicyMaximumAttemptsInput: (value: number) => void
   readonly onPasswordPolicyMinimumLengthInput: (value: number) => void
@@ -65,18 +93,28 @@ export function OrganizationAdminLoginPolicyView(props: {
   ) => void
   readonly onPolicySubmit: (event: SubmitEvent) => void
   readonly onPolicyToggle: (key: PolicyKey) => void
+  readonly onProviderAllowlistReset: () => void
+  readonly onProviderAllowlistToggle: (providerId: string) => void
   readonly onProviderCreateInput: (
-    key: "clientId" | "clientSecret" | "displayName" | "redirectUri",
+    key: "clientId" | "clientSecret" | "displayName" | "issuer" | "redirectUri" | "scopesText",
     value: string,
   ) => void
   readonly onProviderCreateSubmit: (event: SubmitEvent) => void
   readonly onProviderCreateTypeInput: (value: ExternalIdentityProviderType) => void
   readonly onProviderAccountCreationToggle: () => void
   readonly onProviderDisable: (providerId: string, displayName: string) => void
+  readonly onProviderEditInput: (
+    provider: ExternalIdentityProvider,
+    key: "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+    value: string,
+  ) => void
+  readonly onProviderEditReset: (providerId: string) => void
+  readonly onProviderEditSubmit: (provider: ExternalIdentityProvider) => void
   readonly onProviderEnabledToggle: (provider: ExternalIdentityProvider) => void
   readonly onProviderSecretInput: (providerId: string, value: string) => void
   readonly onProviderSecretRotate: (providerId: string) => void
   readonly onRetry: () => void
+  readonly onSessionLifetimeInput: (value: string) => void
   readonly overrides: OrganizationLoginPolicyOverride
   readonly passwordPolicy: PasswordPolicy
   readonly passwordPolicyLockoutMinutes: number
@@ -90,9 +128,12 @@ export function OrganizationAdminLoginPolicyView(props: {
     readonly clientId: string
     readonly clientSecret: string
     readonly displayName: string
+    readonly issuer: string
     readonly redirectUri: string
+    readonly scopesText: string
     readonly type: ExternalIdentityProviderType
   }
+  readonly providerEdits: Readonly<Record<string, OrganizationAdminProviderEditDraft>>
   readonly providers: readonly ExternalIdentityProvider[]
   readonly providerSecrets: Readonly<Record<string, string>>
   readonly status: OrganizationAdminStatus
@@ -140,7 +181,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                       for={`policy-${field.key}`}
                     >
                       <input
-                        checked={props.policy[field.key]}
+                        checked={props.policy[field.key] ?? false}
                         class={`${authenticatedControlClasses.checkbox} mt-0.5`}
                         id={`policy-${field.key}`}
                         onChange={() => props.onPolicyToggle(field.key)}
@@ -163,6 +204,129 @@ export function OrganizationAdminLoginPolicyView(props: {
                     </label>
                   )}
                 </For>
+              </div>
+              <div class="grid min-w-0 gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="policy-session-lifetime">
+                  {messageTranslate("admin.organizations.policy.sessionLifetime")}
+                </Label>
+                <AuthenticatedInput
+                  id="policy-session-lifetime"
+                  inputMode="numeric"
+                  max={31536000}
+                  min={1}
+                  onInput={(event) => props.onSessionLifetimeInput(event.currentTarget.value)}
+                  type="number"
+                  value={props.policy.sessionLifetimeSeconds ?? ""}
+                />
+                <p class="text-xs text-muted-foreground">
+                  {messageTranslate("admin.organizations.policy.sessionLifetimeHint")}
+                </p>
+                <OrganizationAdminPolicyInheritedBadge
+                  show={props.policyScope === "organization" && props.overrides.sessionLifetimeSeconds == null}
+                />
+              </div>
+              <div class="grid gap-4 sm:grid-cols-3">
+                <For each={policyMfaLifetimeFields}>
+                  {(field) => (
+                    <div class="grid min-w-0 content-start gap-1.5">
+                      <Label class="text-[0.8125rem] font-medium" for={`policy-${field.key}`}>
+                        {messageTranslate(field.labelKey)}
+                      </Label>
+                      <AuthenticatedInput
+                        id={`policy-${field.key}`}
+                        inputMode="numeric"
+                        max={31536000}
+                        min={1}
+                        onInput={(event) => props.onMfaLifetimeInput(field.key, event.currentTarget.value)}
+                        type="number"
+                        value={props.policy[field.key] ?? ""}
+                      />
+                      <OrganizationAdminPolicyInheritedBadge
+                        show={props.policyScope === "organization" && props.overrides[field.key] == null}
+                      />
+                    </div>
+                  )}
+                </For>
+              </div>
+              <p class="text-xs text-muted-foreground">
+                {messageTranslate("admin.organizations.policy.lifetimeUnsetHint")}
+              </p>
+              <div class="grid min-w-0 gap-2">
+                <p class="text-[0.8125rem] font-medium">
+                  {messageTranslate("admin.organizations.policy.providerAllowlist")}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {messageTranslate("admin.organizations.policy.providerAllowlistDescription")}
+                </p>
+                <div class="grid items-start gap-2 sm:grid-cols-2">
+                  <For each={props.providers}>
+                    {(provider) => (
+                      <label
+                        class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
+                        for={`policy-provider-${provider.id}`}
+                      >
+                        <input
+                          checked={
+                            props.policy.providerIds === null || props.policy.providerIds === undefined
+                              ? true
+                              : props.policy.providerIds.includes(provider.id)
+                          }
+                          class={`${authenticatedControlClasses.checkbox} mt-0.5`}
+                          id={`policy-provider-${provider.id}`}
+                          onChange={() => props.onProviderAllowlistToggle(provider.id)}
+                          type="checkbox"
+                        />
+                        <span class="min-w-0 truncate" title={provider.displayName}>
+                          {provider.displayName}
+                        </span>
+                        <OrganizationAdminPolicyInheritedBadge
+                          show={props.policyScope === "organization" && props.overrides.providerIds == null}
+                        />
+                      </label>
+                    )}
+                  </For>
+                </div>
+                <Show
+                  when={(props.policy.providerIds ?? []).some(
+                    (id) => !props.providers.some((provider) => provider.id === id),
+                  )}
+                >
+                  <div class="flex flex-wrap gap-1.5">
+                    <For
+                      each={(props.policy.providerIds ?? []).filter(
+                        (id) => !props.providers.some((provider) => provider.id === id),
+                      )}
+                    >
+                      {(id) => (
+                        <span class="inline-flex min-w-0 items-center gap-1.5 rounded-control border border-line-subtle px-2 py-1 text-xs">
+                          <span class="min-w-0 truncate" title={id}>
+                            {id}
+                          </span>
+                          <button
+                            aria-label={messageTranslate("common.remove")}
+                            class="text-muted-foreground hover:text-foreground"
+                            onClick={() => props.onProviderAllowlistToggle(id)}
+                            type="button"
+                          >
+                            <Icon path={mdiCancel} class="size-3.5" />
+                          </button>
+                        </span>
+                      )}
+                    </For>
+                  </div>
+                </Show>
+                <Show when={props.policy.providerIds != null}>
+                  <div>
+                    <AuthenticatedButton
+                      onClick={props.onProviderAllowlistReset}
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.organizations.policy.providerAllowlistReset")}
+                    </AuthenticatedButton>
+                  </div>
+                </Show>
               </div>
               <div class="flex justify-end">
                 <AuthenticatedButton
@@ -266,20 +430,98 @@ export function OrganizationAdminLoginPolicyView(props: {
                         </div>
                       </div>
 
-                      <AuthenticatedFieldList
-                        fields={[
-                          {
-                            identifier: true,
-                            label: messageTranslate("admin.organizations.providers.clientId"),
-                            value: provider.clientId,
-                          },
-                          {
-                            identifier: true,
-                            label: messageTranslate("admin.organizations.providers.redirectUri"),
-                            value: provider.redirectUri,
-                          },
-                        ]}
-                      />
+                      <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="grid min-w-0 gap-1">
+                          <Label for={`provider-${provider.id}-display-name`}>
+                            {messageTranslate("admin.organizations.providers.displayName")}
+                          </Label>
+                          <AuthenticatedInput
+                            id={`provider-${provider.id}-display-name`}
+                            onInput={(event) =>
+                              props.onProviderEditInput(provider, "displayName", event.currentTarget.value)
+                            }
+                            value={props.providerEdits[provider.id]?.displayName ?? provider.displayName}
+                          />
+                        </div>
+                        <div class="grid min-w-0 gap-1">
+                          <Label for={`provider-${provider.id}-client-id`}>
+                            {messageTranslate("admin.organizations.providers.clientId")}
+                          </Label>
+                          <AuthenticatedInput
+                            id={`provider-${provider.id}-client-id`}
+                            onInput={(event) =>
+                              props.onProviderEditInput(provider, "clientId", event.currentTarget.value)
+                            }
+                            value={props.providerEdits[provider.id]?.clientId ?? provider.clientId}
+                          />
+                        </div>
+                        <div class="grid min-w-0 gap-1 sm:col-span-2">
+                          <Label for={`provider-${provider.id}-redirect-uri`}>
+                            {messageTranslate("admin.organizations.providers.redirectUri")}
+                          </Label>
+                          <AuthenticatedInput
+                            id={`provider-${provider.id}-redirect-uri`}
+                            onInput={(event) =>
+                              props.onProviderEditInput(provider, "redirectUri", event.currentTarget.value)
+                            }
+                            placeholder={messageTranslate("common.urlPlaceholder")}
+                            value={props.providerEdits[provider.id]?.redirectUri ?? provider.redirectUri}
+                          />
+                        </div>
+                        <Show when={provider.type === "oidc"}>
+                          <div class="grid min-w-0 gap-1 sm:col-span-2">
+                            <Label for={`provider-${provider.id}-issuer`}>
+                              {messageTranslate("admin.organizations.providers.issuer")}
+                            </Label>
+                            <AuthenticatedInput
+                              id={`provider-${provider.id}-issuer`}
+                              onInput={(event) =>
+                                props.onProviderEditInput(provider, "issuer", event.currentTarget.value)
+                              }
+                              placeholder={messageTranslate("common.urlPlaceholder")}
+                              value={props.providerEdits[provider.id]?.issuer ?? provider.issuer ?? ""}
+                            />
+                            <p class="text-xs text-muted-foreground">
+                              {messageTranslate("admin.organizations.providers.issuerHint")}
+                            </p>
+                          </div>
+                        </Show>
+                        <div class="grid min-w-0 gap-1 sm:col-span-2">
+                          <Label for={`provider-${provider.id}-scopes`}>
+                            {messageTranslate("admin.organizations.providers.scopes")}
+                          </Label>
+                          <AuthenticatedInput
+                            id={`provider-${provider.id}-scopes`}
+                            onInput={(event) =>
+                              props.onProviderEditInput(provider, "scopesText", event.currentTarget.value)
+                            }
+                            value={props.providerEdits[provider.id]?.scopesText ?? provider.scopes.join(", ")}
+                          />
+                          <p class="text-xs text-muted-foreground">
+                            {messageTranslate("admin.organizations.providers.scopesHint")}
+                          </p>
+                        </div>
+                      </div>
+                      <Show when={props.providerEdits[provider.id] !== undefined}>
+                        <div class="flex flex-wrap justify-end gap-2">
+                          <AuthenticatedButton
+                            size="sm"
+                            onClick={() => props.onProviderEditReset(provider.id)}
+                            variant="outline"
+                          >
+                            {messageTranslate("common.cancel")}
+                          </AuthenticatedButton>
+                          <AuthenticatedButton
+                            size="sm"
+                            disabled={props.pendingId === `provider:${provider.id}`}
+                            icon={mdiContentSave}
+                            onClick={() => props.onProviderEditSubmit(provider)}
+                            variant="filledBlue"
+                          >
+                            {messageTranslate("admin.organizations.providers.save")}
+                          </AuthenticatedButton>
+                        </div>
+                      </Show>
 
                       <div class="grid items-end gap-2 border-t border-line-subtle pt-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                         <div class="grid min-w-0 gap-1">
@@ -379,6 +621,31 @@ export function OrganizationAdminLoginPolicyView(props: {
                     placeholder={messageTranslate("common.urlPlaceholder")}
                     value={props.providerCreate.redirectUri}
                   />
+                </div>
+                <Show when={props.providerCreate.type === "oidc"}>
+                  <div class="grid min-w-0 gap-1 sm:col-span-2">
+                    <Label for="provider-issuer">{messageTranslate("admin.organizations.providers.issuer")}</Label>
+                    <AuthenticatedInput
+                      id="provider-issuer"
+                      onInput={(event) => props.onProviderCreateInput("issuer", event.currentTarget.value)}
+                      placeholder={messageTranslate("common.urlPlaceholder")}
+                      value={props.providerCreate.issuer}
+                    />
+                    <p class="text-xs text-muted-foreground">
+                      {messageTranslate("admin.organizations.providers.issuerHint")}
+                    </p>
+                  </div>
+                </Show>
+                <div class="grid min-w-0 gap-1 sm:col-span-2">
+                  <Label for="provider-scopes">{messageTranslate("admin.organizations.providers.scopes")}</Label>
+                  <AuthenticatedInput
+                    id="provider-scopes"
+                    onInput={(event) => props.onProviderCreateInput("scopesText", event.currentTarget.value)}
+                    value={props.providerCreate.scopesText}
+                  />
+                  <p class="text-xs text-muted-foreground">
+                    {messageTranslate("admin.organizations.providers.scopesHint")}
+                  </p>
                 </div>
               </div>
               <label

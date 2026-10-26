@@ -373,17 +373,30 @@ describe("production shell state", () => {
       "/admin/users",
       "/admin/roles",
       "/admin/projects",
+      "/admin/machine-credentials",
+      "/admin/impersonation",
       "/admin/configuration/general",
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin/configuration", "/admin/configuration/branding")).toBe(true)
-    expect(productionShellNavigationGroups.admin[0]?.items[3]?.href).toBe("/admin/configuration/general")
+    expect(productionShellNavigationGroups.admin[0]?.items[5]?.href).toBe("/admin/configuration/general")
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/admin", "/admin")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/account")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account")).toBe(true)
     expect(productionNavigationItemActive("/account", "/admin")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/legacy")).toBe(false)
+  })
+
+  test("lists impersonation and machine credentials for organization admins", () => {
+    const items = productionShellNavigationGroups.admin[0]?.items ?? []
+    const machineCredentials = items.find((item) => item.href === "/admin/machine-credentials")
+    const impersonation = items.find((item) => item.href === "/admin/impersonation")
+    expect(machineCredentials).toMatchObject({
+      access: "organization-admin",
+      label: "shell.nav.machineCredentials",
+    })
+    expect(impersonation).toMatchObject({ access: "organization-admin", label: "shell.nav.impersonation" })
   })
 
   test("highlights only the most specific sidebar destination for a nested path", () => {
@@ -393,7 +406,8 @@ describe("production shell state", () => {
     )
     expect(productionNavigationActiveHrefSelect(hrefs, "/admin/realm")).toBe("/admin/realm")
     expect(productionNavigationActiveHrefSelect(hrefs, "/admin/users/user-42")).toBe("/admin/users")
-    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/machine-credentials")).toBeUndefined()
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/machine-credentials")).toBe("/admin/machine-credentials")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/impersonation")).toBe("/admin/impersonation")
   })
 
   test("shows administration for an active realm session and always returns to account from admin", () => {
@@ -495,12 +509,18 @@ describe("org-admin machine-user administration", () => {
     ).toEqual({ context: "organization", status: "missing-context" })
   })
 
-  test("keeps machine destinations out of the sidebar and inside the realm group scenario catalog", () => {
+  test("lists machine credentials in the organization-admin sidebar group", () => {
     const groups = productionShellNavigationGroups.admin
     const hrefs = groups.flatMap((group) => group.items.map((item) => item.href))
     expect(hrefs).not.toContain("/admin/machine-users")
     expect(hrefs).not.toContain("/admin/machine-users/:machineUserId")
-    expect(hrefs).not.toContain("/admin/machine-credentials")
+    expect(hrefs).toContain("/admin/machine-credentials")
+
+    const topGroup = groups[0]?.items ?? []
+    expect(topGroup.find((item) => item.href === "/admin/machine-credentials")).toMatchObject({
+      access: "organization-admin",
+      label: "shell.nav.machineCredentials",
+    })
 
     expect(productionRouteContractMap.admin.screens.find((screen) => screen.key === "machine-user-detail")?.path).toBe(
       "/admin/machine-users/:machineUserId",

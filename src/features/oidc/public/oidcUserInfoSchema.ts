@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { oidcProjectRoleClaim } from "./oidcProjectRoleClaim.js"
 import { oidcResourceOwnerClaim } from "./oidcResourceOwnerClaim.js"
 
 const oidcUserInfoStringSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(512))
@@ -9,6 +10,7 @@ export const oidcUserInfoSchema = v.strictObject({
   acr: v.optional(v.picklist(["none", "authenticated", "multi_factor"])),
   amr: v.optional(v.array(v.pipe(v.string(), v.minLength(1)))),
   auth_time: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  [oidcProjectRoleClaim]: v.optional(v.record(v.string(), v.record(v.string(), v.string()))),
   email: v.optional(v.pipe(v.string(), v.email())),
   email_verified: v.optional(v.boolean()),
   family_name: v.optional(oidcUserInfoStringSchema),
@@ -16,6 +18,8 @@ export const oidcUserInfoSchema = v.strictObject({
   locale: v.optional(oidcUserInfoStringSchema),
   name: v.optional(oidcUserInfoStringSchema),
   nickname: v.optional(oidcUserInfoStringSchema),
+  phone_number: v.optional(oidcUserInfoStringSchema),
+  phone_number_verified: v.optional(v.boolean()),
   preferred_username: v.optional(oidcUserInfoStringSchema),
   [oidcResourceOwnerClaim]: v.optional(oidcUserInfoStringSchema),
   sub: oidcUserInfoStringSchema,

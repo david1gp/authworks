@@ -107,14 +107,14 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
     const first = machineUserCreate({
       context: system,
       database,
-      input: { displayName: "First", userName: "first", scopes: ["api.read"] },
+      input: { displayName: "First", userName: "first", scopes: ["event.read"] },
       organizationId,
       realmId: alpha.id,
     })
     const second = machineUserCreate({
       context: system,
       database,
-      input: { displayName: "Second", userName: "second", scopes: ["api.read", "api.write"] },
+      input: { displayName: "Second", userName: "second", scopes: ["event.read", "user.read"] },
       organizationId,
       realmId: alpha.id,
     })
@@ -187,7 +187,7 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
 
     const created = await adminClient.machineUserTenantCreate(alpha.id, organizationId, {
       displayName: "Browser worker",
-      scopes: ["api.read", "api.write"],
+      scopes: ["event.read", "user.read"],
       userName: "browser-worker",
     })
     if (!created.success) throw new Error(created.errorMessage)
@@ -215,7 +215,7 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
         expiresAt: database.runtime.now() + 1_000,
         machineUserId: created.data.machineUser.id,
         name: "browser-pat",
-        scopes: ["api.read"],
+        scopes: ["event.read"],
       },
     )
     expect(personalAccessToken.success).toBe(true)
@@ -248,7 +248,7 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
       {
         machineUserId: created.data.machineUser.id,
         name: "browser-key",
-        scopes: ["api.write"],
+        scopes: ["user.read"],
       },
     )
     expect(apiKey.success).toBe(true)

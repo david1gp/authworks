@@ -8,6 +8,7 @@ import { platformTestkitCreate } from "../../platform/testkit/platformTestkitCre
 import { machineApiKeyCreate } from "../machineUsers/actions/machineApiKeyCreate.js"
 import { machineUserCreate } from "../machineUsers/actions/machineUserCreate.js"
 import { organizationCreate } from "../organizations/actions/organizationCreate.js"
+import { organizationTable } from "../organizations/persistence/organizationTable.js"
 import { realmCreate } from "../realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../realms/domain/realmSystemContextCreate.js"
 import { mcpHttpHandlerCreate } from "./mcpHttpHandler.js"
@@ -133,3 +134,42 @@ test("supports one read and one write tools/call round-trip", async () => {
     expect((await writeResponse.json()).result.isError).not.toBe(true)
   })
 })
+
+test("event-list inherits the machine credential scopes", async () => {
+  await withSeededDatabase(async (seed) => {
+    const denied = await mcpPost(seed, seed.secret, jsonRpc("tools/call", { name: "event-list", arguments: {} }))
+    expect(denied.status).toBe(200)
+    expect((await denied.json()).result.isError).toBe(true)
+
+    const system = realmSystemContextCreate()
+    const reader = machineUserCreate({
+      context: system,
+      database: seed.database,
+      input: { displayName: "Event reader", scopes: ["event.read"], userName: "event-reader" },
+      organizationId: mcpOrganizationId(seed),
+      realmId: seed.realmId,
+    })
+    expect(reader.success).toBe(true)
+    if (!reader.success) return
+    const key = machineApiKeyCreate({
+      context: system,
+      database: seed.database,
+      input: { machineUserId: reader.data.machineUser.id, name: "event-key", scopes: ["event.read"] },
+      organizationId: mcpOrganizationId(seed),
+      realmId: seed.realmId,
+    })
+    expect(key.success).toBe(true)
+    if (!key.success) return
+
+    const allowed = await mcpPost(seed, key.data.secret, jsonRpc("tools/call", { name: "event-list", arguments: {} }))
+    expect(allowed.status).toBe(200)
+    expect((await allowed.json()).result.isError).not.toBe(true)
+  })
+})
+
+function mcpOrganizationId(seed: McpSeed): string {
+  const rows = seed.database.db.select().from(organizationTable).all()
+  const row = rows.find((candidate) => candidate.realmId === seed.realmId)
+  if (row === undefined) throw new Error("The MCP organization was not seeded.")
+  return row.id
+}
