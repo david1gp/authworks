@@ -45,6 +45,7 @@ import { oidcInteractionDetailsGet } from "../actions/oidcInteractionDetailsGet.
 import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcLogout } from "../actions/oidcLogout.js"
 import { oidcMeAccessGet } from "../actions/oidcMeAccessGet.js"
+import { oidcProjectFaviconGet } from "../actions/oidcProjectFaviconGet.js"
 import { oidcRefreshTokenFamiliesMeRevokeAll } from "../actions/oidcRefreshTokenFamiliesMeRevokeAll.js"
 import { oidcRefreshTokenFamilyMeRevoke } from "../actions/oidcRefreshTokenFamilyMeRevoke.js"
 import { oidcRefreshTokenMeList } from "../actions/oidcRefreshTokenMeList.js"
@@ -1437,6 +1438,23 @@ function oidcManagementRoutesRegister(
       200,
       result.success ? new Date(result.data.client.updatedAt) : undefined,
     )
+  })
+
+  app.get(`${prefix}/projects/:projectId/favicon`, async (context) => {
+    const authenticated = routeAuthenticate(context, authorizationPermissionDefinitions.oidcRead)
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    const result = await oidcProjectFaviconGet({
+      context: authenticated.data,
+      database: options.database,
+      projectId: oidcParamGet(context, "projectId"),
+      realmId: oidcParamGet(context, "realmId"),
+    })
+    if (!result.success) return oidcManagementErrorResponseCreate(context, result)
+    return context.body(result.data.bytes.buffer, 200, {
+      "Cache-Control": `public, max-age=${result.data.maxAgeSeconds}`,
+      "Content-Type": result.data.contentType,
+      "X-Content-Type-Options": "nosniff",
+    })
   })
 
   app.patch(`${prefix}/clients/:clientId`, async (context) => {

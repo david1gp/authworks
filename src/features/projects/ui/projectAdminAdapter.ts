@@ -97,4 +97,10 @@ export type ProjectAdminAdapter = {
   ) => Promise<Result<ProjectRole>>
   /** Organizations the operator may reference when creating projects or grants. */
   readonly organizations: () => Promise<Result<readonly { readonly id: string; readonly name: string }[]>>
+  /**
+   * Browser URL of the project's proxied callback-origin favicon. Undefined
+   * when the adapter has no favicon source (for example demo fixtures), in
+   * which case views render their neutral fallback.
+   */
+  readonly projectFaviconHref?: (projectId: string) => string | undefined
 }
