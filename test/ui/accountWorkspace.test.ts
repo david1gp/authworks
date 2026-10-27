@@ -306,17 +306,20 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
-    // The strip is a single-row two-column grid: the picture sits top-right, and the MFA
-    // overview sits directly under the contacts inside the left column, so no space
-    // dangles below the picture.
-    expect(overview).toContain("grid-cols-[minmax(0,1fr)_auto]")
+    // The strip stacks on mobile with the picture first and switches to a two-column
+    // grid from sm up: MFA overview on top of the left column, name and contacts below
+    // it, and the picture using the full right-column height.
+    expect(overview).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
     expect(overview).not.toContain("row-start-2")
-    expect(overview).not.toContain("border-t border-line-subtle pt-2 sm:col-span-1")
-    expect(overview).toContain("col-start-2 row-start-1 shrink-0 self-start")
+    expect(overview).not.toContain("border-t border-line-subtle")
+    expect(overview).toContain("order-first min-w-0 sm:order-none sm:col-start-2 sm:row-start-1")
     expect(overview).not.toContain("lg:border-l")
     expect(overview).not.toContain("xl:grid-cols-2")
-    expect(overview.indexOf("col-start-1 row-start-1 grid min-w-0 gap-1")).toBeLessThan(
+    expect(overview.indexOf("sm:col-start-1 sm:row-start-1")).toBeLessThan(
       overview.indexOf("<AccountProfilePictureField"),
+    )
+    expect(overview.indexOf("<AccountSecurityProgress state={props.securityProgress} />")).toBeLessThan(
+      overview.indexOf("account.profile.displayName"),
     )
     expect(progress).toContain("href={item.href}")
     expect(progress).toContain("mdiCheckCircleOutline")
