@@ -76,8 +76,8 @@ export function AccountProfilePhoneSection(props: {
               <Show
                 when={props.challengeActive}
                 fallback={
-                  <form class="grid gap-3" onSubmit={props.onStart}>
-                    <div class="grid min-w-0 gap-1">
+                  <form class="grid gap-4" onSubmit={props.onStart}>
+                    <div class="grid min-w-0 gap-1.5">
                       <Label for="account-phone-number">
                         {props.phoneNumber
                           ? messageTranslate("account.profile.phoneNew")
@@ -94,7 +94,9 @@ export function AccountProfilePhoneSection(props: {
                         type="tel"
                         value={props.candidate}
                       />
-                      <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.phoneHint")}</p>
+                      <p class="text-xs leading-relaxed text-muted-foreground">
+                        {messageTranslate("account.profile.phoneHint")}
+                      </p>
                     </div>
                     <div>
                       <AuthenticatedButton
@@ -112,11 +114,11 @@ export function AccountProfilePhoneSection(props: {
                   </form>
                 }
               >
-                <form class="grid gap-3" onSubmit={props.onVerify}>
-                  <p class="text-xs text-muted-foreground">
+                <form class="grid gap-4" onSubmit={props.onVerify}>
+                  <p class="text-sm leading-relaxed text-muted-foreground">
                     {messageTranslate("account.profile.phoneCodeSent", { phoneNumber: props.candidate })}
                   </p>
-                  <div class="grid min-w-0 max-w-xs gap-1">
+                  <div class="grid min-w-0 max-w-xs gap-1.5">
                     <Label for="account-phone-code">{messageTranslate("account.profile.phoneCode")}</Label>
                     <AuthenticatedInput
                       autocomplete="one-time-code"
@@ -130,7 +132,7 @@ export function AccountProfilePhoneSection(props: {
                       value={props.code}
                     />
                   </div>
-                  <div class="flex flex-wrap gap-1.5">
+                  <div class="flex flex-wrap gap-2">
                     <AuthenticatedButton
                       disabled={props.status === "verifying" || props.status === "sending"}
                       icon={mdiCheckCircleOutline}
@@ -163,7 +165,7 @@ export function AccountProfilePhoneSection(props: {
                 </form>
               </Show>
 
-              <div class="mt-3 grid gap-2 empty:hidden">
+              <div class="mt-4 grid gap-2 empty:hidden">
                 <Show when={props.validationMessage}>
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
