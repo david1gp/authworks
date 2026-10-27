@@ -46,7 +46,8 @@ bun run build     # emit dist/
 bun run format   # biome
 bun run check    # repository checks
 bun run release  # git-cliff changelog + tag
-bun run deploy   # preflight check + smoke, then prodctl deploy
+bun run deploy   # prodctl deploy (fast, no preflight)
+bun run deploy:preflight # check + smoke preflight, run before deploy when needed
 ```
 
 `bun run check` runs formatting, UI-literal, type, test, build, and build-output
@@ -109,10 +110,11 @@ for that single public origin. Do not put the system secret in Caddy or the
 repository. After a release, rebuild and restart with
 `systemctl --user restart authworks.service`.
 
-`bun run deploy` is the one documented deploy command. It runs the
-`ops/deploy.sh` preflight (`bun run check`, plus the public smoke when
-`AUTHWORKS_SMOKE_URL` is set) and then `prodctl deploy`, whose units, health
-path, and install steps live in `ops/prod/prodctl.json`.
+`bun run deploy` is the one documented deploy command. It runs only
+`prodctl deploy`, whose units, health path, and install steps live in
+`ops/prod/prodctl.json`. Run the `ops/deploy.sh` preflight separately with
+`bun run deploy:preflight` when needed (`bun run check`, plus the public
+smoke when `AUTHWORKS_SMOKE_URL` is set).
 
 Run the public smoke without storing its URL in the repository:
 
