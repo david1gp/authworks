@@ -30,4 +30,7 @@ test("activity card shows the loaded count and keeps read-only pagination inside
     source.indexOf("onClick={props.state.securityHistoryLoadMore}"),
   )
   expect(source).not.toContain("AuthenticatedDialog")
+  expect(source).toContain("sessionDeviceLocationGet(item)")
+  expect(source).toContain("item.ipAddress")
+  expect(source.indexOf("data-security-history-list")).toBeLessThan(source.indexOf("sessionDeviceLocationGet(item)"))
 })

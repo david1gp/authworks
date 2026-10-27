@@ -56,8 +56,11 @@ export const accountSecurityHistoryItemSchema = v.strictObject({
     "session.revoked_all",
     "session.rotated",
   ]),
+  countryCode: v.optional(v.pipe(v.string(), v.maxLength(16))),
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(256)),
+  ipAddress: v.optional(v.pipe(v.string(), v.maxLength(128))),
   occurredAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  region: v.optional(v.pipe(v.string(), v.maxLength(128))),
 })
 
 export type AccountSecurityHistoryItem = v.InferOutput<typeof accountSecurityHistoryItemSchema>
