@@ -201,12 +201,18 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   const peopleFilterKey = () =>
     `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
   let lastPeopleFilterKey: string | undefined
+  let lastEffectKey: string | undefined
 
   createEffect(
     on(
       () =>
         `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${options.realmId}:${options.organizationId}:${options.reloadKey?.() ?? ""}`,
-      () => {
+      (effectKey) => {
+        // Dialog visibility lives in `?dialog=`, which the key above deliberately excludes.
+        // `on` reruns for every `location.search` change, so without this guard opening or
+        // closing a dialog refetches the list and flashes the loading state behind it.
+        if (effectKey === lastEffectKey) return
+        lastEffectKey = effectKey
         // A page cursor belongs to the filter that produced it: drop it before loading a new
         // filter, otherwise the new list starts mid-page and can come back empty.
         const filterKey = peopleFilterKey()
