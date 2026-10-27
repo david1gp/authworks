@@ -66,6 +66,10 @@ import {
 import { type UserMetadataResponse, userMetadataResponseSchema } from "../public/userMetadataResponseSchema.js"
 import { type UserMetadataSetRequest, userMetadataSetRequestSchema } from "../public/userMetadataSetRequestSchema.js"
 import {
+  type UserPhoneNumberSaveRequest,
+  userPhoneNumberSaveRequestSchema,
+} from "../public/userPhoneNumberSaveRequestSchema.js"
+import {
   type UserProfileUpdateRequest,
   userProfileUpdateRequestSchema,
 } from "../public/userProfileUpdateRequestSchema.js"
@@ -344,6 +348,29 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         init: patchRequest(parsed.output),
         op: "userMeProfileUpdate",
         path: `/realms/${encodeURIComponent(realmId)}/me`,
+        realmId,
+        schema: userResponseSchema,
+      })
+    },
+    userMePhoneNumberSet(realmId: string, input: UserPhoneNumberSaveRequest): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userPhoneNumberSaveRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "userApiClientPhoneNumberSet",
+            "The account phone-number request is invalid.",
+            "users.invalid",
+          ),
+        )
+      const path = `/realms/${encodeURIComponent(realmId)}/me/phone-number`
+      const init = { body: JSON.stringify(parsed.output), method: "POST" }
+      if (options.token !== undefined) return request(path, init, userResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init,
+        op: "userMePhoneNumberSet",
+        path,
         realmId,
         schema: userResponseSchema,
       })

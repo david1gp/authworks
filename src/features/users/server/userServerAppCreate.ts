@@ -47,6 +47,7 @@ import { userMetadataList } from "../actions/userMetadataList.js"
 import { userMetadataRemove } from "../actions/userMetadataRemove.js"
 import { userMetadataSet } from "../actions/userMetadataSet.js"
 import { userProfilePictureRemove } from "../actions/userProfilePictureRemove.js"
+import { userPhoneNumberSave } from "../actions/userPhoneNumberSave.js"
 import { userProfilePictureUpload } from "../actions/userProfilePictureUpload.js"
 import { userProfileUpdate } from "../actions/userProfileUpdate.js"
 import { userPurge } from "../actions/userPurge.js"
@@ -68,6 +69,7 @@ import { userListQuerySchema } from "../public/userListQuerySchema.js"
 import type { UserMetadataListQuery } from "../public/userMetadataListQuerySchema.js"
 import { userMetadataListQuerySchema } from "../public/userMetadataListQuerySchema.js"
 import { userMetadataSetRequestSchema } from "../public/userMetadataSetRequestSchema.js"
+import { userPhoneNumberSaveRequestSchema } from "../public/userPhoneNumberSaveRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
 
@@ -645,6 +647,30 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     return userResultResponseCreate(
       context,
       userProfileUpdate({
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/phone-number", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userPhoneNumberSaveRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The account phone-number request is invalid.",
+        op: "userPhoneNumberSave",
+      })
+    return userResultResponseCreate(
+      context,
+      userPhoneNumberSave({
         context: subject.data,
         database: options.database,
         input: input.output,

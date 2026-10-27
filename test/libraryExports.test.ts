@@ -132,6 +132,7 @@ test("every API client publishes its complete method set", () => {
     "userMeEmailChangeVerify",
     "userTenantAuthenticationMethodsGet",
     "userMeProfileUpdate",
+    "userMePhoneNumberSet",
     "userMeProfilePictureUpload",
     "userMeProfilePictureRemove",
     "userProfileUpdate",
