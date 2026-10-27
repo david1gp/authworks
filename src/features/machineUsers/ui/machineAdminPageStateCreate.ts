@@ -155,11 +155,23 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
   const reloadKey = () =>
     `${options.screen()}:${options.machineUserId() ?? ""}:${pageTokens.get().length}:${options.reloadKey?.() ?? ""}`
   let loadedKey: string | undefined
+  // A page cursor belongs to its screen and subject: switching either restarts from the
+  // first page, otherwise the new list starts mid-page and can come back empty.
+  const subjectSignature = () => `${options.screen()}:${options.machineUserId() ?? ""}`
+  const appliedSubjectSignature = createSignalObject<string | undefined>(undefined)
   createEffect(
     on(reloadKey, () => {
       const key = reloadKey()
       if (key === loadedKey) return
       loadedKey = key
+      const subject = subjectSignature()
+      if (appliedSubjectSignature.get() !== subject) {
+        appliedSubjectSignature.set(subject)
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
+        }
+      }
       secretAcknowledged.set(false)
       issuedSecret.set(undefined)
       void load()

@@ -155,11 +155,26 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     return result.data
   }
 
+  // A page cursor belongs to its screen and subject: switching either restarts from the
+  // first page, otherwise the new list starts mid-page and can come back empty.
+  const subjectSignature = () =>
+    `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${userPageTokens.get().length}`
+  const appliedSubjectSignature = createSignalObject<string | undefined>(undefined)
   createEffect(
     on(
       () =>
         `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${pageTokens.get().length}:${userPageTokens.get().length}`,
-      load,
+      () => {
+        const subject = subjectSignature()
+        if (appliedSubjectSignature.get() !== subject) {
+          appliedSubjectSignature.set(subject)
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
+        }
+        void load()
+      },
     ),
   )
 
