@@ -42,6 +42,7 @@ import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialo
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
 import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
+import { directoryRoleDescriptionKeyGet } from "./directoryRoleDescriptionKeyGet.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
 import { directoryTabIconGet } from "./directoryTabIconGet.js"
@@ -838,22 +839,42 @@ function InviteUserDialog(props: { state: DirectoryAdminUsersViewState }) {
           </div>
           <fieldset class="grid min-w-0 gap-1.5">
             <legend class="text-[0.8125rem] font-medium">{messageTranslate("admin.users.directoryInviteRole")}</legend>
-            <div class="flex flex-wrap gap-3">
+            <p class="text-xs text-muted-foreground" id="directory-invite-role-hint">
+              {messageTranslate("admin.users.directoryInviteRoleHint")}
+            </p>
+            <div aria-describedby="directory-invite-role-hint" class="grid gap-2">
               <For each={roleFilters}>
-                {(role) => (
-                  <label class="flex items-center gap-2 text-sm" for={`directory-invite-role-${role}`}>
-                    <input
-                      checked={dialogs().inviteRoles.get().includes(role)}
-                      class="size-4 accent-[var(--accent)] disabled:opacity-50"
-                      disabled={role === "owner" && !canInviteOwner()}
-                      id={`directory-invite-role-${role}`}
-                      onChange={() => dialogs().inviteRolesToggle(role)}
-                      type="checkbox"
-                    />
-                    <Icon aria-hidden="true" class="size-4 text-muted-foreground" path={directoryRoleIconGet(role)} />
-                    {messageTranslate(directoryRoleMessageKey(role))}
-                  </label>
-                )}
+                {(role) => {
+                  const selected = () => dialogs().inviteRoles.get().includes(role)
+                  const disabled = () => role === "owner" && !canInviteOwner()
+                  return (
+                    <label
+                      class={`flex items-start gap-2.5 rounded-control border px-3 py-2 ${selected() ? "border-accent bg-accent-soft/60" : "border-line bg-surface"} ${disabled() ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-line-strong"}`}
+                      for={`directory-invite-role-${role}`}
+                    >
+                      <input
+                        aria-describedby={`directory-invite-role-${role}-description`}
+                        checked={selected()}
+                        class="mt-0.5 size-4 shrink-0 accent-[var(--accent)] disabled:opacity-50"
+                        disabled={disabled()}
+                        id={`directory-invite-role-${role}`}
+                        onChange={() => dialogs().inviteRolesToggle(role)}
+                        type="checkbox"
+                      />
+                      <Icon
+                        aria-hidden="true"
+                        class="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        path={directoryRoleIconGet(role)}
+                      />
+                      <span class="grid min-w-0 gap-0.5">
+                        <span class="text-sm font-medium">{messageTranslate(directoryRoleMessageKey(role))}</span>
+                        <span class="text-xs text-muted-foreground" id={`directory-invite-role-${role}-description`}>
+                          {messageTranslate(directoryRoleDescriptionKeyGet(role))}
+                        </span>
+                      </span>
+                    </label>
+                  )
+                }}
               </For>
             </div>
           </fieldset>

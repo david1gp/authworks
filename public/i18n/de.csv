@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Benutzer einladen
 admin.users.directoryInviteDescription,Senden Sie eine Organisationseinladung per E-Mail. Der Link wird einmalig angezeigt.
 admin.users.directoryInviteEmail,E-Mail-Adresse
 admin.users.directoryInviteRole,Einladungsrolle
+admin.users.directoryInviteRoleHint,Wähle eine oder mehrere Rollen. Ihre Berechtigungen werden kombiniert.
 admin.users.directoryInviteSubmit,Einladung senden
 admin.users.directoryLastSignIn,Letzte Anmeldung
 admin.users.directoryNever,Nie

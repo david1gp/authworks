@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,ユーザーを招待
 admin.users.directoryInviteDescription,メールで組織招待を送信します。リンクは一度だけ表示されます。
 admin.users.directoryInviteEmail,メールアドレス
 admin.users.directoryInviteRole,招待ロール
+admin.users.directoryInviteRoleHint,1つ以上のロールを選択してください。権限は組み合わせられます。
 admin.users.directoryInviteSubmit,招待を送信
 admin.users.directoryLastSignIn,最終サインイン
 admin.users.directoryNever,なし

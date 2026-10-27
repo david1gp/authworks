@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Gebruiker uitnodigen
 admin.users.directoryInviteDescription,Stuur een organisatie-uitnodiging per e-mail. De link wordt één keer getoond.
 admin.users.directoryInviteEmail,E-mailadres
 admin.users.directoryInviteRole,Uitnodigingsrol
+admin.users.directoryInviteRoleHint,Selecteer een of meer rollen. Hun machtigingen worden gecombineerd.
 admin.users.directoryInviteSubmit,Uitnodiging verzenden
 admin.users.directoryLastSignIn,Laatste aanmelding
 admin.users.directoryNever,Nooit

@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,邀请用户
 admin.users.directoryInviteDescription,通过邮箱发送组织邀请。链接仅显示一次。
 admin.users.directoryInviteEmail,邮箱地址
 admin.users.directoryInviteRole,邀请角色
+admin.users.directoryInviteRoleHint,选择一个或多个角色。其权限将合并生效。
 admin.users.directoryInviteSubmit,发送邀请
 admin.users.directoryLastSignIn,上次登录
 admin.users.directoryNever,从未

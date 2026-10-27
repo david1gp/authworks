@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Kullanıcı davet et
 admin.users.directoryInviteDescription,E-postayla bir kuruluş daveti gönderin. Bağlantı bir kez gösterilir.
 admin.users.directoryInviteEmail,E-posta adresi
 admin.users.directoryInviteRole,Davet rolü
+admin.users.directoryInviteRoleHint,Bir veya daha fazla rol seçin. İzinleri birleşir.
 admin.users.directoryInviteSubmit,Daveti gönder
 admin.users.directoryLastSignIn,Son oturum açma
 admin.users.directoryNever,Asla

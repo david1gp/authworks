@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Invitar usuario
 admin.users.directoryInviteDescription,Envía una invitación a la organización por correo. El enlace se muestra una sola vez.
 admin.users.directoryInviteEmail,Correo electrónico
 admin.users.directoryInviteRole,Rol de invitación
+admin.users.directoryInviteRoleHint,Selecciona uno o varios roles. Sus permisos se combinan.
 admin.users.directoryInviteSubmit,Enviar invitación
 admin.users.directoryLastSignIn,Último inicio de sesión
 admin.users.directoryNever,Nunca

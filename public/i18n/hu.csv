@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Felhasználó meghívása
 admin.users.directoryInviteDescription,Küldjön szervezeti meghívót e-mailben. A link egyszer jelenik meg.
 admin.users.directoryInviteEmail,E-mail-cím
 admin.users.directoryInviteRole,Meghívó szerepköre
+admin.users.directoryInviteRoleHint,Válassz egy vagy több szerepkört. Az engedélyeik összeadódnak.
 admin.users.directoryInviteSubmit,Meghívó küldése
 admin.users.directoryLastSignIn,Utolsó bejelentkezés
 admin.users.directoryNever,Soha

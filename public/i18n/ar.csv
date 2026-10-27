@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,دعوة مستخدم
 admin.users.directoryInviteDescription,أرسل دعوة إلى المؤسسة بالبريد الإلكتروني. يُعرض الرابط مرة واحدة.
 admin.users.directoryInviteEmail,عنوان البريد الإلكتروني
 admin.users.directoryInviteRole,دور الدعوة
+admin.users.directoryInviteRoleHint,حدد دورًا واحدًا أو أكثر. تُدمج أذوناتها معًا.
 admin.users.directoryInviteSubmit,إرسال الدعوة
 admin.users.directoryLastSignIn,آخر تسجيل دخول
 admin.users.directoryNever,أبداً

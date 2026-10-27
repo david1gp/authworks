@@ -1226,6 +1226,7 @@ export const englishCatalog = {
   "admin.users.directoryInviteDescription": "Send an organization invitation by email. The link is shown once.",
   "admin.users.directoryInviteEmail": "Email address",
   "admin.users.directoryInviteRole": "Invitation role",
+  "admin.users.directoryInviteRoleHint": "Select one or more roles. Their permissions combine.",
   "admin.users.directoryInviteSubmit": "Send invitation",
   "admin.users.directoryLastSignIn": "Last sign-in",
   "admin.users.directoryNever": "Never",

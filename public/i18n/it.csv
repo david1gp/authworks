@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Invita utente
 admin.users.directoryInviteDescription,Invia un invito all'organizzazione via e-mail. Il link viene mostrato una sola volta.
 admin.users.directoryInviteEmail,Indirizzo e-mail
 admin.users.directoryInviteRole,Ruolo dell'invito
+admin.users.directoryInviteRoleHint,Seleziona uno o più ruoli. Le autorizzazioni si combinano.
 admin.users.directoryInviteSubmit,Invia invito
 admin.users.directoryLastSignIn,Ultimo accesso
 admin.users.directoryNever,Mai

@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Convidar utilizador
 admin.users.directoryInviteDescription,Envie um convite da organização por e-mail. A ligação é mostrada uma vez.
 admin.users.directoryInviteEmail,Endereço de e-mail
 admin.users.directoryInviteRole,Função do convite
+admin.users.directoryInviteRoleHint,Selecione uma ou mais funções. As permissões são combinadas.
 admin.users.directoryInviteSubmit,Enviar convite
 admin.users.directoryLastSignIn,Último início de sessão
 admin.users.directoryNever,Nunca

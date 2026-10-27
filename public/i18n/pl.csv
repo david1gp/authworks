@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Zaproś użytkownika
 admin.users.directoryInviteDescription,Wyślij zaproszenie do organizacji pocztą e-mail. Link jest pokazywany jeden raz.
 admin.users.directoryInviteEmail,Adres e-mail
 admin.users.directoryInviteRole,Rola zaproszenia
+admin.users.directoryInviteRoleHint,Wybierz jedną lub więcej ról. Ich uprawnienia łączą się.
 admin.users.directoryInviteSubmit,Wyślij zaproszenie
 admin.users.directoryLastSignIn,Ostatnie logowanie
 admin.users.directoryNever,Nigdy

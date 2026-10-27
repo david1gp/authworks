@@ -1172,6 +1172,7 @@ admin.users.directoryInvite,Запросити користувача
 admin.users.directoryInviteDescription,Надішліть запрошення до організації email. Посилання показується один раз.
 admin.users.directoryInviteEmail,Адреса email
 admin.users.directoryInviteRole,Роль запрошення
+admin.users.directoryInviteRoleHint,Виберіть одну або кілька ролей. Їхні дозволи об’єднуються.
 admin.users.directoryInviteSubmit,Надіслати запрошення
 admin.users.directoryLastSignIn,Останній вхід
 admin.users.directoryNever,Ніколи
