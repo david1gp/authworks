@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Minden család visszavonása
 account.refreshTokens.revokeAllConfirm,Visszavonja a fiók összes frissítésitoken-családját?
 account.refreshTokens.revokeConfirm,Visszavonja ezt a frissítésitoken-családot és a hozzáférési tokenjeit?
 account.refreshTokens.revoked,Visszavonva
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Frissítésitoken-családok
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

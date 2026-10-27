@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Révoquer toutes les familles
 account.refreshTokens.revokeAllConfirm,Révoquer toutes les familles de jetons d’actualisation de ce compte ?
 account.refreshTokens.revokeConfirm,Révoquer cette famille de jetons d’actualisation et ses jetons d’accès ?
 account.refreshTokens.revoked,Révoqué
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Familles de jetons d’actualisation
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

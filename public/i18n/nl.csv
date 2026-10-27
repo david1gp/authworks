@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Alle families intrekken
 account.refreshTokens.revokeAllConfirm,Alle families van vernieuwingstokens voor dit account intrekken?
 account.refreshTokens.revokeConfirm,Deze familie van vernieuwingstokens en de toegangstokens intrekken?
 account.refreshTokens.revoked,Ingetrokken
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Families van vernieuwingstokens
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

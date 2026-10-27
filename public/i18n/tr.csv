@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Tüm aileleri iptal et
 account.refreshTokens.revokeAllConfirm,Bu hesap için tüm yenileme belirteci aileleri iptal edilsin mi?
 account.refreshTokens.revokeConfirm,Bu yenileme belirteci ailesi ve erişim belirteçleri iptal edilsin mi?
 account.refreshTokens.revoked,İptal edildi
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Yenileme belirteci aileleri
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
