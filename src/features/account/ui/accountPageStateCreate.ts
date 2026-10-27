@@ -50,6 +50,7 @@ type AccountPageAdapter = {
     phoneNumber: string
   }) => Promise<Result<WhatsappOtpPhoneChangeStartResponse>>
   readonly phoneChangeStart: (input: { phoneNumber: string }) => Promise<Result<WhatsappOtpPhoneChangeStartResponse>>
+  readonly phoneNumberSave: (input: { phoneNumber: string }) => Promise<Result<UserResponse>>
   readonly phoneChangeVerify: (input: {
     challengeId: string
     code: string
@@ -351,6 +352,28 @@ export function accountPageStateCreate(options: {
     phoneErrorMessage.set(undefined)
     phoneValidationMessage.set(undefined)
   }
+  /**
+   * The OTP channel is unavailable when no WhatsApp sender is configured or healthy.
+   * The typed number is then stored unverified instead of being discarded, unless it
+   * already matches the verified number, so the input survives and verification can
+   * be retried once delivery recovers.
+   */
+  const phoneUnavailableNumberSave = async (unavailableMessage: string) => {
+    const current = user.get()
+    const candidate = phoneCandidate.get()
+    if (current?.phoneNumber !== candidate || current?.phoneNumberVerifiedAt === undefined) {
+      const saved = await options.adapter.phoneNumberSave({ phoneNumber: candidate })
+      if (!saved.success) {
+        if (resultIsExpired(saved)) return resultFail(saved)
+        phoneErrorMessage.set(saved.errorMessage)
+        phoneStatus.set("error")
+        return
+      }
+      userApply(saved.data.user)
+    }
+    phoneErrorMessage.set(unavailableMessage)
+    phoneStatus.set("error")
+  }
   const phoneChangeStart = async (event: SubmitEvent) => {
     event.preventDefault()
     phoneOperationPrepare()
@@ -371,6 +394,7 @@ export function accountPageStateCreate(options: {
     const result = await options.adapter.phoneChangeStart(parsed.output)
     if (!result.success) {
       if (resultIsExpired(result)) return resultFail(result)
+      if (result.code === "whatsapp-otp.unavailable") return phoneUnavailableNumberSave(result.errorMessage)
       phoneErrorMessage.set(result.errorMessage)
       phoneStatus.set("error")
       return
@@ -426,11 +450,17 @@ export function accountPageStateCreate(options: {
     phoneOperationPrepare()
     phoneStatus.set("idle")
   }
-  /** Closing the dialog abandons any in-flight challenge so a reopened dialog starts clean. */
+  /**
+   * Closing the dialog abandons any in-flight challenge but keeps the typed candidate
+   * so the input is never lost; reopening restores the saved unverified number.
+   */
   const phoneAddDialogOpenSet = (open: boolean) => {
     if (!open) {
-      phoneCandidate.set("")
       phoneChangeCancel()
+    } else if (phoneCandidate.get() === "") {
+      const current = user.get()
+      if (current?.phoneNumber !== undefined && current?.phoneNumberVerifiedAt === undefined)
+        phoneCandidate.set(current.phoneNumber)
     }
     phoneAddDialogOpen.set(open)
   }

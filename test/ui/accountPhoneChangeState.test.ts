@@ -261,6 +261,90 @@ describe("account phone-change state", () => {
     }
   })
 
+  test("saves the number unverified when WhatsApp OTP is unavailable and keeps the input", async () => {
+    const calls: { name: string; input: unknown }[] = []
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const state = stateCreate({
+      adapter: {
+        ...adapter,
+        phoneChangeStart: async (input: { phoneNumber: string }) => {
+          calls.push({ input, name: "start" })
+          return resultErrorCodedCreate(
+            "whatsappOtpPhoneChangeStart",
+            "The WhatsApp OTP is currently unavailable.",
+            "whatsapp-otp.unavailable",
+          )
+        },
+        phoneNumberSave: async (input: { phoneNumber: string }) => {
+          calls.push({ input, name: "save" })
+          const loaded = await adapter.loadUser()
+          if (!loaded.success) return loaded
+          return resultCreate({
+            user: { ...loaded.data.user, phoneNumber: input.phoneNumber, phoneNumberVerifiedAt: undefined },
+          })
+        },
+      },
+      initialStatus: "ready",
+      kind: "profile",
+    })
+    state.user.set({ ...accountDemoUserFixture, phoneNumber: undefined, phoneNumberVerifiedAt: undefined })
+    state.phoneAddDialogOpenSet(true)
+    state.phoneCandidate.set("+14155552672")
+
+    await state.phoneChangeStart(submitEvent)
+
+    expect(calls).toEqual([
+      { input: { phoneNumber: "+14155552672" }, name: "start" },
+      { input: { phoneNumber: "+14155552672" }, name: "save" },
+    ])
+    expect(state.user.get()?.phoneNumber).toBe("+14155552672")
+    expect(state.user.get()?.phoneNumberVerifiedAt).toBeUndefined()
+    expect(state.phoneCandidate.get()).toBe("+14155552672")
+    expect(state.phoneAddDialogOpen.get()).toBe(true)
+    expect(state.phoneStatus.get()).toBe("error")
+    expect(state.phoneErrorMessage.get()).toBe("The WhatsApp OTP is currently unavailable.")
+  })
+
+  test("never downgrades the verified number while WhatsApp OTP is unavailable", async () => {
+    let saves = 0
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const state = stateCreate({
+      adapter: {
+        ...adapter,
+        phoneChangeStart: async () =>
+          resultErrorCodedCreate(
+            "whatsappOtpPhoneChangeStart",
+            "The WhatsApp OTP is currently unavailable.",
+            "whatsapp-otp.unavailable",
+          ),
+        phoneNumberSave: async () => {
+          saves += 1
+          const loaded = await adapter.loadUser()
+          if (!loaded.success) return loaded
+          return resultCreate({ user: loaded.data.user })
+        },
+      },
+      initialStatus: "ready",
+      kind: "profile",
+    })
+    const loaded = await adapter.loadUser()
+    if (!loaded.success) throw new Error("Expected demo user")
+    state.user.set(loaded.data.user)
+    state.phoneAddDialogOpenSet(true)
+    state.phoneCandidate.set(accountDemoUserFixture.phoneNumber ?? "+14155552671")
+
+    const start = state.phoneChangeStart(submitEvent)
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await start
+
+    expect(saves).toBe(0)
+    expect(state.user.get()?.phoneNumber).toBe(accountDemoUserFixture.phoneNumber)
+    expect(state.user.get()?.phoneNumberVerifiedAt).toBe(accountDemoUserFixture.phoneNumberVerifiedAt)
+    expect(state.phoneCandidate.get()).toBe(accountDemoUserFixture.phoneNumber ?? "+14155552671")
+    expect(state.phoneErrorMessage.get()).toBe("The WhatsApp OTP is currently unavailable.")
+  })
+
   test("routes phone session failures through account expiry handling", async () => {
     const sessionExpired = () => {
       const result = resultErrorCodedCreate("phoneChange", "Session expired.", "sessions.unauthorized")

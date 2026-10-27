@@ -198,6 +198,16 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
       fixtureState() === "error" ? error() : resultCreate(demoPhoneChallenge),
     phoneChangeStart: async (_input: { readonly phoneNumber: string }) =>
       fixtureState() === "error" ? error() : resultCreate(demoPhoneChallenge),
+    phoneNumberSave: async (input: { readonly phoneNumber: string }) => {
+      if (fixtureState() === "error") return error()
+      fixtureUser = {
+        ...fixtureUser,
+        phoneNumber: input.phoneNumber,
+        phoneNumberVerifiedAt: undefined,
+        updatedAt: demoMutationTimestamp,
+      }
+      return resultCreate({ user: fixtureUser })
+    },
     phoneChangeVerify: async (input: { readonly phoneNumber: string }) => {
       if (fixtureState() === "error") return error()
       fixtureUser = {

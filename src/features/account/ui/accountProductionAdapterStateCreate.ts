@@ -90,6 +90,7 @@ export function accountProductionAdapterStateCreate(
         }),
       phoneChangeResend: async (input) => whatsappOtp.whatsappOtpPhoneChangeResend(await realmIdResolve(), input),
       phoneChangeStart: async (input) => whatsappOtp.whatsappOtpPhoneChangeStart(await realmIdResolve(), input),
+      phoneNumberSave: async (input) => users.userMePhoneNumberSet(await realmIdResolve(), input),
       phoneChangeVerify: (input) =>
         userOperationRun(async () => whatsappOtp.whatsappOtpPhoneChangeVerify(await realmIdResolve(), input)),
       profilePictureRemove: () =>
