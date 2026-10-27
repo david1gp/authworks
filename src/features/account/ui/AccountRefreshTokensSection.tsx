@@ -57,6 +57,10 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                             tone={accountRefreshTokenStatusLabelGet(token.status).tone}
                           />
                         </span>
+                        <span class="min-w-0 break-all font-mono text-xs text-muted-foreground">{token.clientId}</span>
+                        <span class="text-xs text-muted-foreground">
+                          {messageTranslate("account.refreshTokens.scopeCount", { count: token.scope.length })}
+                        </span>
                         <span class="text-xs text-muted-foreground">
                           {messageTranslate("account.refreshTokens.lastUsed", {
                             date:

@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Alle Familien widerrufen
 account.refreshTokens.revokeAllConfirm,Alle Refresh-Token-Familien für dieses Konto widerrufen?
 account.refreshTokens.revokeConfirm,Diese Refresh-Token-Familie und ihre Zugriffstoken widerrufen?
 account.refreshTokens.revoked,Widerrufen
+account.refreshTokens.scopeCount,{count} Scopes
 account.refreshTokens.title,Refresh-Token-Familien
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

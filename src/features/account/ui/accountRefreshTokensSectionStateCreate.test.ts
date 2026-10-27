@@ -96,6 +96,8 @@ test("application card nests metadata and explicit destructive controls inside a
   expect(source).toContain("icon={mdiKeyChain}")
   expect(source).toContain("value={state.summaryValue()}")
   expect(source.indexOf("<AccountDisclosure")).toBeLessThan(source.indexOf("account.refreshTokens.description"))
+  expect(source).toContain("{token.clientId}")
+  expect(source).toContain('messageTranslate("account.refreshTokens.scopeCount", { count: token.scope.length })')
   expect(source).toContain('title={messageTranslate("account.refreshTokens.manage"')
   expect(source).toContain("open={state.dialogOpen(token.familyId)}")
   expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<AccountRoleList"))

@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Unieważnij wszystkie rodziny
 account.refreshTokens.revokeAllConfirm,Unieważnić wszystkie rodziny tokenów odświeżania dla tego konta?
 account.refreshTokens.revokeConfirm,Unieważnić tę rodzinę tokenów odświeżania i jej tokeny dostępu?
 account.refreshTokens.revoked,Unieważniony
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Rodziny tokenów odświeżania
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

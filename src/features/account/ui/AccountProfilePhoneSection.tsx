@@ -36,16 +36,12 @@ export function AccountProfilePhoneSection(props: {
   return (
     <AccountDisclosure
       icon={mdiPhoneOutline}
-      status={messageTranslate(
-        !props.phoneNumber
-          ? "account.profile.notSet"
-          : props.verified
-            ? "account.profile.verified"
-            : "account.profile.verificationPending",
-      )}
-      statusTone={props.phoneNumber && props.verified ? "success" : "neutral"}
+      status={
+        props.phoneNumber && !props.verified ? messageTranslate("account.profile.verificationPending") : undefined
+      }
+      statusTone="neutral"
       summary={messageTranslate("account.profile.phoneNumbers")}
-      value={props.phoneNumber || messageTranslate("account.profile.notSet")}
+      value={props.phoneNumber}
       variant="card"
     >
       <div class="grid gap-3">
@@ -63,14 +59,12 @@ export function AccountProfilePhoneSection(props: {
                   <span class="grid min-w-0 gap-1">
                     <span class="sr-only">{messageTranslate("account.profile.phoneChange")}: </span>
                     <span class="break-all font-mono text-sm font-medium">{props.phoneNumber}</span>
-                    <AuthenticatedStatus
-                      label={
-                        props.verified
-                          ? messageTranslate("account.profile.verified")
-                          : messageTranslate("account.profile.verificationPending")
-                      }
-                      tone={props.verified ? "success" : "warning"}
-                    />
+                    <Show when={!props.verified}>
+                      <AuthenticatedStatus
+                        label={messageTranslate("account.profile.verificationPending")}
+                        tone="warning"
+                      />
+                    </Show>
                   </span>
                 ) : (
                   messageTranslate("account.profile.phoneAdd")

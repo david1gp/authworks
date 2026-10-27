@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,撤销所有令牌族
 account.refreshTokens.revokeAllConfirm,要撤销此账户的所有刷新令牌族吗？
 account.refreshTokens.revokeConfirm,要撤销此刷新令牌族及其访问令牌吗？
 account.refreshTokens.revoked,已撤销
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,刷新令牌族
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,Відкликати всі сімейства
 account.refreshTokens.revokeAllConfirm,Відкликати всі сімейства токенів оновлення для цього облікового запису?
 account.refreshTokens.revokeConfirm,Відкликати це сімейство токенів оновлення та його токени доступу?
 account.refreshTokens.revoked,Відкликано
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,Сімейства токенів оновлення
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,إلغاء جميع العائلات
 account.refreshTokens.revokeAllConfirm,هل تريد إلغاء جميع عائلات رموز التحديث لهذا الحساب؟
 account.refreshTokens.revokeConfirm,هل تريد إلغاء عائلة رمز التحديث هذه ورموز الوصول الخاصة بها؟
 account.refreshTokens.revoked,ملغى
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,عائلات رموز التحديث
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

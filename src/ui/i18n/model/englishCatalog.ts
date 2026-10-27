@@ -234,6 +234,7 @@ export const englishCatalog = {
   "account.refreshTokens.revokeAllConfirm": "Revoke all refresh-token families for this account?",
   "account.refreshTokens.revokeConfirm": "Revoke this refresh-token family and its access tokens?",
   "account.refreshTokens.revoked": "Revoked",
+  "account.refreshTokens.scopeCount": "{count} scopes",
   "account.refreshTokens.title": "Refresh-token families",
   "account.security.authenticators": "Authenticators",
   "account.security.identityCount": "{count} linked identities",

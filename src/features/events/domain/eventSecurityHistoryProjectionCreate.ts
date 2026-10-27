@@ -9,6 +9,7 @@ type EventSecurityHistoryProjectionInput = {
   readonly eventType: string
   readonly id: string
   readonly occurredAt: number
+  readonly payload?: unknown
 }
 
 export function eventSecurityHistoryProjectionCreate(input: EventSecurityHistoryProjectionInput) {
@@ -22,5 +23,28 @@ export function eventSecurityHistoryProjectionCreate(input: EventSecurityHistory
     displayCode: definition.displayCode,
     id: input.id,
     occurredAt: input.occurredAt,
+    ...eventSecurityHistoryLocationGet(input.payload),
   })
+}
+
+function eventSecurityHistoryLocationGet(
+  payload: unknown,
+): Pick<EventSecurityHistoryItem, "countryCode" | "ipAddress" | "region"> {
+  if (payload === null || typeof payload !== "object") return {}
+  const device = (payload as { readonly device?: unknown }).device
+  if (device === null || typeof device !== "object") return {}
+  const fields = device as Record<string, unknown>
+  const countryCode = eventSecurityHistoryDeviceFieldGet(fields["countryCode"])
+  const ipAddress = eventSecurityHistoryDeviceFieldGet(fields["ipAddress"])
+  const region = eventSecurityHistoryDeviceFieldGet(fields["region"])
+  return {
+    ...(countryCode === undefined ? {} : { countryCode }),
+    ...(ipAddress === undefined ? {} : { ipAddress }),
+    ...(region === undefined ? {} : { region }),
+  }
+}
+
+function eventSecurityHistoryDeviceFieldGet(value: unknown): string | undefined {
+  if (typeof value !== "string" || value.trim().length === 0) return undefined
+  return value
 }

@@ -64,6 +64,7 @@ export function eventRepositoryCreate(database: StorageExecutor) {
             eventType: storageEventTable.eventType,
             id: storageEventTable.id,
             occurredAt: storageEventTable.occurredAt,
+            payload: storageEventTable.payload,
             position: storageEventTable.position,
             subjectId: eventUserSubjectTable.userId,
           })

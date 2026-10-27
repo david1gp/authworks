@@ -5,6 +5,7 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import { accountSecurityHistoryMessageKeyGet } from "./accountSecurityHistoryMessageKeyGet.js"
 import { accountSecurityHistorySectionStateCreate } from "./accountSecurityHistorySectionStateCreate.js"
@@ -32,26 +33,42 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
         >
           <ul class="divide-y divide-line-subtle" data-security-history-list>
             <For each={props.state.securityHistory()}>
-              {(item) => (
-                <li
-                  class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]"
-                  data-security-history-item
-                >
-                  <AuthenticatedStatus
-                    label={messageTranslate(accountSecurityHistoryMessageKeyGet(item).category)}
-                    tone="neutral"
-                  />
-                  <span class="min-w-0 break-words text-sm font-medium">
-                    {messageTranslate(accountSecurityHistoryMessageKeyGet(item).display)}
-                  </span>
-                  <time
-                    class="col-span-2 text-xs tabular-nums text-muted-foreground sm:col-span-1 sm:text-right"
-                    dateTime={new Date(item.occurredAt).toISOString()}
+              {(item) => {
+                const deviceNetwork = () => {
+                  const location = sessionDeviceLocationGet(item)
+                  const ip = item.ipAddress?.trim()
+                  if (location !== null && ip !== undefined && ip.length > 0) return `${location} · ${ip}`
+                  if (location !== null) return location
+                  return ip !== undefined && ip.length > 0 ? ip : null
+                }
+                return (
+                  <li
+                    class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 px-3 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]"
+                    data-security-history-item
                   >
-                    {localeDateFormat(item.occurredAt, { dateStyle: "medium", timeStyle: "short" })}
-                  </time>
-                </li>
-              )}
+                    <AuthenticatedStatus
+                      label={messageTranslate(accountSecurityHistoryMessageKeyGet(item).category)}
+                      tone="neutral"
+                    />
+                    <span class="min-w-0 break-words text-sm font-medium">
+                      {messageTranslate(accountSecurityHistoryMessageKeyGet(item).display)}
+                    </span>
+                    <Show when={deviceNetwork()}>
+                      {(network) => (
+                        <span class="col-start-2 min-w-0 break-all text-xs tabular-nums text-muted-foreground">
+                          {network()}
+                        </span>
+                      )}
+                    </Show>
+                    <time
+                      class="col-span-2 text-xs tabular-nums text-muted-foreground sm:col-span-1 sm:text-right"
+                      dateTime={new Date(item.occurredAt).toISOString()}
+                    >
+                      {localeDateFormat(item.occurredAt, { dateStyle: "medium", timeStyle: "short" })}
+                    </time>
+                  </li>
+                )
+              }}
             </For>
           </ul>
           <Show when={props.state.securityHistoryNextPageToken()}>

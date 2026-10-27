@@ -227,6 +227,7 @@ account.refreshTokens.revokeAll,すべてのファミリーを失効
 account.refreshTokens.revokeAllConfirm,このアカウントのすべてのリフレッシュトークンファミリーを失効させますか？
 account.refreshTokens.revokeConfirm,このリフレッシュトークンファミリーと関連するアクセストークンを失効させますか？
 account.refreshTokens.revoked,失効済み
+account.refreshTokens.scopeCount,{count} scopes
 account.refreshTokens.title,リフレッシュトークンファミリー
 account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities

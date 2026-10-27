@@ -62,7 +62,7 @@ export function AccountEffectiveAccessView(props: {
                               {messageTranslate("account.access.effectiveSource", { source: source() })}
                             </p>
                           </div>
-                          <div class="min-w-0 md:self-center">
+                          <div class="min-w-0">
                             <AccountDisclosure
                               summary={messageTranslate("account.access.permissionsToggle", {
                                 count: String(entry.permissions.length),
