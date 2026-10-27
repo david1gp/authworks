@@ -307,8 +307,8 @@ describe("account workspace", () => {
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
     // The strip stacks on mobile with the picture first and switches to a two-column
-    // grid from sm up: MFA overview on top of the left column, name and contacts below
-    // it, and the picture using the full right-column height.
+    // grid from sm up: name and contacts with the MFA overview tucked directly below
+    // them, and the picture using the full right-column height.
     expect(overview).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
     expect(overview).not.toContain("row-start-2")
     expect(overview).not.toContain("border-t border-line-subtle")
@@ -318,8 +318,8 @@ describe("account workspace", () => {
     expect(overview.indexOf("sm:col-start-1 sm:row-start-1")).toBeLessThan(
       overview.indexOf("<AccountProfilePictureField"),
     )
-    expect(overview.indexOf("<AccountSecurityProgress state={props.securityProgress} />")).toBeLessThan(
-      overview.indexOf("account.profile.displayName"),
+    expect(overview.indexOf("account.profile.displayName")).toBeLessThan(
+      overview.indexOf("<AccountSecurityProgress state={props.securityProgress} />"),
     )
     expect(progress).toContain("href={item.href}")
     expect(progress).toContain("mdiCheckCircleOutline")

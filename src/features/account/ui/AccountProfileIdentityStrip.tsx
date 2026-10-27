@@ -31,11 +31,6 @@ export function AccountProfileIdentityStrip(props: {
     <div class="rounded-panel border border-line bg-surface p-4 sm:p-5">
       <div class="grid min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6">
         <div class="grid min-w-0 gap-1 sm:col-start-1 sm:row-start-1">
-          {props.securityProgress ? (
-            <div class="min-w-0 pb-1">
-              <AccountSecurityProgress state={props.securityProgress} />
-            </div>
-          ) : null}
           <div class="flex min-w-0 items-center gap-1.5 text-lg font-semibold">
             <Icon
               aria-label={messageTranslate("account.profile.displayName")}
@@ -126,6 +121,11 @@ export function AccountProfileIdentityStrip(props: {
               </div>
             ) : null}
           </div>
+          {props.securityProgress ? (
+            <div class="min-w-0 pt-1">
+              <AccountSecurityProgress state={props.securityProgress} />
+            </div>
+          ) : null}
         </div>
         <div class="order-first min-w-0 sm:order-none sm:col-start-2 sm:row-start-1 sm:shrink-0 sm:self-center">
           <AccountProfilePictureField
