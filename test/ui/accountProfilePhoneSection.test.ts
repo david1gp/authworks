@@ -7,8 +7,10 @@ test("phone card shows the current number and status when closed and keeps actio
 
   expect(source).toContain("<AccountDisclosure")
   expect(source).toContain('variant="card"')
-  expect(source).toContain('value={props.phoneNumber || messageTranslate("account.profile.notSet")}')
-  expect(source).toContain('statusTone={props.phoneNumber && props.verified ? "success" : "neutral"}')
+  // An unset phone is not listed at all: no "Not set" value and no status pill.
+  expect(source).not.toContain('messageTranslate("account.profile.notSet")')
+  expect(source).toContain("value={props.phoneNumber}")
+  expect(source).toContain('statusTone="neutral"')
   expect(source.indexOf("<AccountDisclosure")).toBeLessThan(
     source.indexOf('messageTranslate("account.profile.phoneDescription")'),
   )

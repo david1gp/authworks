@@ -10,10 +10,10 @@ export function accountEmailAddressViewStateCreate(addresses: Accessor<readonly 
   const summaryValue = () => primary()?.email ?? messageTranslate("account.profile.emailMissing")
   const summaryStatus = () => {
     const address = primary()
-    if (address === undefined) return messageTranslate("account.profile.notSet")
-    return messageTranslate(address.verified ? "account.profile.verified" : "account.profile.verificationPending")
+    if (address === undefined || address.verified) return undefined
+    return messageTranslate("account.profile.verificationPending")
   }
-  const summaryTone = () => (primary()?.verified ? "success" : "neutral")
+  const summaryTone = () => "neutral" as const
   const dialogOpen = (id: string) => selectedId.get() === id && addresses().some((address) => address.id === id)
   const dialogOpenChange = (id: string, open: boolean) => {
     if (open) {

@@ -81,14 +81,12 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                         <Show when={address.isPrimary}>
                           <AuthenticatedStatus label={messageTranslate("account.profile.emailPrimary")} tone="accent" />
                         </Show>
-                        <AuthenticatedStatus
-                          label={
-                            address.verified
-                              ? messageTranslate("account.profile.verified")
-                              : messageTranslate("account.profile.verificationPending")
-                          }
-                          tone={address.verified ? "success" : "warning"}
-                        />
+                        <Show when={!address.verified}>
+                          <AuthenticatedStatus
+                            label={messageTranslate("account.profile.verificationPending")}
+                            tone="warning"
+                          />
+                        </Show>
                       </span>
                     </span>
                   }
@@ -99,14 +97,12 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                       <Show when={address.isPrimary}>
                         <AuthenticatedStatus label={messageTranslate("account.profile.emailPrimary")} tone="accent" />
                       </Show>
-                      <AuthenticatedStatus
-                        label={
-                          address.verified
-                            ? messageTranslate("account.profile.verified")
-                            : messageTranslate("account.profile.verificationPending")
-                        }
-                        tone={address.verified ? "success" : "warning"}
-                      />
+                      <Show when={!address.verified}>
+                        <AuthenticatedStatus
+                          label={messageTranslate("account.profile.verificationPending")}
+                          tone="warning"
+                        />
+                      </Show>
                     </div>
                     <div class="flex flex-wrap gap-2">
                       <Show when={!address.isPrimary}>
