@@ -23,13 +23,13 @@ export function AccountSecurityProgress(props: {
           <Icon class="size-4 shrink-0 text-accent" path={mdiShieldKeyOutline} />
           <span class="truncate">{messageTranslate("account.security.recoveryMfa")}</span>
         </h2>
-        <div class="order-3 flex w-full min-w-0 items-center gap-2.5 sm:w-auto sm:flex-1">
+        <div class="order-3 flex w-full min-w-0 flex-wrap items-center gap-2.5 max-sm:gap-y-1 sm:w-auto sm:flex-1 sm:flex-nowrap">
           <div
             aria-label={props.state.accessibleLabel()}
             aria-valuemax={5}
             aria-valuemin={0}
             aria-valuenow={props.state.configuredCount()}
-            class="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-muted"
+            class="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-muted max-sm:basis-full"
             role="progressbar"
           >
             <div

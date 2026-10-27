@@ -337,10 +337,12 @@ describe("account workspace", () => {
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
     expect(progress).toContain('role="progressbar"')
-    // Below sm the summary wraps into label plus chevron on the first line and bar plus count
-    // on the second; from sm up it stays a single line.
+    // Below sm the summary wraps into label plus chevron on the first line, a full-width
+    // bar on the second, and the count on its own third line; from sm up it stays a
+    // single line.
     expect(progress).toContain("flex-wrap")
     expect(progress).toContain("sm:flex-nowrap")
+    expect(progress).toContain("max-sm:basis-full")
 
     // The removed nickname helper copy must not come back.
     expect(source).not.toContain("nickNameHint")
