@@ -9,6 +9,7 @@ import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
+import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 import { accountSessionsSectionStateCreate } from "./accountSessionsSectionStateCreate.js"
@@ -37,6 +38,13 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
             <For each={props.state.sessions()}>
               {(session) => {
                 const deviceLabel = () => sessionDeviceLabelGet(session.device)
+                const deviceLocation = () => sessionDeviceLocationGet(session.device)
+                const deviceNetwork = () => {
+                  const location = deviceLocation()
+                  const ip = session.device.ipAddress?.trim()
+                  if (location && ip) return `${location} · ${ip}`
+                  return location ?? (ip && ip.length > 0 ? ip : null)
+                }
                 return (
                   <li class="min-w-0">
                     <AuthenticatedDialog
@@ -57,6 +65,13 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                               />
                             </Show>
                           </span>
+                          <Show when={deviceNetwork()}>
+                            {(network) => (
+                              <span class="min-w-0 break-all text-xs tabular-nums text-muted-foreground">
+                                {network()}
+                              </span>
+                            )}
+                          </Show>
                           <span class="text-xs text-muted-foreground">
                             {messageTranslate("account.sessions.lastUsed", {
                               date: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
