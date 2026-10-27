@@ -12,10 +12,7 @@ export function AccountSecurityManagement(props: {
   readonly state: AccountSecurityViewState
 }) {
   return (
-    <div
-      class="grid min-w-0 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0"
-      data-account-security-grid
-    >
+    <div class="grid min-w-0 items-start gap-3 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0" data-account-security-grid>
       <div class="min-w-0 scroll-mt-24" id={accountSecuritySectionIds.passkeys}>
         <AccountPasskeysSection state={props.state} />
       </div>
