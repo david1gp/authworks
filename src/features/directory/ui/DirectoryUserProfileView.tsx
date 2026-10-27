@@ -417,7 +417,7 @@ function OverviewTab(props: { readonly state: DirectoryUserProfileViewState }) {
         fallback={<AuthenticatedEmptyState title={messageTranslate("admin.userProfile.missingId")} />}
       >
         {(current) => (
-          <div class="grid gap-6">
+          <div class="grid gap-5">
             <AuthenticatedFieldList
               columns={3}
               fields={[
@@ -432,8 +432,10 @@ function OverviewTab(props: { readonly state: DirectoryUserProfileViewState }) {
                 },
               ]}
             />
-            <AuthenticatedSection padded title={messageTranslate("admin.userProfile.contactTitle")}>
+            <div class="border-t border-line-subtle pt-4">
+              <h3 class="mb-3 text-sm font-medium">{messageTranslate("admin.userProfile.contactTitle")}</h3>
               <AuthenticatedFieldList
+                columns={3}
                 fields={[
                   { label: messageTranslate("admin.users.displayName"), value: current().profile.displayName ?? "—" },
                   { label: messageTranslate("admin.users.firstName"), value: current().profile.firstName ?? "—" },
@@ -446,7 +448,7 @@ function OverviewTab(props: { readonly state: DirectoryUserProfileViewState }) {
                   { label: messageTranslate("admin.userProfile.phone"), value: current().phoneNumber ?? "—" },
                 ]}
               />
-            </AuthenticatedSection>
+            </div>
           </div>
         )}
       </Show>
