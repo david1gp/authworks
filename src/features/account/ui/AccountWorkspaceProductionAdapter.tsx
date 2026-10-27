@@ -1,4 +1,5 @@
 import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
+import { AccountExportCard } from "./AccountExportCard.js"
 import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
 import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
@@ -23,7 +24,16 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
           <AccountAccessProductionAdapter screen="consents" />
         </AccountWorkspaceAccess>
       }
-      dangerZone={<AccountProductionAdapter kind="delete" />}
+      dangerZone={
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+          <AccountExportCard
+            exportErrorMessage={state.profile.exportError.get()}
+            exportPending={state.profile.exportPending.get()}
+            onExportDownload={() => void state.profile.exportDownload()}
+          />
+          <AccountProductionAdapter kind="delete" />
+        </div>
+      }
       devicesApplications={
         <AccountWorkspaceDevicesApplications
           activity={<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />}

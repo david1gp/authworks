@@ -1,5 +1,6 @@
 import { AccountAccessDemoAdapter } from "./AccountAccessDemoAdapter.js"
 import { AccountDemoAdapter } from "./AccountDemoAdapter.js"
+import { AccountExportCard } from "./AccountExportCard.js"
 import { AccountSecurityDemoAdapter } from "./AccountSecurityDemoAdapter.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
@@ -22,7 +23,16 @@ export function AccountWorkspaceDemoAdapter() {
           <AccountAccessDemoAdapter screen="consents" showFixtureHeader={false} />
         </AccountWorkspaceAccess>
       }
-      dangerZone={<AccountDemoAdapter kind="delete" path="/demo/account" showFixtureHeader={false} />}
+      dangerZone={
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+          <AccountExportCard
+            exportErrorMessage={state.profile.page.exportError.get()}
+            exportPending={state.profile.page.exportPending.get()}
+            onExportDownload={() => void state.profile.page.exportDownload()}
+          />
+          <AccountDemoAdapter kind="delete" path="/demo/account" showFixtureHeader={false} />
+        </div>
+      }
       devicesApplications={
         <AccountWorkspaceDevicesApplications
           activity={<AccountSecurityDemoAdapter screen="security-history" showFixtureHeader={false} />}

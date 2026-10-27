@@ -1,6 +1,5 @@
 import { mdiAccountDetailsOutline } from "@adaptive-ds/mdi/mdiAccountDetailsOutline.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
-import { mdiDownloadOutline } from "@adaptive-ds/mdi/mdiDownloadOutline.js"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
@@ -16,6 +15,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
+import { AccountExportCard } from "./AccountExportCard.js"
 import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
 import { AccountProfilePhoneSection } from "./AccountProfilePhoneSection.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
@@ -305,31 +305,6 @@ export function AccountProfileView(props: AccountProfileViewProps) {
       />
     </>
   )
-  const exportCard = () => (
-    <AccountDisclosure
-      icon={mdiDownloadOutline}
-      summary={messageTranslate("account.export.title")}
-      value={messageTranslate("account.export.download")}
-      variant="card"
-    >
-      <p class="mb-3 text-sm text-muted-foreground">{messageTranslate("account.export.description")}</p>
-      <Show when={props.exportErrorMessage}>
-        {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-      </Show>
-      <div class="mt-4">
-        <AuthenticatedButton
-          disabled={props.exportPending}
-          icon={mdiDownloadOutline}
-          onClick={() => void props.onExportDownload()}
-          variant="outline"
-        >
-          {props.exportPending
-            ? messageTranslate("account.export.downloading")
-            : messageTranslate("account.export.download")}
-        </AuthenticatedButton>
-      </div>
-    </AccountDisclosure>
-  )
   return (
     <AccountStateBoundary
       detail={state.boundary().detail}
@@ -370,7 +345,13 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             </div>
           </Show>
         </Show>
-        {exportCard()}
+        <Show when={props.kind !== "overview"}>
+          <AccountExportCard
+            exportErrorMessage={props.exportErrorMessage}
+            exportPending={props.exportPending}
+            onExportDownload={props.onExportDownload}
+          />
+        </Show>
       </div>
     </AccountStateBoundary>
   )
