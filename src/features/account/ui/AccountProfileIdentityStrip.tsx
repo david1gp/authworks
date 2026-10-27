@@ -1,5 +1,4 @@
 import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
-import { mdiCheckDecagram } from "@adaptive-ds/mdi/mdiCheckDecagram.js"
 import { mdiClockOutline } from "@adaptive-ds/mdi/mdiClockOutline.js"
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
@@ -25,14 +24,8 @@ export function AccountProfileIdentityStrip(props: {
   readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly userName: string
 }) {
-  const emailTitle = () =>
-    !props.email
-      ? messageTranslate("account.profile.emailMissing")
-      : messageTranslate(props.emailVerified ? "account.profile.verified" : "account.profile.verificationPending")
-  const phoneTitle = () =>
-    !props.phoneNumber
-      ? messageTranslate("account.profile.notSet")
-      : messageTranslate(props.phoneVerified ? "account.profile.verified" : "account.profile.verificationPending")
+  const emailTitle = () => messageTranslate("account.profile.verificationPending")
+  const phoneTitle = () => messageTranslate("account.profile.verificationPending")
 
   return (
     <div class="rounded-panel border border-line bg-surface p-4 sm:p-5">
@@ -60,18 +53,21 @@ export function AccountProfileIdentityStrip(props: {
               />
             ) : null}
           </div>
-          <div
-            class="flex min-w-0 items-center gap-1.5 font-mono text-sm text-muted-foreground"
-            title={messageTranslate("account.profile.userName")}
-          >
-            <span class="min-w-0 break-all">
-              {props.userName ? `@${props.userName}` : messageTranslate("account.profile.notSet")}
-            </span>
-            {props.userName ? (
-              <AccountIdentityCopyButton label={messageTranslate("account.profile.userName")} value={props.userName} />
-            ) : null}
-          </div>
-          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-sm">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-1 pt-1 text-sm">
+            <div
+              class="flex min-w-0 items-center gap-1.5 font-mono text-muted-foreground"
+              title={messageTranslate("account.profile.userName")}
+            >
+              <span class="min-w-0 break-all">
+                {props.userName ? `@${props.userName}` : messageTranslate("account.profile.notSet")}
+              </span>
+              {props.userName ? (
+                <AccountIdentityCopyButton
+                  label={messageTranslate("account.profile.userName")}
+                  value={props.userName}
+                />
+              ) : null}
+            </div>
             <div class="flex min-w-0 items-center gap-1.5">
               <Icon
                 aria-label={messageTranslate("account.profile.email")}
@@ -85,50 +81,45 @@ export function AccountProfileIdentityStrip(props: {
                   "text-muted-foreground": !props.email,
                 }}
               >
-                {props.email || messageTranslate("account.profile.notSet")}
+                {props.email || messageTranslate("account.profile.emailMissing")}
               </span>
               {props.email ? (
                 <>
                   <AccountIdentityCopyButton label={messageTranslate("account.profile.email")} value={props.email} />
-                  <Icon
-                    aria-label={emailTitle()}
-                    class={props.emailVerified ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-warning"}
-                    path={props.emailVerified ? mdiCheckDecagram : mdiClockOutline}
-                    title={emailTitle()}
-                  />
+                  {props.emailVerified ? null : (
+                    <Icon
+                      aria-label={emailTitle()}
+                      class="size-4 shrink-0 text-warning"
+                      path={mdiClockOutline}
+                      title={emailTitle()}
+                    />
+                  )}
                 </>
               ) : null}
             </div>
-            <div class="flex min-w-0 items-center gap-1.5">
-              <Icon
-                aria-label={messageTranslate("account.profile.phoneNumber")}
-                class="size-4 shrink-0 text-accent"
-                path={mdiPhoneOutline}
-                title={messageTranslate("account.profile.phoneNumber")}
-              />
-              <span
-                class="min-w-0 break-all"
-                classList={{
-                  "text-muted-foreground": !props.phoneNumber,
-                }}
-              >
-                {props.phoneNumber || messageTranslate("account.profile.notSet")}
-              </span>
-              {props.phoneNumber ? (
-                <>
-                  <AccountIdentityCopyButton
-                    label={messageTranslate("account.profile.phoneNumber")}
-                    value={props.phoneNumber}
-                  />
+            {props.phoneNumber ? (
+              <div class="flex min-w-0 items-center gap-1.5">
+                <Icon
+                  aria-label={messageTranslate("account.profile.phoneNumber")}
+                  class="size-4 shrink-0 text-accent"
+                  path={mdiPhoneOutline}
+                  title={messageTranslate("account.profile.phoneNumber")}
+                />
+                <span class="min-w-0 break-all">{props.phoneNumber}</span>
+                <AccountIdentityCopyButton
+                  label={messageTranslate("account.profile.phoneNumber")}
+                  value={props.phoneNumber}
+                />
+                {props.phoneVerified ? null : (
                   <Icon
                     aria-label={phoneTitle()}
-                    class={props.phoneVerified ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-warning"}
-                    path={props.phoneVerified ? mdiCheckDecagram : mdiClockOutline}
+                    class="size-4 shrink-0 text-warning"
+                    path={mdiClockOutline}
                     title={phoneTitle()}
                   />
-                </>
-              ) : null}
-            </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
         {props.securityProgress ? (
@@ -136,13 +127,7 @@ export function AccountProfileIdentityStrip(props: {
             <AccountSecurityProgress state={props.securityProgress} />
           </div>
         ) : null}
-        <div
-          class="col-start-2 row-start-1 shrink-0 self-start"
-          classList={{
-            "sm:row-span-2": Boolean(props.securityProgress),
-            "sm:self-center": Boolean(props.securityProgress),
-          }}
-        >
+        <div class="col-start-2 row-start-1 shrink-0 self-start">
           <AccountProfilePictureField
             errorMessage={props.pictureErrorMessage}
             onRemove={props.onPictureRemove}
