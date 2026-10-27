@@ -38,6 +38,14 @@ export function mfaTotpEnrollmentRemove(
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The TOTP removal timestamp is invalid.", "mfa.invalid-timestamp")
   return storageTransactionRun(options.database, (transaction) => {
+    const repository = mfaRepositoryCreate(transaction)
+    const enrollment =
+      options.enrollmentId === undefined
+        ? repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
+        : repository.mfaEnrollmentGet(options.realmId, options.userId, options.enrollmentId)
+    if (!enrollment.success) return enrollment
+    if (enrollment.data === null || (enrollment.data.status !== "active" && enrollment.data.status !== "pending"))
+      return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
     const session = transaction
       .select()
       .from(sessionTable)
@@ -49,21 +57,15 @@ export function mfaTotpEnrollmentRemove(
         ),
       )
       .get()
+    // Unconfirmed setups never held a usable secret, so their owner can discard them
+    // from any valid session. Confirmed authenticators still require step-up assurance.
     if (
       session === undefined ||
       session.revokedAt !== null ||
       session.expiresAt <= now ||
-      session.assurance !== "multi_factor"
+      (enrollment.data.status === "active" && session.assurance !== "multi_factor")
     )
       return resultErrorCreate(op, "MFA step-up authorization is required.", "mfa.unauthorized")
-    const repository = mfaRepositoryCreate(transaction)
-    const enrollment =
-      options.enrollmentId === undefined
-        ? repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
-        : repository.mfaEnrollmentGet(options.realmId, options.userId, options.enrollmentId)
-    if (!enrollment.success) return enrollment
-    if (enrollment.data === null || enrollment.data.status !== "active")
-      return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
     const removed = repository.mfaEnrollmentDelete(
       options.realmId,
       options.userId,

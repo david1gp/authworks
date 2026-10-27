@@ -11,6 +11,7 @@ import { eventSecurityEventAppend } from "../../events/server/eventSecurityEvent
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaTotpCodeVerify } from "../domain/mfaTotpCodeVerify.js"
 import { mfaTotpEnrollmentViewCreate } from "../domain/mfaTotpEnrollmentViewCreate.js"
+import { mfaPendingEnrollmentExpiryMs } from "../server/mfaUserAuthenticationMethodsRead.js"
 import { mfaTotpSecretProtect } from "../domain/mfaTotpSecretProtect.js"
 import { mfaEventPayloadSchema } from "../events/mfaEventPayloadSchema.js"
 import { mfaEventTypes } from "../events/mfaEventTypes.js"
@@ -47,6 +48,8 @@ export function mfaTotpEnrollmentConfirm(
     const enrollment = repository.mfaEnrollmentGet(options.realmId, options.userId, input.output.enrollmentId)
     if (!enrollment.success) return enrollment
     if (enrollment.data === null || enrollment.data.status !== "pending")
+      return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
+    if (enrollment.data.createdAt <= now - mfaPendingEnrollmentExpiryMs)
       return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
     const policyRow = repository.mfaPolicyGet(options.realmId)
     if (!policyRow.success) return policyRow

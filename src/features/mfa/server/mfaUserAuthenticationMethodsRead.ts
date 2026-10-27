@@ -5,9 +5,13 @@ import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
 
 type MfaUserAuthenticationMethodsReadOptions = {
   readonly executor: StorageExecutor
+  readonly now?: number
   readonly realmId: string
   readonly userId: string
 }
+
+/** Unconfirmed authenticator setups disappear from the account surface after one hour. */
+export const mfaPendingEnrollmentExpiryMs = 3_600_000
 
 /** Reads only non-secret TOTP enrollment and recovery-code metadata for a realm-local user. */
 export function mfaUserAuthenticationMethodsRead(options: MfaUserAuthenticationMethodsReadOptions): Result<{
@@ -33,9 +37,14 @@ export function mfaUserAuthenticationMethodsRead(options: MfaUserAuthenticationM
     (latest, code) => (latest === null || code.createdAt > latest ? code.createdAt : latest),
     null,
   )
+  const now = options.now ?? Date.now()
   return resultCreate({
     enrollments: enrollments.data
-      .filter((enrollment) => enrollment.status === "pending" || enrollment.status === "active")
+      .filter(
+        (enrollment) =>
+          enrollment.status === "active" ||
+          (enrollment.status === "pending" && enrollment.createdAt > now - mfaPendingEnrollmentExpiryMs),
+      )
       .map((enrollment) => ({
         confirmedAt: enrollment.confirmedAt,
         id: enrollment.id,

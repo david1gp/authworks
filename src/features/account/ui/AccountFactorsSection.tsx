@@ -62,10 +62,23 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
                   <Show
                     when={enrollment.status === "active"}
                     fallback={
-                      <AuthenticatedStatus
-                        label={messageTranslate("account.profile.verificationPending")}
-                        tone="neutral"
-                      />
+                      <div class="grid gap-3">
+                        <AuthenticatedStatus
+                          label={messageTranslate("account.profile.verificationPending")}
+                          tone="neutral"
+                        />
+                        <div>
+                          <AuthenticatedButton
+                            disabled={props.state.pendingId()?.startsWith("totp:")}
+                            icon={mdiDelete}
+                            onClick={() => void state.renameRemove(enrollment.id)}
+                            type="button"
+                            variant="filledRed"
+                          >
+                            {messageTranslate("account.factors.removeTotp")}
+                          </AuthenticatedButton>
+                        </div>
+                      </div>
                     }
                   >
                     <form class="grid gap-3" onSubmit={state.renameSubmit}>

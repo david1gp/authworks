@@ -441,9 +441,11 @@ describe("account workspace", () => {
     expect(source.indexOf("<AuthenticatedDialog", source.indexOf("<For each={state.enrollments()}>"))).toBeLessThan(
       source.indexOf("state.renameRemove(enrollment.id)"),
     )
-    // Pending enrollments open a detail dialog but never expose backend-unsupported mutations.
+    // Pending enrollments open a detail dialog exposing only removal: an unconfirmed setup
+    // is discarded without step-up, while the rename form stays exclusive to active authenticators.
     expect(source).toContain('when={enrollment.status === "active"}')
-    expect(source.indexOf("state.renameRemove(enrollment.id)")).toBeGreaterThan(source.indexOf("<form"))
+    expect(source.indexOf("state.renameRemove(enrollment.id)")).toBeLessThan(source.indexOf("<form"))
+    expect(source.lastIndexOf("state.renameRemove(enrollment.id)")).toBeGreaterThan(source.indexOf("<form"))
     // The add flow stays reachable regardless of how many enrollments already exist, at the end of the list.
     expect(source.indexOf('triggerLabel={messageTranslate("account.factors.addTotp")}')).toBeGreaterThan(
       source.indexOf("</For>"),
