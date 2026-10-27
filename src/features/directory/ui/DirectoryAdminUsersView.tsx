@@ -41,6 +41,7 @@ import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
 import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialogsStateCreate.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
+import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
 import { directoryTabIconGet } from "./directoryTabIconGet.js"
@@ -172,7 +173,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
   }
 
   const personRoles = (entry: DirectoryEntry): readonly OrganizationRoleId[] =>
-    entry.memberships.flatMap((membership) => membership.roles)
+    directoryOrganizationRolesGet(entry, page().organizationId())
 
   const roleCells = (entry: DirectoryEntry) => {
     if (activeScope() === "all") {

@@ -262,6 +262,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       invitationToken.set(undefined)
     },
     notice: notice.get,
+    organizationId: () => options.organizationId,
     nextPageAvailable: () => nextPageToken.get() !== undefined,
     pageNext: () => {
       const token = nextPageToken.get()
