@@ -29,7 +29,13 @@ export function AccountProfilePictureField(props: {
     url: () => props.url,
   })
   return (
-    <div class="grid justify-items-center gap-2 sm:justify-items-end">
+    <div
+      class={
+        props.url && !state.pictureFailed()
+          ? "grid justify-items-center gap-2 sm:justify-items-end"
+          : "hidden justify-items-center gap-2 sm:grid sm:justify-items-end"
+      }
+    >
       <AuthenticatedDialog
         class="!aspect-square !h-auto !w-full !rounded-panel !p-0 overflow-hidden sm:!w-28 sm:!rounded-full"
         onOpenChange={state.openChange}

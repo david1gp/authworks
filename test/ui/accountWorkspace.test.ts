@@ -306,6 +306,14 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
+    // Without a renderable picture (unset or failed to load) the placeholder stays
+    // hidden on mobile and returns as a circle from sm up; a loaded picture renders
+    // on every width.
+    const pictureField = await Bun.file(
+      new URL("../../src/features/account/ui/AccountProfilePictureField.tsx", import.meta.url),
+    ).text()
+    expect(pictureField).toContain("props.url && !state.pictureFailed()")
+    expect(pictureField).toContain('"hidden justify-items-center gap-2 sm:grid sm:justify-items-end"')
     // The strip stacks on mobile with the picture first and switches to a two-column
     // grid from sm up: name and contacts with the MFA overview tucked directly below
     // them, and the picture using the full right-column height.
