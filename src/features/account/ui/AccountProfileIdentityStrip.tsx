@@ -29,7 +29,7 @@ export function AccountProfileIdentityStrip(props: {
 
   return (
     <div class="rounded-panel border border-line bg-surface p-4 sm:p-5">
-      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 sm:gap-x-6">
+      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 sm:gap-x-6">
         <div class="col-start-1 row-start-1 grid min-w-0 gap-1">
           <div class="flex min-w-0 items-center gap-1.5 text-lg font-semibold">
             <Icon
@@ -121,12 +121,12 @@ export function AccountProfileIdentityStrip(props: {
               </div>
             ) : null}
           </div>
+          {props.securityProgress ? (
+            <div class="min-w-0 pt-1">
+              <AccountSecurityProgress state={props.securityProgress} />
+            </div>
+          ) : null}
         </div>
-        {props.securityProgress ? (
-          <div class="col-span-2 row-start-2 min-w-0 border-t border-line-subtle pt-2 sm:col-span-1 sm:col-start-1">
-            <AccountSecurityProgress state={props.securityProgress} />
-          </div>
-        ) : null}
         <div class="col-start-2 row-start-1 shrink-0 self-start">
           <AccountProfilePictureField
             errorMessage={props.pictureErrorMessage}

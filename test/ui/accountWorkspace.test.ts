@@ -306,12 +306,12 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
-    // The strip is a two-column grid: the picture sits top-right, and the MFA row spans both
-    // columns below it on mobile before it returns to the left column from sm up.
+    // The strip is a single-row two-column grid: the picture sits top-right, and the MFA
+    // overview sits directly under the contacts inside the left column, so no space
+    // dangles below the picture.
     expect(overview).toContain("grid-cols-[minmax(0,1fr)_auto]")
-    expect(overview).toContain(
-      "col-span-2 row-start-2 min-w-0 border-t border-line-subtle pt-2 sm:col-span-1 sm:col-start-1",
-    )
+    expect(overview).not.toContain("row-start-2")
+    expect(overview).not.toContain("border-t border-line-subtle pt-2 sm:col-span-1")
     expect(overview).toContain("col-start-2 row-start-1 shrink-0 self-start")
     expect(overview).not.toContain("lg:border-l")
     expect(overview).not.toContain("xl:grid-cols-2")
