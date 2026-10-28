@@ -188,8 +188,8 @@ export function OrganizationAdminDetailView(props: {
                             },
                           ]}
                           title={
-                            <span class="block truncate font-mono text-[0.8125rem]" title={membership.userId}>
-                              {membership.userId}
+                            <span class="block truncate text-[0.8125rem]" title={membership.userId}>
+                              {membership.displayName?.trim() || membership.userId}
                             </span>
                           }
                         />
@@ -205,7 +205,7 @@ export function OrganizationAdminDetailView(props: {
                     <TableHeader class={authenticatedTableClasses.header}>
                       <TableRow>
                         <TableHead class={authenticatedTableClasses.head}>
-                          {messageTranslate("admin.organizations.memberships.userId")}
+                          {messageTranslate("admin.organizations.memberships.user")}
                         </TableHead>
                         <TableHead class={authenticatedTableClasses.head}>
                           {messageTranslate("admin.organizations.memberships.roles")}
@@ -216,8 +216,8 @@ export function OrganizationAdminDetailView(props: {
                       <For each={props.memberships}>
                         {(membership) => (
                           <TableRow class={authenticatedTableClasses.row}>
-                            <TableCell class={authenticatedTableClasses.identifier} title={membership.userId}>
-                              {membership.userId}
+                            <TableCell class={authenticatedTableClasses.cell} title={membership.userId}>
+                              {membership.displayName?.trim() || membership.userId}
                             </TableCell>
                             <TableCell class={authenticatedTableClasses.cell}>{membership.roles.join(", ")}</TableCell>
                           </TableRow>

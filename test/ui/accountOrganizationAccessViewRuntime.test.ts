@@ -5,8 +5,8 @@ import { dirname, join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
 import solid from "vite-plugin-solid"
-import type { OrganizationMe } from "../../src/features/organizations/public/organizationMeSchema.js"
 import type { AccountEffectiveAccessGroup } from "../../src/features/account/public/accountEffectiveAccessGroupSchema.js"
+import type { OrganizationMe } from "../../src/features/organizations/public/organizationMeSchema.js"
 
 type AccountOrganizationAccessView =
   typeof import("../../src/features/account/ui/AccountOrganizationAccessView.js")["AccountOrganizationAccessView"]
@@ -159,8 +159,9 @@ const domRestore = () => {
 const renderView = async (
   effectiveAccessStatus: "error" | "loading" | "ready",
   effectiveAccessError?: string,
-  organizationStatus: "error" | "loading" | "ready" = "ready",
+  organizationStatus: "error" | "loading" | "ready" | "empty" | "permission-denied" = "ready",
   access?: { readonly group: AccountEffectiveAccessGroup; readonly onLoadMore: () => void },
+  options?: { readonly count?: number; readonly onRetry?: () => void },
 ) => {
   const browserWindow = domSetup()
   accountOrganizationAccessView ??= (await import(pathToFileURL(compiledViewPath).href)).AccountOrganizationAccessView
@@ -171,6 +172,15 @@ const renderView = async (
     organizationAccess("alpha", "Alpha Organization"),
     organizationAccess("beta", "Beta Organization", "https://assets.example.com/beta.svg"),
   ]
+  if (options?.count !== undefined) {
+    organizations.splice(
+      0,
+      organizations.length,
+      ...Array.from({ length: options.count }, (_, index) =>
+        organizationAccess(`org-${index}`, `Organization ${index}`),
+      ),
+    )
+  }
   const props = {
     activeOrganizationId: "alpha",
     effectiveAccessError,
@@ -180,12 +190,12 @@ const renderView = async (
     effectiveAccessStatus,
     onEffectiveAccessLoadMore: access?.onLoadMore ?? (() => {}),
     onEffectiveAccessRetry: () => {},
-    onOrganizationRetry: () => {},
+    onOrganizationRetry: options?.onRetry ?? (() => {}),
     onOrganizationSelect: () => {},
     organizations,
     organizationStatus,
-    viewedOrganization: organizations[1],
-    viewedOrganizationId: "beta",
+    viewedOrganization: organizations[1] ?? organizations[0],
+    viewedOrganizationId: organizations[1]?.organization.id ?? organizations[0]?.organization.id,
   }
   const dispose = render(
     () => createComponent(accountOrganizationAccessView, props),
@@ -196,11 +206,11 @@ const renderView = async (
 }
 
 test("shows a collapsed organization count and read-only membership while effective access loads", async () => {
-  const { dispose, root } = await renderView("loading", undefined, "loading")
+  const { dispose, root } = await renderView("loading")
 
   const card = root.querySelector("details")
   expect(card?.open).toBe(false)
-  expect(card?.querySelector("summary")?.textContent).toContain("Loading")
+  expect(card?.querySelector("summary")?.textContent).toContain("2 organizations")
   expect(card?.querySelector("summary")?.textContent).not.toContain("Beta Organization")
   card?.setAttribute("open", "")
   const panel = root.querySelector('[role="tabpanel"]')
@@ -223,7 +233,7 @@ test("shows a collapsed organization count and read-only membership while effect
 })
 
 test("keeps selected organization membership and retry visible without session switching on access failure", async () => {
-  const { dispose, root } = await renderView("error", "Effective access failed.", "error")
+  const { dispose, root } = await renderView("error", "Effective access failed.")
 
   const panel = root.querySelector('[role="tabpanel"]')
   expect(panel?.textContent).toContain("Beta Organization")
@@ -253,6 +263,64 @@ test("summarizes the membership count without showing helper text until expanded
   expect(root.querySelectorAll('[role="tab"]')).toHaveLength(2)
   expect(root.querySelectorAll("button")).toHaveLength(2)
 
+  dispose()
+  domRestore()
+})
+
+test("organization loading, failure, denial and empty states are visible without memberships", async () => {
+  for (const status of ["loading", "error", "permission-denied", "empty"] as const) {
+    let retries = 0
+    const { dispose, root } = await renderView("loading", undefined, status, undefined, {
+      count: 0,
+      onRetry: () => retries++,
+    })
+    const expected = status === "permission-denied" ? "inaccessible" : status
+    const boundary = root.querySelector(`[data-content-state="${expected}"]`)
+    expect(boundary).not.toBeNull()
+    if (status !== "empty") expect(root.textContent).not.toContain("This account does not belong to an organization.")
+    if (status === "empty") expect(boundary?.textContent).toContain("This account does not belong to an organization.")
+    if (status === "error") {
+      boundary?.querySelector("button")?.click()
+      expect(retries).toBe(1)
+    } else expect(boundary?.querySelector("button")).toBeNull()
+    dispose()
+    domRestore()
+  }
+})
+
+test("organization panel is labelled by its heading for single, tab and select pickers", async () => {
+  for (const count of [1, 2, 9]) {
+    const { dispose, root } = await renderView("loading", undefined, "ready", undefined, { count })
+    const panel = root.querySelector('[role="tabpanel"], [role="region"]')
+    const label = panel?.getAttribute("aria-labelledby")
+    expect(label).toBeTruthy()
+    expect(root.querySelector(`#${label}`)?.tagName).toBe("H3")
+    expect(panel?.getAttribute("role")).toBe(count === 2 ? "tabpanel" : "region")
+    dispose()
+    domRestore()
+  }
+})
+
+test("organization permissions can coexist with an empty project access list", async () => {
+  const membership = organizationAccess("beta", "Beta Organization")
+  const { dispose, root } = await renderView("ready", undefined, "ready", {
+    group: {
+      organization: membership.organization,
+      entries: [
+        {
+          id: "organization:beta",
+          organization: membership,
+          permissions: ["organization.read"],
+          roleKeys: ["member"],
+          source: "membership",
+        },
+      ],
+    },
+    onLoadMore: () => {},
+  })
+  expect(root.textContent).toContain("organization.read")
+  expect(root.textContent).toContain("No project access is listed for this organization.")
+  expect(root.textContent).not.toContain("no active organization or project access")
   dispose()
   domRestore()
 })

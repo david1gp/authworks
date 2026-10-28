@@ -91,6 +91,11 @@ const processContractCases = [
     exitCode: 75 + index,
     scenario: { field, kind: "membership-invalid" as const },
   })),
+  {
+    code: "api-invalid-response.membership-list.unknown",
+    exitCode: 85,
+    scenario: { field: "display-name" as const, kind: "membership-invalid" as const },
+  },
 ] as const
 
 test.serial(
@@ -474,9 +479,10 @@ function processMembershipInvalidBody(
   if (field === "envelope") return { items: [], leaked: "private" }
   if (field === "items") return { items: "private" }
   if (field === "unknown") return { items: [{ ...item, leaked: "private" }] }
+  if (field === "display-name") return { items: [{ ...item, displayName: { private: true } }] }
   if (field === "next-page-token") return { ...source, nextPageToken: 1 }
   const invalidValues: Record<
-    Exclude<MembershipInvalidField, "envelope" | "items" | "next-page-token" | "unknown">,
+    Exclude<MembershipInvalidField, "display-name" | "envelope" | "items" | "next-page-token" | "unknown">,
     unknown
   > = {
     "created-at": "private",
@@ -651,7 +657,7 @@ type CliRun = {
 
 type ProcessResponse = "invalid" | "rejected"
 type ProcessStage = (typeof apiRejectedStageExitCodes)[number]["stage"]
-type MembershipInvalidField = (typeof membershipListInvalidFields)[number]
+type MembershipInvalidField = (typeof membershipListInvalidFields)[number] | "display-name"
 type ProcessContractScenario =
   | "authorization-unavailable"
   | "input-invalid"

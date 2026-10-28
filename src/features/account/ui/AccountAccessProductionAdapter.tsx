@@ -49,6 +49,7 @@ export function AccountAccessProductionAdapter(props: { readonly screen: Account
         </Match>
         <Match when={props.screen === "invitation"}>
           <AccountInvitationView
+            organizationsHref="/account#access"
             error={state.error()}
             invitation={state.invitation()}
             onAccept={state.invitationAccept}

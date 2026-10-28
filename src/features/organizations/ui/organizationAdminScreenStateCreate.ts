@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { createEffect, on } from "solid-js"
+import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
@@ -54,6 +55,18 @@ export function organizationAdminScreenStateCreate(options: {
   const policyValidationMessage = createSignalObject<string | undefined>(undefined)
   const passwordPolicyDraftSignal = createSignalObject<PasswordPolicy | undefined>(undefined)
   const passwordPolicyValidationMessage = createSignalObject<string | undefined>(undefined)
+  const domainClaimPending = createSignalObject(false)
+  const domainClaimDialogSchema = v.literal("claim")
+  const domainClaimOpen = () =>
+    v.safeParse(domainClaimDialogSchema, new URLSearchParams(location.search).get("domain-dialog")).success
+  const domainClaimOpenSet = (open: boolean) => {
+    if (domainClaimPending.get()) return
+    const params = new URLSearchParams(location.search)
+    if (open) params.set("domain-dialog", "claim")
+    else params.delete("domain-dialog")
+    const search = params.toString()
+    navigate(`${location.pathname}${search ? `?${search}` : ""}${location.hash}`, { replace: true })
+  }
 
   const createOpen = () => new URLSearchParams(location.search).get("create") === "organization"
   const createOpenSet = (open: boolean) => {
@@ -131,12 +144,20 @@ export function organizationAdminScreenStateCreate(options: {
     createOpen,
     createOpenSet,
     detailHrefBuild: (organizationId: string) => `${options.basePath}/organizations/${organizationId}`,
-    domainClaimSubmit: (event: SubmitEvent) => {
+    domainClaimOpen,
+    domainClaimOpenSet,
+    domainClaimPending: domainClaimPending.get,
+    domainClaimSubmit: async (event: SubmitEvent) => {
       event.preventDefault()
+      if (domainClaimPending.get()) return
       if (!form.validateDomainClaim()) return
-      void options.page.domainClaim(form.claimDomain.get(), form.claimPrimary.get())
+      domainClaimPending.set(true)
+      const saved = await options.page.domainClaim(form.claimDomain.get(), form.claimPrimary.get())
+      domainClaimPending.set(false)
+      if (!saved) return
       form.claimDomain.set("")
       form.claimPrimary.set(false)
+      domainClaimOpenSet(false)
     },
     domainDiscoverySubmit: (event: SubmitEvent) => {
       event.preventDefault()

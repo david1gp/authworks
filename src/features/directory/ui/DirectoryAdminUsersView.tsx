@@ -24,8 +24,8 @@ import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStat
 import { AuthenticatedTabs } from "../../../ui/authenticated/AuthenticatedTabs.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import type { AuthenticatedDataTableSort } from "../../../ui/authenticated/authenticatedDataTableSort.js"
-import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
+import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
@@ -508,6 +508,42 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
   )
 }
 
+function DirectoryTabStatePanel(props: {
+  readonly onRetry: () => void
+  readonly state: () => DirectoryAdminUsersPageState
+}) {
+  const page = () => props.state()
+  return (
+    <AuthenticatedSection>
+      <AuthenticatedEmptyState
+        actions={
+          <Show when={page().status() === "error"}>
+            <AuthenticatedButton
+              icon={authenticatedIconRegistry.directoryRetry}
+              onClick={props.onRetry}
+              variant="outline"
+            >
+              {messageTranslate("common.retry")}
+            </AuthenticatedButton>
+          </Show>
+        }
+        description={
+          page().status() === "permission-denied"
+            ? messageTranslate("admin.common.permission")
+            : page().status() === "assurance-required"
+              ? messageTranslate("admin.organizations.assuranceRequired")
+              : (page().error() ?? messageTranslate("common.error"))
+        }
+        title={
+          page().status() === "assurance-required"
+            ? messageTranslate("admin.organizations.assuranceRequiredTitle")
+            : messageTranslate("common.error")
+        }
+      />
+    </AuthenticatedSection>
+  )
+}
+
 function ServiceAccountsSection(props: {
   readonly dialogOpenSet: (dialog: "create-service-account") => void
   readonly state: DirectoryAdminUsersViewState
@@ -531,11 +567,16 @@ function ServiceAccountsSection(props: {
       <Show
         when={page().status() === "ready" || page().status() === "empty"}
         fallback={
-          <AuthenticatedSection>
-            <div class="grid gap-2 p-5">
-              <For each={[0, 1, 2]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
-            </div>
-          </AuthenticatedSection>
+          <Show
+            when={page().status() === "loading"}
+            fallback={<DirectoryTabStatePanel onRetry={page().reload} state={page} />}
+          >
+            <AuthenticatedSection>
+              <div class="grid gap-2 p-5">
+                <For each={[0, 1, 2]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
+              </div>
+            </AuthenticatedSection>
+          </Show>
         }
       >
         <Show
@@ -651,11 +692,16 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
     <Show
       when={page().status() === "ready" || page().status() === "empty"}
       fallback={
-        <AuthenticatedSection>
-          <div class="grid gap-2 p-5">
-            <For each={[0, 1]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
-          </div>
-        </AuthenticatedSection>
+        <Show
+          when={page().status() === "loading"}
+          fallback={<DirectoryTabStatePanel onRetry={page().reload} state={page} />}
+        >
+          <AuthenticatedSection>
+            <div class="grid gap-2 p-5">
+              <For each={[0, 1]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
+            </div>
+          </AuthenticatedSection>
+        </Show>
       }
     >
       <Show
@@ -903,14 +949,14 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
           class="block max-w-full break-all rounded-control border border-line bg-muted px-2 py-1.5 font-mono text-xs leading-5"
           data-secret-value
         >
-          {page().invitationToken()}
+          {page().invitationLink()}
         </code>
       </div>
       <p class="text-xs text-muted-foreground">{messageTranslate("admin.users.inviteTokenOnce")}</p>
       <div class="flex flex-wrap items-center gap-2">
         <AuthenticatedButton
           icon={authenticatedIconRegistry.directoryInviteCopy}
-          onClick={() => dialogs().copyText(page().invitationToken())}
+          onClick={() => dialogs().copyText(page().invitationLink())}
           size="sm"
           variant="outline"
         >

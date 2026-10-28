@@ -18,6 +18,7 @@ import type { DirectoryAdminAdapter, DirectoryAdminServiceAccountIssue } from ".
 import type { DirectoryAdminScope } from "./directoryAdminScopeSchema.js"
 import type { DirectoryAdminTab } from "./directoryAdminTabSchema.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
+import { directoryInvitationLinkCreate } from "./directoryInvitationLinkCreate.js"
 
 type FailedResult = { readonly code?: string; readonly errorMessage: string; readonly statusCode?: number }
 
@@ -44,12 +45,15 @@ export type DirectoryAdminUsersPageStateCreateOptions = {
   readonly adapter: DirectoryAdminAdapter
   /** Renders in-app destructive confirmations; without one the revoke guard declines. */
   readonly confirm: (message: string) => boolean | Promise<boolean>
-  readonly realmId: string
-  readonly organizationId: string
-  readonly realmAdministrator: boolean
+  /** Reactive tenant context; the list reloads when the active realm, organization, or access changes. */
+  readonly realmId: () => string
+  readonly organizationId: () => string
+  readonly realmAdministrator: () => boolean
   /** Reactive key forcing a reload, such as the selected demo fixture state. */
   readonly reloadKey?: () => string
   readonly search: () => string
+  readonly invitationOrigin: string
+  readonly invitationDemo?: boolean
   /** Kept in memory only: the one-time invitation token is shown once after creation. */
   readonly invitationTokenSeed?: () => string | undefined
   readonly onInvitationTokenAcknowledge?: () => void
@@ -118,10 +122,10 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   const query = () => directoryAdminUsersQueryParse(options.search())
   const tab = (): DirectoryAdminTab => query().tab ?? "people"
   const scope = (): DirectoryAdminScope => {
-    if (!options.realmAdministrator) return "organization"
+    if (!options.realmAdministrator()) return "organization"
     return query().scope ?? "organization"
   }
-  const cacheKey = () => `${cacheSchemaName}.${options.realmId}.${options.organizationId}.${scope()}`
+  const cacheKey = () => `${cacheSchemaName}.${options.realmId()}.${options.organizationId()}.${scope()}`
 
   const fail = (result: FailedResult) => {
     error.set(result.errorMessage)
@@ -142,10 +146,13 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const load = async () => {
+    const requestId = requestNext()
+    const requestRealmId = options.realmId()
+    const requestOrganizationId = options.organizationId()
     status.set("loading")
     error.set(undefined)
     notice.set(undefined)
-    if (options.realmId.length === 0 || options.organizationId.length === 0) {
+    if (requestRealmId.length === 0 || requestOrganizationId.length === 0) {
       error.set(messageTranslate("admin.common.permission"))
       return status.set("permission-denied")
     }
@@ -153,6 +160,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     if (activeTab === "service-accounts") {
       const pageToken = servicePageTokens.get().at(-1)
       const listed = await adapter.serviceAccountList(pageToken === undefined ? undefined : { pageSize, pageToken })
+      if (!requestCurrent(requestId, requestRealmId, requestOrganizationId)) return
       if (!listed.success) return fail(listed)
       serviceAccounts.set([...listed.data.items])
       serviceNextPageToken.set(listed.data.nextPageToken)
@@ -161,6 +169,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     if (activeTab === "invitations") {
       const pageToken = invitationPageTokens.get().at(-1)
       const listed = await adapter.invitationList(pageToken === undefined ? undefined : { pageSize, pageToken })
+      if (!requestCurrent(requestId, requestRealmId, requestOrganizationId)) return
       if (!listed.success) return fail(listed)
       invitations.set([...listed.data.items])
       invitationNextPageToken.set(listed.data.nextPageToken)
@@ -171,6 +180,9 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       current === "all"
         ? await Promise.all([adapter.realmUserList(peopleQuery()), adapter.organizationUserSummary()])
         : await Promise.all([adapter.organizationUserList(peopleQuery()), adapter.organizationUserSummary()])
+    // The tenant context or a newer request may have superseded this one while the
+    // adapter was in flight; a stale response must never repaint another org's tabs.
+    if (!requestCurrent(requestId, requestRealmId, requestOrganizationId)) return
     if (!listed.success) return fail(listed)
     if (!summaryResult.success) return fail(summaryResult)
     people.set([...listed.data.items])
@@ -181,10 +193,15 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const mutate = async <T>(id: string, operation: () => Promise<Result<T>>): Promise<T | undefined> => {
+    const requestRealmId = options.realmId()
+    const requestOrganizationId = options.organizationId()
     pendingId.set(id)
     error.set(undefined)
     const result = await operation()
     pendingId.set(undefined)
+    // The tenant context may have changed while the mutation was in flight; a stale
+    // completion must not repaint another organization's rows, secrets, or errors.
+    if (requestRealmId !== options.realmId() || requestOrganizationId !== options.organizationId()) return undefined
     if (!result.success) {
       fail(result)
       return undefined
@@ -202,30 +219,71 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
   let lastPeopleFilterKey: string | undefined
   let lastEffectKey: string | undefined
+  let lastContextKey = `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
+  let requestSequence = 0
+  const requestNext = () => {
+    requestSequence += 1
+    return requestSequence
+  }
+  const contextKey = () => `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
+  const requestCurrent = (requestId: number, realmId: string, organizationId: string): boolean =>
+    requestId === requestSequence && realmId === options.realmId() && organizationId === options.organizationId()
+
+  const contextReset = () => {
+    // Cursors belong to the organization that produced them; rows and one-time dialog
+    // context belong to the organization that was active when they were created.
+    pageTokens.set([])
+    servicePageTokens.set([])
+    invitationPageTokens.set([])
+    nextPageToken.set(undefined)
+    serviceNextPageToken.set(undefined)
+    invitationNextPageToken.set(undefined)
+    people.set([])
+    serviceAccounts.set([])
+    invitations.set([])
+    summary.set(undefined)
+    createdUser.set(undefined)
+    serviceSecret.set(undefined)
+    invitationToken.set(undefined)
+    validationMessage.set(undefined)
+    notice.set(undefined)
+  }
+
+  const effectKeyGet = () =>
+    `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
 
   createEffect(
-    on(
-      () =>
-        `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${options.realmId}:${options.organizationId}:${options.reloadKey?.() ?? ""}`,
-      (effectKey) => {
-        // Dialog visibility lives in `?dialog=`, which the key above deliberately excludes.
-        // `on` reruns for every `location.search` change, so without this guard opening or
-        // closing a dialog refetches the list and flashes the loading state behind it.
-        if (effectKey === lastEffectKey) return
-        lastEffectKey = effectKey
-        // A page cursor belongs to the filter that produced it: drop it before loading a new
-        // filter, otherwise the new list starts mid-page and can come back empty.
-        const filterKey = peopleFilterKey()
-        if (lastPeopleFilterKey !== filterKey) {
-          lastPeopleFilterKey = filterKey
-          if (pageTokens.get().length > 0) {
-            pageTokens.set([])
-            return
-          }
-        }
+    on(effectKeyGet, (effectKey) => {
+      // Dialog visibility lives in `?dialog=`, which the key above deliberately excludes.
+      // `on` reruns for every `location.search` change, so without this guard opening or
+      // closing a dialog refetches the list and flashes the loading state behind it.
+      if (effectKey === lastEffectKey) return
+      lastEffectKey = effectKey
+      // A new tenant context invalidates every cursor, row, and one-time dialog secret:
+      // drop them before loading so the previous organization's data is never shown.
+      const nextContextKey = contextKey()
+      if (nextContextKey !== lastContextKey) {
+        lastContextKey = nextContextKey
+        lastPeopleFilterKey = peopleFilterKey()
+        contextReset()
+        // Resetting cursors changes the key above and would echo a second load; the
+        // recomputed key keeps that echo from refetching.
+        lastEffectKey = effectKeyGet()
         void load()
-      },
-    ),
+        return
+      }
+      // A page cursor belongs to the filter that produced it: drop it before loading a new
+      // filter, otherwise the new list starts mid-page and can come back empty.
+      const filterKey = peopleFilterKey()
+      if (lastPeopleFilterKey !== filterKey) {
+        lastPeopleFilterKey = filterKey
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
+        }
+      }
+      void load()
+    }),
   )
 
   return {
@@ -255,20 +313,29 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       await load()
     },
     invitationRevoke: async (invitationId: string, email: string) => {
+      const realmId = options.realmId()
+      const organizationId = options.organizationId()
       if (!(await confirmed(messageTranslate("admin.users.inviteRevokeConfirm", { email })))) return
+      if (realmId !== options.realmId() || organizationId !== options.organizationId()) return
       const revoked = await mutate(`invitation:${invitationId}`, () => adapter.invitationRevoke(invitationId))
       if (revoked === undefined) return
       notice.set(messageTranslate("admin.users.inviteRevoked"))
       await load()
     },
     invitations: invitations.get,
+    invitationLink: () => {
+      const token = invitationToken.get()
+      return token === undefined
+        ? undefined
+        : directoryInvitationLinkCreate(options.invitationOrigin, token, options.invitationDemo === true)
+    },
     invitationToken: invitationToken.get,
     invitationTokenAcknowledge: () => {
       options.onInvitationTokenAcknowledge?.()
       invitationToken.set(undefined)
     },
     notice: notice.get,
-    organizationId: () => options.organizationId,
+    organizationId: () => options.organizationId(),
     nextPageAvailable: () => nextPageToken.get() !== undefined,
     pageNext: () => {
       const token = nextPageToken.get()
@@ -280,7 +347,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     people: people.get,
     peopleQuery,
     previousPageAvailable: () => pageTokens.get().length > 0,
-    realmAdministrator: () => options.realmAdministrator,
+    realmAdministrator: () => options.realmAdministrator(),
     reload: () => void load(),
     scope,
     serviceAccountCreateSubmit: async (input: { displayName: string; scopes: string; userName: string }) => {

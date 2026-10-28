@@ -47,9 +47,10 @@ const pageCreate = (adapter: ReturnType<typeof baseAdapter>) =>
   directoryAdminUsersPageStateCreate({
     adapter,
     confirm: () => true,
-    organizationId: "org-1",
-    realmAdministrator: true,
-    realmId: "realm-1",
+    invitationOrigin: "https://auth.example",
+    organizationId: () => "org-1",
+    realmAdministrator: () => true,
+    realmId: () => "realm-1",
     search: () => "",
   })
 

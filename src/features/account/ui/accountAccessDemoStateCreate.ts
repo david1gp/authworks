@@ -9,7 +9,7 @@ import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
-import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
+import type { OrganizationInvitationMeInspectResponse } from "../../organizations/public/organizationInvitationMeInspectResponseSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import { accountEffectiveAccessGroupGet } from "../model/accountEffectiveAccessGroupGet.js"
 import { accountEffectiveAccessGroupsCreate } from "../model/accountEffectiveAccessGroupsCreate.js"
@@ -78,13 +78,14 @@ const consentFixtures: OidcConsent[] = [
     userId: "demo-user",
   },
 ]
-const invitationFixture: OrganizationInvitation = {
+const invitationFixture: OrganizationInvitationMeInspectResponse["invitation"] = {
   acceptedAt: null,
   createdAt: now - 86_400_000,
   email: "avery@example.com",
   expiresAt: now + 604_800_000,
   id: "invitation-northwind",
   organizationId: "northwind",
+  organizationName: "Northwind Labs",
   realmId: "customer-identity",
   roles: ["member"],
   status: "pending",

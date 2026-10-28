@@ -28,18 +28,13 @@ export function directoryAdminUsersProductionStateCreate() {
     realmId,
   })
   const search = () => location.search
-  const snapshot = () => ({
-    organizationId: organizationId(),
-    realmAdministrator: realmAdministrator(),
-    realmId: realmId(),
-  })
-  const initial = snapshot()
   const page = directoryAdminUsersPageStateCreate({
     adapter,
     confirm: confirmState.confirm,
-    organizationId: initial.organizationId,
-    realmId: initial.realmId,
-    realmAdministrator: initial.realmAdministrator,
+    invitationOrigin: window.location.origin,
+    organizationId,
+    realmAdministrator,
+    realmId,
     search,
   })
   return { basePath: "/admin", confirmState, navigate, organizationId, page, realmAdministrator, search }

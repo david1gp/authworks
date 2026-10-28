@@ -15,8 +15,8 @@ mock.module("solid-js", () => ({
   on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
 }))
 
-import type { DirectoryAdminAdapter } from "../../src/features/directory/ui/directoryAdminAdapter.js"
 import type { DirectoryUserListQuery } from "../../src/features/directory/public/directoryUserListSchema.js"
+import type { DirectoryAdminAdapter } from "../../src/features/directory/ui/directoryAdminAdapter.js"
 
 const [{ directoryAdminUsersPageStateCreate }, { resultCreate }, { directoryAdminDemoAdapterCreate }] =
   await Promise.all([
@@ -56,9 +56,10 @@ describe("users page people filter and pagination", () => {
     const page = directoryAdminUsersPageStateCreate({
       adapter,
       confirm: () => true,
-      organizationId: "org-1",
-      realmAdministrator: false,
-      realmId: "realm-1",
+      invitationOrigin: "https://auth.example",
+      organizationId: () => "org-1",
+      realmAdministrator: () => false,
+      realmId: () => "realm-1",
       search: () => currentSearch,
     })
     await flush()

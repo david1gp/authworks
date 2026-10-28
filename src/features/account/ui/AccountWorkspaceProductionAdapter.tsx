@@ -11,13 +11,11 @@ import { accountWorkspaceProductionAdapterStateCreate } from "./accountWorkspace
 
 export function AccountWorkspaceProductionAdapter(props: { readonly realmId: string }) {
   const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)
-  const userLabel = () => {
-    const user = state.profile.user.get()
-    return user?.profile.displayName || user?.email || user?.userName || ""
-  }
   return (
     <AccountWorkspace
-      profileActions={<AccountWorkspaceToolbar userLabel={userLabel()} />}
+      profileActions={
+        <AccountWorkspaceToolbar administrationHref={state.administrationHref()} userLabel={state.userLabel()} />
+      }
       access={
         <AccountWorkspaceAccess>
           <AccountOrganizationAccessProductionAdapter />

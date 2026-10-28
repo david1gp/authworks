@@ -32,13 +32,20 @@ export function AccountOrganizationPanel(props: {
   readonly membership: OrganizationMe
   readonly onEffectiveAccessLoadMore: () => void
   readonly onEffectiveAccessRetry: () => void
+  readonly tabPanel: boolean
 }) {
   const state = accountOrganizationPanelStateCreate({
     group: () => props.group,
     organizationId: () => props.membership.organization.id,
   })
   return (
-    <div aria-labelledby={state.tabId(props.id)} class="grid min-w-0 gap-5 [&>*]:min-w-0" id={props.id} role="tabpanel">
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: Both conditional roles support aria-labelledby.
+    <div
+      aria-labelledby={`${props.id}-membership-title`}
+      class="grid min-w-0 gap-5 [&>*]:min-w-0"
+      id={props.id}
+      role={props.tabPanel ? "tabpanel" : "region"}
+    >
       <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-membership-title`}>
         <div class="flex min-w-0 items-center gap-3">
           <AccountOrganizationBrandMark branding={props.membership.branding} class="size-11" />
@@ -93,7 +100,9 @@ export function AccountOrganizationPanel(props: {
               <Show
                 when={state.organizationPermissions().length > 0}
                 fallback={
-                  <p class="text-xs text-muted-foreground">{messageTranslate("account.access.effectiveEmpty")}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {messageTranslate("account.access.organizationPermissionsEmpty")}
+                  </p>
                 }
               >
                 <p class="min-w-0 text-xs text-muted-foreground">

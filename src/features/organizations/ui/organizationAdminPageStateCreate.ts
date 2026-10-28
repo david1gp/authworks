@@ -70,6 +70,7 @@ export function organizationAdminPageStateCreate(options: {
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
+  const domainClaimError = createSignalObject<string | undefined>(undefined)
   const organizations = createSignalObject<Organization[]>([])
   const organization = createSignalObject<Organization | undefined>(undefined)
   const memberships = createSignalObject<OrganizationMembership[]>([])
@@ -253,13 +254,22 @@ export function organizationAdminPageStateCreate(options: {
     },
     domainDiscover: (domain: string) => mutate("domain:discover", () => options.adapter.domainDiscover(domain)),
     domainClaim: async (domain: string, isPrimary: boolean) => {
-      const claimed = await mutate("domain:claim", () =>
-        options.adapter.domainClaim(options.organizationId(), { domain, isPrimary }),
-      )
-      if (claimed === undefined) return
+      if (pendingId.get() !== undefined) return false
+      pendingId.set("domain:claim")
+      domainClaimError.set(undefined)
+      const claimed = await options.adapter.domainClaim(options.organizationId(), { domain, isPrimary })
+      pendingId.set(undefined)
+      // Claim errors belong to the open form, not the page boundary: replacing the
+      // page with an error would unmount the dialog and discard the retry journey.
+      if (!claimed.success) {
+        domainClaimError.set(claimed.errorMessage)
+        return false
+      }
       notice.set("domain-claimed")
       await load()
+      return true
     },
+    domainClaimError: domainClaimError.get,
     domainRemove: async (domain: string) => {
       if (!(await confirmed(messageTranslate("admin.organizations.domains.removeConfirm", { domain })))) return
       const removed = await mutate(`domain:${domain}`, () =>

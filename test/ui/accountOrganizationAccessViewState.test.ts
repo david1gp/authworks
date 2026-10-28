@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
-import { accountOrganizationAccessViewStateCreate } from "../../src/features/account/ui/accountOrganizationAccessViewStateCreate.js"
 import type { AccountAccessStatus } from "../../src/features/account/ui/accountAccessStatusSchema.js"
+import { accountOrganizationAccessViewStateCreate } from "../../src/features/account/ui/accountOrganizationAccessViewStateCreate.js"
 
 test("organization access view exposes loading, empty, and ready boundaries for each response", () => {
   let organizationStatus: AccountAccessStatus = "loading"
@@ -25,7 +25,7 @@ test("organization access view exposes loading, empty, and ready boundaries for 
   })
   expect(state.organizationSummary()).toBe("0 organizations")
   expect(state.effectiveAccessBoundary()).toEqual({
-    detail: "This account has no active organization or project access.",
+    detail: "No project access is listed for this organization.",
     state: "empty",
   })
 

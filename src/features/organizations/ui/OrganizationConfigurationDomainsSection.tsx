@@ -4,7 +4,6 @@ import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
@@ -17,6 +16,7 @@ import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
 import type { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
+import { organizationConfigurationDomainsSectionStateCreate } from "./organizationConfigurationDomainsSectionStateCreate.js"
 
 type ConfigurationPage = ReturnType<typeof organizationAdminPageStateCreate>
 type ConfigurationScreen = ReturnType<typeof organizationAdminScreenStateCreate>
@@ -27,19 +27,7 @@ export function OrganizationConfigurationDomainsSection(props: {
   readonly page: ConfigurationPage
   readonly screen: ConfigurationScreen
 }) {
-  const claimOpen = createSignalObject(false)
-  const removeTarget = createSignalObject<string | undefined>(undefined)
-  const copied = createSignalObject(false)
-
-  const copyRecord = async (value: string) => {
-    try {
-      await navigator.clipboard.writeText(value)
-      copied.set(true)
-      setTimeout(() => copied.set(false), 2000)
-    } catch {
-      copied.set(false)
-    }
-  }
+  const state = organizationConfigurationDomainsSectionStateCreate()
 
   return (
     <OrganizationAdminState
@@ -52,7 +40,12 @@ export function OrganizationConfigurationDomainsSection(props: {
       <AuthenticatedSection
         actions={
           <Show when={props.canEdit}>
-            <AuthenticatedButton icon={mdiPlus} onClick={() => claimOpen.set(true)} size="sm" variant="filledBlue">
+            <AuthenticatedButton
+              icon={mdiPlus}
+              onClick={() => props.screen.domainClaimOpenSet(true)}
+              size="sm"
+              variant="filledBlue"
+            >
               {messageTranslate("admin.configuration.claim")}
             </AuthenticatedButton>
           </Show>
@@ -107,7 +100,7 @@ export function OrganizationConfigurationDomainsSection(props: {
                         <AuthenticatedButton
                           disabled={props.page.pendingId() === `domain:${domain.domain}`}
                           icon={mdiDelete}
-                          onClick={() => removeTarget.set(domain.domain)}
+                          onClick={() => state.removalOpen(domain.domain)}
                           size="sm"
                           variant="outlineRed"
                         >
@@ -130,14 +123,14 @@ export function OrganizationConfigurationDomainsSection(props: {
                             <AuthenticatedButton
                               icon={mdiContentCopy}
                               onClick={() =>
-                                void copyRecord(
+                                void state.copyRecord(
                                   `${verification().recordType} ${verification().recordName} ${verification().recordValue}`,
                                 )
                               }
                               size="sm"
                               variant="outline"
                             >
-                              {copied.get()
+                              {state.copied()
                                 ? messageTranslate("admin.configuration.copied")
                                 : messageTranslate("admin.configuration.copy")}
                             </AuthenticatedButton>
@@ -163,22 +156,15 @@ export function OrganizationConfigurationDomainsSection(props: {
       <Show when={props.canEdit}>
         <AuthenticatedDialog
           description={messageTranslate("admin.configuration.dialogDescription")}
-          onOpenChange={(open) => {
-            if (!open) claimOpen.set(false)
-          }}
-          open={claimOpen.get()}
+          onOpenChange={props.screen.domainClaimOpenSet}
+          open={props.screen.domainClaimOpen()}
           title={messageTranslate("admin.configuration.dialogTitle")}
         >
-          <form
-            class="grid gap-4"
-            onSubmit={(event) => {
-              props.screen.domainClaimSubmit(event)
-              if (props.screen.form.validationMessage.get() === undefined) claimOpen.set(false)
-            }}
-          >
+          <form class="grid gap-4" onSubmit={props.screen.domainClaimSubmit}>
             <div class="grid min-w-0 gap-1.5">
               <Label for="configuration-domain-claim">{messageTranslate("admin.configuration.domainName")}</Label>
               <AuthenticatedInput
+                disabled={props.screen.domainClaimPending()}
                 id="configuration-domain-claim"
                 onInput={(event) => props.screen.form.claimDomain.set(event.currentTarget.value)}
                 placeholder={messageTranslate("admin.organizations.domains.placeholder")}
@@ -190,6 +176,7 @@ export function OrganizationConfigurationDomainsSection(props: {
               for="configuration-domain-claim-primary"
             >
               <input
+                disabled={props.screen.domainClaimPending()}
                 checked={props.screen.form.claimPrimary.get()}
                 class="size-4 accent-[var(--accent)] disabled:opacity-50"
                 id="configuration-domain-claim-primary"
@@ -201,12 +188,19 @@ export function OrganizationConfigurationDomainsSection(props: {
             <Show when={props.screen.form.validationMessage.get()}>
               {(validationMessage) => <AuthenticatedNotice message={validationMessage()} tone="danger" />}
             </Show>
+            <Show when={props.page.domainClaimError()}>
+              {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+            </Show>
             <div class="flex justify-end gap-2">
-              <AuthenticatedButton onClick={() => claimOpen.set(false)} variant="outline">
+              <AuthenticatedButton
+                disabled={props.screen.domainClaimPending()}
+                onClick={() => props.screen.domainClaimOpenSet(false)}
+                variant="outline"
+              >
                 {messageTranslate("common.cancel")}
               </AuthenticatedButton>
               <AuthenticatedButton
-                disabled={props.page.pendingId() === "domain:claim"}
+                disabled={props.screen.domainClaimPending() || props.page.pendingId() !== undefined}
                 icon={mdiPlus}
                 type="submit"
                 variant="filledBlue"
@@ -218,23 +212,23 @@ export function OrganizationConfigurationDomainsSection(props: {
         </AuthenticatedDialog>
 
         <AuthenticatedDialog
-          description={messageTranslate("admin.configuration.removeConfirm", { domain: removeTarget.get() ?? "" })}
+          description={messageTranslate("admin.configuration.removeConfirm", { domain: state.removeTarget() ?? "" })}
           onOpenChange={(open) => {
-            if (!open) removeTarget.set(undefined)
+            if (!open) state.removalClose()
           }}
-          open={removeTarget.get() !== undefined}
+          open={state.removeTarget() !== undefined}
           title={messageTranslate("admin.configuration.removeTitle")}
         >
           <div class="flex justify-end gap-2">
-            <AuthenticatedButton onClick={() => removeTarget.set(undefined)} variant="outline">
+            <AuthenticatedButton onClick={state.removalClose} variant="outline">
               {messageTranslate("common.cancel")}
             </AuthenticatedButton>
             <AuthenticatedButton
-              disabled={removeTarget.get() === undefined}
+              disabled={state.removeTarget() === undefined}
               icon={mdiDelete}
               onClick={() => {
-                const domain = removeTarget.get()
-                removeTarget.set(undefined)
+                const domain = state.removeTarget()
+                state.removalClose()
                 if (domain !== undefined) void props.page.domainRemove(domain)
               }}
               variant="filledRed"

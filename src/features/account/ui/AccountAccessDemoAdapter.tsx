@@ -1,8 +1,8 @@
 import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
-import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountConsentsView } from "./AccountConsentsView.js"
 import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountInvitationsView } from "./AccountInvitationsView.js"
@@ -54,6 +54,7 @@ export function AccountAccessDemoAdapter(props: {
         </Match>
         <Match when={props.screen === "invitation"}>
           <AccountInvitationView
+            organizationsHref="/demo/account/organizations"
             error={state.error()}
             invitation={state.invitation()}
             onAccept={state.invitationAccept}

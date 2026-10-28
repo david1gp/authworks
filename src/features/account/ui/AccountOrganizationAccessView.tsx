@@ -44,12 +44,12 @@ export function AccountOrganizationAccessView(props: {
     >
       <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
         <p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationDescription")}</p>
-        <Show when={props.organizations.length > 1}>
-          <AccountStateBoundary
-            detail={state.organizationBoundary().detail}
-            onRetry={props.onOrganizationRetry}
-            state={props.viewedOrganization ? "ready" : state.organizationBoundary().state}
-          >
+        <AccountStateBoundary
+          detail={state.organizationBoundary().detail}
+          onRetry={props.onOrganizationRetry}
+          state={state.organizationBoundary().state}
+        >
+          <Show when={props.organizations.length > 1}>
             <AccountOrganizationSelector
               activeOrganizationId={props.activeOrganizationId}
               onSelect={props.onOrganizationSelect}
@@ -57,27 +57,30 @@ export function AccountOrganizationAccessView(props: {
               panelId="account-access-organization-panel"
               viewedOrganizationId={props.viewedOrganizationId}
             />
-          </AccountStateBoundary>
-        </Show>
+          </Show>
 
-        <Show
-          when={props.viewedOrganization}
-          fallback={<p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationEmpty")}</p>}
-        >
-          {(membership) => (
-            <AccountOrganizationPanel
-              active={props.organizations.length > 1 && membership().organization.id === props.activeOrganizationId}
-              effectiveAccessBoundary={state.effectiveAccessBoundary()}
-              effectiveAccessNextPageToken={props.effectiveAccessNextPageToken}
-              effectiveAccessPending={props.effectiveAccessPending}
-              group={props.effectiveAccessGroup}
-              id="account-access-organization-panel"
-              membership={membership()}
-              onEffectiveAccessLoadMore={props.onEffectiveAccessLoadMore}
-              onEffectiveAccessRetry={props.onEffectiveAccessRetry}
-            />
-          )}
-        </Show>
+          <Show
+            when={props.viewedOrganization}
+            fallback={
+              <p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationEmpty")}</p>
+            }
+          >
+            {(membership) => (
+              <AccountOrganizationPanel
+                active={props.organizations.length > 1 && membership().organization.id === props.activeOrganizationId}
+                effectiveAccessBoundary={state.effectiveAccessBoundary()}
+                effectiveAccessNextPageToken={props.effectiveAccessNextPageToken}
+                effectiveAccessPending={props.effectiveAccessPending}
+                group={props.effectiveAccessGroup}
+                id="account-access-organization-panel"
+                tabPanel={props.organizations.length > 1 && props.organizations.length <= 8}
+                membership={membership()}
+                onEffectiveAccessLoadMore={props.onEffectiveAccessLoadMore}
+                onEffectiveAccessRetry={props.onEffectiveAccessRetry}
+              />
+            )}
+          </Show>
+        </AccountStateBoundary>
       </div>
     </AccountDisclosure>
   )

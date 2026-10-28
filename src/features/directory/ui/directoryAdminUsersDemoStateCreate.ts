@@ -21,9 +21,11 @@ export function directoryAdminUsersDemoStateCreate() {
   const page = directoryAdminUsersPageStateCreate({
     adapter,
     confirm: confirmState.confirm,
-    organizationId: "01900000-0000-7000-8000-000000000011",
-    realmAdministrator: demoAccess() === "realm-admin",
-    realmId: "01900000-0000-7000-8000-000000000001",
+    invitationDemo: true,
+    invitationOrigin: window.location.origin,
+    organizationId: () => "01900000-0000-7000-8000-000000000011",
+    realmAdministrator: () => demoAccess() === "realm-admin",
+    realmId: () => "01900000-0000-7000-8000-000000000001",
     reloadKey: fixtureState,
     search: () => location.search,
   })

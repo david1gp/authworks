@@ -6,6 +6,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import type { ProductionSessionContextValue } from "../../../ui/production/productionSessionContextValue.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
+import type { OrganizationInvitationMeInspectResponse } from "../../organizations/public/organizationInvitationMeInspectResponseSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import { accountEffectiveAccessGroupGet } from "../model/accountEffectiveAccessGroupGet.js"
@@ -37,7 +38,7 @@ export function accountAccessProductionStateCreate(
   const organizations = createSignalObject<OrganizationMe[]>([])
   const consents = createSignalObject<OidcConsent[]>([])
   const invitations = createSignalObject<OrganizationInvitation[]>([])
-  const invitation = createSignalObject<OrganizationInvitation | undefined>(undefined)
+  const invitation = createSignalObject<OrganizationInvitationMeInspectResponse["invitation"] | undefined>(undefined)
   const effectiveAccess = createSignalObject<AccountEffectiveAccessEntry[]>([])
   const effectiveAccessNextPageToken = createSignalObject<string | undefined>(undefined)
   const confirmation = confirmStateCreate()
