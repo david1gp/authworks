@@ -6,9 +6,9 @@ export function accountWorkspaceDemoAdapterStateCreate() {
   const profile = accountDemoAdapterStateCreate(() => "overview")
   const security = accountSecurityDemoStateCreate(() => "overview")
   const securityProgress = accountSecurityProgressStateCreate({
+    identitiesCount: () => security.identities().length,
     methods: security.methods,
     passkeyCount: () => security.passkeys().length,
-    user: security.user,
   })
 
   return { profile, security, securityProgress }

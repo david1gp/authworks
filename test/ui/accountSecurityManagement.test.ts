@@ -26,14 +26,14 @@ const userCreate = (configured: boolean): User =>
 
 const progressCreate = (options: {
   readonly backupCodes: number
-  readonly emailVerified: boolean
+  readonly identitiesCount: number
   readonly passkeyCount: number
   readonly password: boolean
-  readonly phoneVerified: boolean
+  readonly totpEnrolled: boolean
 }) => {
   const methods = methodsCreate(false)
-  const user = userCreate(false)
   return accountSecurityProgressStateCreate({
+    identitiesCount: () => options.identitiesCount,
     methods: () => ({
       ...methods,
       emailOtp: { available: true },
@@ -43,15 +43,9 @@ const progressCreate = (options: {
         generatedAt: options.backupCodes > 0 ? 1 : null,
         remaining: options.backupCodes,
       },
-      totp: { enrolled: true, enrollments: [] },
+      totp: { enrolled: options.totpEnrolled, enrollments: [] },
     }),
     passkeyCount: () => options.passkeyCount,
-    user: () => ({
-      ...user,
-      emailVerified: options.emailVerified,
-      phoneNumber: "+14155552671",
-      phoneNumberVerifiedAt: options.phoneVerified ? 1 : undefined,
-    }),
   })
 }
 
@@ -83,10 +77,10 @@ describe("account security management", () => {
   test("counts no configured methods at 0/5", () => {
     const state = progressCreate({
       backupCodes: 0,
-      emailVerified: false,
+      identitiesCount: 0,
       passkeyCount: 0,
       password: false,
-      phoneVerified: false,
+      totpEnrolled: false,
     })
 
     expect(state.configuredCount()).toBe(0)
@@ -98,10 +92,10 @@ describe("account security management", () => {
   test("counts only the five specified method states in a mixed setup", () => {
     const state = progressCreate({
       backupCodes: 0,
-      emailVerified: true,
+      identitiesCount: 0,
       passkeyCount: 2,
       password: true,
-      phoneVerified: false,
+      totpEnrolled: true,
     })
 
     expect(state.configuredCount()).toBe(3)
@@ -113,10 +107,10 @@ describe("account security management", () => {
   test("counts every configured method at 5/5", () => {
     const state = progressCreate({
       backupCodes: 1,
-      emailVerified: true,
+      identitiesCount: 2,
       passkeyCount: 1,
       password: true,
-      phoneVerified: true,
+      totpEnrolled: true,
     })
 
     expect(state.configuredCount()).toBe(5)

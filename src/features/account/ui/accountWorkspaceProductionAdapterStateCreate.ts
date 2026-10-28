@@ -13,9 +13,9 @@ export function accountWorkspaceProductionAdapterStateCreate(realmId: () => stri
     screen: () => "overview",
   })
   const securityProgress = accountSecurityProgressStateCreate({
+    identitiesCount: () => security.identities().length,
     methods: security.methods,
     passkeyCount: () => security.passkeys().length,
-    user: security.user,
   })
 
   return {
