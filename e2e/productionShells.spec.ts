@@ -292,6 +292,11 @@ test("representative production login, account, and administration views have no
       await page.goto(path)
       if (path === "/admin") await expect(page).toHaveURL(/\/admin\/users$/)
       await expect(page.locator("main")).toBeVisible()
+      if (path === "/admin" && viewport.width === 1280) {
+        const identity = page.getByRole("button", { name: "Customer user", exact: true })
+        await expect(identity).toBeVisible()
+        await expect(identity.getByText("Customer user", { exact: true })).toBeVisible()
+      }
       const accessibility = await new AxeBuilder({ page }).analyze()
       expect(
         accessibility.violations.filter(

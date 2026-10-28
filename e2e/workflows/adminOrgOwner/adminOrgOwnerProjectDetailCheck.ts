@@ -14,18 +14,19 @@ export async function adminOrgOwnerProjectDetailCheck(setup: AdminOrgOwnerSetup)
   await page.goto(projectUrl)
   await page.waitForURL(/\/admin\/projects\/.+/, { timeout: 30_000 })
 
-  await expect(page.getByRole("tab", { name: "Overview" })).toBeVisible()
-  await expect(page.getByRole("tab", { name: "Roles" })).toBeVisible()
-  await expect(page.getByRole("tab", { name: "Applications" })).toBeVisible()
-  await expect(page.getByRole("tab", { name: "Access" })).toBeVisible()
+  const navigation = page.getByRole("navigation", { name: "Project detail", exact: true })
+  await expect(navigation.getByRole("link", { name: "Overview" })).toBeVisible()
+  await expect(navigation.getByRole("link", { name: "Roles" })).toBeVisible()
+  await expect(navigation.getByRole("link", { name: "Applications" })).toBeVisible()
+  await expect(navigation.getByRole("link", { name: "Access" })).toBeVisible()
 
-  await page.getByRole("tab", { name: "Roles" }).click()
+  await navigation.getByRole("link", { name: "Roles" }).click()
   await expect(page.getByText(setup.roleKeyA).first()).toBeVisible()
   await expect(page.getByText(setup.roleKeyB).first()).toBeVisible()
 
-  await page.getByRole("tab", { name: "Applications" }).click()
-  await expect(page.getByRole("tab", { name: "Applications" })).toHaveAttribute("aria-selected", "true")
+  await navigation.getByRole("link", { name: "Applications" }).click()
+  await expect(navigation.getByRole("link", { name: "Applications" })).toHaveAttribute("aria-current", "page")
 
-  await page.getByRole("tab", { name: "Access" }).click()
-  await expect(page.getByRole("tab", { name: "Access" })).toHaveAttribute("aria-selected", "true")
+  await navigation.getByRole("link", { name: "Access" }).click()
+  await expect(navigation.getByRole("link", { name: "Access" })).toHaveAttribute("aria-current", "page")
 }

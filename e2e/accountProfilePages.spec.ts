@@ -283,6 +283,7 @@ test("production profile adds, verifies, and changes its phone number", async ({
   const phoneChangeRequests: Array<{ body: unknown; csrf: string | undefined; method: string; path: string }> = []
 
   await productionAccountSessionBootstrap(page)
+  await pictureAssetHostInstall(page)
   await accountApiRoutesInstall(page, async (route, method) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
@@ -349,7 +350,8 @@ test("production profile adds, verifies, and changes its phone number", async ({
   await phoneDetails.locator("summary").click()
   // The add/change flow lives in a dialog opened by the single compact control on the section.
   const phoneForm = page.getByRole("dialog")
-  await expect(phoneDetails.locator("summary").getByText("Not set", { exact: true })).toHaveCount(2)
+  await expect(phoneDetails.locator("summary")).not.toContainText("Verification pending")
+  await expect(phoneDetails.getByRole("button", { name: "Add phone number" })).toBeVisible()
   await phoneDetails.getByRole("button", { name: "Add phone number" }).click()
   await phoneForm.getByLabel("Phone number", { exact: true }).fill(firstPhoneNumber)
   await phoneForm.getByRole("button", { name: "Add phone number" }).click()
@@ -366,7 +368,7 @@ test("production profile adds, verifies, and changes its phone number", async ({
   await expect(phoneForm).toHaveCount(0)
   await expect(phoneDetails.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
   await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneDetails.locator("summary").getByText("Verified", { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary")).not.toContainText("Verification pending")
 
   await phoneDetails.getByRole("button", { name: "Change phone number" }).click()
   await phoneForm.getByLabel("New phone number").fill(replacementPhoneNumber)
@@ -393,7 +395,7 @@ test("production profile adds, verifies, and changes its phone number", async ({
   await expect(phoneDetails.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
   await expect(phoneDetails.locator("summary").getByText(replacementPhoneNumber, { exact: true })).toBeVisible()
   await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toHaveCount(0)
-  await expect(phoneDetails.locator("summary").getByText("Verified", { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary")).not.toContainText("Verification pending")
   expect(phoneChangeRequests).toEqual([
     {
       body: { phoneNumber: firstPhoneNumber },
@@ -452,6 +454,7 @@ test("production email addresses use the lifecycle APIs and protect the primary 
     },
   ]
   await productionAccountSessionBootstrap(page)
+  await pictureAssetHostInstall(page)
   await accountApiRoutesInstall(page, async (route, method) => {
     const path = new URL(route.request().url()).pathname
     if (path === `/realms/${realmId}/me`) {
@@ -538,7 +541,8 @@ test("production email addresses use the lifecycle APIs and protect the primary 
   const secondaryRow = emailAddressList.getByRole("listitem").filter({
     has: page.getByText("avery.secondary@example.com", { exact: true }),
   })
-  await expect(secondaryRow.getByText("Verified", { exact: true })).toBeVisible()
+  await expect(secondaryRow).toBeVisible()
+  await expect(secondaryRow.getByText("Verification pending", { exact: true })).toHaveCount(0)
   await secondaryRow.getByRole("button").click()
   await page
     .getByRole("dialog", { name: "avery.secondary@example.com" })
@@ -666,6 +670,23 @@ async function accountBackgroundResponseFulfill(
   user: unknown,
   emailAddresses: readonly unknown[] = [],
 ) {
+  if (pathname === `/realms/${realmId}/organizations`) {
+    await route.fulfill({
+      json: {
+        items: [
+          {
+            createdAt: 1_700_000_000_000,
+            id: "01900000-0000-7000-8000-000000000002",
+            name: "Customer identity",
+            realmId,
+            status: "active",
+            updatedAt: 1_700_000_000_000,
+          },
+        ],
+      },
+    })
+    return
+  }
   if (pathname.endsWith("/me/emails")) {
     await route.fulfill({ json: { items: emailAddresses } })
     return

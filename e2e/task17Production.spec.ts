@@ -141,7 +141,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     // The detail route is stable; navigate directly to the member profile.
     await page.goto(`/admin/users/${fixture.member.id}`)
     // Sessions and auth methods live on the Security tab of the user detail.
-    await page.getByRole("tab", { name: "Security", exact: true }).click()
+    await page.getByRole("link", { name: "Security", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
     await expect(page.getByText("This user has no active sessions.", { exact: true })).toBeVisible()
     await expect(page.getByRole("heading", { name: "Authentication methods", exact: true })).toBeVisible()
@@ -214,13 +214,15 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 })
 
 test("task 17 protocol scenario resumes external login through OIDC consent without exposing secrets", async ({
+  baseURL,
   context,
   page,
 }) => {
   test.setTimeout(240_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
-  const browserOrigin = "http://127.0.0.1:5174"
+  if (baseURL === undefined) throw new Error("The browser base URL is required.")
+  const browserOrigin = new URL(baseURL).origin
   const responseBodies: Array<Promise<string>> = []
   const requestUrls: string[] = []
   let providerAuthorizationUrl: URL | undefined
@@ -267,7 +269,12 @@ test("task 17 protocol scenario resumes external login through OIDC consent with
       })
     })
     const rejectState = "e2e-reject-state"
-    const rejectInteraction = await oidcAuthorizationStart(page, fixture.oidcClients.reject.id, rejectState)
+    const rejectInteraction = await oidcAuthorizationStart(
+      page,
+      browserOrigin,
+      fixture.oidcClients.reject.id,
+      rejectState,
+    )
     const loginUrl = new URL(page.url())
     expect(loginUrl.pathname).toBe("/login")
     expect(loginUrl.searchParams.get("interaction")).toBe(rejectInteraction)
@@ -288,7 +295,7 @@ test("task 17 protocol scenario resumes external login through OIDC consent with
 
     const rejectCsrf = await browserCsrfTokenGet(page, fixture.realm.id)
     await page.setExtraHTTPHeaders({ "x-csrf-token": rejectCsrf })
-    await consentSubmit(page, rejectInteraction, "deny")
+    await consentSubmit(page, browserOrigin, rejectInteraction, "deny")
     await page.setExtraHTTPHeaders({})
     const rejected = new URL(page.url())
     expect(rejected.origin).toBe(browserOrigin)
@@ -297,12 +304,17 @@ test("task 17 protocol scenario resumes external login through OIDC consent with
     expect(rejected.searchParams.get("state")).toBe(rejectState)
 
     const approveState = "e2e-approve-state"
-    const approveInteraction = await oidcAuthorizationStart(page, fixture.oidcClients.approve.id, approveState)
+    const approveInteraction = await oidcAuthorizationStart(
+      page,
+      browserOrigin,
+      fixture.oidcClients.approve.id,
+      approveState,
+    )
     expect(new URL(page.url()).pathname).toBe("/consent")
     expect(new URL(page.url()).searchParams.get("interaction")).toBe(approveInteraction)
     const approveCsrf = await browserCsrfTokenGet(page, fixture.realm.id)
     await page.setExtraHTTPHeaders({ "x-csrf-token": approveCsrf })
-    await consentSubmit(page, approveInteraction, "approve")
+    await consentSubmit(page, browserOrigin, approveInteraction, "approve")
     await page.setExtraHTTPHeaders({})
     const approved = new URL(page.url())
     expect(approved.origin).toBe(browserOrigin)
@@ -407,6 +419,10 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     expect(invitationUrl.pathname).toBe("/invitations/accept")
     const invitationToken = invitationUrl.searchParams.get("token")
     if (invitationToken === null) throw new Error("The captured invitation email did not contain a token.")
+    const displayedLink = new URL((await invitationPanel.locator("code").first().textContent())?.trim() ?? "")
+    expect(displayedLink.origin).toBe(new URL(page.url()).origin)
+    expect(displayedLink.pathname).toBe("/invitations/accept")
+    expect(displayedLink.searchParams.get("token")).toBe(invitationToken)
     await invitationPanel.getByRole("button", { name: "I saved this link", exact: true }).click()
     await expect(invitationPanel).toHaveCount(0)
     // Acknowledging reveals the invite form again; close the dialog to return to the list.
@@ -418,7 +434,12 @@ test("task 17 composed production scenario displays and revokes machine secrets,
 
     await page.goto("/login/logout")
     await page.getByRole("button", { name: "Sign out", exact: true }).click()
-    await page.goto("/login/password")
+    const invitationPath = `${invitationUrl.pathname}${invitationUrl.search}`
+    const browserInvitationUrl = `${new URL(page.url()).origin}${invitationPath}`
+    await page.goto(browserInvitationUrl)
+    await expect(page).toHaveURL(`/login?return_to=${encodeURIComponent(invitationPath)}`)
+    await page.getByRole("button", { name: /^Password Sign in with password/ }).click()
+    expect(new URL(page.url()).searchParams.get("return_to")).toBe(invitationPath)
     await page.getByLabel("Username or email", { exact: true }).fill(fixture.member.email)
     await page.getByLabel("Password", { exact: true }).fill(fixture.member.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
@@ -426,15 +447,19 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(memberRecoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
-    await expect(page).toHaveURL(/\/account$/)
-
-    const browserInvitationUrl = `${new URL(page.url()).origin}${invitationUrl.pathname}${invitationUrl.search}`
-    await page.goto(browserInvitationUrl)
-    await expect(page.getByRole("heading", { name: fixture.organization.id, exact: true })).toBeVisible()
+    await expect(page).toHaveURL(browserInvitationUrl)
+    await expect(page.getByRole("heading", { name: fixture.organization.name, exact: true })).toBeVisible()
     await page.reload({ waitUntil: "commit" })
-    await expect(page.getByRole("heading", { name: fixture.organization.id, exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: fixture.organization.name, exact: true })).toBeVisible()
     await page.getByRole("button", { name: "Continue", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Invitation accepted", exact: true })).toBeVisible()
+    await page.getByRole("link", { name: "Organizations", exact: true }).click()
+    await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
+    const membership = page.locator("section[aria-label]").filter({ hasText: "Membership roles" }).last()
+    await expect(membership).toBeVisible()
+    await expect(membership).toHaveAttribute("aria-label", fixture.organization.name)
+    await expect(membership).toContainText("Membership roles")
+    await expect(membership).toContainText(/member/i)
 
     await page.goto("/account#profile")
     await expect(page.locator("#profile")).toContainText("E2E Member")
@@ -616,12 +641,17 @@ async function e2eServerStop(child: ChildProcess): Promise<void> {
   await new Promise<void>((resolve) => child.once("exit", () => resolve()))
 }
 
-async function oidcAuthorizationStart(page: Page, clientId: string, state: string): Promise<string> {
+async function oidcAuthorizationStart(
+  page: Page,
+  browserOrigin: string,
+  clientId: string,
+  state: string,
+): Promise<string> {
   const request = new URLSearchParams({
     client_id: clientId,
     code_challenge: "A".repeat(43),
     code_challenge_method: "S256",
-    redirect_uri: "http://127.0.0.1:5174/callback",
+    redirect_uri: `${browserOrigin}/callback`,
     response_type: "code",
     scope: "openid",
     state,
@@ -641,7 +671,12 @@ async function browserCsrfTokenGet(page: Page, realmId: string): Promise<string>
   }, realmId)
 }
 
-async function consentSubmit(page: Page, interaction: string, decision: "approve" | "deny"): Promise<void> {
+async function consentSubmit(
+  page: Page,
+  browserOrigin: string,
+  interaction: string,
+  decision: "approve" | "deny",
+): Promise<void> {
   await page.evaluate(
     ({ decision: selectedDecision, interaction: selectedInteraction }) => {
       const form = document.createElement("form")
@@ -663,7 +698,7 @@ async function consentSubmit(page: Page, interaction: string, decision: "approve
     },
     { decision, interaction },
   )
-  await page.waitForURL(/http:\/\/127\.0\.0\.1:5174\/callback\?/)
+  await page.waitForURL((url) => url.origin === browserOrigin && url.pathname === "/callback" && url.search.length > 0)
 }
 
 async function browserSecretsAssert(

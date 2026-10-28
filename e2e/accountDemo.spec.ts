@@ -48,7 +48,12 @@ test("organization, invitation, and consent demos are interactive and network-fr
   await expect(organizationTabs).toHaveCount(2)
   await expect(organizationTabs.nth(0)).toHaveAttribute("aria-selected", "true")
   const organizationPanel = page.getByRole("tabpanel")
-  await expect(organizationPanel).toHaveAttribute("aria-labelledby", /-tab-/)
+  const organizationHeading = organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })
+  await expect(organizationHeading).toHaveAttribute("id", /.+/)
+  await expect(organizationPanel).toHaveAttribute(
+    "aria-labelledby",
+    (await organizationHeading.getAttribute("id")) as string,
+  )
   await expect(organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
   await expect(organizationPanel.getByRole("heading", { name: "Customer portal", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()

@@ -1,6 +1,7 @@
 import { e2eStepRun } from "../../harness/e2eStepRun.js"
 import { e2eTest } from "../../harness/e2eTest.js"
 import { adminRealmAdministratorGrantRevoke } from "./adminRealmAdministratorGrantRevoke.js"
+import { adminRealmAdministratorOrganizationDetailCheck } from "./adminRealmAdministratorOrganizationDetailCheck.js"
 import { adminRealmAdministratorScopeCheck } from "./adminRealmAdministratorScopeCheck.js"
 import {
   type AdminRealmAdministratorSetup,
@@ -10,7 +11,7 @@ import {
 import { adminRealmAdministratorSignIn } from "./adminRealmAdministratorSignIn.js"
 import { adminRealmAdministratorSignOut } from "./adminRealmAdministratorSignOut.js"
 
-const stepNames = ["setup", "sign-in", "scope", "grant-revoke", "sign-out"] as const
+const stepNames = ["setup", "sign-in", "organization-detail", "scope", "grant-revoke", "sign-out"] as const
 
 type AdminRealmAdministratorStepName = (typeof stepNames)[number]
 
@@ -37,6 +38,7 @@ e2eTest("realm administrator switches scope and grants plus revokes realm access
     setup = await adminRealmAdministratorSetupCreate(page)
   })
   await run("sign-in", async () => adminRealmAdministratorSignIn(page, setupGet()))
+  await run("organization-detail", async () => adminRealmAdministratorOrganizationDetailCheck(setupGet()))
   await run("scope", async () => adminRealmAdministratorScopeCheck(setupGet()))
   await run("grant-revoke", async () => adminRealmAdministratorGrantRevoke(setupGet()))
   await run("sign-out", async () => adminRealmAdministratorSignOut(setupGet()))

@@ -18,12 +18,15 @@ type E2eServerMetadata = {
 test.use({ launchOptions: { args: ["--host-resolver-rules=MAP localhost 127.0.0.1"] } })
 
 test("task 17 composed production ceremonies complete passkeys and TOTP without persisting secrets", async ({
+  baseURL,
   context,
   page,
 }) => {
   test.setTimeout(240_000)
-  const browserOrigin = "http://localhost:5174"
-  const server = await e2eServerStart()
+  const browserUrl = new URL(baseURL ?? "http://127.0.0.1:5174")
+  browserUrl.hostname = "localhost"
+  const browserOrigin = browserUrl.origin
+  const server = await e2eServerStart(browserOrigin)
   const fixture = server.metadata
   const cdp = await context.newCDPSession(page)
   await cdp.send("WebAuthn.enable", { enableUI: false })
@@ -179,7 +182,7 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect(registrationStartBody.options.rp.id).toBe("localhost")
     expect(registrationStartBody.options.user.id.length).toBeGreaterThan(0)
     const registrationComplete = await registrationCompletePromise
-    expect(registrationComplete.status()).toBe(200)
+    expect(registrationComplete.status(), await registrationComplete.text()).toBe(200)
     // The add dialog closes itself once the ceremony completes.
     await expect(page.getByRole("dialog", { name: "Add passkey" })).toHaveCount(0)
     // Registration remounts the collapsed card; expand it again to see the new passkey.
@@ -318,10 +321,12 @@ async function composedApiProxyInstall(page: Page, fixture: E2eServerMetadata): 
   })
 }
 
-async function e2eServerStart(): Promise<{ readonly metadata: E2eServerMetadata; readonly process: ChildProcess }> {
+async function e2eServerStart(
+  browserOrigin: string,
+): Promise<{ readonly metadata: E2eServerMetadata; readonly process: ChildProcess }> {
   const child = spawn("bun", ["e2e/authworksAdvancedE2eServer.ts"], {
     cwd: process.cwd(),
-    env: { ...process.env, AUTHWORKS_E2E_BROWSER_CEREMONY: "1" },
+    env: { ...process.env, AUTHWORKS_E2E_BROWSER_CEREMONY: "1", AUTHWORKS_E2E_BROWSER_ORIGIN: browserOrigin },
     stdio: ["ignore", "pipe", "inherit"],
   })
   return new Promise((resolve, reject) => {

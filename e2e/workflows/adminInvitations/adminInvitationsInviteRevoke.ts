@@ -11,7 +11,7 @@ export async function adminInvitationsInviteRevoke(setup: AdminInvitationsSetup)
   const page = setup.context.page
   await adminInvitationsSessionEnsure(setup)
   await page.goto("/admin/users?tab=invitations")
-  await expect(page.getByRole("tab", { name: "Pending invitations" })).toHaveAttribute("aria-selected", "true")
+  await expect(page.getByRole("link", { name: "Pending invitations" })).toHaveAttribute("aria-current", "page")
 
   // invite-create is idempotent, so on resume the invitee row may already be revoked:
   // only a row with a pending action needs revoking; a revoked row ends the step.

@@ -8,9 +8,9 @@ test("the service accounts tab lists fixtures and creates a service identity off
   await page.goto("/demo/admin/users?tab=service-accounts")
 
   await expect(page.getByRole("heading", { level: 1, name: "Users", exact: true })).toBeVisible()
-  await expect(page.getByRole("tab", { name: "Service accounts", exact: true })).toHaveAttribute(
-    "aria-selected",
-    "true",
+  await expect(page.getByRole("link", { name: "Service accounts", exact: true })).toHaveAttribute(
+    "aria-current",
+    "page",
   )
   // Service accounts render as a wide table on desktop and as a stacked record list on mobile.
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
@@ -247,9 +247,9 @@ test("removing a machine user returns to the directory", async ({ page }) => {
   await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page).toHaveURL(/\/demo\/admin\/users\?tab=service-accounts$/)
-  await expect(page.getByRole("tab", { name: "Service accounts", exact: true })).toHaveAttribute(
-    "aria-selected",
-    "true",
+  await expect(page.getByRole("link", { name: "Service accounts", exact: true })).toHaveAttribute(
+    "aria-current",
+    "page",
   )
 })
 
@@ -317,7 +317,7 @@ for (const path of ["/demo/admin/machine-credentials"]) {
 test("service accounts are reachable from the users page tab", async ({ page }) => {
   await page.goto("/demo/admin/users")
 
-  const serviceAccountsTab = page.getByRole("tab", { name: "Service accounts", exact: true })
+  const serviceAccountsTab = page.getByRole("link", { name: "Service accounts", exact: true })
   await expect(serviceAccountsTab).toBeVisible()
   await serviceAccountsTab.click()
   await expect(page).toHaveURL(/\/demo\/admin\/users\?tab=service-accounts$/)

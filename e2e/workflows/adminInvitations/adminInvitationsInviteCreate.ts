@@ -13,7 +13,7 @@ export async function adminInvitationsInviteCreate(setup: AdminInvitationsSetup)
   const page = setup.context.page
   await adminInvitationsSessionEnsure(setup)
   await page.goto("/admin/users?tab=invitations")
-  await expect(page.getByRole("tab", { name: "Pending invitations" })).toHaveAttribute("aria-selected", "true")
+  await expect(page.getByRole("link", { name: "Pending invitations" })).toHaveAttribute("aria-current", "page")
 
   const pendingRow = page.locator("table tbody tr", { hasText: setup.inviteeEmail })
   // The list loads after navigation; wait for it to settle (row or empty state) before deciding.
@@ -37,7 +37,12 @@ export async function adminInvitationsInviteCreate(setup: AdminInvitationsSetup)
   await expect(
     dialog.getByText("This invitation link is shown once. Share it with the person you invited."),
   ).toBeVisible()
-  await expect(dialog.locator("code").first()).not.toBeEmpty()
+  const linkText = dialog.locator("code").first()
+  await expect(linkText).not.toBeEmpty()
+  const invitationUrl = new URL((await linkText.textContent())?.trim() ?? "")
+  expect(invitationUrl.origin).toBe(new URL(page.url()).origin)
+  expect(invitationUrl.pathname).toBe("/invitations/accept")
+  expect(invitationUrl.searchParams.get("token")).toBeTruthy()
   await expect(page).toHaveURL(/[?&]dialog=invite/)
 
   await dialog.getByRole("button", { name: "I saved this link" }).click()

@@ -1,5 +1,6 @@
 import { e2eStepRun } from "../../harness/e2eStepRun.js"
 import { e2eTest } from "../../harness/e2eTest.js"
+import { adminOrgOwnerActivityCheck } from "./adminOrgOwnerActivityCheck.js"
 import { adminOrgOwnerBrandingSave } from "./adminOrgOwnerBrandingSave.js"
 import { adminOrgOwnerProfileOpen } from "./adminOrgOwnerProfileOpen.js"
 import { adminOrgOwnerProjectDetailCheck } from "./adminOrgOwnerProjectDetailCheck.js"
@@ -25,6 +26,7 @@ const stepNames = [
   "roles-page",
   "project-detail",
   "branding-save",
+  "activity",
   "sign-out",
 ] as const
 
@@ -62,5 +64,6 @@ e2eTest("admin organization owner manages users, roles, projects, and branding",
   await run("roles-page", async () => adminOrgOwnerRolesPageCheck(setupGet()))
   await run("project-detail", async () => adminOrgOwnerProjectDetailCheck(setupGet()))
   await run("branding-save", async () => adminOrgOwnerBrandingSave(setupGet()))
+  await run("activity", async () => adminOrgOwnerActivityCheck(setupGet()))
   await run("sign-out", async () => adminOrgOwnerSignOut(setupGet()))
 })

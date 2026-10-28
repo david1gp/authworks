@@ -334,7 +334,7 @@ export async function authworksE2eFixtureCreate(
       allowedScopes: ["openid"],
       clientType: "public",
       name: "E2E Reject Client",
-      redirectUris: ["http://127.0.0.1:5174/callback"],
+      redirectUris: [`http://127.0.0.1:${process.env.AUTHWORKS_E2E_LOCAL_PORT ?? "5174"}/callback`],
       requireConsent: true,
     })
     if (!oidcRejectResponse.success)
@@ -343,7 +343,7 @@ export async function authworksE2eFixtureCreate(
       allowedScopes: ["openid"],
       clientType: "public",
       name: "E2E Approve Client",
-      redirectUris: ["http://127.0.0.1:5174/callback"],
+      redirectUris: [`http://127.0.0.1:${process.env.AUTHWORKS_E2E_LOCAL_PORT ?? "5174"}/callback`],
       requireConsent: true,
     })
     if (!oidcApproveResponse.success)

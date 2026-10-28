@@ -11,7 +11,7 @@ export async function adminOrgOwnerProjectRoleAssign(setup: AdminOrgOwnerSetup):
   await adminOrgOwnerSessionEnsure(setup)
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
   await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
-  await page.getByRole("tab", { name: "Roles and access" }).click()
+  await page.getByRole("link", { name: "Roles and access" }).click()
   await page.getByRole("button", { name: "Assign project roles" }).click()
   await expect(page.getByRole("dialog")).toBeVisible()
 
@@ -30,6 +30,6 @@ export async function adminOrgOwnerProjectRoleAssign(setup: AdminOrgOwnerSetup):
 
   await expect(page.getByText(setup.projectName).first()).toBeVisible()
   await page.reload()
-  await page.getByRole("tab", { name: "Roles and access" }).click()
+  await page.getByRole("link", { name: "Roles and access" }).click()
   await expect(page.getByText(setup.projectName).first()).toBeVisible()
 }

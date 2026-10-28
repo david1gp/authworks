@@ -7,7 +7,12 @@ const browserCeremony = process.env.AUTHWORKS_E2E_BROWSER_CEREMONY === "1"
 const fixtureResult = await authworksE2eFixtureCreate({
   advancedAuthentication: true,
   emailDelivery: true,
-  ...(browserCeremony ? { passkeyOrigins: ["http://localhost:5174"], passkeyRpId: "localhost" } : {}),
+  ...(browserCeremony
+    ? {
+        passkeyOrigins: [process.env.AUTHWORKS_E2E_BROWSER_ORIGIN ?? "http://localhost:5174"],
+        passkeyRpId: "localhost",
+      }
+    : {}),
   ...(browserCeremony ? {} : { runtime: { now: () => clock.now, randomBytes: (length) => randomBytes(length) } }),
 })
 if (!fixtureResult.success) {

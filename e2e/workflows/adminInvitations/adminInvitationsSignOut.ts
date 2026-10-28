@@ -8,6 +8,7 @@ export async function adminInvitationsSignOut(setup: AdminInvitationsSetup): Pro
   // Orchestrator resume reruns the spec with a fresh browser profile while skipping
   // completed steps, so re-authenticate when the earlier session is gone.
   await adminInvitationsSessionEnsure(setup)
+  await page.getByRole("button", { name: setup.ownerUserName, exact: true }).filter({ visible: true }).click()
   await page.getByRole("link", { name: "Sign out" }).first().click()
   await page.waitForURL(/\/login\/logout/, { timeout: 30_000 })
   // The logout screen confirms before revoking: without this click the session survives

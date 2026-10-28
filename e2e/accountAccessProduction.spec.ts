@@ -113,7 +113,9 @@ test("production organization access uses a native select above eight membership
   await organizationSelect.selectOption(fieldNotesId)
   await expect(organizationSelect).toHaveValue(fieldNotesId)
   await expect(
-    accessSection.getByRole("tabpanel").getByRole("heading", { name: "Field Notes", exact: true }),
+    accessSection
+      .getByRole("region", { name: "Field Notes", exact: true })
+      .getByRole("heading", { name: "Field Notes", exact: true }),
   ).toBeVisible()
   expect(switchRequests).toEqual([])
 
@@ -138,7 +140,9 @@ test("production organization tabs preserve a usable mobile layout", async ({ pa
   await expect(organizationTabs).toHaveCount(2)
   await expect(organizationsTablist).toHaveCSS("overflow-x", "auto")
   await expect(organizationsTablist).toHaveCSS("flex-wrap", "nowrap")
-  await expect(page.locator("#access").getByRole("tabpanel")).toHaveAttribute("aria-labelledby", /-tab-/)
+  const panel = page.locator("#access").getByRole("tabpanel", { name: "Northwind Labs", exact: true })
+  const heading = panel.getByRole("heading", { name: "Northwind Labs", exact: true })
+  await expect(panel).toHaveAttribute("aria-labelledby", (await heading.getAttribute("id")) as string)
   expect(await page.locator("html").evaluate((element) => element.scrollWidth <= window.innerWidth)).toBe(true)
 })
 

@@ -21,6 +21,7 @@ type E2eServerMetadata = {
 
 test("task 17 composed impersonation scenario enforces lifecycle, safeguards, and denial states", async ({
   browser,
+  baseURL,
   context,
   page,
 }) => {
@@ -38,7 +39,14 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await adminSignIn(page, fixture.bootstrapAdmin.secret)
     const bootstrapCookie = await sessionCookieGet(context)
 
-    const assurance = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
+    const assurance = await auxiliaryPageCreate(
+      browser,
+      baseURL,
+      fixture,
+      auxiliaryContexts,
+      responseBodies,
+      requestUrls,
+    )
     await passwordSignIn(assurance, fixture.administrator, "/admin/impersonation")
     await expect(assurance.getByRole("heading", { name: "Stronger sign-in required", exact: true })).toBeVisible()
     const assuranceDenied = await impersonationStartRequest(assurance, fixture, fixture.member.id)
@@ -46,7 +54,14 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(assuranceDenied.body).toContain("Multi-factor authentication is required")
     expect(assuranceDenied.body).toContain("authorization.insufficient-assurance")
 
-    const permission = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
+    const permission = await auxiliaryPageCreate(
+      browser,
+      baseURL,
+      fixture,
+      auxiliaryContexts,
+      responseBodies,
+      requestUrls,
+    )
     await passwordSignIn(permission, fixture.member, "/account#profile")
     const steppedUp = await mfaStepUpComplete(permission, fixture)
     expect(steppedUp.status).toBe(200)
@@ -115,7 +130,14 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await expect(page.locator("[data-impersonation-banner]")).toContainText("E2E Administrator")
     await expect(page.locator("[data-impersonation-banner]")).toContainText(/\d+:\d{2}/)
 
-    const auditContextPage = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
+    const auditContextPage = await auxiliaryPageCreate(
+      browser,
+      baseURL,
+      fixture,
+      auxiliaryContexts,
+      responseBodies,
+      requestUrls,
+    )
     await adminSignIn(auditContextPage, fixture.bootstrapAdmin.secret)
     await auditContextPage.goto(`/admin/events?aggregateId=${encodeURIComponent(impersonationSessionId)}`)
     // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
@@ -251,12 +273,13 @@ async function composedApiProxyInstall(
 
 async function auxiliaryPageCreate(
   browser: Browser,
+  baseURL: string | undefined,
   fixture: E2eServerMetadata,
   contexts: BrowserContext[],
   responseBodies: Array<Promise<string>>,
   requestUrls: string[],
 ): Promise<Page> {
-  const context = await browser.newContext({ baseURL: "http://127.0.0.1:5174" })
+  const context = await browser.newContext({ baseURL })
   contexts.push(context)
   const page = await context.newPage()
   await composedApiProxyInstall(page, fixture)

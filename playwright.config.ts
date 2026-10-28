@@ -5,7 +5,12 @@ const suiteKind = process.env.AUTHWORKS_E2E_SUITE_KIND
 const target = process.env.AUTHWORKS_E2E_TARGET
 const isLive = suiteKind === "live"
 const targetBaseUrl = process.env.AUTHWORKS_E2E_BASE_URL
-const localOrigin = "http://127.0.0.1:5174"
+const localPortOverride = process.env.AUTHWORKS_E2E_LOCAL_PORT
+const localPort = localPortOverride ?? "5174"
+if (!isLive && (!/^[1-9]\d*$/.test(localPort) || Number(localPort) > 65535)) {
+  throw new Error("AUTHWORKS_E2E_LOCAL_PORT must be an integer between 1 and 65535")
+}
+const localOrigin = `http://127.0.0.1:${localPort}`
 
 const liveTestMatch = process.env.AUTHWORKS_E2E_TEST_MATCH?.split(",").filter((entry) => entry.length > 0)
 
@@ -43,9 +48,9 @@ export default defineConfig({
   webServer: isLive
     ? undefined
     : {
-        command: "env UI_PORT=5174 bunx vite --host 127.0.0.1",
+        command: `env UI_PORT=${localPort} bunx vite --host 127.0.0.1`,
         url: `${localOrigin}/demo`,
-        reuseExistingServer: true,
+        reuseExistingServer: localPortOverride === undefined,
         timeout: 60_000,
       },
 })
