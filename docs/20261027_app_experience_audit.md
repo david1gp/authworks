@@ -21,12 +21,12 @@ Deliver working, coherent, pleasant production experiences for sign-in and regis
 3. **Invitations and administrative contexts** — Correct confirmed invitation lifecycle and organization/IAM navigation or authorization defects without widening access. Status: implementation complete; real acceptance/decline verified and IAM detail correction independently reviewed, final workflow verification pending.
 4. **Administrative recent activity** — Add a dedicated, discoverable activity page using correctly authorized, scoped event data, with useful loading/empty/error states, readable event details and focused tests. Status: implementation complete; integrated verification pending.
 5. **Experience polish and independent review** — Resolve confirmed responsive/accessibility/usability defects in the affected surfaces; independently review changes for correctness, security and code-style. Status: complete; any integrated verification defects remain part of task 6.
-6. **Verify and integrate** — Run `bun run check`, production-flow E2E and browser verification against the managed dev/preview; address failures, follow `/commits`, integrate into `main`, push, verify the integrated result, and remove only this task's worktree/state/server resources. Status: in progress; verification complete, conventional commits and main integration next.
+6. **Verify and integrate** — Run `bun run check`, production-flow E2E and browser verification against the managed dev/preview; address failures, follow `/commits`, integrate into `main`, push, verify the integrated result, and remove only this task's worktree/state/server resources. Status: implementation, commits, main integration, post-merge verification and cleanup complete; final push next.
 
 ## Current context
 
-- Isolated worktree: `/home/david/adaptive/authworks-recovery-20261028/worktrees/reconstructed.4rMBJE`, detached at current `main` including its deploy-script/documentation updates; original checkout remains untouched.
-- Repository-managed isolated preview: `http://login.localhost:5190`; test credentials and disposable state are stored outside the worktree in the task-owned durable development-state directory.
+- The verified audit commits are integrated into `main` at `/home/david/adaptive/authworks`; the main tree matches the verified implementation.
+- Post-merge verification is complete. All task-owned preview servers, development state, worktrees, recovery snapshots and temporary artifacts have been removed; only the original main checkout remains.
 - Source and live-browser audits established the next changes: usable invitation URLs, accurate account access messaging, recognizable organization member identities, and administrative activity discoverability.
 - Existing realm event list/export contracts already provide authorized, redacted IAM audit data. Organization-admin activity must retain explicit organization scoping and authorization.
 - Sign-in entry now has an actionable fallback; explicit return destinations remain validated and role-aware default routing remains intact.
@@ -51,7 +51,7 @@ Deliver working, coherent, pleasant production experiences for sign-in and regis
 - Account regression assertions match the accessible panel and profile presentation, and decorative avatar content no longer conflicts with the identity menu's accessible name.
 - Remaining work is final verification and integration; completed suites are not repeated except for focused failures or the final gate.
 - Live organization-owner, ordinary-member restrictions, organization-admin limits, IAM administration and invitation workflows are verified, including organization-scoped recent activity and sign-out.
-- The complete source is protected by a task-owned recovery ref. The reconstructed tree has completed the full check and critical production-flow verification and is ready for integration.
+- The integrated source has completed the full check, critical production-flow verification and fresh post-merge authentication, account, organization-owner, IAM, invitation and member-restriction workflows.
 
 ## Acceptance
 
