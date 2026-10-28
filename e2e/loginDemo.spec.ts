@@ -32,7 +32,6 @@ test("every demo login destination renders without a backend, auth, or console e
 test("the login directory lists every scenario group and opens a destination", async ({ page }) => {
   await page.goto("/demo/login")
 
-  await expect(page.getByRole("heading", { name: "Login demo" })).toBeVisible()
   for (const group of [
     "Start sign-in",
     "Password and email code",

@@ -1,9 +1,70 @@
 import { A } from "@solidjs/router"
-import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
+import { For } from "solid-js"
+import { BlueBulletPoint } from "#ui/static/lists/BlueBulletPoint.jsx"
 import { PageWrapper } from "#ui/static/page/PageWrapper.jsx"
+import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
-import { DemoCard } from "./DemoCard.js"
+import { demoAccountScenarioGroups } from "../demoAccountScenarioGroups.js"
+import { demoAdminScenarioGroups } from "../demoAdminScenarioGroups.js"
+import { demoConsentScenarioGroups } from "../demoConsentScenarioGroups.js"
+import { demoLoginScenarioGroups } from "../demoLoginScenarioGroups.js"
+import { emailPreviewFixtures } from "../../email/fixtures/emailPreviewFixtures.js"
+
+type DemoHubLink = { href: string; label: () => string }
+type DemoHubSection = { header: () => string; links: readonly DemoHubLink[] }
+
+const demoHubSections: readonly DemoHubSection[] = [
+  {
+    header: () => messageTranslate("demo.nav.login"),
+    links: demoLoginScenarioGroups.flatMap((group) =>
+      group.scenarios.map((scenario) => ({ href: scenario.path, label: () => ttc(scenario.title) })),
+    ),
+  },
+  {
+    header: () => messageTranslate("demo.nav.account"),
+    links: demoAccountScenarioGroups.flatMap((group) =>
+      group.scenarios.map((scenario) => ({ href: scenario.path, label: () => ttc(scenario.title) })),
+    ),
+  },
+  {
+    header: () => messageTranslate("demo.nav.admin"),
+    links: demoAdminScenarioGroups.flatMap((group) =>
+      group.scenarios.map((scenario) => ({ href: scenario.path, label: () => ttc(scenario.title) })),
+    ),
+  },
+  {
+    header: () => messageTranslate("shell.nav.applicationConsent"),
+    links: demoConsentScenarioGroups.flatMap((group) =>
+      group.scenarios.map((scenario) => ({ href: scenario.path, label: () => ttc(scenario.title) })),
+    ),
+  },
+  {
+    header: () => messageTranslate("email.directory.title"),
+    links: emailPreviewFixtures.map((fixture) => ({
+      href: `/demo/emails/${fixture.id}`,
+      label: () => messageTranslate(fixture.titleKey),
+    })),
+  },
+]
+
+function DemoHubSectionLinks(props: { links: readonly DemoHubLink[] }) {
+  return (
+    <div class="flex flex-col">
+      <For each={props.links}>
+        {(link) => (
+          <div class="flex flex-row flex-nowrap content-center">
+            <BlueBulletPoint />
+            <A class="break-all no-underline hover:underline" href={link.href}>
+              {link.label()}
+            </A>
+          </div>
+        )}
+      </For>
+    </div>
+  )
+}
 
 export function DemoHub() {
   return (
@@ -54,46 +115,16 @@ export function DemoHub() {
         </div>
       </header>
       <PageWrapper innerClass="py-12 sm:py-16">
-        <div class="mx-auto max-w-4xl">
-          <h1 class="text-4xl font-semibold tracking-tight">{messageTranslate("app.name")}</h1>
-          <p class="mt-3 text-lg text-muted-foreground">{messageTranslate("demo.hub.description")}</p>
-          <div class="mt-8 grid gap-6 md:grid-cols-2">
-            <DemoCard
-              title={() => messageTranslate("admin.navigation.label")}
-              description={() => messageTranslate("demo.hub.adminDescription")}
-              href="/demo/admin/users"
-              linkLabel={() => messageTranslate("demo.hub.adminOpen")}
-            />
-            <DemoCard
-              title={() => messageTranslate("email.directory.title")}
-              description={() => messageTranslate("email.hub.description")}
-              href="/demo/emails"
-              linkLabel={() => messageTranslate("email.hub.open")}
-            />
-            <DemoCard
-              title={() => messageTranslate("demo.nav.account")}
-              description={() => messageTranslate("demo.hub.accountDescription")}
-              href="/demo/account"
-              linkLabel={() => messageTranslate("demo.hub.accountOpen")}
-            />
-            <DemoCard
-              title={() => messageTranslate("shell.nav.invitations")}
-              description={() => messageTranslate("demo.hub.invitationsDescription")}
-              href="/demo/invitations"
-              linkLabel={() => messageTranslate("demo.hub.invitationsOpen")}
-            />
-            <DemoCard
-              title={() => messageTranslate("shell.nav.applicationConsent")}
-              description={() => messageTranslate("demo.hub.consentDescription")}
-              href="/demo/consent"
-              linkLabel={() => messageTranslate("demo.hub.consentOpen")}
-            />
-            <DemoCard
-              title={() => messageTranslate("demo.nav.login")}
-              description={() => messageTranslate("demo.hub.loginDescription")}
-              href="/demo/login"
-              linkLabel={() => messageTranslate("demo.hub.loginOpen")}
-            />
+        <div class="mx-auto max-w-7xl">
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <For each={demoHubSections}>
+              {(section) => (
+                <section>
+                  <h2 class="text-xl font-semibold">{section.header()}</h2>
+                  <DemoHubSectionLinks links={section.links} />
+                </section>
+              )}
+            </For>
           </div>
         </div>
       </PageWrapper>

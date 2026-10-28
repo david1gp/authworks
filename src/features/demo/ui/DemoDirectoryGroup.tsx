@@ -1,20 +1,26 @@
+import { A } from "@solidjs/router"
+import { For } from "solid-js"
+import { BlueBulletPoint } from "#ui/static/lists/BlueBulletPoint.jsx"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
 import type { DemoFixtureScenarioGroup } from "../demoFixtureScenarioGroupSchema.js"
-import { DemoDirectoryScenarioCard } from "./DemoDirectoryScenarioCard.js"
 
 export function DemoDirectoryGroup(props: { group: DemoFixtureScenarioGroup }) {
   return (
     <section aria-labelledby={`demo-group-${props.group.key}`} class="min-w-0">
-      <div class="mb-3.5 max-w-3xl">
-        <h2 id={`demo-group-${props.group.key}`} class="text-base font-semibold tracking-tight">
-          {ttc(props.group.title)}
-        </h2>
-        <p class="mt-1 text-sm text-muted-foreground">{ttc(props.group.description)}</p>
-      </div>
-      <div class="grid min-w-0 gap-4 [&>*]:min-w-0 sm:grid-cols-2 xl:grid-cols-3">
-        {props.group.scenarios.map((scenario) => (
-          <DemoDirectoryScenarioCard scenario={scenario} />
-        ))}
+      <h2 id={`demo-group-${props.group.key}`} class="text-xl font-semibold">
+        {ttc(props.group.title)}
+      </h2>
+      <div class="flex flex-col">
+        <For each={props.group.scenarios}>
+          {(scenario) => (
+            <div class="flex flex-row flex-nowrap content-center">
+              <BlueBulletPoint />
+              <A class="break-all no-underline hover:underline" href={scenario.path}>
+                {ttc(scenario.title)}
+              </A>
+            </div>
+          )}
+        </For>
       </div>
     </section>
   )
