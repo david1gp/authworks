@@ -18,7 +18,7 @@ export function LanguageSelector(props: LanguageSelectorProps) {
       <div class="relative w-full min-w-0">
         <select
           aria-label={messageTranslate("common.language")}
-          class="max-w-16 appearance-none truncate rounded-control border border-line bg-surface px-1.5 pr-10! py-1 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 sm:max-w-none sm:text-sm"
+          class="max-w-36 appearance-none truncate rounded-control border border-line bg-surface px-1.5 pr-10! py-1 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 sm:max-w-none sm:text-sm"
           value={state.language()}
           onChange={state.onChange}
         >
