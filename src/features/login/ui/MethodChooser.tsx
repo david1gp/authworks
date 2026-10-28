@@ -45,13 +45,13 @@ export function MethodChooser(props: MethodChooserProps) {
           {messageTranslate("login.chooser.orChooseMethod")}
         </p>
       </Show>
-      <ul class="m-0 grid list-none gap-2.5 p-0">
+      <ul class="m-0 grid list-none gap-2.5 p-0" classList={{ "mt-6": !state.hasRecentAccounts() }}>
         <For each={props.methods}>
           {(method) => (
-            <li>
-              <Show
-                when={method === "external-identity"}
-                fallback={
+            <Show
+              when={method === "external-identity"}
+              fallback={
+                <li>
                   <MethodChoiceButton
                     detail={state.methodCopy(method).detail}
                     label={state.methodCopy(method).label}
@@ -61,10 +61,12 @@ export function MethodChooser(props: MethodChooserProps) {
                     pending={props.pending}
                     providerType={state.provider()?.type}
                   />
-                }
-              >
-                <For each={props.discovery.providers}>
-                  {(provider) => (
+                </li>
+              }
+            >
+              <For each={props.discovery.providers}>
+                {(provider) => (
+                  <li>
                     <MethodChoiceButton
                       detail={state.methodCopy(method, provider).detail}
                       label={state.methodCopy(method, provider).label}
@@ -73,10 +75,10 @@ export function MethodChooser(props: MethodChooserProps) {
                       pending={props.pending}
                       providerType={provider.type}
                     />
-                  )}
-                </For>
-              </Show>
-            </li>
+                  </li>
+                )}
+              </For>
+            </Show>
           )}
         </For>
       </ul>
