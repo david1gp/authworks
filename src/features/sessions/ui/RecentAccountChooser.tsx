@@ -31,7 +31,7 @@ export function RecentAccountChooser(props: RecentAccountChooserProps) {
           {messageTranslate("login.recent.heading")}
         </p>
       </Show>
-      <ul class="m-0 mb-3.5 grid list-none gap-2.5 p-0">
+      <ul class="m-0 mb-3.5 grid list-none gap-2.5 p-0" classList={{ "mt-5": !props.embedded }}>
         <For each={props.accounts}>
           {(account) => (
             <li>
