@@ -113,6 +113,7 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
           url: emailDeliveryUrlCreate(options.publicOrigin, "/login/verify-email", {
             realmId: delivery.realmId,
             token: delivery.token,
+            ...(delivery.returnTo === undefined ? {} : { return_to: delivery.returnTo }),
           }),
         }),
         options.mailDelivery,

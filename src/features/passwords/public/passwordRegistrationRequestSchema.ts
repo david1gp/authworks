@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { localReturnPathSelect } from "../../../platform/urls/localReturnPathSelect.js"
 import { userProfileSchema } from "../../users/public/userProfileSchema.js"
 import { userRegistrationVerificationMethodSchema } from "../../users/public/userRegistrationVerificationMethodSchema.js"
 
@@ -9,6 +10,15 @@ export const passwordRegistrationRequestSchema = v.pipe(
     password: v.pipe(v.string(), v.minLength(1), v.maxLength(1024)),
     phoneNumber: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
     profile: userProfileSchema,
+    returnTo: v.optional(
+      v.pipe(
+        v.string(),
+        v.check(
+          (value) => localReturnPathSelect(value, "") === value && value.length > 0,
+          "The return path is invalid.",
+        ),
+      ),
+    ),
     userName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
     verificationMethod: v.optional(userRegistrationVerificationMethodSchema),
   }),

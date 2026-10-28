@@ -216,6 +216,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     if (committed.data.token !== undefined && committed.data.userId !== undefined)
       passwordVerificationTokenInvoke(options.onVerificationToken, {
         email: email.data,
+        ...(parsed.output.returnTo === undefined ? {} : { returnTo: parsed.output.returnTo }),
         realmId: options.realmId,
         token: committed.data.token,
         userId: committed.data.userId,
@@ -225,6 +226,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   if (committed.data.token !== undefined)
     passwordVerificationTokenInvoke(options.onVerificationToken, {
       email: email.data,
+      ...(parsed.output.returnTo === undefined ? {} : { returnTo: parsed.output.returnTo }),
       realmId: options.realmId,
       token: committed.data.token,
       userId,

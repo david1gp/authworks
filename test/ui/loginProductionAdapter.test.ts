@@ -7,6 +7,35 @@ import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 
 describe("production login adapter", () => {
+  test("registration forwards only safe local continuations", async () => {
+    const destination = "/invitations/accept?token=a%2Bb%3D&next=x#part"
+    const requests: Array<{ returnTo?: string }> = []
+    let returnTo: string | null = destination
+    const api = {
+      ...apiCreate([]),
+      register: async (_realm: string, input: { returnTo?: string }) => {
+        requests.push(input)
+        return resultCreate({ accepted: true as const, verificationRequired: true as const })
+      },
+    } as unknown as ReturnType<typeof loginApiCreate>
+    const adapter = loginProductionAdapterCreate({
+      api,
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+      returnTo: () => returnTo,
+    })
+    const input = { displayName: "Invitee", email: "invitee@example.com", password: "password", userName: "invitee" }
+    await adapter.register(input)
+    returnTo = "//evil.example"
+    await adapter.register(input)
+    returnTo = null
+    await adapter.register(input)
+    expect(requests.map((request) => request.returnTo)).toEqual([destination, undefined, undefined])
+  })
+
   test("binds login-MFA email and passkey transports and fails safely without a challenge", async () => {
     const calls: string[] = []
     const statuses: string[] = []

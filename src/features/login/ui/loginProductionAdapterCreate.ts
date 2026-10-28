@@ -6,6 +6,7 @@ import { passkeyAuthenticationRun } from "../../passkeys/ui/passkeyAuthenticatio
 import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import { loginRecentAccountSchema } from "../model/loginRecentAccountSchema.js"
+import { loginReturnPathSelect } from "../model/loginReturnPathSelect.js"
 import type { LoginAdapter, LoginAuthenticationOutcome, LoginDiscovery } from "./loginAdapter.js"
 import type { loginApiCreate } from "./loginApiCreate.js"
 
@@ -16,6 +17,7 @@ type LoginProductionAdapterOptions = {
   readonly domain: string
   readonly interactionHandle: () => string | undefined
   readonly interactionResume: () => void
+  readonly returnTo?: () => string | null
 }
 
 const notDiscovered = (op: string) =>
@@ -273,7 +275,9 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
     register: async (input) => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginRegister")
+      const returnTo = loginReturnPathSelect(options.returnTo?.(), "")
       const result = await api.register(realm, {
+        ...(returnTo.length === 0 ? {} : { returnTo }),
         email: input.email,
         password: input.password,
         profile: { displayName: input.displayName },
