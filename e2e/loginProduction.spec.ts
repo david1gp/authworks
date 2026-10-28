@@ -83,6 +83,38 @@ test("production sign-in discovers the realm at runtime and never hardcodes an i
   expect(requests[0]?.pathname).toBe("/organization-discovery")
 })
 
+test("production chooser separates the heading and every method, including each external provider", async ({
+  page,
+}) => {
+  const secondProviderId = "018f0000-0000-7000-8000-000000000004"
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }), {
+    ...discovery,
+    policy: { ...discovery.policy, providerIds: [providerId, secondProviderId] },
+    providers: [
+      { displayName: "Google", id: secondProviderId, type: "google" },
+      { displayName: "GitHub", id: providerId, type: "github" },
+    ],
+  })
+
+  await page.goto("/login")
+
+  const heading = page.getByRole("heading", { name: "Choose a method" })
+  await expect(heading).toBeFocused()
+  // Programmatic focus moves screen-reader context; it must not paint a box around the heading.
+  expect(await heading.evaluate((element) => getComputedStyle(element).outlineStyle)).toBe("none")
+  const methods = page.getByRole("listitem").filter({ has: page.getByRole("button") })
+  await expect(methods).toHaveCount(5)
+  const headingBox = await heading.boundingBox()
+  const boxes = await Promise.all((await methods.all()).map((method) => method.boundingBox()))
+  expect(headingBox).not.toBeNull()
+  expect((boxes[0]?.y ?? 0) - ((headingBox?.y ?? 0) + (headingBox?.height ?? 0))).toBeGreaterThanOrEqual(16)
+  for (let index = 1; index < boxes.length; index += 1) {
+    const previous = boxes[index - 1]
+    const gap = (boxes[index]?.y ?? 0) - ((previous?.y ?? 0) + (previous?.height ?? 0))
+    expect(gap).toBeGreaterThanOrEqual(8)
+  }
+})
+
 test("production chooser shows WhatsApp only when policy and availability allow it", async ({ page }) => {
   const requests = await loginBackendMock(
     page,
