@@ -21,10 +21,6 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
             <A class="truncate text-sm font-semibold tracking-tight text-foreground" href="/demo">
               {messageTranslate("app.name")}
             </A>
-            <span class="hidden h-4 w-px bg-line sm:block" />
-            <span class="hidden truncate text-[0.8125rem] font-medium text-muted-foreground sm:block">
-              {messageTranslate("demo.account.title")}
-            </span>
           </div>
           <div class="flex min-w-0 items-center gap-2">
             <A
@@ -59,11 +55,6 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
 function AccountDemoDestination(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
   return (
     <div class="mx-auto grid min-w-0 max-w-6xl gap-3 [&>*]:min-w-0">
-      <div>
-        <A class="text-[0.8125rem] font-medium text-accent hover:underline" href="/demo/account">
-          {messageTranslate("demo.directory.back")}
-        </A>
-      </div>
       <Show
         when={props.state.accessScreen()}
         fallback={

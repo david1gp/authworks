@@ -8,15 +8,11 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionFocusShell } from "../../../ui/production/ProductionFocusShell.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
-import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import type { oidcConsentDemoStateCreate } from "./oidcConsentDemoStateCreate.js"
 
 export function OidcConsentDemoView(props: { readonly state: ReturnType<typeof oidcConsentDemoStateCreate> }) {
   return (
     <ProductionFocusShell title={messageTranslate("shell.nav.applicationConsent")}>
-      <div class="mb-4 flex justify-center">
-        <DemoFixtureStateSelector options={props.state.stateOptions()} />
-      </div>
       <Switch>
         <Match when={props.state.selectedState() === "loading"}>
           <ProductionStatePanel state="loading" />

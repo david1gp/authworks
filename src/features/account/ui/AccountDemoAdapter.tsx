@@ -1,11 +1,6 @@
-import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
-import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
-import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
-import { demoScenarioPlaceholderStateCreate } from "../../demo/ui/demoScenarioPlaceholderStateCreate.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
-import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
 import { AccountProfileView } from "./AccountProfileView.js"
 import { accountDemoAdapterStateCreate } from "./accountDemoAdapterStateCreate.js"
@@ -21,23 +16,13 @@ export function AccountDemoAdapter(props: {
   readonly showFixtureHeader?: boolean
   readonly state?: ReturnType<typeof accountDemoAdapterStateCreate>
 }) {
-  const fixture = demoScenarioPlaceholderStateCreate(() => demoAccountScenarioGroups)
-  const location = useLocation()
   const state =
     props.state ?? accountDemoAdapterStateCreate(() => props.kind, { onPasswordChanged: props.onPasswordChanged })
-  const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const page = state.page
   const hasPassword = () =>
     typeof props.hasPassword === "function" ? props.hasPassword() : (props.hasPassword ?? true)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      {props.showFixtureHeader === false ? null : (
-        <AccountDemoFixtureHeader
-          description={scenario()?.description ?? ""}
-          stateOptions={fixture.stateOptions()}
-          title={scenario()?.title ?? ""}
-        />
-      )}
       <Switch>
         <Match when={props.kind === "password"}>
           <AccountPasswordView

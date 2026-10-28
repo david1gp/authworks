@@ -1,10 +1,6 @@
-import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
-import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
-import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { AccountConsentsView } from "./AccountConsentsView.js"
-import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountInvitationsView } from "./AccountInvitationsView.js"
 import { AccountInvitationView } from "./AccountInvitationView.js"
 import { AccountOrganizationAccessDemoAdapter } from "./AccountOrganizationAccessDemoAdapter.js"
@@ -15,18 +11,9 @@ export function AccountAccessDemoAdapter(props: {
   readonly screen: AccountAccessScreen
   readonly showFixtureHeader?: boolean
 }) {
-  const location = useLocation()
   const state = accountAccessDemoStateCreate(() => props.screen)
-  const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      {props.showFixtureHeader === false ? null : (
-        <AccountDemoFixtureHeader
-          description={scenario()?.description ?? ""}
-          stateOptions={state.stateOptions()}
-          title={scenario()?.title ?? ""}
-        />
-      )}
       <Switch>
         <Match when={props.screen === "organizations" || props.screen === "effective-access"}>
           <AccountOrganizationAccessDemoAdapter organizationState={state} />

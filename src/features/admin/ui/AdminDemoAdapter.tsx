@@ -1,7 +1,4 @@
-import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { AdminRealmView } from "./AdminRealmView.js"
 import { AdminScreenView } from "./AdminScreenView.js"
 import { adminDemoStateCreate } from "./adminDemoStateCreate.js"
@@ -11,17 +8,6 @@ export function AdminDemoAdapter(props: { readonly screen: AdminScreen }) {
   const state = adminDemoStateCreate(() => props.screen)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      <AuthenticatedPageHeader
-        description={state.scenarioDescription()}
-        eyebrow={messageTranslate("demo.fixture.preview")}
-        meta={
-          <>
-            <span class="text-xs font-medium text-muted-foreground">{messageTranslate("demo.fixture.state")}</span>
-            <DemoFixtureStateSelector options={state.stateOptions()} />
-          </>
-        }
-        title={state.scenarioTitle()}
-      />
       {props.screen === "realm" ? (
         <AdminRealmView basePath="/demo/admin" state={state} />
       ) : (

@@ -40,7 +40,7 @@ test("organization, invitation, and consent demos are interactive and network-fr
   })
 
   await page.goto("/demo/account/organizations")
-  await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
+  await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(0)
   await expect(page.getByRole("link", { name: "Access", exact: true })).toHaveCount(0)
   await page.locator("summary").filter({ hasText: "Organizations" }).click()
   const organizationSection = page.getByRole("tablist", { name: "Organization to view", exact: true })
@@ -99,8 +99,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   })
 
   await page.goto("/demo/account/overview")
-  await expect(page.getByRole("heading", { level: 1, name: "Security setup", exact: true })).toBeVisible()
-  await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
+  await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(0)
   const securityGrid = page.locator("[data-account-security-grid]")
   await expect(securityGrid.locator(":scope > div")).toHaveCount(5)
   for (const detail of ["Password set", "2 passkeys configured", "7 backup codes remaining"])
@@ -115,7 +114,6 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   )
 
   await page.goto("/demo/account/sessions")
-  await expect(page.getByRole("heading", { level: 1, name: "Sessions and devices", exact: true })).toBeVisible()
   await page.locator("summary").filter({ hasText: "Sessions and devices" }).click()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
   await page
@@ -129,7 +127,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await page.goto("/demo/account/passkeys?state=empty")
   await page.locator("summary").filter({ hasText: "Passkeys" }).click()
   await expect(page.getByText("No passkeys registered", { exact: true })).toBeVisible()
-  await page.getByRole("link", { name: "loading", exact: true }).click()
+  await page.goto("/demo/account/passkeys?state=loading")
   await expect(page.getByRole("status")).toBeVisible()
 
   await page.goto("/demo/account/factors")

@@ -19,10 +19,6 @@ export function EmailDemoScreen(props: { state: EmailDemoState }) {
             <A class="font-semibold tracking-tight" href="/demo">
               {messageTranslate("app.name")}
             </A>
-            <span class="hidden h-5 w-px bg-line sm:block" />
-            <span class="hidden text-sm text-muted-foreground sm:block">
-              {messageTranslate("email.directory.title")}
-            </span>
           </div>
           <div class="flex min-w-0 items-center gap-2 sm:gap-3">
             <A
