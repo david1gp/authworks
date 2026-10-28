@@ -21,6 +21,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionNavigationActiveHrefSelect } from "../../../ui/production/productionNavigationActiveHrefSelect.js"
 import { productionShellAccessPermits } from "../../../ui/production/productionShellAccessPermits.js"
 import { productionShellAccessResolve } from "../../../ui/production/productionShellAccessResolve.js"
+import { adminActivityDemoAccessPermits } from "./adminActivityDemoAccessPermits.js"
 
 const demoAccessSchema = v.optional(v.picklist(["owner", "admin", "realm-admin"]), "realm-admin")
 
@@ -55,6 +56,7 @@ const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
   {
     label: null,
     items: [
+      { access: "organization-admin", href: "/demo/admin/activity", icon: mdiClipboardTextOutline, label: "Activity" },
       { access: "organization-admin", href: "/demo/admin/users", icon: mdiAccountMultipleOutline, label: "Users" },
       { access: "organization-admin", href: "/demo/admin/roles", icon: mdiAccountStarOutline, label: "Roles" },
       {
@@ -120,6 +122,8 @@ const demoShellAccessResolve = (access: AdminDemoAccess) =>
 
 const demoNavLabelTranslate = (label: string): string => {
   switch (label) {
+    case "Activity":
+      return messageTranslate("shell.nav.activity")
     case "Users":
       return messageTranslate("shell.nav.users")
     case "Roles":
@@ -177,7 +181,7 @@ export function adminDemoAppStateCreate() {
   const shellAccess = () => demoShellAccessResolve(access())
 
   const translatedGroups = (): AdminDemoNavGroup[] =>
-    demoNavigationGroups
+    (adminActivityDemoAccessPermits(location.search) ? demoNavigationGroups : [])
       .map((group) => ({
         ...group,
         items: group.items

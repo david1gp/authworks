@@ -59,6 +59,29 @@ export function eventApiClientCreate(options: EventApiClientCreateOptions) {
     })
 
   return {
+    eventOrganizationList(
+      realmId: string,
+      organizationId: string,
+      query?: EventListQuery,
+    ): Promise<Result<EventListResponse>> {
+      if (realmId.length === 0 || organizationId.length === 0)
+        return Promise.resolve(
+          resultErrorCreate(
+            "eventApiClientOrganizationList",
+            "The realm or organization ID is invalid.",
+            "events.invalid",
+          ),
+        )
+      return httpApiClientRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { credentials: "same-origin", method: "GET" },
+        op: "eventApiClientOrganizationList",
+        path: `/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/activity${eventListQueryToSearchParams(query)}`,
+        schema: eventListResponseSchema,
+        token: options.token,
+      })
+    },
     eventExport(realmId: string, query?: EventListQuery): Promise<Result<EventExportResponse>> {
       const parsedRealmId = v.safeParse(v.pipe(v.string(), v.minLength(1)), realmId)
       if (!parsedRealmId.success)

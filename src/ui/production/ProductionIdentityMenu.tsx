@@ -26,12 +26,10 @@ export function ProductionIdentityMenu(props: {
 
   return (
     <Popover floatingOptions={{ flip: true, shift: true }} onOpenChange={state.openChange} open={state.open()}>
-      <Popover.Trigger
-        aria-label={props.name}
-        class={authenticatedNavigationClasses.identityTrigger}
-        title={props.name}
-      >
-        <AuthenticatedAvatar name={props.name} size="sm" src={props.pictureUrl} />
+      <Popover.Trigger class={authenticatedNavigationClasses.identityTrigger} title={props.name}>
+        <span aria-hidden="true">
+          <AuthenticatedAvatar name={props.name} size="sm" src={props.pictureUrl} />
+        </span>
         <span class={authenticatedNavigationClasses.identityName}>{props.name}</span>
         <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiChevronDown} />
       </Popover.Trigger>

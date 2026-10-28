@@ -6,12 +6,14 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../../platform/testkit/platformTestkitCreate.js"
+import { realmAdministratorGrant } from "../../realms/actions/realmAdministratorGrant.js"
 import { realmCreate } from "../../realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import { userCreate } from "../../users/actions/userCreate.js"
 import { userLifecycleSet } from "../../users/actions/userLifecycleSet.js"
+import { organizationActivityAuthorize } from "../server/organizationActivityAuthorize.js"
 import { organizationCreate } from "./organizationCreate.js"
 import { organizationDomainClaim } from "./organizationDomainClaim.js"
 import { organizationDomainVerify } from "./organizationDomainVerify.js"
@@ -70,6 +72,61 @@ async function organizationSeed(database: StorageDatabase, realmId: string, name
   if (!organization.success) throw new Error(organization.errorMessage)
   return organization.data.organization
 }
+
+test("organization activity requires realm or organization administration in the requested tenant", async () => {
+  await withDatabase(async (database) => {
+    const system = realmSystemContextCreate()
+    const realm = realmCreate({
+      context: system,
+      database,
+      input: { domain: "activity.example.com", name: "activity" },
+    })
+    const other = realmCreate({
+      context: system,
+      database,
+      input: { domain: "activity-other.example.com", name: "other" },
+    })
+    expect(realm.success && other.success).toBe(true)
+    if (!realm.success || !other.success) throw new Error("Realm creation failed")
+    const realmId = realm.data.realm.id
+    const owner = activeUserCreate(database, realmId, "activity-owner")
+    const admin = activeUserCreate(database, realmId, "activity-admin")
+    const member = activeUserCreate(database, realmId, "activity-member")
+    const outsider = activeUserCreate(database, realmId, "activity-outsider")
+    const realmAdmin = activeUserCreate(database, realmId, "activity-realm-admin")
+    const organization = await organizationSeed(database, realmId, "Activity", owner)
+    const tenant = (userId: string) => realmTenantContextCreate(realmId, userId)
+    for (const [userId, role] of [
+      [admin, "admin"],
+      [member, "member"],
+    ] as const) {
+      expect(
+        organizationMembershipCreate({
+          context: tenant(owner),
+          database,
+          input: { roles: [role], userId },
+          organizationId: organization.id,
+          realmId,
+        }).success,
+      ).toBe(true)
+    }
+    expect(realmAdministratorGrant({ context: system, database, realmId, userId: realmAdmin }).success).toBe(true)
+    const authorize = (userId: string, requestedRealm = realmId, organizationId = organization.id) =>
+      organizationActivityAuthorize({ context: tenant(userId), database, realmId: requestedRealm, organizationId })
+    for (const userId of [owner, admin, realmAdmin]) expect(authorize(userId).success).toBe(true)
+    for (const userId of [member, outsider]) expect(authorize(userId).success).toBe(false)
+    expect(authorize(owner, other.data.realm.id).success).toBe(false)
+    expect(authorize(owner, realmId, "missing").success).toBe(false)
+    expect(
+      organizationActivityAuthorize({
+        context: realmTenantContextCreate(other.data.realm.id, owner),
+        database,
+        realmId: other.data.realm.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(false)
+  })
+})
 
 test("cross-realm organization reads are denied", async () => {
   await withDatabase(async (database) => {

@@ -837,7 +837,10 @@ test("subject-bound organization self-service stays isolated and protects invita
       data: { activeOrganizationId: alphaOrganization.data.organization.id },
     })
     const inspected = await client.organizationInvitationMeInspect(alpha.id, { token: invitation.data.token })
-    expect(inspected).toMatchObject({ success: true, data: { invitation: { id: invitation.data.invitation.id } } })
+    expect(inspected).toMatchObject({
+      success: true,
+      data: { invitation: { id: invitation.data.invitation.id, organizationName: "Invitation Self-Service" } },
+    })
     expect(JSON.stringify(inspected)).not.toContain(invitation.data.token)
     const listedInvitations = await client.organizationInvitationMeList(alpha.id)
     expect(listedInvitations).toMatchObject({

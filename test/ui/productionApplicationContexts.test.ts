@@ -164,6 +164,20 @@ describe("production application contexts", () => {
 
     expect(refreshed.session.actorLabel).toBe("Refreshed User")
     expect(meRequestCaches).toEqual(["no-store", "no-store"])
+
+    responses[mePath] = {
+      ...firstMeObject,
+      capabilities: { realmAdministrator: true, realmRead: true },
+    }
+    responses[`/realms/${realmId}/me/organizations`] = { items: [] }
+    const failedList = await productionApplicationContextsCreate()
+    expect(failedList.session.guard.organization).toBe("missing")
+    expect(failedList.session.guard.organizationResolutionFailed).toBe(true)
+
+    responses[`/realms/${realmId}/organizations`] = { items: [] }
+    const emptyList = await productionApplicationContextsCreate()
+    expect(emptyList.session.guard.organization).toBe("missing")
+    expect(emptyList.session.guard.organizationResolutionFailed).toBe(false)
   })
 
   test("switches the authoritative organization in-app and replaces only the organization URL state", async () => {

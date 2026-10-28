@@ -1,4 +1,12 @@
 key,es
+account.access.organizationPermissionsEmpty,No hay permisos de organización asociados a esta membresía.
+admin.activity.actor,Actor {actor}
+admin.activity.description,Cambios administrativos recientes en este contexto. Los eventos más recientes aparecen primero.
+admin.activity.empty,No hay actividad administrativa reciente en este contexto.
+admin.activity.error,No se pudo cargar la actividad. Inténtalo de nuevo.
+admin.activity.organization,Organización
+admin.activity.realm,Ámbito de IAM
+shell.nav.activity,Actividad
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,Ha rechazado esta invitación.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,Consulta los roles y permisos de proyecto disponibles para esta cuenta en esta organización.
+account.access.effectiveDescription,Consulta los roles y permisos de proyecto disponibles para esta cuenta en esta organización.
+account.access.effectiveEmpty,No se indica acceso a proyectos para esta organización.
+account.access.effectiveEmpty,No se indica acceso a proyectos para esta organización.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Acceso efectivo a proyectos
+account.access.effectiveTitle,Acceso efectivo a proyectos
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

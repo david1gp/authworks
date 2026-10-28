@@ -2,9 +2,9 @@ import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
 import type { Result } from "#result"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
-import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -19,7 +19,8 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { eventExport } from "../actions/eventExport.js"
 import { eventList } from "../actions/eventList.js"
-import { eventListQuerySchema, type EventListQuery } from "../public/eventListQuerySchema.js"
+import { eventOrganizationList } from "../actions/eventOrganizationList.js"
+import { type EventListQuery, eventListQuerySchema } from "../public/eventListQuerySchema.js"
 
 type EventServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -74,6 +75,33 @@ export function eventServerAppCreate(options: EventServerAppCreateOptions) {
       }),
     )
   })
+
+  app.get(
+    "/realms/:realmId/organizations/:organizationId/activity",
+    async (context, next) => {
+      if (context.req.header("authorization") === undefined) return protectedMiddleware(context, next)
+      const authenticated = eventBearerAuthenticate(options.database, context)
+      if (!authenticated.success) return eventErrorResponseCreate(context, authenticated)
+      context.set("authorizationActor", authenticated.data.actor)
+      return next()
+    },
+    (context) => {
+      const realmId = context.req.param("realmId")
+      const actor = context.get("authorizationActor")
+      const query = eventListQueryFromUrl(context.req.url)
+      if (!query.success) return eventErrorResponseCreate(context, query)
+      return eventResultResponseCreate(
+        context,
+        eventOrganizationList({
+          context: { actor, actorId: actor.actorId, kind: "tenant", realmId: actor.realmId ?? "" },
+          database: options.database,
+          realmId,
+          organizationId: context.req.param("organizationId"),
+          query: query.data,
+        }),
+      )
+    },
+  )
 
   app.get(
     "/realms/:realmId/events",

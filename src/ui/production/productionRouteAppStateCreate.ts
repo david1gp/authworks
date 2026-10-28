@@ -34,6 +34,7 @@ export function productionRouteAppStateCreate(
   return {
     api,
     guardState,
+    signInUrl: () => productionLoginRedirectUrlCreate(location),
     /** Generic shell page title, skipped on the account workspace and on screens that render their own header. */
     pageHeaderVisible: () => productionShellKindSelect(route()) !== "account" && screen()?.ownsPageHeader !== true,
     routeParam: (name: string) => {

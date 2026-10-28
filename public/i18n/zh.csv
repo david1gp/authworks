@@ -1,4 +1,12 @@
 key,zh
+account.access.organizationPermissionsEmpty,此成员身份未列出组织权限。
+admin.activity.actor,操作人 {actor}
+admin.activity.description,此上下文中最近的管理变更。最新事件显示在前。
+admin.activity.empty,此上下文中没有近期管理活动。
+admin.activity.error,无法加载活动。请重试。
+admin.activity.organization,组织
+admin.activity.realm,IAM 领域
+shell.nav.activity,活动
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,您已拒绝此邀请。
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,查看此账户在此组织中可用的项目角色和权限。
+account.access.effectiveDescription,查看此账户在此组织中可用的项目角色和权限。
+account.access.effectiveEmpty,此组织未列出任何项目访问权限。
+account.access.effectiveEmpty,此组织未列出任何项目访问权限。
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,有效项目访问权限
+account.access.effectiveTitle,有效项目访问权限
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

@@ -1,4 +1,5 @@
 import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
@@ -6,6 +7,7 @@ import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { userDisplayNameList } from "../../users/server/userDisplayNameList.js"
 import { organizationMembershipPublicViewCreate } from "../domain/organizationMembershipPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationMembershipListResponse } from "../public/organizationMembershipListResponseSchema.js"
@@ -56,7 +58,7 @@ export function organizationMembershipList(
   }
   const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "userId"], "createdAt")
   if (!sortBy.success) return sortBy
-  return listRowsPage({
+  const page = listRowsPage({
     idGet: (membership) => membership.id,
     query: options.query,
     rows: memberships,
@@ -65,5 +67,20 @@ export function organizationMembershipList(
       if (sortBy.data === "userId") return membership.userId
       return membership.createdAt
     },
+  })
+  if (!page.success) return page
+  const names = userDisplayNameList({
+    database: options.database,
+    realmId: options.realmId,
+    userIds: page.data.items.map((membership) => membership.userId),
+  })
+  if (!names.success) return names
+  const namesById = new Map(names.data.map((user) => [user.id, user.displayName]))
+  return resultCreate({
+    ...page.data,
+    items: page.data.items.map((membership) => ({
+      ...membership,
+      displayName: namesById.get(membership.userId) ?? null,
+    })),
   })
 }

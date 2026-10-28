@@ -58,6 +58,12 @@ export const productionShellNavigationGroups = {
           icon: mdiCogOutline,
           label: "shell.nav.configuration",
         },
+        {
+          access: "organization-admin",
+          href: "/admin/activity",
+          icon: mdiClipboardTextOutline,
+          label: "shell.nav.activity",
+        },
       ],
     },
     {

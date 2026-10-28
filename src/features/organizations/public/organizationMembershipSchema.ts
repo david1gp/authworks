@@ -6,6 +6,7 @@ import { organizationRolesSchema } from "./organizationRolesSchema.js"
 
 export const organizationMembershipSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  displayName: v.optional(v.nullable(v.string())),
   id: organizationMembershipResourceIdSchema,
   realmId: realmResourceIdSchema,
   organizationId: organizationResourceIdSchema,

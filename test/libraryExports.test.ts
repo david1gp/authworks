@@ -221,7 +221,13 @@ test("every API client publishes its complete method set", () => {
     "whatsappOtpPhoneChangeResend",
     "whatsappOtpPhoneChangeVerify",
   ])
-  expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(4)
+  expect(Object.keys(events.eventApiClientCreate(options))).toEqual([
+    "eventOrganizationList",
+    "eventExport",
+    "eventList",
+    "eventTenantExport",
+    "eventTenantList",
+  ])
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(21)
   expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(48)
   expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(18)

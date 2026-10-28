@@ -93,6 +93,7 @@ describe("productionRouteAppStateCreate authentication redirect", () => {
     mockLocation = { hash: "#details", pathname: "/account", search: "?tab=security" }
     const anonymousAccount = await stateObserve(productionRouteContractMap.account, sessionCreate("anonymous"))
     expect(anonymousAccount.assignments).toEqual(["/login?return_to=%2Faccount%3Ftab%3Dsecurity%23details"])
+    expect(anonymousAccount.state.signInUrl()).toBe("/login?return_to=%2Faccount%3Ftab%3Dsecurity%23details")
   })
 
   test("keeps an authenticated account route in place when its organization context changes", async () => {

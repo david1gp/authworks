@@ -850,6 +850,11 @@ function organizationAdministratorRoutesRegister(
     database: options.database,
     publicOrigin: options.publicOrigin,
   })
+  const adminResourceMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+    realmAdministratorResourceAccess: true,
+  })
 
   app.get("/realms/:realmId/organization-roles", protectedMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
@@ -898,7 +903,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const result = organizationGet({
@@ -915,7 +920,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.patch("/realms/:realmId/organizations/:organizationId", protectedMiddleware, async (context) => {
+  app.patch("/realms/:realmId/organizations/:organizationId", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -938,7 +943,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.post("/realms/:realmId/organizations/:organizationId/lifecycle", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/organizations/:organizationId/lifecycle", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -965,7 +970,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.post("/realms/:realmId/organizations/:organizationId/purge", protectedMiddleware, (context) => {
+  app.post("/realms/:realmId/organizations/:organizationId/purge", adminResourceMiddleware, (context) => {
     return organizationResultResponseCreate(
       context,
       organizationPurge({
@@ -977,7 +982,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/login-policy", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/login-policy", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
@@ -990,7 +995,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.patch("/realms/:realmId/login-policy", protectedMiddleware, async (context) => {
+  app.patch("/realms/:realmId/login-policy", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminPermissionAuthorize(
       context,
       options.database,
@@ -1021,7 +1026,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/branding", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/branding", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const result = organizationBrandingGet({
@@ -1038,7 +1043,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.put("/realms/:realmId/organizations/:organizationId/branding", protectedMiddleware, async (context) => {
+  app.put("/realms/:realmId/organizations/:organizationId/branding", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1061,7 +1066,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/metadata", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/metadata", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const query = organizationMetadataListQueryRead(context.req.url)
@@ -1078,7 +1083,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/metadata/:key", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
@@ -1093,7 +1098,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.put("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, async (context) => {
+  app.put("/realms/:realmId/organizations/:organizationId/metadata/:key", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1117,7 +1122,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.delete("/realms/:realmId/organizations/:organizationId/metadata/:key", protectedMiddleware, (context) => {
+  app.delete("/realms/:realmId/organizations/:organizationId/metadata/:key", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
@@ -1132,7 +1137,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/login-policy", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/login-policy", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
@@ -1146,7 +1151,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.patch("/realms/:realmId/organizations/:organizationId/login-policy", protectedMiddleware, async (context) => {
+  app.patch("/realms/:realmId/organizations/:organizationId/login-policy", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1169,7 +1174,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/domains", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/domains", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const query = organizationListQueryRead(context.req.url)
@@ -1186,7 +1191,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.post("/realms/:realmId/organizations/:organizationId/domains", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/organizations/:organizationId/domains", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1212,7 +1217,7 @@ function organizationAdministratorRoutesRegister(
 
   app.post(
     "/realms/:realmId/organizations/:organizationId/domains/:domain/verify",
-    protectedMiddleware,
+    adminResourceMiddleware,
     async (context) => {
       const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
       if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
@@ -1230,7 +1235,7 @@ function organizationAdministratorRoutesRegister(
     },
   )
 
-  app.delete("/realms/:realmId/organizations/:organizationId/domains/:domain", protectedMiddleware, (context) => {
+  app.delete("/realms/:realmId/organizations/:organizationId/domains/:domain", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
@@ -1245,7 +1250,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.get("/realms/:realmId/organizations/:organizationId/memberships", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/memberships", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const query = organizationListQueryRead(context.req.url)
@@ -1262,7 +1267,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.post("/realms/:realmId/organizations/:organizationId/memberships", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/organizations/:organizationId/memberships", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1292,7 +1297,7 @@ function organizationAdministratorRoutesRegister(
 
   app.patch(
     "/realms/:realmId/organizations/:organizationId/memberships/:membershipId",
-    protectedMiddleware,
+    adminResourceMiddleware,
     async (context) => {
       const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
       if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
@@ -1324,7 +1329,7 @@ function organizationAdministratorRoutesRegister(
 
   app.delete(
     "/realms/:realmId/organizations/:organizationId/memberships/:membershipId",
-    protectedMiddleware,
+    adminResourceMiddleware,
     (context) => {
       const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
       if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
@@ -1341,7 +1346,7 @@ function organizationAdministratorRoutesRegister(
     },
   )
 
-  app.get("/realms/:realmId/organizations/:organizationId/invitations", protectedMiddleware, (context) => {
+  app.get("/realms/:realmId/organizations/:organizationId/invitations", adminResourceMiddleware, (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const query = organizationListQueryRead(context.req.url)
@@ -1358,7 +1363,7 @@ function organizationAdministratorRoutesRegister(
     )
   })
 
-  app.post("/realms/:realmId/organizations/:organizationId/invitations", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/organizations/:organizationId/invitations", adminResourceMiddleware, async (context) => {
     const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const body = await organizationRequestJsonRead(context)
@@ -1389,7 +1394,7 @@ function organizationAdministratorRoutesRegister(
 
   app.post(
     "/realms/:realmId/organizations/:organizationId/invitations/:invitationId/revoke",
-    protectedMiddleware,
+    adminResourceMiddleware,
     (context) => {
       const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
       if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)

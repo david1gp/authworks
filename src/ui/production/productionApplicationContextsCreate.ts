@@ -12,10 +12,10 @@ import { userCurrentResponseSchema } from "../../features/users/public/userCurre
 import { resultCreate } from "../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.js"
+import { organizationBrandingIconUrlSelect } from "./organizationBrandingIconUrlSelect.js"
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
-import { organizationBrandingIconUrlSelect } from "./organizationBrandingIconUrlSelect.js"
 import { productionShellAccessResolve } from "./productionShellAccessResolve.js"
 
 const sessionCurrentResponseSchema = v.strictObject({ session: sessionSchema })
@@ -186,6 +186,15 @@ export async function productionApplicationContextsCreate(): Promise<{
         authentication: { status: "authenticated", userId: session.userId ?? session.subjectId },
         get organization() {
           return organization.get()
+        },
+        get organizationResolutionFailed() {
+          return (
+            organization.get() === "missing" &&
+            session.subjectType === "user" &&
+            (user?.capabilities?.realmAdministrator === true
+              ? allOrganizations === undefined
+              : memberships === undefined)
+          )
         },
         permission: session.subjectType === "user" ? "granted" : realm === undefined ? "denied" : "granted",
         realm: { realmId, status: "available" },

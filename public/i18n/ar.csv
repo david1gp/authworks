@@ -1,4 +1,12 @@
 key,ar
+account.access.organizationPermissionsEmpty,لا توجد أذونات منظمة مدرجة لهذه العضوية.
+admin.activity.actor,المنفذ {actor}
+admin.activity.description,التغييرات الإدارية الأخيرة في هذا السياق. تظهر الأحداث الأحدث أولاً.
+admin.activity.empty,لا يوجد نشاط إداري حديث في هذا السياق.
+admin.activity.error,تعذر تحميل النشاط. حاول مرة أخرى.
+admin.activity.organization,المنظمة
+admin.activity.realm,نطاق IAM
+shell.nav.activity,النشاط
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
 account.access.declined,تم رفض الدعوة
 account.access.declinedDetail,لقد رفضت هذه الدعوة.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,راجع أدوار المشروع والأذونات المتاحة لهذا الحساب في هذه المؤسسة.
+account.access.effectiveDescription,راجع أدوار المشروع والأذونات المتاحة لهذا الحساب في هذه المؤسسة.
+account.access.effectiveEmpty,لا يوجد وصول إلى المشاريع مدرج لهذه المؤسسة.
+account.access.effectiveEmpty,لا يوجد وصول إلى المشاريع مدرج لهذه المؤسسة.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,الوصول الفعلي إلى المشاريع
+account.access.effectiveTitle,الوصول الفعلي إلى المشاريع
 account.access.email,البريد الإلكتروني
 account.access.error,تعذر تحميل معلومات هذا الحساب.
 account.access.expired,انتهت صلاحية هذه الدعوة.

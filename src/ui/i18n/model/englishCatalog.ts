@@ -1,5 +1,12 @@
 /** Stable message keys introduced with the shared i18n foundation. */
 export const englishCatalog = {
+  "shell.nav.activity": "Activity",
+  "admin.activity.description": "Recent administrative changes in this context. Events are shown newest first.",
+  "admin.activity.organization": "Organization",
+  "admin.activity.realm": "IAM realm",
+  "admin.activity.empty": "No recent administrative activity in this context.",
+  "admin.activity.error": "Activity could not be loaded. Try again.",
+  "admin.activity.actor": "Actor {actor}",
   "account.access.accepted": "Invitation accepted",
   "account.access.acceptedDetail": "You are now a member of this organization.",
   "account.access.active": "Active organization",
@@ -17,12 +24,12 @@ export const englishCatalog = {
   "account.access.declinedDetail": "You declined this invitation.",
   "account.access.email": "Email",
   "account.access.effectiveDescription":
-    "Review the active organizations, projects, roles, and permissions available to this account.",
-  "account.access.effectiveEmpty": "This account has no active organization or project access.",
+    "Review project roles and permissions available to this account in this organization.",
+  "account.access.effectiveEmpty": "No project access is listed for this organization.",
   "account.access.effectiveMembership": "Membership roles: {roles}",
   "account.access.effectivePermissions": "Permissions: {permissions}",
   "account.access.effectiveSource": "Access source: {source}",
-  "account.access.effectiveTitle": "Effective access",
+  "account.access.effectiveTitle": "Effective project access",
   "account.access.error": "This account information could not be loaded.",
   "account.access.expired": "This invitation has expired.",
   "account.access.invitationDeclineConfirm": "Decline this invitation?",
@@ -35,6 +42,7 @@ export const englishCatalog = {
   "account.access.loadMore": "Load more access",
   "account.access.membership": "Membership roles",
   "account.access.organizationAccess": "Organization access",
+  "account.access.organizationPermissionsEmpty": "No organization permissions are listed for this membership.",
   "account.access.organizationCount": "{count} organizations",
   "account.access.organizationCountOne": "{count} organization",
   "account.access.organizationDescription":

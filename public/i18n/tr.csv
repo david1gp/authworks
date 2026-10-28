@@ -1,4 +1,12 @@
 key,tr
+account.access.organizationPermissionsEmpty,Bu üyelik için kuruluş izni listelenmemiş.
+admin.activity.actor,İşlemi yapan {actor}
+admin.activity.description,Bu bağlamdaki son yönetim değişiklikleri. En yeni olaylar önce gösterilir.
+admin.activity.empty,Bu bağlamda yakın zamanda yönetim etkinliği yok.
+admin.activity.error,Etkinlik yüklenemedi. Tekrar deneyin.
+admin.activity.organization,Kuruluş
+admin.activity.realm,IAM alanı
+shell.nav.activity,Etkinlik
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,Bu daveti reddettiniz.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,Bu hesap için bu kuruluşta kullanılabilen proje rollerini ve izinlerini inceleyin.
+account.access.effectiveDescription,Bu hesap için bu kuruluşta kullanılabilen proje rollerini ve izinlerini inceleyin.
+account.access.effectiveEmpty,Bu kuruluş için proje erişimi listelenmemiş.
+account.access.effectiveEmpty,Bu kuruluş için proje erişimi listelenmemiş.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Etkin proje erişimi
+account.access.effectiveTitle,Etkin proje erişimi
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

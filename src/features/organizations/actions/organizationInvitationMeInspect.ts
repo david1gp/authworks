@@ -51,5 +51,5 @@ export function organizationInvitationMeInspect(
     return resultErrorCodedCreate(op, "The organization invitation has expired.", "organizations.expired")
   const view = organizationInvitationPublicViewCreate(invitation.data)
   if (!view.success) return view
-  return resultCreate({ invitation: view.data })
+  return resultCreate({ invitation: { ...view.data, organizationName: organization.data.name } })
 }

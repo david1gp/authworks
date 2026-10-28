@@ -308,16 +308,15 @@ test("organization lists scope to memberships except for realm administrators an
 test("realm administrators act on organizations without membership over HTTP", async () => {
   await withDatabase(async (database) => {
     const domain = "realm-admin-org-access-f.example.com"
-    const { memberBId, organizationA, organizationB, ownerAId, realmAdministratorId, realmId } = await setupRealm(
-      database,
-      domain,
-    )
+    const { adminAId, memberBId, organizationA, organizationB, ownerAId, realmAdministratorId, realmId } =
+      await setupRealm(database, domain)
     const app = organizationServerAppCreate({ database })
-    const sessionFor = async (userId: string) => {
+    const sessionFor = async (userId: string, organizationId?: string) => {
       const issued = sessionIssue({
         assurance: "authenticated",
         authenticationMethod: "password",
         database,
+        organizationId,
         realmId,
         subjectId: userId,
         userId,
@@ -326,7 +325,24 @@ test("realm administrators act on organizations without membership over HTTP", a
       if (!issued.success) throw new Error("The session could not be issued.")
       return issued.data.token
     }
-    const administratorToken = await sessionFor(realmAdministratorId)
+    const administratorMembership = organizationMembershipCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { roles: ["owner"], userId: realmAdministratorId },
+      organizationId: organizationA.id,
+      realmId,
+    })
+    expect(administratorMembership.success).toBe(true)
+    const administratorToken = await sessionFor(realmAdministratorId, organizationA.id)
+    const detailUrl = `https://${domain}/realms/${realmId}/organizations/${organizationB.id}`
+    const detail = await app.request(detailUrl, { headers: { authorization: `Bearer ${administratorToken}` } })
+    expect(detail.status).toBe(200)
+    const update = await app.request(detailUrl, {
+      body: JSON.stringify({ name: "Managed without membership" }),
+      headers: { authorization: `Bearer ${administratorToken}`, "content-type": "application/json" },
+      method: "PATCH",
+    })
+    expect(update.status).toBe(200)
     const memberships = await app.request(
       `https://${domain}/realms/${realmId}/organizations/${organizationB.id}/memberships`,
       {
@@ -350,6 +366,27 @@ test("realm administrators act on organizations without membership over HTTP", a
       },
     )
     expect(ownerForeign.status).toBe(401)
+    for (const userId of [ownerAId, adminAId]) {
+      const token = await sessionFor(userId, organizationA.id)
+      const own = await app.request(`https://${domain}/realms/${realmId}/organizations/${organizationA.id}`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+      expect(own.status).toBe(200)
+      const unrelated = await app.request(detailUrl, { headers: { authorization: `Bearer ${token}` } })
+      expect(unrelated.status).toBe(401)
+      const unauthorizedSwitch = await app.request(`https://${domain}/realms/${realmId}/me/organizations/switch`, {
+        body: JSON.stringify({ organizationId: organizationB.id }),
+        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+        method: "POST",
+      })
+      expect(unauthorizedSwitch.status).not.toBe(200)
+    }
+    const otherRealm = await setupRealm(database, "realm-admin-org-access-other.example.com")
+    const crossTenant = await app.request(
+      `https://${domain}/realms/${realmId}/organizations/${otherRealm.organizationA.id}`,
+      { headers: { authorization: `Bearer ${administratorToken}` } },
+    )
+    expect(crossTenant.status).not.toBe(200)
     const switched = await app.request(`https://${domain}/realms/${realmId}/me/organizations/switch`, {
       body: JSON.stringify({ organizationId: organizationB.id }),
       headers: { authorization: `Bearer ${administratorToken}`, "content-type": "application/json" },

@@ -1,4 +1,12 @@
 key,ru
+account.access.organizationPermissionsEmpty,Для этого членства не указаны разрешения организации.
+admin.activity.actor,Исполнитель {actor}
+admin.activity.description,Недавние административные изменения в этом контексте. Сначала показаны последние события.
+admin.activity.empty,В этом контексте нет недавней административной активности.
+admin.activity.error,Не удалось загрузить активность. Повторите попытку.
+admin.activity.organization,Организация
+admin.activity.realm,Область IAM
+shell.nav.activity,Активность
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,Вы отклонили это приглашение.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,"Просмотрите роли и разрешения проектов, доступные этой учётной записи в этой организации."
+account.access.effectiveDescription,"Просмотрите роли и разрешения проектов, доступные этой учётной записи в этой организации."
+account.access.effectiveEmpty,Для этой организации доступ к проектам не указан.
+account.access.effectiveEmpty,Для этой организации доступ к проектам не указан.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Действующий доступ к проектам
+account.access.effectiveTitle,Действующий доступ к проектам
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

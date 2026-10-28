@@ -1,4 +1,12 @@
 key,uk
+account.access.organizationPermissionsEmpty,Для цього членства не зазначено дозволів організації.
+admin.activity.actor,Виконавець {actor}
+admin.activity.description,Нещодавні адміністративні зміни в цьому контексті. Найновіші події показано першими.
+admin.activity.empty,У цьому контексті немає нещодавньої адміністративної активності.
+admin.activity.error,Не вдалося завантажити активність. Спробуйте ще раз.
+admin.activity.organization,Організація
+admin.activity.realm,Область IAM
+shell.nav.activity,Активність
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,Ви відхилили це запрошення.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,"Перегляньте ролі та дозволи проєктів, доступні цьому обліковому запису в цій організації."
+account.access.effectiveDescription,"Перегляньте ролі та дозволи проєктів, доступні цьому обліковому запису в цій організації."
+account.access.effectiveEmpty,Для цієї організації доступ до проєктів не зазначено.
+account.access.effectiveEmpty,Для цієї організації доступ до проєктів не зазначено.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Дійсний доступ до проєктів
+account.access.effectiveTitle,Дійсний доступ до проєктів
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

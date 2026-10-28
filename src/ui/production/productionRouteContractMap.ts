@@ -192,6 +192,14 @@ export const productionRouteContractMap = {
     path: "/admin/users",
     screens: [
       {
+        contracts: ["events.list", "organizations.activity.list"],
+        guard: { ...organizationAdminGuard, organization: "optional" },
+        key: "activity",
+        ownsPageHeader: true,
+        path: "/admin/activity",
+        title: "shell.nav.activity",
+      },
+      {
         contracts: ["users.list", "users.create"],
         guard: { ...organizationAdminGuard, organization: "not-required" },
         key: "users",

@@ -1,6 +1,7 @@
 import * as v from "valibot"
 import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationMembershipResourceIdSchema } from "../public/organizationMembershipResourceIdSchema.js"
+import { organizationMembershipSchema } from "../public/organizationMembershipSchema.js"
 import { organizationResourceIdSchema } from "../public/organizationResourceIdSchema.js"
 import { organizationRolesSchema } from "../public/organizationRolesSchema.js"
 
@@ -20,7 +21,7 @@ type OrganizationMembershipListResponseInvalidField =
 const timestampSchema = v.pipe(v.number(), v.integer(), v.minValue(0))
 const userIdSchema = v.pipe(v.string(), v.minLength(1))
 const envelopeFields = new Set(["items", "nextPageToken"])
-const membershipFields = new Set(["createdAt", "id", "realmId", "organizationId", "roles", "updatedAt", "userId"])
+const membershipFields = new Set(Object.keys(organizationMembershipSchema.entries))
 const membershipFieldChecks = [
   ["createdAt", "created-at", timestampSchema],
   ["id", "id", organizationMembershipResourceIdSchema],
@@ -43,6 +44,7 @@ export function organizationMembershipListResponseInvalidFieldClassify(
     for (const [field, category, schema] of membershipFieldChecks) {
       if (!Object.hasOwn(item, field) || !v.safeParse(schema, item[field]).success) return category
     }
+    if (!v.safeParse(organizationMembershipSchema.entries.displayName, item.displayName).success) return "unknown"
   }
   if (body.nextPageToken !== undefined && !v.safeParse(v.pipe(v.string(), v.minLength(1)), body.nextPageToken).success)
     return "next-page-token"

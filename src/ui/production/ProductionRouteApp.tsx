@@ -4,6 +4,7 @@ import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
 import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
 import { AdminProductionAdapter } from "../../features/admin/ui/AdminProductionAdapter.js"
+import { AdminActivityProductionAdapter } from "../../features/admin/ui/AdminActivityProductionAdapter.js"
 import { adminScreenSchema } from "../../features/admin/ui/adminScreenSchema.js"
 import { DirectoryAdminProductionAdapter } from "../../features/directory/ui/DirectoryAdminProductionAdapter.js"
 import { directoryAdminScreenSchema } from "../../features/directory/ui/directoryAdminScreenSchema.js"
@@ -66,6 +67,9 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                 state="inaccessible"
                 title={messageTranslate("shell.guard.signInRequired")}
               />
+              <a class="mx-auto mt-4 block w-fit text-accent underline" href={state.signInUrl()}>
+                {messageTranslate("common.signIn")}
+              </a>
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "missing-context"}>
@@ -149,6 +153,9 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
   const impersonationScreen = () => props.state.shellKind() === "admin" && props.state.screen()?.key === "impersonation"
   return (
     <Switch>
+      <Match when={props.state.shellKind() === "admin" && props.state.screen()?.key === "activity"}>
+        <AdminActivityProductionAdapter />
+      </Match>
       <Match when={impersonationScreen()}>
         <ImpersonationAdminProductionAdapter />
       </Match>

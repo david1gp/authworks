@@ -185,7 +185,7 @@ describe("production route contracts", () => {
     for (const screen of productionRouteContractMap.admin.screens) {
       const ownerCount =
         featureSchemas.filter((schema) => v.safeParse(schema, screen.key).success).length +
-        (screen.key === "impersonation" ? 1 : 0)
+        (screen.key === "impersonation" || screen.key === "activity" ? 1 : 0)
       expect(ownerCount, `${screen.path} must resolve to one administration feature`).toBe(1)
     }
   })
@@ -376,6 +376,7 @@ describe("production shell state", () => {
       "/admin/machine-credentials",
       "/admin/impersonation",
       "/admin/configuration/general",
+      "/admin/activity",
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin/configuration", "/admin/configuration/branding")).toBe(true)

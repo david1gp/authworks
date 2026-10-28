@@ -32,6 +32,8 @@ type SessionProtectedMiddlewareOptions = {
   readonly fallback?: (context: Context<SessionMiddlewareEnv>, next: Next) => Promise<Response | void> | Response | void
   readonly minimumAssurance?: SessionAssurance
   readonly organizationId?: string
+  /** Administrative resource routes may address another organization without switching the session. */
+  readonly realmAdministratorResourceAccess?: boolean
   readonly permission?: AuthorizationPermission
   readonly policies?: readonly AuthorizationPolicyRule[]
   readonly publicOrigin?: string
@@ -71,8 +73,25 @@ export function sessionProtectedMiddlewareCreate(
       return sessionMiddlewareErrorResponseCreate(context, authenticated.errorMessage, "unauthorized")
     }
     const requestedOrganizationId = options.organizationId ?? context.req.param("organizationId")
+    let realmAdministratorResourceAccess = false
+    if (
+      options.realmAdministratorResourceAccess === true &&
+      requestedOrganizationId !== undefined &&
+      authenticated.data.actor.kind === "user"
+    ) {
+      const administrator = realmAdministratorIs({
+        database: options.database,
+        realmId,
+        userId: authenticated.data.actor.actorId,
+      })
+      if (!administrator.success)
+        return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
+      realmAdministratorResourceAccess = administrator.data
+    }
     const expectedSessionOrganizationId =
-      authenticated.data.session.organizationId === undefined ? undefined : requestedOrganizationId
+      authenticated.data.session.organizationId === undefined || realmAdministratorResourceAccess
+        ? undefined
+        : requestedOrganizationId
     const organizationContext = organizationLoginContextValidate({
       context: {
         ...(authenticated.data.session.organizationId === undefined

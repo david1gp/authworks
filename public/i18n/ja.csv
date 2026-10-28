@@ -1,4 +1,12 @@
 key,ja
+account.access.organizationPermissionsEmpty,このメンバーシップに組織の権限は登録されていません。
+admin.activity.actor,実行者 {actor}
+admin.activity.description,このコンテキストにおける最近の管理上の変更です。新しいイベントから表示されます。
+admin.activity.empty,このコンテキストに最近の管理アクティビティはありません。
+admin.activity.error,アクティビティを読み込めませんでした。もう一度お試しください。
+admin.activity.organization,組織
+admin.activity.realm,IAMレルム
+shell.nav.activity,アクティビティ
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,この招待を辞退しました。
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,この組織でこのアカウントに付与されているプロジェクトのロールと権限を確認します。
+account.access.effectiveDescription,この組織でこのアカウントに付与されているプロジェクトのロールと権限を確認します。
+account.access.effectiveEmpty,この組織にはプロジェクトへのアクセスが記載されていません。
+account.access.effectiveEmpty,この組織にはプロジェクトへのアクセスが記載されていません。
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,有効なプロジェクトアクセス
+account.access.effectiveTitle,有効なプロジェクトアクセス
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.

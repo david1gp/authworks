@@ -1,4 +1,12 @@
 key,hu
+account.access.organizationPermissionsEmpty,Ehhez a tagsághoz nincs szervezeti jogosultság felsorolva.
+admin.activity.actor,Végrehajtó: {actor}
+admin.activity.description,Legutóbbi adminisztratív változások ebben a környezetben. A legújabb események jelennek meg először.
+admin.activity.empty,Nincs legutóbbi adminisztratív tevékenység ebben a környezetben.
+admin.activity.error,A tevékenység nem tölthető be. Próbálja újra.
+admin.activity.organization,Szervezet
+admin.activity.realm,IAM-tartomány
+shell.nav.activity,Tevékenység
 account.confirmTitle,Confirm this action
 account.factors.authenticatorName,Authenticator name
 account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
@@ -18,18 +26,18 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.declinedDetail,Elutasította ezt a meghívást.
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveDescription,Tekintse át a fiók számára ebben a szervezetben elérhető projektszerepköröket és jogosultságokat.
+account.access.effectiveDescription,Tekintse át a fiók számára ebben a szervezetben elérhető projektszerepköröket és jogosultságokat.
+account.access.effectiveEmpty,Ehhez a szervezethez nincs projekt-hozzáférés feltüntetve.
+account.access.effectiveEmpty,Ehhez a szervezethez nincs projekt-hozzáférés feltüntetve.
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectiveMembership,Membership roles: {roles}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectivePermissions,Permissions: {permissions}
 account.access.effectiveSource,Access source: {source}
 account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Tényleges projekt-hozzáférés
+account.access.effectiveTitle,Tényleges projekt-hozzáférés
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
