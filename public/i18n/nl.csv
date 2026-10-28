@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Reciba un code de un solo uso por e-mail electróni
 login.chooser.emailOtpLabel,Code por e-mail
 login.chooser.lastUsed,Laatst gebruikt
 login.chooser.methodTitle,Kies een methode
+login.chooser.or,of
 login.chooser.orChooseMethod,Of kies een methode
 login.chooser.passkeyDetail,Use el bloqueo de pantalla de uw dispositivo o una llave de seguridad
 login.chooser.passkeyLabel,Clave de acceso

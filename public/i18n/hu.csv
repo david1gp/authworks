@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Kapjon egy egyszeri kódot e-mailben
 login.chooser.emailOtpLabel,E-mail kód
 login.chooser.lastUsed,Legutóbb használva
 login.chooser.methodTitle,Válasszon módot
+login.chooser.or,vagy
 login.chooser.orChooseMethod,Vagy válasszon módot
 login.chooser.passkeyDetail,Használja eszköze képernyőzárát vagy biztonsági kulcsát
 login.chooser.passkeyLabel,Passkey

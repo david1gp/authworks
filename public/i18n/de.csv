@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Erhalten Sie einen Einmalcode per E-Mail
 login.chooser.emailOtpLabel,E-Mail-Code
 login.chooser.lastUsed,Zuletzt verwendet
 login.chooser.methodTitle,Methode auswählen
+login.chooser.or,oder
 login.chooser.orChooseMethod,Oder eine Methode auswählen
 login.chooser.passkeyDetail,Verwenden Sie die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel
 login.chooser.passkeyLabel,Passkey

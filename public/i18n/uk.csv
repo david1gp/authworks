@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Отримати одноразовий код ел
 login.chooser.emailOtpLabel,Код із електронної пошти
 login.chooser.lastUsed,Використано востаннє
 login.chooser.methodTitle,Виберіть спосіб
+login.chooser.or,або
 login.chooser.orChooseMethod,Або виберіть спосіб
 login.chooser.passkeyDetail,Використати блокування екрана пристрою або ключ безпеки
 login.chooser.passkeyLabel,Ключ доступу

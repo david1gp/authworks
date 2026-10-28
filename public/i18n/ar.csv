@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,استلام رمز لمرة واحدة عبر ال
 login.chooser.emailOtpLabel,رمز البريد الإلكتروني
 login.chooser.lastUsed,آخر استخدام
 login.chooser.methodTitle,اختر طريقة
+login.chooser.or,أو
 login.chooser.orChooseMethod,أو اختر طريقة
 login.chooser.passkeyDetail,استخدام قفل شاشة جهازك أو مفتاح أمان
 login.chooser.passkeyLabel,مفتاح مرور

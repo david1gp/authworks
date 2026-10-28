@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Reciba un código de un solo uso por correo electr�
 login.chooser.emailOtpLabel,Código por correo
 login.chooser.lastUsed,Usado recientemente
 login.chooser.methodTitle,Elija un método
+login.chooser.or,o
 login.chooser.orChooseMethod,O elija un método
 login.chooser.passkeyDetail,Use el bloqueo de pantalla de su dispositivo o una llave de seguridad
 login.chooser.passkeyLabel,Clave de acceso

@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,通过电子邮件接收一次性代码
 login.chooser.emailOtpLabel,电子邮件代码
 login.chooser.lastUsed,最近使用
 login.chooser.methodTitle,选择方式
+login.chooser.or,或
 login.chooser.orChooseMethod,或选择一种方式
 login.chooser.passkeyDetail,使用设备屏幕锁或安全密钥
 login.chooser.passkeyLabel,通行密钥

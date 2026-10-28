@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,E-postayla tek seferlik kod alın
 login.chooser.emailOtpLabel,E-posta kodu
 login.chooser.lastUsed,Son kullanım
 login.chooser.methodTitle,Bir yöntem seçin
+login.chooser.or,veya
 login.chooser.orChooseMethod,Veya bir yöntem seçin
 login.chooser.passkeyDetail,Cihazınızın ekran kilidini veya güvenlik anahtarını kullanın
 login.chooser.passkeyLabel,Geçiş anahtarı

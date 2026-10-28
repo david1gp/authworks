@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,メールでワンタイムコードを受け取る
 login.chooser.emailOtpLabel,メールコード
 login.chooser.lastUsed,最終使用
 login.chooser.methodTitle,方法を選択
+login.chooser.or,または
 login.chooser.orChooseMethod,または方法を選択
 login.chooser.passkeyDetail,デバイスの画面ロックまたはセキュリティキーを使用
 login.chooser.passkeyLabel,パスキー

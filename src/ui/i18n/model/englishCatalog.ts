@@ -1721,6 +1721,7 @@ export const englishCatalog = {
   "login.chooser.register": "Create an account",
   "login.chooser.lastUsed": "Last used",
   "login.chooser.methodTitle": "Choose a method",
+  "login.chooser.or": "or",
   "login.chooser.orChooseMethod": "Or choose a method",
   "login.chooser.title": "Sign in",
   "login.chooser.useRecent": "Use a recent account",

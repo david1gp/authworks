@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Получите одноразовый код на
 login.chooser.emailOtpLabel,Код электронной почты
 login.chooser.lastUsed,Использовалось недавно
 login.chooser.methodTitle,Выберите способ
+login.chooser.or,или
 login.chooser.orChooseMethod,Или выберите способ
 login.chooser.passkeyDetail,Используйте блокировку экрана вашего устройства или ключ безопасности.
 login.chooser.passkeyLabel,Ключ доступа

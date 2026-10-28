@@ -1,4 +1,5 @@
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { loginChooserLayoutGet } from "../model/loginChooserLayoutGet.js"
 import type { LoginPrimaryMethod } from "../model/loginPrimaryMethodsGet.js"
 import { loginRecentAccountLastUsedMethodGet } from "../model/loginRecentAccountLastUsedMethodGet.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
@@ -6,12 +7,16 @@ import type { LoginDiscovery } from "./loginAdapter.js"
 
 type MethodChooserStateOptions = {
   readonly discovery: () => LoginDiscovery
+  readonly methods: () => readonly LoginPrimaryMethod[]
   readonly recentAccounts: () => readonly LoginRecentAccount[]
 }
 
 export function methodChooserStateCreate(options: MethodChooserStateOptions) {
   const provider = () => options.discovery().providers[0]
   const hasRecentAccounts = () => options.recentAccounts().length > 0
+  const layout = () => loginChooserLayoutGet(options.methods())
+  const ownMethods = () => options.methods().filter((method) => method !== "external-identity")
+  const providers = () => (options.methods().includes("external-identity") ? options.discovery().providers : [])
   const methodIsLastUsed = (method: LoginPrimaryMethod) => {
     const lastUsed = loginRecentAccountLastUsedMethodGet(options.recentAccounts())?.replace("_", "-")
     if (method === "external-identity") return false
@@ -49,5 +54,5 @@ export function methodChooserStateCreate(options: MethodChooserStateOptions) {
     }
   }
 
-  return { hasRecentAccounts, methodCopy, methodIsLastUsed, provider }
+  return { hasRecentAccounts, layout, methodCopy, methodIsLastUsed, ownMethods, provider, providers }
 }

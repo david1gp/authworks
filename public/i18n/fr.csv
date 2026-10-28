@@ -1637,6 +1637,7 @@ login.chooser.emailOtpDetail,Recevoir un code à usage unique par e-mail
 login.chooser.emailOtpLabel,Code e-mail
 login.chooser.lastUsed,Dernière utilisation
 login.chooser.methodTitle,Choisir une méthode
+login.chooser.or,ou
 login.chooser.orChooseMethod,Ou choisir une méthode
 login.chooser.passkeyDetail,Utiliser le verrouillage de l’écran de votre appareil ou une clé de sécurité
 login.chooser.passkeyLabel,Clé d’accès
