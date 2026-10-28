@@ -83,7 +83,7 @@ test("production sign-in discovers the realm at runtime and never hardcodes an i
   expect(requests[0]?.pathname).toBe("/organization-discovery")
 })
 
-test("production chooser separates the heading and every method, including each external provider", async ({
+test("production chooser splits own methods and every external provider into two columns on wide screens", async ({
   page,
 }) => {
   const secondProviderId = "018f0000-0000-7000-8000-000000000004"
@@ -102,17 +102,56 @@ test("production chooser separates the heading and every method, including each 
   await expect(heading).toBeFocused()
   // Programmatic focus moves screen-reader context; it must not paint a box around the heading.
   expect(await heading.evaluate((element) => getComputedStyle(element).outlineStyle)).toBe("none")
-  const methods = page.getByRole("listitem").filter({ has: page.getByRole("button") })
-  await expect(methods).toHaveCount(5)
+  const lists = page.locator(".login-chooser-list")
+  await expect(lists).toHaveCount(2)
+  await expect(lists.nth(0).getByRole("listitem")).toHaveCount(3)
+  await expect(lists.nth(1).getByRole("listitem")).toHaveCount(2)
+  await expect(lists.nth(1)).toContainText("Continue with Google")
+  await expect(lists.nth(1)).toContainText("Continue with GitHub")
+
   const headingBox = await heading.boundingBox()
-  const boxes = await Promise.all((await methods.all()).map((method) => method.boundingBox()))
-  expect(headingBox).not.toBeNull()
-  expect((boxes[0]?.y ?? 0) - ((headingBox?.y ?? 0) + (headingBox?.height ?? 0))).toBeGreaterThanOrEqual(16)
-  for (let index = 1; index < boxes.length; index += 1) {
-    const previous = boxes[index - 1]
-    const gap = (boxes[index]?.y ?? 0) - ((previous?.y ?? 0) + (previous?.height ?? 0))
-    expect(gap).toBeGreaterThanOrEqual(8)
+  const ownBox = await lists.nth(0).boundingBox()
+  const providerBox = await lists.nth(1).boundingBox()
+  expect(headingBox && ownBox && providerBox).toBeTruthy()
+  if (!headingBox || !ownBox || !providerBox) return
+  expect(ownBox.y - (headingBox.y + headingBox.height)).toBeGreaterThanOrEqual(16)
+  // Wide screens: providers form a second column aligned with the first.
+  expect(providerBox.x).toBeGreaterThan(ownBox.x + ownBox.width)
+  expect(Math.abs(providerBox.y - ownBox.y)).toBeLessThanOrEqual(1)
+
+  // Narrow screens: the same groups stack, providers below the own methods.
+  await page.setViewportSize({ height: 844, width: 390 })
+  const narrowOwnBox = await lists.nth(0).boundingBox()
+  const narrowProviderBox = await lists.nth(1).boundingBox()
+  if (!narrowOwnBox || !narrowProviderBox) throw new Error("chooser lists are not rendered")
+  expect(narrowProviderBox.y).toBeGreaterThan(narrowOwnBox.y + narrowOwnBox.height)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(
+    true,
+  )
+
+  for (const list of await lists.all()) {
+    const boxes = await Promise.all((await list.getByRole("listitem").all()).map((item) => item.boundingBox()))
+    for (let index = 1; index < boxes.length; index += 1) {
+      const previous = boxes[index - 1]
+      expect((boxes[index]?.y ?? 0) - ((previous?.y ?? 0) + (previous?.height ?? 0))).toBeGreaterThanOrEqual(8)
+    }
   }
+})
+
+test("production chooser stays a single column without external providers", async ({ page }) => {
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }), {
+    ...discovery,
+    policy: { ...discovery.policy, allowExternalIdentity: false, providerIds: [] },
+    providers: [],
+  })
+
+  await page.goto("/login")
+
+  await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
+  await expect(page.locator(".login-chooser")).toHaveAttribute("data-layout", "single")
+  await expect(page.locator(".login-chooser-list")).toHaveCount(1)
+  const frameWidth = await page.locator("main.login-frame").evaluate((frame) => frame.getBoundingClientRect().width)
+  expect(frameWidth).toBeLessThanOrEqual(470)
 })
 
 test("production chooser shows WhatsApp only when policy and availability allow it", async ({ page }) => {
