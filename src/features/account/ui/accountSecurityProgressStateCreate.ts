@@ -1,30 +1,29 @@
 import type { Accessor } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
+import type { User } from "../../users/public/userSchema.js"
 import { accountSecuritySectionIds } from "./accountSecuritySectionIds.js"
+import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
 
 export function accountSecurityProgressStateCreate(options: {
   readonly identitiesCount: Accessor<number>
   readonly methods: Accessor<UserAuthenticationMethods>
   readonly passkeyCount: Accessor<number>
+  readonly user: Accessor<User | undefined>
 }) {
   const statuses = () => {
     const methods = options.methods()
+    const user = options.user()
     const passkeyCount = options.passkeyCount()
     const identitiesCount = options.identitiesCount()
     const totpEnrollments = methods.totp.enrollments.length
     const backupCodeCount = methods.recoveryCodes.remaining
+    const phoneNumber = user?.phoneNumber
+    const verifiedPhone = user?.phoneNumberVerifiedAt !== undefined ? phoneNumber : undefined
+    // Same order as the security cards in AccountSecurityManagement so each overview
+    // row sits above the card it links to. Phone has no security card of its own;
+    // it links to the profile section where numbers are managed.
     return [
-      {
-        configured: methods.password.available,
-        detail: messageTranslate(
-          methods.password.available
-            ? "account.securityOverview.passwordSet"
-            : "account.securityOverview.passwordMissing",
-        ),
-        href: `#${accountSecuritySectionIds.password}`,
-        label: messageTranslate("account.securityOverview.password"),
-      },
       {
         configured: passkeyCount > 0,
         detail: messageTranslate("account.securityOverview.passkeyCount", { count: passkeyCount }),
@@ -46,17 +45,36 @@ export function accountSecurityProgressStateCreate(options: {
         label: messageTranslate("shell.nav.linkedIdentities"),
       },
       {
+        configured: methods.password.available,
+        detail: messageTranslate(
+          methods.password.available
+            ? "account.securityOverview.passwordSet"
+            : "account.securityOverview.passwordMissing",
+        ),
+        href: `#${accountSecuritySectionIds.password}`,
+        label: messageTranslate("account.securityOverview.password"),
+      },
+      {
         configured: backupCodeCount > 0,
         detail: messageTranslate("account.securityOverview.backupCodeCount", { count: backupCodeCount }),
         href: `#${accountSecuritySectionIds.recoveryCodes}`,
         label: messageTranslate("account.securityOverview.backupCodes"),
+      },
+      {
+        configured: verifiedPhone !== undefined,
+        detail:
+          verifiedPhone === undefined
+            ? messageTranslate("account.securityOverview.phoneMissing")
+            : messageTranslate("account.securityOverview.phoneVerified", { phone: verifiedPhone }),
+        href: `#${accountWorkspaceSectionIds.profile}`,
+        label: messageTranslate("account.securityOverview.phone"),
       },
     ]
   }
   const configuredCount = () => statuses().filter((status) => status.configured).length
   const text = () => messageTranslate("account.security.progress", { count: configuredCount() })
   const accessibleLabel = () => messageTranslate("account.security.progressLabel", { count: configuredCount() })
-  const width = () => `${configuredCount() * 20}%`
+  const width = () => `${Math.round((configuredCount() / statuses().length) * 100)}%`
   const items = () => statuses()
   return { accessibleLabel, configuredCount, items, text, width }
 }

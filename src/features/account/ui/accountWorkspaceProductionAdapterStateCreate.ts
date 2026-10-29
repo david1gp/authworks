@@ -16,6 +16,7 @@ export function accountWorkspaceProductionAdapterStateCreate(realmId: () => stri
     identitiesCount: () => security.identities().length,
     methods: security.methods,
     passkeyCount: () => security.passkeys().length,
+    user: security.user,
   })
 
   return {

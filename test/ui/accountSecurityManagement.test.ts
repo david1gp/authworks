@@ -29,9 +29,11 @@ const progressCreate = (options: {
   readonly identitiesCount: number
   readonly passkeyCount: number
   readonly password: boolean
+  readonly phoneVerified: boolean
   readonly totpEnrolled: boolean
 }) => {
   const methods = methodsCreate(false)
+  const user = userCreate(false)
   return accountSecurityProgressStateCreate({
     identitiesCount: () => options.identitiesCount,
     methods: () => ({
@@ -46,6 +48,11 @@ const progressCreate = (options: {
       totp: { enrolled: options.totpEnrolled, enrollments: [] },
     }),
     passkeyCount: () => options.passkeyCount,
+    user: () => ({
+      ...user,
+      phoneNumber: "+14155552671",
+      phoneNumberVerifiedAt: options.phoneVerified ? 1 : undefined,
+    }),
   })
 }
 
@@ -74,49 +81,81 @@ describe("account security management", () => {
     ])
   })
 
-  test("counts no configured methods at 0/5", () => {
+  test("counts no configured methods at 0/6", () => {
     const state = progressCreate({
       backupCodes: 0,
       identitiesCount: 0,
       passkeyCount: 0,
       password: false,
+      phoneVerified: false,
       totpEnrolled: false,
     })
 
     expect(state.configuredCount()).toBe(0)
-    expect(state.text()).toBe("0/5 methods configured")
-    expect(state.accessibleLabel()).toBe("Security setup progress: 0 of 5 methods configured")
+    expect(state.text()).toBe("0/6 methods configured")
+    expect(state.accessibleLabel()).toBe("Security setup progress: 0 of 6 methods configured")
     expect(state.width()).toBe("0%")
   })
 
-  test("counts only the five specified method states in a mixed setup", () => {
+  test("counts only the six specified method states in a mixed setup", () => {
     const state = progressCreate({
       backupCodes: 0,
       identitiesCount: 0,
       passkeyCount: 2,
       password: true,
+      phoneVerified: false,
       totpEnrolled: true,
     })
 
     expect(state.configuredCount()).toBe(3)
-    expect(state.text()).toBe("3/5 methods configured")
-    expect(state.accessibleLabel()).toBe("Security setup progress: 3 of 5 methods configured")
-    expect(state.width()).toBe("60%")
+    expect(state.text()).toBe("3/6 methods configured")
+    expect(state.accessibleLabel()).toBe("Security setup progress: 3 of 6 methods configured")
+    expect(state.width()).toBe("50%")
   })
 
-  test("counts every configured method at 5/5", () => {
+  test("counts every configured method at 6/6", () => {
     const state = progressCreate({
       backupCodes: 1,
       identitiesCount: 2,
       passkeyCount: 1,
       password: true,
+      phoneVerified: true,
       totpEnrolled: true,
     })
 
-    expect(state.configuredCount()).toBe(5)
-    expect(state.text()).toBe("5/5 methods configured")
-    expect(state.accessibleLabel()).toBe("Security setup progress: 5 of 5 methods configured")
+    expect(state.configuredCount()).toBe(6)
+    expect(state.text()).toBe("6/6 methods configured")
+    expect(state.accessibleLabel()).toBe("Security setup progress: 6 of 6 methods configured")
     expect(state.width()).toBe("100%")
+  })
+
+  test("lists overview rows in security card order with matching anchors", () => {
+    const state = progressCreate({
+      backupCodes: 0,
+      identitiesCount: 0,
+      passkeyCount: 0,
+      password: false,
+      phoneVerified: true,
+      totpEnrolled: false,
+    })
+
+    expect(state.items().map((item) => item.label)).toEqual([
+      "Passkeys",
+      "Authenticator",
+      "Linked identities",
+      "Password",
+      "Backup codes",
+      "Phone",
+    ])
+    expect(state.items().map((item) => item.href)).toEqual([
+      "#security-passkeys",
+      "#security-factors",
+      "#security-identities",
+      "#security-password",
+      "#security-recovery-codes",
+      "#profile",
+    ])
+    expect(state.items()[5]?.detail).toBe("+14155552671 verified")
   })
 
   test("renders five responsive management cards in a three-column desktop grid", async () => {
@@ -160,9 +199,10 @@ describe("account security management", () => {
       new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url),
     ).text()
 
+    expect(progress).toContain("sm:grid-cols-2 xl:grid-cols-3")
     expect(progress).toContain('role="progressbar"')
     expect(progress).toContain("aria-valuemin={0}")
-    expect(progress).toContain("aria-valuemax={5}")
+    expect(progress).toContain("aria-valuemax={6}")
     expect(progress).toContain("aria-valuenow={props.state.configuredCount()}")
     expect(progress).toContain("aria-label={props.state.accessibleLabel()}")
     expect(progress).toContain("style={{ width: props.state.width() }}")

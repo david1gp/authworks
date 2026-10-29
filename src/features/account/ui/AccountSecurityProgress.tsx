@@ -26,7 +26,7 @@ export function AccountSecurityProgress(props: {
         <div class="order-3 flex w-full min-w-0 flex-wrap items-center gap-2.5 max-sm:gap-y-1 sm:w-auto sm:flex-1 sm:flex-nowrap">
           <div
             aria-label={props.state.accessibleLabel()}
-            aria-valuemax={5}
+            aria-valuemax={6}
             aria-valuemin={0}
             aria-valuenow={props.state.configuredCount()}
             class="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-muted max-sm:basis-full"
@@ -46,7 +46,7 @@ export function AccountSecurityProgress(props: {
           path={mdiChevronDown}
         />
       </summary>
-      <ul class="mt-1 grid min-w-0 gap-x-4 sm:grid-cols-2">
+      <ul class="mt-1 grid min-w-0 gap-x-4 sm:grid-cols-2 xl:grid-cols-3">
         <For each={props.state.items()}>
           {(item) => (
             <li class="min-w-0">

@@ -9,6 +9,7 @@ export function accountWorkspaceDemoAdapterStateCreate() {
     identitiesCount: () => security.identities().length,
     methods: security.methods,
     passkeyCount: () => security.passkeys().length,
+    user: security.user,
   })
 
   return { profile, security, securityProgress }
