@@ -1,4 +1,3 @@
-import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
 import { A } from "@solidjs/router"
@@ -7,13 +6,11 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
-import { AuthenticatedThemeToggle } from "../authenticated/AuthenticatedThemeToggle.js"
 import { authenticatedAvatarColorGet } from "../authenticated/authenticatedAvatarColorGet.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../authenticated/authenticatedNavigationLinkClassGet.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
-import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { ProductionIdentityMenu } from "./ProductionIdentityMenu.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
 import { ProductionOrganizationSwitcher } from "./ProductionOrganizationSwitcher.js"
@@ -41,10 +38,6 @@ function ProductionSidebarToggle(props: { readonly state: ProductionAuthenticate
 function ProductionSidebarFooter(props: { readonly state: ProductionAuthenticatedShellState }) {
   return (
     <div class={authenticatedNavigationClasses.footer}>
-      <div class={authenticatedNavigationClasses.footerPreferences}>
-        <LanguageSelector class="authenticated-language-selector min-w-0" />
-        <AuthenticatedThemeToggle />
-      </div>
       <ProductionIdentityMenu
         name={props.state.session.actorLabel}
         pictureUrl={props.state.session.actorPictureUrl}
@@ -72,11 +65,15 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
     <div class={authenticatedNavigationClasses.frame}>
       <div class={authenticatedNavigationClasses.contextRow}>
         <ProductionOrganizationSwitcher
-          activeId={props.state.organizationId()}
+          activeOrganizationId={props.state.organizationId()}
+          activeScope={props.state.adminScope()}
+          canAccessRealm={props.state.canAccessRealm()}
           error={props.state.organizationError()}
-          onSelect={props.state.organizationSelect}
+          onOrganizationSelect={props.state.organizationSelect}
+          onRealmSelect={() => props.state.adminScopeSelect("realm")}
           organizations={props.state.session.organizations}
           pending={props.state.organizationSwitchPending()}
+          realmId={props.state.realmId()}
           realmLabel={props.state.realmLabel()}
           switchable={props.state.organizationSwitchable()}
         />
@@ -89,34 +86,18 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
           {(group) => (
             <section class={authenticatedNavigationClasses.groupSection}>
               <Show
-                when={group.label}
                 fallback={
                   <div class="grid">
                     <For each={group.items}>{navigationLink}</For>
                   </div>
                 }
+                when={group.label}
               >
                 {(label) => (
-                  <>
-                    <button
-                      aria-expanded={props.state.groupOpen(group)}
-                      class={authenticatedNavigationClasses.groupHeading}
-                      onClick={() => props.state.groupToggle(group)}
-                      type="button"
-                    >
-                      <Show when={group.icon}>{(icon) => <Icon class="size-4 shrink-0" path={icon()} />}</Show>
-                      <span class="truncate">{messageTranslate(label())}</span>
-                      <Icon
-                        class={`size-4 shrink-0 transition-transform ${props.state.groupOpen(group) ? "" : "-rotate-90 rtl:rotate-90"}`}
-                        path={mdiChevronDown}
-                      />
-                    </button>
-                    <Show when={props.state.groupOpen(group)}>
-                      <div class="grid ps-2">
-                        <For each={group.items}>{navigationLink}</For>
-                      </div>
-                    </Show>
-                  </>
+                  <div class="grid">
+                    <p class={authenticatedNavigationClasses.groupHeading}>{messageTranslate(label())}</p>
+                    <For each={group.items}>{navigationLink}</For>
+                  </div>
                 )}
               </Show>
             </section>
@@ -173,7 +154,7 @@ export function ProductionAuthenticatedShell(props: {
             <ProductionSidebarToggle state={state} />
             <Show
               fallback={<span class={authenticatedNavigationClasses.brandLink}>{state.realmLabel()}</span>}
-              when={state.activeOrganization()}
+              when={state.adminScope() === "organization" ? state.activeOrganization() : undefined}
             >
               {(organization) => (
                 <A class={authenticatedNavigationClasses.headerBrand} href={state.homeHref()}>

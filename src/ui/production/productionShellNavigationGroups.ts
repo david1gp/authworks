@@ -5,7 +5,6 @@ import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js
 import { mdiCheckDecagramOutline } from "@adaptive-ds/mdi/mdiCheckDecagramOutline.js"
 import { mdiClipboardTextOutline } from "@adaptive-ds/mdi/mdiClipboardTextOutline.js"
 import { mdiCogOutline } from "@adaptive-ds/mdi/mdiCogOutline.js"
-import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
 import { mdiFileDocumentOutline } from "@adaptive-ds/mdi/mdiFileDocumentOutline.js"
 import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
 import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
@@ -18,14 +17,17 @@ import { mdiTuneVariant } from "@adaptive-ds/mdi/mdiTuneVariant.js"
 import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
 
 /**
- * Production administration navigation: organization items render top-level, realm
- * items live in a collapsed "Realm" group (realm administrators only).
+ * Production administration navigation: the sidebar shows one context at a time.
+ * Organization items render when an organization is selected, realm items render
+ * when the realm is selected in the administration context switcher (realm
+ * administrators only). There is no collapsible Realm group.
  */
 export const productionShellNavigationGroups = {
   account: [],
   admin: [
     {
       label: null,
+      scope: "organization",
       items: [
         {
           access: "organization-admin",
@@ -68,10 +70,8 @@ export const productionShellNavigationGroups = {
     },
     {
       access: "realm-admin",
-      collapsible: true,
-      icon: mdiDomain,
-      label: "shell.nav.realmGroup",
-      rememberKey: "authworks.admin.nav.realm-open",
+      label: null,
+      scope: "realm",
       items: [
         { access: "realm-admin", href: "/admin/realm", icon: mdiCogOutline, label: "shell.nav.realmOverviewSettings" },
         {

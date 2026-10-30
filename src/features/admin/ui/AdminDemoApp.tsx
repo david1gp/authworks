@@ -8,12 +8,11 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedBrandMark } from "../../../ui/authenticated/AuthenticatedBrandMark.js"
-import { AuthenticatedThemeToggle } from "../../../ui/authenticated/AuthenticatedThemeToggle.js"
 import { authenticatedNavigationClasses } from "../../../ui/authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
-import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
+import { ProductionIdentityMenu } from "../../../ui/production/ProductionIdentityMenu.js"
 import { adminDemoAppStateCreate } from "./adminDemoAppStateCreate.js"
 
 function adminDemoHrefFor(access: () => string, href: string): string {
@@ -117,10 +116,11 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
         </For>
       </nav>
       <div class={authenticatedNavigationClasses.footer}>
-        <div class={authenticatedNavigationClasses.footerPreferences}>
-          <LanguageSelector class="authenticated-language-selector min-w-0" />
-          <AuthenticatedThemeToggle />
-        </div>
+        <ProductionIdentityMenu
+          name={messageTranslate("demo.nav.label")}
+          showProfile={false}
+          onNavigate={state.destinationSelect}
+        />
       </div>
     </div>
   )

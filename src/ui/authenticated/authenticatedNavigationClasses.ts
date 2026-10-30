@@ -17,10 +17,12 @@ export const authenticatedNavigationClasses = {
   brandCollapse:
     "grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>svg]:size-4.5 rtl:[&>svg]:-scale-x-100",
   brandLink: "min-w-0 flex-1 truncate text-[0.9375rem] font-semibold tracking-tight",
-  /** Rail footer holding preferences and the signed-in identity; also shown inside the mobile drawer. */
+  /** Rail footer holding the user popover button; also shown inside the mobile drawer. */
   footer: "grid shrink-0 gap-1.5 border-t border-line p-2",
-  /** Language and theme controls stack vertically so each keeps its full label. */
-  footerPreferences: "grid min-w-0 items-start gap-2 px-1 py-0.5",
+  /** Language and theme controls stacked inside the user popover menu. */
+  identityMenuPreferences: "grid justify-items-start gap-2 px-1.5 py-1",
+  /** Section caption inside the user popover menu. */
+  identityMenuCaption: "text-2xs font-medium tracking-wide text-muted-foreground uppercase",
   identityName: "min-w-0 flex-1 truncate text-start text-[0.8125rem] font-medium text-foreground",
   /** Identity trigger opening the profile/sign-out popover. */
   identityTrigger:

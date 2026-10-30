@@ -1,4 +1,4 @@
-import { useLocation } from "@solidjs/router"
+import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
 import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.jsx"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -6,41 +6,47 @@ import { authenticatedNavigationClasses } from "../authenticated/authenticatedNa
 import { authenticatedSidebarDestinationSelect } from "../authenticated/authenticatedSidebarDestinationSelect.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
-import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
 import { productionNavigationActiveHrefSelect } from "./productionNavigationActiveHrefSelect.js"
+import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
 import { productionNavigationItemActive } from "./productionNavigationItemActive.js"
 import { productionSessionContextGet } from "./productionSessionContextGet.js"
 import { productionShellAccessPermits } from "./productionShellAccessPermits.js"
 import { productionShellNavigationGroups } from "./productionShellNavigationGroups.js"
 import { productionShellNavigationLinkVisible } from "./productionShellNavigationLinkVisible.js"
 
-const realmGroupOpenSchema = v.optional(v.picklist(["open", "closed"]), "closed")
+const adminScopeSchema = v.optional(v.picklist(["organization", "realm"]), "organization")
 
-function realmGroupOpenStoredGet(rememberKey: string | undefined): boolean {
-  if (rememberKey === undefined || typeof localStorage === "undefined") return false
-  const parsed = v.safeParse(realmGroupOpenSchema, localStorage.getItem(rememberKey))
-  return parsed.success && parsed.output === "open"
+const adminScopeStorageKey = "authworks.admin.scope"
+
+function adminScopeStoredGet(): "organization" | "realm" {
+  if (typeof localStorage === "undefined") return "organization"
+  const parsed = v.safeParse(adminScopeSchema, localStorage.getItem(adminScopeStorageKey))
+  return parsed.success ? parsed.output : "organization"
 }
 
-function realmGroupOpenStoredSet(rememberKey: string | undefined, open: boolean): void {
-  if (rememberKey === undefined || typeof localStorage === "undefined") return
+function adminScopeStoredSet(scope: "organization" | "realm"): void {
+  if (typeof localStorage === "undefined") return
   try {
-    localStorage.setItem(rememberKey, open ? "open" : "closed")
+    localStorage.setItem(adminScopeStorageKey, scope)
   } catch {
-    // Browsers may block storage; the group simply falls back to closed.
+    // Browsers may block storage; the scope simply falls back to organization.
   }
 }
+
+const realmDefaultHref = "/admin/realm"
+const organizationDefaultHref = "/admin/users"
 
 export function productionAuthenticatedShellStateCreate(
   kind: () => "account" | "admin" | "invitations",
   title: () => MessageKey,
 ) {
   const location = useLocation()
+  const navigate = useNavigate()
   const session = productionSessionContextGet()
   const sidebar = createSidebarState()
   const organizationError = createSignalObject<string | undefined>(undefined)
   const organizationPending = createSignalObject(false)
-  const realmGroupManual = createSignalObject<boolean | undefined>(undefined)
+  const manualScope = createSignalObject<"organization" | "realm">(adminScopeStoredGet())
 
   const organizationId = () => {
     session.organizationSwitchPending()
@@ -55,6 +61,45 @@ export function productionAuthenticatedShellStateCreate(
     return session.realms[0]?.label ?? ""
   }
 
+  const realmId = () => session.realms[0]?.id ?? ""
+
+  const canAccessRealm = () => session.guard.access !== "loading" && session.guard.access.realmAdministrator === true
+
+  const realmHrefs = () =>
+    productionShellNavigationGroups.admin
+      .filter((group) => group.scope === "realm")
+      .flatMap((group) => group.items.map((item) => item.href))
+
+  const organizationHrefs = () =>
+    productionShellNavigationGroups.admin
+      .filter((group) => group.scope === "organization")
+      .flatMap((group) => group.items.map((item) => item.href))
+
+  const isRealmPath = (pathname: string) => realmHrefs().some((href) => productionNavigationItemActive(href, pathname))
+
+  const isOrganizationPath = (pathname: string) =>
+    organizationHrefs().some((href) => productionNavigationItemActive(href, pathname))
+
+  const adminScope = (): "organization" | "realm" => {
+    if (kind() !== "admin") return "organization"
+    if (!canAccessRealm()) return "organization"
+    if (isRealmPath(location.pathname)) return "realm"
+    if (isOrganizationPath(location.pathname)) return "organization"
+    return manualScope.get()
+  }
+
+  const adminScopeSelect = (next: "organization" | "realm") => {
+    if (kind() !== "admin") return
+    if (next === "realm" && !canAccessRealm()) return
+    manualScope.set(next)
+    adminScopeStoredSet(next)
+    if (next === "realm") {
+      if (!isRealmPath(location.pathname)) navigate(realmDefaultHref)
+      return
+    }
+    if (!isOrganizationPath(location.pathname)) navigate(organizationDefaultHref)
+  }
+
   const groupItemsVisible = (group: ProductionNavigationGroup) => {
     if (group.access !== undefined && session.guard.access !== "loading") {
       if (!productionShellAccessPermits(group.access, session.guard.access)) return []
@@ -67,7 +112,11 @@ export function productionAuthenticatedShellStateCreate(
   }
 
   const groups = () => {
-    const visible: ProductionNavigationGroup[] = productionShellNavigationGroups[kind()]
+    const scopeFiltered =
+      kind() === "admin"
+        ? productionShellNavigationGroups[kind()].filter((group) => group.scope === adminScope())
+        : productionShellNavigationGroups[kind()]
+    const visible: ProductionNavigationGroup[] = scopeFiltered
       .map((group) => ({ ...group, items: groupItemsVisible(group) }))
       .filter((group) => group.items.length > 0)
     // Members without admin access see no admin navigation at all.
@@ -84,47 +133,41 @@ export function productionAuthenticatedShellStateCreate(
       location.pathname,
     )
 
-  const groupOpen = (group: Pick<ProductionNavigationGroup, "collapsible" | "items" | "rememberKey">) => {
-    if (group.collapsible !== true) return true
-    if (realmGroupManual.get() !== undefined) return realmGroupManual.get() as boolean
-    if (group.items.some((item) => productionNavigationItemActive(item.href, location.pathname))) return true
-    return realmGroupOpenStoredGet(group.rememberKey)
-  }
-
-  const groupToggle = (group: Pick<ProductionNavigationGroup, "collapsible" | "items" | "rememberKey">) => {
-    const next = !groupOpen(group)
-    realmGroupManual.set(next)
-    realmGroupOpenStoredSet(group.rememberKey, next)
-  }
-
   return {
+    adminScope,
+    adminScopeSelect,
+    canAccessRealm,
     contentClass: () =>
       kind() !== "account" && sidebar.openDesktop.get() ? authenticatedNavigationClasses.contentOffset : "",
     destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
     groups,
-    groupOpen,
-    groupToggle,
     /** The rail's own collapse control is only meaningful on desktop; mobile uses the top bar. */
     collapseVisible: () => !sidebar.isMobile.get(),
     homeHref: () => (kind() === "admin" ? "/admin/users" : "/account"),
     /** Only the most specific grouped destination is highlighted. */
     isItemActive: (href: string) => activeHref() === href,
     isContextual: () => kind() !== "account",
-    organizationSelect: (organizationId: string) => {
+    organizationSelect: (nextOrganizationId: string) => {
+      if (manualScope.get() !== "organization") {
+        manualScope.set("organization")
+        adminScopeStoredSet("organization")
+      }
       if (organizationPending.get() || session.organizationSwitchPending()) return
       organizationPending.set(true)
       organizationError.set(undefined)
-      void session.organizationSelect(organizationId).then((result) => {
+      void session.organizationSelect(nextOrganizationId).then((result) => {
         organizationPending.set(session.organizationSwitchPending())
         if (!result.success) organizationError.set(result.errorMessage)
       })
+      if (!isOrganizationPath(location.pathname)) navigate(organizationDefaultHref)
     },
     activeOrganization,
     organizationId,
+    realmId,
     realmLabel,
     organizationError: organizationError.get,
     organizationSwitchPending: () => organizationPending.get() || session.organizationSwitchPending(),
-    organizationSwitchable: () => kind() !== "account" && session.organizations.length > 1,
+    organizationSwitchable: () => kind() !== "account" && (session.organizations.length > 1 || canAccessRealm()),
     showAccountNavigation: () =>
       productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "account" }),
     session,

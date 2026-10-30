@@ -6,20 +6,23 @@ import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedAvatar } from "../authenticated/AuthenticatedAvatar.js"
+import { AuthenticatedThemeToggle } from "../authenticated/AuthenticatedThemeToggle.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
+import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { productionIdentityMenuStateCreate } from "./productionIdentityMenuStateCreate.js"
 
 /**
- * Sidebar identity menu: an avatar-plus-name trigger opening a popover with profile and sign-out
- * destinations, so the full name has room outside the narrow rail row. The avatar renders the
- * profile picture when one is available and falls back to initials otherwise.
+ * Sidebar user popover: a single avatar-plus-name button whose menu hosts the profile
+ * destination together with the language and theme controls, so the rail footer needs no
+ * separate preference rows. Surfaces without an account (such as the demo shell) omit the
+ * profile and sign-out destinations and keep only the preference controls.
  */
 export function ProductionIdentityMenu(props: {
   readonly name: string
   readonly pictureUrl?: string | undefined
   readonly showProfile: boolean
-  readonly signOutHref: string
+  readonly signOutHref?: string | undefined
   readonly onNavigate: () => void
 }) {
   const state = productionIdentityMenuStateCreate({ onNavigate: () => props.onNavigate() })
@@ -45,14 +48,19 @@ export function ProductionIdentityMenu(props: {
                 <span class="min-w-0 flex-1 truncate">{messageTranslate("shell.nav.profile")}</span>
               </A>
             </Show>
-            <A
-              class={authenticatedNavigationClasses.identityMenuOption}
-              href={props.signOutHref}
-              onClick={state.select}
-            >
-              <Icon aria-hidden="true" class="size-4 shrink-0 rtl:-scale-x-100" path={mdiLogout} />
-              <span class="min-w-0 flex-1 truncate">{messageTranslate("common.signOut")}</span>
-            </A>
+            <div class={authenticatedNavigationClasses.identityMenuPreferences}>
+              <p class={authenticatedNavigationClasses.identityMenuCaption}>{messageTranslate("common.language")}</p>
+              <LanguageSelector class="w-full" />
+              <AuthenticatedThemeToggle />
+            </div>
+            <Show when={props.signOutHref}>
+              {(href) => (
+                <A class={authenticatedNavigationClasses.identityMenuOption} href={href()} onClick={state.select}>
+                  <Icon aria-hidden="true" class="size-4 shrink-0 rtl:-scale-x-100" path={mdiLogout} />
+                  <span class="min-w-0 flex-1 truncate">{messageTranslate("common.signOut")}</span>
+                </A>
+              )}
+            </Show>
           </div>
         </Popover.Content>
       </Popover.Portal>

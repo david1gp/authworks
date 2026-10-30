@@ -3,19 +3,30 @@ import { adminRealmAdministratorSessionEnsure } from "./adminRealmAdministratorS
 import type { AdminRealmAdministratorSetup } from "./adminRealmAdministratorSetupCreate.js"
 
 /**
- * Verifies the realm-administrator users page: the Realm nav group is visible, the scope
- * control switches the people list to "All organizations", and the setup test users appear
- * with their organization names.
+ * Verifies the realm-administrator users page: the organization context shows the
+ * organization entries without realm links, the administration context switcher
+ * reveals the realm, and the scope control switches the people list to
+ * "All organizations".
  */
 export async function adminRealmAdministratorScopeCheck(setup: AdminRealmAdministratorSetup): Promise<void> {
   const page = setup.context.page
   await adminRealmAdministratorSessionEnsure(setup)
   await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 
-  const realmGroup = page.getByRole("button", { name: "Realm" })
-  await expect(realmGroup).toBeVisible()
-  await realmGroup.click()
-  await expect(page.getByRole("link", { name: "Administrators" })).toBeVisible()
+  // Organization context shows organization entries only.
+  await expect(page.getByRole("link", { name: "Administrators" })).toHaveCount(0)
+
+  // Switch to the realm context through the administration context switcher.
+  await page.locator("[data-admin-context-switcher]").click()
+  await page.locator('[data-admin-context-option="realm"]').click()
+  await expect(page).toHaveURL(/\/admin\/realm(?:[?#]|$)/, { timeout: 30_000 })
+  await expect(page.getByRole("link", { name: "Administrators" }).first()).toBeVisible()
+
+  // Back to an organization to exercise the all-organizations user scope.
+  await page.locator("[data-admin-context-switcher]").click()
+  await page.locator('[data-admin-context-option="organization"]').first().click()
+  await expect(page).toHaveURL(/\/admin\/users/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 
   const scope = page.getByLabel("Organizations")
   await expect(scope).toBeVisible()

@@ -4,7 +4,7 @@ import type { AdminOrgAdminLimitsSetup } from "./adminOrgAdminLimitsSetupCreate.
 
 /**
  * Verifies the admin-scoped users landing: the admin signs in to `/admin/users`, sees the
- * organization people, and the collapsed Realm nav group is absent for non-realm-admins.
+ * organization people, and no realm context is offered for non-realm-admins.
  * Realm routes are server-guarded, so `/admin/realm` shows the insufficient-permission
  * panel rather than the realm settings.
  */

@@ -10,8 +10,8 @@ import { organizationConfigurationSectionSelect } from "../../src/features/organ
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
-import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
 import { productionNavigationActiveHrefSelect } from "../../src/ui/production/productionNavigationActiveHrefSelect.js"
+import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
 import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
@@ -145,7 +145,6 @@ describe("production route contracts", () => {
     ) as readonly (readonly ProductionNavigationGroup[])[]
     for (const groups of navigationGroups) {
       for (const group of groups) {
-        if (group.label !== null) expect(group.icon?.length).toBeGreaterThan(0)
         for (const item of group.items) expect(item.icon.length, item.href).toBeGreaterThan(0)
       }
     }
@@ -159,7 +158,7 @@ describe("production route contracts", () => {
     expect(adminUsers?.label).toBe("shell.nav.users")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.label === "shell.nav.realmGroup")
+    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.scope === "realm")
     const adminConsents = realmGroup?.items.find((item) => item.href === "/admin/oidc-consents")
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
@@ -368,7 +367,7 @@ describe("production shell state", () => {
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
     expect(productionShellNavigationGroups.account).toEqual([])
-    expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([null, "shell.nav.realmGroup"])
+    expect(productionShellNavigationGroups.admin.map((group) => group.scope)).toEqual(["organization", "realm"])
     expect(productionShellNavigationGroups.admin[0]?.items.map((item) => item.href)).toEqual([
       "/admin/users",
       "/admin/roles",
