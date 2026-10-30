@@ -6,13 +6,19 @@ type SessionGeoConfiguration = {
   readonly baseUrl: string
 }
 
-/** Parses the optional session geo lookup configuration; unset disables enrichment. */
+/**
+ * Parses the session geo lookup configuration. Unset defaults to the public
+ * ip-api.com endpoint (free, no account) so active sessions resolve a
+ * location without extra setup; an explicitly empty value disables
+ * enrichment. Note the free tier serves plain HTTP only.
+ */
 export function sessionGeoConfigurationParse(
   input: Readonly<Record<string, string | undefined>>,
 ): Result<SessionGeoConfiguration | undefined> {
   const op = "sessionGeoConfigurationParse"
-  const baseUrl = input.AUTHWORKS_GEO_LOOKUP_URL?.trim()
-  if (baseUrl === undefined || baseUrl.length === 0) return resultCreate(undefined)
+  const configured = input.AUTHWORKS_GEO_LOOKUP_URL
+  if (configured !== undefined && configured.trim().length === 0) return resultCreate(undefined)
+  const baseUrl = configured?.trim() || "http://ip-api.com/json/"
   let parsed: URL
   try {
     parsed = new URL(baseUrl)

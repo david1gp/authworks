@@ -1,6 +1,6 @@
 import { serverApplicationCreate } from "../compositions/serverApplicationCreate.js"
 import { sessionGeoConfigurationParse } from "../features/sessions/server/sessionGeoConfigurationParse.js"
-import { sessionGeoIpApiLookupCreate } from "../features/sessions/domain/sessionGeoIpApiLookupCreate.js"
+import { sessionIpApiLookupCreate } from "../features/sessions/domain/sessionIpApiLookupCreate.js"
 import { mailTransportConfigurationParse } from "../features/email/server/mailTransportConfigurationParse.js"
 import { smtpMailDeliveryPortCreate } from "../features/email/server/smtpMailDeliveryPortCreate.js"
 import { wahaConfigurationParse } from "../features/waha/server/wahaConfigurationParse.js"
@@ -63,7 +63,7 @@ export function serverListen(): void {
     sessionGeoLookup:
       sessionGeoConfiguration.data === undefined
         ? undefined
-        : sessionGeoIpApiLookupCreate({ baseUrl: sessionGeoConfiguration.data.baseUrl }),
+        : sessionIpApiLookupCreate({ baseUrl: sessionGeoConfiguration.data.baseUrl }),
     systemSecret: process.env.AUTHWORKS_SYSTEM_SECRET,
     trustedProxyAddresses: parsed.data.trustedProxyAddresses,
     wahaConfiguration: wahaConfiguration.data,
