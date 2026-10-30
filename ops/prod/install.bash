@@ -23,6 +23,8 @@ if [[ "$(stat -c '%a' "$environment_file")" != "600" ]]; then
 	echo "environment file must have mode 600: $environment_file" >&2
 	exit 1
 fi
+grep -v '^AUTHWORKS_PORT=' "$environment_file" >"$environment_file.tmp"
+mv "$environment_file.tmp" "$environment_file"
 printf '\nAUTHWORKS_PORT=%s\n' "$PRODCTL_PORT_DEFAULT" >>"$environment_file"
 chmod 600 "$environment_file"
 
