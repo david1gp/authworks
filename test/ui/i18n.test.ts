@@ -557,3 +557,56 @@ test("login and demo catalogs do not leak new English source literals", async ()
 function translationPlaceholdersGet(value: string): string[] {
   return [...value.matchAll(/\{[^}]+\}/g)].map(([placeholder]) => placeholder).sort()
 }
+
+test("a failed catalog load restores the previous locale instead of stranding English text", async () => {
+  i18nStore.language.set("en")
+  i18nStore.dictionary.set({})
+  const browserWindow = browserWindowCreate({ csv: "key,ar\ncommon.continue,متابعة\n" })
+  const workingFetch = browserWindow.fetch.bind(browserWindow)
+  let mode: "working" | "rejected" | "missing" = "working"
+  browserWindow.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    if (mode === "rejected") return Promise.reject(new Error("catalog unavailable"))
+    if (mode === "missing") return Promise.resolve(new Response("not found", { status: 404 }))
+    return workingFetch(input, init)
+  }) as typeof fetch
+
+  await languageApply("ar", browserWindow)
+  expect(i18nStore.language.get()).toBe("ar")
+  expect(messageTranslate("common.continue")).toBe("متابعة")
+
+  mode = "rejected"
+  await languageApply("fr", browserWindow)
+  expect(i18nStore.language.get()).toBe("ar")
+  expect(messageTranslate("common.continue")).toBe("متابعة")
+  expect(browserWindow.document.documentElement.lang).toBe("ar")
+  expect(browserWindow.document.documentElement.dir).toBe("rtl")
+
+  mode = "missing"
+  await languageApply("de", browserWindow)
+  expect(i18nStore.language.get()).toBe("ar")
+  expect(messageTranslate("common.continue")).toBe("متابعة")
+  expect(browserWindow.document.documentElement.lang).toBe("ar")
+
+  i18nStore.language.set("en")
+  i18nStore.dictionary.set({})
+})
+
+test("an explicit selection that cannot load keeps the active locale and still records the choice", async () => {
+  i18nStore.language.set("en")
+  i18nStore.dictionary.set({})
+  const { languageSelect } = await import("../../src/ui/i18n/model/languageSelect.js")
+  const storage = new MemoryStorage()
+  const browserWindow = browserWindowCreate({ storage })
+  browserWindow.document.documentElement.lang = "en"
+  browserWindow.document.documentElement.dir = "ltr"
+  browserWindow.fetch = ((_input: RequestInfo | URL, _init?: RequestInit) =>
+    Promise.reject(new Error("catalog unavailable"))) as typeof fetch
+  await languageSelect(browserWindow, "de")
+  expect(i18nStore.language.get()).toBe("en")
+  expect(messageTranslate("common.continue")).toBe("Continue")
+  expect(browserWindow.document.documentElement.lang).toBe("en")
+  expect(storage.getItem(languagePreferenceKey)).toBe("de")
+
+  i18nStore.language.set("en")
+  i18nStore.dictionary.set({})
+})

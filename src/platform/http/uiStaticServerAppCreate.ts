@@ -14,6 +14,7 @@ const uiRoutePrefixes = ["/login", "/consent", "/account", "/invitations", "/adm
 const uiContentTypes: Readonly<Record<string, string>> = {
   ".avif": "image/avif",
   ".css": "text/css; charset=UTF-8",
+  ".csv": "text/csv; charset=UTF-8",
   ".gif": "image/gif",
   ".html": "text/html; charset=UTF-8",
   ".ico": "image/x-icon",
