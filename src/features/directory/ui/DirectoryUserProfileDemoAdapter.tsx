@@ -1,3 +1,4 @@
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { DirectoryUserProfileViewState } from "./DirectoryUserProfileView.js"
 import { DirectoryUserProfileView } from "./DirectoryUserProfileView.js"
 import { directoryUserProfileDemoStateCreate } from "./directoryUserProfileDemoStateCreate.js"
@@ -19,6 +20,7 @@ export function DirectoryUserProfileDemoAdapter() {
   }
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <h1 class="sr-only">{messageTranslate("demo.admin.scenario.user_detail.title")}</h1>
       <DirectoryUserProfileView state={state} />
     </div>
   )

@@ -4,11 +4,7 @@ import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { AuthenticatedThemeToggle } from "../../../ui/authenticated/AuthenticatedThemeToggle.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
-import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
-import { DemoScenarioPlaceholder } from "../../demo/ui/DemoScenarioPlaceholder.js"
 import { AccountAccessDemoAdapter } from "./AccountAccessDemoAdapter.js"
-import { AccountDemoAdapter } from "./AccountDemoAdapter.js"
-import { AccountSecurityDemoAdapter } from "./AccountSecurityDemoAdapter.js"
 import { AccountWorkspaceDemoAdapter } from "./AccountWorkspaceDemoAdapter.js"
 import type { accountDemoAppStateCreate } from "./accountDemoAppStateCreate.js"
 
@@ -44,37 +40,19 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
         </div>
       </header>
       <main class="mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6">
-        <Show when={props.state.isWorkspace()} fallback={<AccountDemoDestination state={props.state} />}>
-          <AccountWorkspaceDemoAdapter />
+        <Show when={props.state.accessScreen()} fallback={<AccountWorkspaceDemoAdapter />}>
+          {(screen) => (
+            <div class="mx-auto grid min-w-0 max-w-6xl gap-3 [&>*]:min-w-0">
+              <h1 class="sr-only">
+                {screen() === "invitation"
+                  ? messageTranslate("demo.account.scenario.invitation.title")
+                  : messageTranslate("demo.account.scenario.invitations.title")}
+              </h1>
+              <AccountAccessDemoAdapter screen={screen()} />
+            </div>
+          )}
         </Show>
       </main>
-    </div>
-  )
-}
-
-function AccountDemoDestination(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
-  return (
-    <div class="mx-auto grid min-w-0 max-w-6xl gap-3 [&>*]:min-w-0">
-      <Show
-        when={props.state.accessScreen()}
-        fallback={
-          <Show
-            when={props.state.securityScreen()}
-            fallback={
-              <Show
-                when={props.state.kind()}
-                fallback={<DemoScenarioPlaceholder backHref="/demo/account" groups={demoAccountScenarioGroups} />}
-              >
-                {(kind) => <AccountDemoAdapter kind={kind()} path={props.state.path()} />}
-              </Show>
-            }
-          >
-            {(screen) => <AccountSecurityDemoAdapter screen={screen()} />}
-          </Show>
-        }
-      >
-        {(screen) => <AccountAccessDemoAdapter screen={screen()} />}
-      </Show>
     </div>
   )
 }

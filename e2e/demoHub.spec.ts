@@ -15,8 +15,11 @@ test("the demo hub lists sections with bullet links", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Sign in with password" })).toBeVisible()
 
   await page.goto("/demo")
-  await page.getByRole("link", { name: "Profile", exact: true }).first().click()
-  await expect(page).toHaveURL(/\/demo\/account\/profile$/)
+  await page
+    .locator("section", { has: page.getByRole("heading", { name: "Account", exact: true }) })
+    .getByRole("link", { name: "Account", exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/demo\/account$/)
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(0)
 
   await page.goto("/demo")
@@ -25,6 +28,9 @@ test("the demo hub lists sections with bullet links", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Users", exact: true }).first()).toBeVisible()
 
   await page.goto("/demo")
-  await page.getByRole("link", { name: "Email verification", exact: true }).first().click()
+  await page
+    .locator("section", { has: page.getByRole("heading", { name: "Email previews", exact: true }) })
+    .getByRole("link", { name: "Email verification", exact: true })
+    .click()
   await expect(page).toHaveURL(/\/demo\/emails\/verification$/)
 })

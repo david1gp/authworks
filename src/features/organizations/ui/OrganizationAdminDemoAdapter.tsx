@@ -8,6 +8,7 @@ export function OrganizationAdminDemoAdapter(props: { readonly screen: Organizat
   const state = organizationAdminDemoStateCreate(() => props.screen)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <h1 class="sr-only">{state.scenarioTitle()}</h1>
       <OrganizationAdminScreenView state={state} />
     </div>
   )

@@ -35,13 +35,13 @@ export function AccountAccessDemoAdapter(props: {
             invitationHref="/demo/invitations/accept"
             invitations={state.invitations()}
             onRetry={state.reload}
-            organizationsHref="/demo/account/organizations"
+            organizationsHref="/demo/account#access"
             status={state.status()}
           />
         </Match>
         <Match when={props.screen === "invitation"}>
           <AccountInvitationView
-            organizationsHref="/demo/account/organizations"
+            organizationsHref="/demo/account#access"
             error={state.error()}
             invitation={state.invitation()}
             onAccept={state.invitationAccept}

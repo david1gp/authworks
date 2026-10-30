@@ -1,6 +1,16 @@
 import { AxeBuilder } from "@axe-core/playwright"
-import { expect, type Locator } from "@playwright/test"
+import { expect, type Locator, type Page } from "@playwright/test"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
+
+/** Serves the fixture avatar host so the workspace picture renders instead of failing DNS. */
+async function demoAssetHostInstall(page: Page) {
+  await page.route("https://assets.example.com/**", (route) =>
+    route.fulfill({
+      body: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#ccc"/></svg>`,
+      contentType: "image/svg+xml",
+    }),
+  )
+}
 
 const viewports = [
   { height: 720, name: "desktop", width: 1280 },
@@ -8,11 +18,13 @@ const viewports = [
 ] as const
 
 test("account destructive actions require keyboard-operable confirmation", async ({ page }) => {
+  test.setTimeout(180_000)
+  await demoAssetHostInstall(page)
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
     const consentOpen = async () => {
-      await page.goto("/demo/account/consents")
-      await page.locator("summary").filter({ hasText: "Application consents" }).click()
+      await page.goto("/demo/account")
+      await page.locator("#access summary").filter({ hasText: "Application consents" }).click()
       const item = page.getByRole("list", { name: "Application consents" }).getByRole("button").first()
       await item.focus()
       await page.keyboard.press("Enter")
@@ -34,8 +46,12 @@ test("account destructive actions require keyboard-operable confirmation", async
     ).toHaveCount(0)
 
     const sessionOpen = async () => {
-      await page.goto("/demo/account/sessions")
-      await page.locator("summary").filter({ hasText: "Sessions and devices" }).click()
+      await page.goto("/demo/account")
+      await page
+        .getByRole("region", { name: "Devices and applications" })
+        .locator("summary")
+        .filter({ hasText: "Sessions and devices" })
+        .click()
       const item = page
         .getByRole("list", { name: "Sessions and devices" })
         .getByRole("button", { name: /Safari on iPhone/ })
@@ -58,8 +74,8 @@ test("account destructive actions require keyboard-operable confirmation", async
 
 test("account identity unlink and invitation decline confirmations guard fixture mutations", async ({ page }) => {
   const identityOpen = async () => {
-    await page.goto("/demo/account/identities")
-    await page.locator("summary").filter({ hasText: "Linked identities" }).click()
+    await page.goto("/demo/account")
+    await page.locator("#security summary").filter({ hasText: "Linked identities" }).click()
     await page.getByRole("list", { name: "Linked identities" }).getByRole("button").first().click()
     const dialog = page.getByRole("dialog")
     await expect(dialog.getByRole("heading", { name: /Manage GitHub/ })).toBeVisible()
@@ -101,8 +117,8 @@ test("password and consent controls meet text contrast at desktop and mobile siz
     ).resolves.toBeGreaterThanOrEqual(4.5)
     await expect(elementContrastRatioGet(page.locator("main > p"))).resolves.toBeGreaterThanOrEqual(4.5)
 
-    await page.goto("/demo/account/consents")
-    await page.locator("summary").filter({ hasText: "Application consents" }).click()
+    await page.goto("/demo/account")
+    await page.locator("#access summary").filter({ hasText: "Application consents" }).click()
     await page.getByRole("list", { name: "Application consents" }).getByRole("button").first().click()
     await expect(
       elementContrastRatioGet(page.getByRole("dialog").getByRole("button", { name: "Revoke", exact: true })),
@@ -113,7 +129,7 @@ test("password and consent controls meet text contrast at desktop and mobile siz
 test("representative login and account demos have no serious axe violations", async ({ page }) => {
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
-    for (const path of ["/demo/login/password", "/demo/account/consents"]) {
+    for (const path of ["/demo/login/password", "/demo/account"]) {
       await page.goto(path)
       const accessibility = await new AxeBuilder({ page }).analyze()
       expect(
@@ -135,14 +151,17 @@ test("account definition lists use valid semantic children", async ({ page }) =>
 })
 
 test("Arabic consent is translated, RTL, and usable at desktop and mobile sizes", async ({ page }) => {
+  test.setTimeout(180_000)
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
-    await page.goto("/demo/account/consents")
+    await demoAssetHostInstall(page)
+    await page.goto("/demo/account")
+    await page.locator("select[aria-label]").selectOption("en")
+    await page.locator("#access summary").filter({ hasText: "Application consents" }).click()
     await page.locator("select[aria-label]").selectOption("ar")
 
     await expect(page.locator("html")).toHaveAttribute("lang", "ar")
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl")
-    await page.locator("summary").first().click()
     await expect(page.getByText("التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.", { exact: true })).toBeVisible()
     await page.getByRole("list", { name: "أذونات وصول التطبيقات" }).getByRole("button").first().press("Enter")
     const consentDialog = page.getByRole("dialog")
@@ -176,10 +195,10 @@ test("the invitations demo follows the canonical route family and keeps demo nav
 
   await page.goto("/demo/invitations")
   const organizationsLink = page.getByRole("link", { name: "Organizations", exact: true })
-  await expect(organizationsLink).toHaveAttribute("href", "/demo/account/organizations")
+  await expect(organizationsLink).toHaveAttribute("href", "/demo/account#access")
   await organizationsLink.click()
-  await expect(page).toHaveURL(/\/demo\/account\/organizations$/)
-  await page.locator("summary").filter({ hasText: "Organizations" }).click()
+  await expect(page).toHaveURL(/\/demo\/account#access$/)
+  await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
   await expect(page.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
 })
 

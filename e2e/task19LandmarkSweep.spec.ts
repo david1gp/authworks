@@ -12,7 +12,7 @@ const routes = [
   "/demo/admin/domains",
   "/demo/admin/projects/01900000-0000-7000-8000-000000000031/roles-grants",
   "/demo/invitations",
-  "/demo/account/consents",
+  "/demo/account",
 ] as const
 
 const viewports = [
@@ -24,7 +24,7 @@ test("authenticated routes expose no duplicate landmark names", async ({ page })
   test.setTimeout(180_000)
   for (const route of routes) {
     await page.goto(route)
-    await expect(page.locator("main h1")).toBeVisible()
+    await expect(page.locator("main h1"), route).toBeVisible()
     const duplicates = await landmarkNameDuplicatesRead(page)
     expect(duplicates, route).toEqual([])
   }
@@ -40,8 +40,8 @@ test("redesigned panels never repeat the page heading as a panel heading", async
 
 test("account email addresses stay fully readable beside their actions at 390px", async ({ page }) => {
   await page.setViewportSize({ height: 844, width: 390 })
-  await page.goto("/demo/account/email")
-  await page.locator("summary").filter({ hasText: "Email addresses" }).click()
+  await page.goto("/demo/account")
+  await page.locator("#profile summary").filter({ hasText: "Email addresses" }).click()
   const addresses = page.getByRole("list", { name: "Email addresses" }).getByRole("listitem")
   await expect(addresses.first()).toBeVisible()
 

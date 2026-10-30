@@ -6,7 +6,6 @@ import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
-import { demoAccountScenarioGroups } from "../demoAccountScenarioGroups.js"
 import { demoAdminScenarioGroups } from "../demoAdminScenarioGroups.js"
 import { demoConsentScenarioGroups } from "../demoConsentScenarioGroups.js"
 import { demoLoginScenarioGroups } from "../demoLoginScenarioGroups.js"
@@ -24,9 +23,11 @@ const demoHubSections: readonly DemoHubSection[] = [
   },
   {
     header: () => messageTranslate("demo.nav.account"),
-    links: demoAccountScenarioGroups.flatMap((group) =>
-      group.scenarios.map((scenario) => ({ href: scenario.path, label: () => ttc(scenario.title) })),
-    ),
+    links: [
+      { href: "/demo/account", label: () => messageTranslate("shell.nav.account") },
+      { href: "/demo/invitations", label: () => messageTranslate("demo.account.scenario.invitations.title") },
+      { href: "/demo/invitations/accept", label: () => messageTranslate("demo.account.scenario.invitation.title") },
+    ],
   },
   {
     header: () => messageTranslate("demo.nav.admin"),

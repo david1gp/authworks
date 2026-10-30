@@ -9,6 +9,7 @@ export function OidcAdminDemoAdapter(props: { readonly clientId?: string; readon
   })
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <h1 class="sr-only">{state.scenarioTitle()}</h1>
       <OidcAdminScreenView state={state} />
     </div>
   )

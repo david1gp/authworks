@@ -1,6 +1,7 @@
 import { Match, Show, Switch } from "solid-js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { DemoFixtureScenarioGroup } from "../demoFixtureScenarioGroupSchema.js"
 import { demoScenarioPlaceholderStateCreate } from "./demoScenarioPlaceholderStateCreate.js"
@@ -13,6 +14,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
         when={state.scenario()}
         fallback={
           <AuthenticatedSection padded>
+            <h1 class="sr-only">{messageTranslate("demo.placeholder.notFoundTitle")}</h1>
             <ProductionStatePanel
               compact
               detail={messageTranslate("demo.placeholder.notFoundDescription")}
@@ -22,6 +24,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
           </AuthenticatedSection>
         }
       >
+        <h1 class="sr-only">{ttc(state.scenario()?.title ?? "")}</h1>
         <AuthenticatedSection padded>
           <Switch>
             <Match when={state.selectedState() === "loading"}>

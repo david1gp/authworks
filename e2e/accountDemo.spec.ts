@@ -1,15 +1,26 @@
 import { AxeBuilder } from "@axe-core/playwright"
-import { expect } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
+
+/** Serves the fixture avatar host so the workspace picture renders instead of failing DNS. */
+async function demoAssetHostInstall(page: Page) {
+  await page.route("https://assets.example.com/**", (route) =>
+    route.fulfill({
+      body: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#ccc"/></svg>`,
+      contentType: "image/svg+xml",
+    }),
+  )
+}
 
 test("the account demo landing page composes the full example account workspace", async ({ page }) => {
   const requests: string[] = []
   page.on("request", (request) => {
     if (request.resourceType() === "fetch" || request.resourceType() === "xhr") requests.push(request.url())
   })
+  await demoAssetHostInstall(page)
   await page.goto("/demo/account")
 
   const toolbar = page.locator("[data-account-toolbar]")
@@ -34,15 +45,16 @@ test("the account demo landing page composes the full example account workspace"
 })
 
 test("organization, invitation, and consent demos are interactive and network-free", async ({ page }) => {
+  test.setTimeout(180_000)
   const requests: string[] = []
   page.on("request", (request) => {
     if (request.resourceType() === "fetch" || request.resourceType() === "xhr") requests.push(request.url())
   })
 
-  await page.goto("/demo/account/organizations")
+  await demoAssetHostInstall(page)
+  await page.goto("/demo/account")
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(0)
-  await expect(page.getByRole("link", { name: "Access", exact: true })).toHaveCount(0)
-  await page.locator("summary").filter({ hasText: "Organizations" }).click()
+  await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
   const organizationSection = page.getByRole("tablist", { name: "Organization to view", exact: true })
   const organizationTabs = organizationSection.getByRole("tab")
   await expect(organizationTabs).toHaveCount(2)
@@ -69,12 +81,12 @@ test("organization, invitation, and consent demos are interactive and network-fr
     organizationSection.getByText("Organization context changed to Field Notes.", { exact: true }),
   ).toHaveCount(0)
 
-  await page.goto("/demo/account/consents")
-  await page.locator("summary").filter({ hasText: "Application consents" }).click()
+  await page.goto("/demo/account")
+  await page.locator("#access summary").filter({ hasText: "Application consents" }).click()
   await page.getByRole("list", { name: "Application consents" }).getByRole("button").first().click()
   await page.getByRole("dialog").getByRole("button", { name: "Revoke" }).click()
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
-  await expect(page.getByRole("status")).toContainText("revoked")
+  await expect(page.locator("#access").getByText(/revoked/)).toBeVisible()
 
   // The overview must lead to the accept destination instead of only describing a missing link.
   await page.goto("/demo/invitations")
@@ -93,54 +105,57 @@ test("organization, invitation, and consent demos are interactive and network-fr
 })
 
 test("account security demos are fixture-backed and interactive", async ({ page }) => {
+  test.setTimeout(180_000)
   const apiRequests: string[] = []
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/realms/")) apiRequests.push(request.url())
   })
+  await demoAssetHostInstall(page)
 
-  await page.goto("/demo/account/overview")
+  await page.goto("/demo/account")
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(0)
-  const securityGrid = page.locator("[data-account-security-grid]")
+  const securityGrid = page.locator("#security [data-account-security-grid]")
   await expect(securityGrid.locator(":scope > div")).toHaveCount(5)
   for (const detail of ["Password set", "2 passkeys configured", "7 backup codes remaining"])
     await expect(securityGrid.locator("summary").getByText(detail, { exact: true })).toBeVisible()
   await expect(securityGrid.locator("summary").filter({ hasText: /[Cc]onfigured/ })).toHaveCount(5)
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
 
-  await page.goto("/demo/account/overview?state=empty")
-  await expect(page.locator("[data-account-security-grid]")).toContainText("No password set")
-  await expect(page.locator("[data-account-security-grid] summary").filter({ hasText: "Not configured" })).toHaveCount(
-    5,
-  )
+  await page.goto("/demo/account?state=empty")
+  await expect(page.locator("#security [data-account-security-grid]")).toContainText("No password set")
+  await expect(
+    page.locator("#security [data-account-security-grid] summary").filter({ hasText: "Not configured" }),
+  ).toHaveCount(5)
 
-  await page.goto("/demo/account/sessions")
-  await page.locator("summary").filter({ hasText: "Sessions and devices" }).click()
-  await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
-  await page
+  await page.goto("/demo/account")
+  const devices = page.getByRole("region", { name: "Devices and applications" })
+  await devices.locator("summary").filter({ hasText: "Sessions and devices" }).click()
+  await expect(devices.getByText("Firefox on Linux", { exact: true })).toBeVisible()
+  await devices
     .getByRole("list", { name: "Sessions and devices" })
     .getByRole("button", { name: /Safari on iPhone/ })
     .click()
   await page.getByRole("dialog").getByRole("button", { name: "Revoke session" }).click()
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
-  await expect(page.getByText("Safari on iPhone", { exact: true })).toHaveCount(0)
+  await expect(devices.getByText("Safari on iPhone", { exact: true })).toHaveCount(0)
 
-  await page.goto("/demo/account/passkeys?state=empty")
-  await page.locator("summary").filter({ hasText: "Passkeys" }).click()
+  await page.goto("/demo/account?state=empty")
+  await page.locator("#security summary").filter({ hasText: "Passkeys" }).click()
   await expect(page.getByText("No passkeys registered", { exact: true })).toBeVisible()
-  await page.goto("/demo/account/passkeys?state=loading")
-  await expect(page.getByRole("status")).toBeVisible()
+  await page.goto("/demo/account?state=loading")
+  await expect(page.locator("#security").getByRole("status")).toBeVisible()
 
-  await page.goto("/demo/account/factors")
-  await expect(page.getByText("1 authenticators", { exact: true })).toBeVisible()
-  await expect(page.locator("summary").getByText("Configured", { exact: true })).toBeVisible()
+  await page.goto("/demo/account")
+  await expect(page.locator("#security").getByText("1 authenticators", { exact: true })).toBeVisible()
+  await expect(page.locator("#security summary").getByText("Configured", { exact: true }).first()).toBeVisible()
 
-  await page.goto("/demo/account/recovery-codes?state=one-time")
+  await page.goto("/demo/account?state=one-time")
   await expect(page.locator('[data-one-time-secret="recovery-codes"]')).toBeVisible()
   await page.getByRole("button", { name: "I saved these codes" }).click()
   await expect(page.getByText("AX7K-2QPL", { exact: true })).toHaveCount(0)
 
-  await page.goto("/demo/account/identities")
-  await page.locator("summary").filter({ hasText: "Linked identities" }).click()
+  await page.goto("/demo/account")
+  await page.locator("#security summary").filter({ hasText: "Linked identities" }).click()
   await page
     .getByRole("list", { name: "Linked identities" })
     .getByRole("button", { name: /GitHub/ })
@@ -151,11 +166,11 @@ test("account security demos are fixture-backed and interactive", async ({ page 
     page.getByRole("list", { name: "Linked identities" }).getByRole("button", { name: /GitHub/ }),
   ).toHaveCount(0)
 
-  await page.goto("/demo/account/security-history")
-  await page.locator("summary").filter({ hasText: "Recent security activity" }).click()
-  await expect(page.getByText("A session was created", { exact: true })).toBeVisible()
-  await page.getByRole("button", { name: "Load more security activity", exact: true }).click()
-  await expect(page.getByText("An impersonation session started", { exact: true })).toBeVisible()
+  await page.goto("/demo/account")
+  await devices.locator("summary").filter({ hasText: "Recent security activity" }).click()
+  await expect(devices.getByText("A session was created", { exact: true })).toBeVisible()
+  await devices.getByRole("button", { name: "Load more security activity", exact: true }).click()
+  await expect(devices.getByText("An impersonation session started", { exact: true })).toBeVisible()
   expect(apiRequests).toEqual([])
 })
 

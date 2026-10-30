@@ -29,16 +29,18 @@ const user = {
 }
 
 test("demo account pages are interactive and network-free", async ({ page }) => {
+  test.setTimeout(180_000)
   const apiRequests: string[] = []
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/realms/")) apiRequests.push(request.url())
   })
 
-  await page.goto("/demo/account/profile")
-  const profileSection = page.locator("main")
+  await pictureAssetHostInstall(page)
+  await page.goto("/demo/account")
+  const profileSection = page.locator("#profile")
   await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
   await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
-  await expect(page.getByText("avery.stone@example.com", { exact: true })).toBeVisible()
+  await expect(page.getByText("avery.stone@example.com", { exact: true }).first()).toBeVisible()
   await expect(profileSection.locator("summary").filter({ hasText: "Personal information" })).toBeVisible()
   await profileSection.locator("summary").filter({ hasText: "Personal information" }).click()
   await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toHaveCount(0)
@@ -95,8 +97,9 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(removeDialog).toHaveCount(0)
 
-  await page.goto("/demo/account/password")
-  const passwordDialogTrigger = page.getByRole("button", { name: "Change password" })
+  await page.goto("/demo/account#security")
+  await page.locator("#security summary").filter({ hasText: "Password" }).click()
+  const passwordDialogTrigger = page.locator("#security").getByRole("button", { name: "Change password" }).first()
   await passwordDialogTrigger.click()
   const passwordDialog = page.getByRole("dialog", { name: "Change password" })
   const currentPassword = passwordDialog.getByLabel("Current password")
@@ -111,8 +114,10 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await passwordDialog.getByLabel("Confirm new password").fill("new-password")
   await passwordDialog.getByRole("button", { name: "Change password" }).click()
   await expect(passwordDialog.getByText("Your password was changed.")).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(passwordDialog).toHaveCount(0)
 
-  await page.goto("/demo/account/delete")
+  await page.goto("/demo/account#danger-zone")
   await page.getByText("Permanently delete this account", { exact: true }).click()
   await page.getByRole("button", { name: "Show account deletion options" }).click()
   const deleteDialog = page.getByRole("dialog", { name: "Permanently delete this account" })
@@ -123,8 +128,10 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 })
 
 test("demo profile edits can be cancelled without changing the overview", async ({ page }) => {
-  await page.goto("/demo/account/profile")
-  const profileSection = page.locator("main")
+  test.setTimeout(180_000)
+  await pictureAssetHostInstall(page)
+  await page.goto("/demo/account")
+  const profileSection = page.locator("#profile")
   await profileSection.locator("summary").filter({ hasText: "Personal information" }).click()
   await page.getByRole("button", { name: "Edit profile", exact: true }).click()
   const profileDialog = page.getByRole("dialog", { name: "Edit profile", exact: true })

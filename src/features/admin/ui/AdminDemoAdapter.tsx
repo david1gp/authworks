@@ -11,7 +11,10 @@ export function AdminDemoAdapter(props: { readonly screen: AdminScreen }) {
       {props.screen === "realm" ? (
         <AdminRealmView basePath="/demo/admin" state={state} />
       ) : (
-        <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
+        <>
+          <h1 class="sr-only">{state.scenarioTitle()}</h1>
+          <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
+        </>
       )}
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
     </div>
