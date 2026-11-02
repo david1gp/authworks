@@ -57,7 +57,7 @@ test("the language selector applies the chosen catalog and restores the previous
     if (url.endsWith("/i18n/de.csv")) return new Response(deCsv, { headers: { "content-type": "text/csv" } })
     throw new Error(`unexpected catalog request: ${url}`)
   }
-  browser.fetch = serverFetch as typeof fetch
+  browser.fetch = serverFetch as unknown as typeof browser.fetch
 
   const globals = globalThis as unknown as Record<string, unknown>
   const names = ["window", "document", "Node", "Element", "HTMLElement", "SVGElement", "Text"] as const
@@ -93,7 +93,7 @@ test("the language selector applies the chosen catalog and restores the previous
 
       browser.fetch = (async () => {
         throw new Error("catalog unavailable")
-      }) as typeof fetch
+      }) as typeof browser.fetch
       select!.value = "fr"
       select!.dispatchEvent(new browser.Event("change", { bubbles: true }))
       for (let attempt = 0; attempt < 100 && i18nStore.language.get() === "de"; attempt += 1) {
