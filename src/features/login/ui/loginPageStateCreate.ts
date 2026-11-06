@@ -795,14 +795,21 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     if (outcome.challenge !== undefined) passkeyStatus.set("mfa-continuation")
     authenticationApply(outcome)
   }
-  const providerStart = async (providerId: string) => {
+  const providerStart = async (providerId: string): Promise<boolean> => {
     providerStatus.set("pending")
     const started = await run(() => options.adapter.providerStart(providerId))
     if (started === undefined) {
+      // The chooser starts the redirect without leaving it, so a failure has no visible
+      // surface yet. Fall back to the provider screen to show the error with its retry
+      // action. go() clears the failure state, so capture it and restore it afterwards.
+      const message = errorMessage.get()
+      if (activeScreen.get() !== "provider") go("provider")
+      errorMessage.set(message)
       providerStatus.set("failure")
-      return
+      return false
     }
     providerStatus.set("ready")
+    return true
   }
   const providerSelect = (providerId: string) => {
     if (discovery.get()?.providers.some((provider) => provider.id === providerId)) {

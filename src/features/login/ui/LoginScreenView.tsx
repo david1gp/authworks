@@ -78,11 +78,11 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                   onRegister={() => state.go("register")}
                   onSelect={(method, providerId) => {
                     if (method === "external-identity" && providerId !== undefined) {
-                      // Start the provider redirect immediately instead of parking on an
-                      // intermediate screen that repeats the same action. The provider screen
-                      // stays as the fallback surface for failures and direct visits.
+                      // Start the provider redirect immediately and stay on the chooser while
+                      // the start request resolves: a success leaves the app via location
+                      // assignment, and only a failure falls back to the provider screen.
+                      // The provider screen also stays as the surface for direct visits.
                       state.providerSelect(providerId)
-                      state.go("provider")
                       void state.providerStart(providerId)
                       return
                     }
