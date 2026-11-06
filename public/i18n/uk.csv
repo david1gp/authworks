@@ -1989,3 +1989,43 @@ admin.organizations.providers.scopes,Scopes
 admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
 admin.organizations.providers.save,Save provider
 common.remove,Remove
+admin.oidc.clients.backToClients,OIDC clients
+admin.oidc.clients.consentOptions,Options
+admin.oidc.clients.serverDefault,Server default
+admin.oidc.clients.tokenLifetimes,Token lifetimes
+admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
+admin.redesign.actions,Actions
+admin.redesign.activeSessions,Active sessions
+admin.redesign.administratorId,administrator ID
+admin.redesign.consentTrust,Consent & trust
+admin.redesign.device,Device
+admin.redesign.documents,documents
+admin.redesign.events24H,Events · 24 h
+admin.redesign.from,From
+admin.redesign.grantsScopes,Grants & scopes
+admin.redesign.id,ID
+admin.redesign.inh,inh.
+admin.redesign.inherited,inherited
+admin.redesign.ip,IP
+admin.redesign.lifetimes,Lifetimes
+admin.redesign.machineUserId,machine user ID
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
+admin.redesign.moreFilters,More filters
+admin.redesign.noRecentAuditEvents,No recent audit events.
+admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
+admin.redesign.onThisPage,on this page
+admin.redesign.organizations,organizations
+admin.redesign.projectId,project ID
+admin.redesign.recentAuditEvents,Recent audit events
+admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.s,s
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
+admin.redesign.searchSessions,Search sessions
+admin.redesign.sessionsOnThisPage,sessions on this page
+admin.redesign.signInMethods,Sign-in methods
+admin.redesign.to,To
+admin.redesign.tokens,Tokens
+admin.redesign.userId,user ID
+admin.redesign.viewAll,View all
+shell.nav.oidcGroup,OIDC
+shell.nav.securityAuditGroup,Безпека та аудит
