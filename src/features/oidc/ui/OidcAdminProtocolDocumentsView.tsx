@@ -13,7 +13,14 @@ import { oidcAdminProtocolDocumentsViewStateCreate } from "./oidcAdminProtocolDo
 export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdminPageState }) {
   const state = oidcAdminProtocolDocumentsViewStateCreate({ page: props.state })
   return (
-    <section aria-label={messageTranslate("admin.oidc.documents.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.documents.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <header class="flex items-baseline gap-3">
+        <h1 class="text-lg font-semibold">{messageTranslate("admin.oidc.documents.title")}</h1>
+        <span class="text-xs text-muted-foreground">
+          {Number(Boolean(state.page.discovery())) + Number(Boolean(state.page.jwks()))}{" "}
+          {messageTranslate("admin.redesign.documents")}
+        </span>
+      </header>
       {/* The page offers no mutation at all, so its intent is stated once above the documents. */}
       <p class="grid gap-1.5 rounded-panel border border-line bg-muted px-5 py-4 text-sm" data-read-only-notice>
         <span class="font-medium">{messageTranslate("admin.oidc.documents.description")}</span>
@@ -26,7 +33,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
         onRetry={state.page.reload}
         status={state.page.status()}
       >
-        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
           <Show when={state.page.discovery()}>
             <OidcAdminDocumentSection
               copied={state.copied("discovery")}
@@ -35,6 +42,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
               onCopy={state.discoveryCopy}
               openHref={state.discoveryHref()}
               title={messageTranslate("admin.oidc.documents.discoveryTitle")}
+              url={`${state.page.discovery()?.issuer}/.well-known/openid-configuration`}
             >
               {/* Endpoint URLs are long, so they read as dense truncating identifier fields. */}
               <AuthenticatedFieldList
@@ -57,6 +65,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
                 onCopy={state.jwksCopy}
                 openHref={state.jwksHref()}
                 title={messageTranslate("admin.oidc.documents.jwksTitle")}
+                url={state.page.discovery()?.jwks_uri}
               >
                 <ul aria-label={messageTranslate("admin.oidc.keys.keyId")} class="grid min-w-0 gap-1">
                   <For each={jwks().keys}>

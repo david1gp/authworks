@@ -226,13 +226,11 @@ for (const path of ["/demo/admin/oidc-clients", "/demo/admin/signing-keys", "/de
   })
 }
 
-test("OIDC destinations are reachable from the realm navigation group", async ({ page }) => {
+test("OIDC destinations are reachable from the expanded OIDC navigation group", async ({ page }) => {
   await page.goto("/demo/admin/users")
 
   const navigation = page.getByRole("navigation", { name: "Administration", exact: true })
-  const realmGroup = navigation.getByRole("button", { name: "Realm", exact: true })
-  // The realm destinations live in a collapsed group for realm administrators.
-  if ((await realmGroup.getAttribute("aria-expanded")) !== "true") await realmGroup.click()
+  await expect(navigation.getByText("OIDC", { exact: true })).toBeVisible()
   for (const [name, href] of [
     ["OIDC clients", "/demo/admin/oidc-clients"],
     ["Signing keys", "/demo/admin/signing-keys"],

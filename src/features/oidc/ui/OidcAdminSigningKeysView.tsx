@@ -4,14 +4,14 @@ import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcSigningKey } from "../public/oidcSigningKeySchema.js"
 import { OidcAdminNotice } from "./OidcAdminNotice.js"
@@ -21,48 +21,51 @@ import { oidcAdminSigningKeyStatusTone } from "./oidcAdminSigningKeyStatusTone.j
 
 export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageState }) {
   const state = props.state
-  const retiredAt = (key: OidcSigningKey) =>
-    key.retiredAt === null ? "—" : localeDateFormat(key.retiredAt, { dateStyle: "medium" })
+  const retiredAt = (key: OidcSigningKey) => <AuthenticatedRelativeTime fallback="—" value={key.retiredAt} />
   const retireButton = (key: OidcSigningKey) => (
     <Show when={key.status === "active"}>
       <AuthenticatedButton
         size="sm"
+        aria-label={messageTranslate("admin.oidc.keys.retire")}
+        title={messageTranslate("admin.oidc.keys.retire")}
         disabled={state.pendingId() !== undefined}
         icon={mdiKeyRemove}
         onClick={() => void state.signingKeyRetire(key.id)}
         variant="outline"
-      >
-        {messageTranslate("admin.oidc.keys.retire")}
-      </AuthenticatedButton>
+      />
     </Show>
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.keys.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <AuthenticatedToolbar
-        actions={
-          <>
-            <AuthenticatedButton
-              disabled={state.pendingId() !== undefined}
-              icon={mdiPlus}
-              onClick={() => void state.signingKeyCreate()}
-              variant="outline"
-            >
-              {messageTranslate("admin.oidc.keys.create")}
-            </AuthenticatedButton>
-            <AuthenticatedButton
-              disabled={state.pendingId() !== undefined}
-              icon={mdiAutorenew}
-              onClick={() => void state.signingKeyRotate()}
-              variant="filledBlue"
-            >
-              {messageTranslate("admin.oidc.keys.rotate")}
-            </AuthenticatedButton>
-          </>
-        }
-        label={messageTranslate("admin.oidc.keys.title")}
-        summary={messageTranslate("admin.oidc.keys.privateNotice")}
-      />
+    <section aria-label={messageTranslate("admin.oidc.keys.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <header class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-baseline gap-3">
+          <h1 class="text-lg font-semibold">{messageTranslate("admin.oidc.keys.title")}</h1>
+          <span class="text-xs text-muted-foreground">
+            {state.signingKeys().length} {messageTranslate("admin.redesign.onThisPage")}
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <AuthenticatedButton
+            disabled={state.pendingId() !== undefined}
+            icon={mdiPlus}
+            onClick={() => void state.signingKeyCreate()}
+            variant="outline"
+          >
+            {messageTranslate("admin.oidc.keys.create")}
+          </AuthenticatedButton>
+          <AuthenticatedButton
+            disabled={state.pendingId() !== undefined}
+            icon={mdiAutorenew}
+            onClick={() => void state.signingKeyRotate()}
+            variant="filledBlue"
+          >
+            {messageTranslate("admin.oidc.keys.rotate")}
+          </AuthenticatedButton>
+        </div>
+      </header>
+
+      <p class="text-xs text-muted-foreground">{messageTranslate("admin.oidc.keys.privateNotice")}</p>
 
       <OidcAdminNotice notice={state.notice()} />
 
@@ -82,7 +85,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                     { label: messageTranslate("admin.oidc.keys.algorithm"), value: key.algorithm },
                     {
                       label: messageTranslate("admin.oidc.created"),
-                      value: localeDateFormat(key.createdAt, { dateStyle: "medium" }),
+                      value: <AuthenticatedRelativeTime value={key.createdAt} />,
                     },
                     { label: messageTranslate("admin.oidc.keys.retiredAt"), value: retiredAt(key) },
                   ]}
@@ -131,7 +134,10 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                   <TableRow class={authenticatedTableClasses.row}>
                     {/* Key identifiers are long UUIDs, so the cell truncates and keeps the full value in its title. */}
                     <TableCell class={authenticatedTableClasses.identifier} title={key.publicJwk.kid}>
-                      {key.publicJwk.kid}
+                      <AuthenticatedCopyableId
+                        label={messageTranslate("admin.oidc.keys.keyId")}
+                        value={key.publicJwk.kid}
+                      />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>{key.algorithm}</TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
@@ -141,7 +147,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                       />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(key.createdAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={key.createdAt} />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
                       {retiredAt(key)}

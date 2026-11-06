@@ -7,11 +7,11 @@ import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcConsent } from "../public/oidcConsentSchema.js"
 import { OidcAdminNotice } from "./OidcAdminNotice.js"
@@ -24,21 +24,24 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
   const revokeButton = (consent: OidcConsent) => (
     <AuthenticatedButton
       size="sm"
+      aria-label={messageTranslate("common.revoke")}
+      title={messageTranslate("common.revoke")}
       disabled={state.page.pendingId() !== undefined}
       icon={mdiCancel}
       onClick={() => state.consentRevoke(consent.clientId)}
       variant="outline"
-    >
-      {messageTranslate("common.revoke")}
-    </AuthenticatedButton>
+    />
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.consents.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <AuthenticatedToolbar
-        label={messageTranslate("admin.oidc.consents.title")}
-        summary={messageTranslate("admin.oidc.consents.description")}
-      >
+    <section aria-label={messageTranslate("admin.oidc.consents.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <header class="flex items-baseline gap-3">
+        <h1 class="text-lg font-semibold">{messageTranslate("admin.oidc.consents.title")}</h1>
+        <span class="text-xs text-muted-foreground">
+          {state.page.consents().length} {messageTranslate("admin.redesign.onThisPage")}
+        </span>
+      </header>
+      <AuthenticatedToolbar label={messageTranslate("admin.oidc.consents.title")}>
         <Label class="text-xs font-medium text-muted-foreground" for="oidc-consent-user-search">
           {messageTranslate("admin.oidc.consents.searchUsers")}
         </Label>
@@ -91,7 +94,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
                     },
                     {
                       label: messageTranslate("admin.oidc.consents.granted"),
-                      value: localeDateFormat(consent.createdAt, { dateStyle: "medium" }),
+                      value: <AuthenticatedRelativeTime value={consent.createdAt} />,
                     },
                   ]}
                   title={state.page.clientName(consent.clientId)}
@@ -132,7 +135,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
                       <OidcAdminScopeList scopes={consent.scope} />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(consent.createdAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={consent.createdAt} />
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.action}>{revokeButton(consent)}</TableCell>
                   </TableRow>

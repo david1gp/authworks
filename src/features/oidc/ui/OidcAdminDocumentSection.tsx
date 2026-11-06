@@ -1,10 +1,7 @@
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
-import { mdiOpenInNew } from "@adaptive-ds/mdi/mdiOpenInNew.js"
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
 /**
@@ -19,49 +16,51 @@ export function OidcAdminDocumentSection(props: {
   readonly onCopy: () => void
   readonly openHref?: string
   readonly title: string
+  readonly url?: string
 }) {
   return (
-    <AuthenticatedSection
-      actions={
-        <>
-          <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
-            {messageTranslate("admin.oidc.documents.copy")}
-          </AuthenticatedButton>
-          {/* A fixture endpoint resolves nowhere, so no broken link is offered. */}
-          <Show when={props.openHref}>
-            {(href) => (
-              <a
-                class="inline-flex h-8 items-center gap-2 rounded-control border border-line-strong/70 bg-surface px-3 text-[0.8125rem] font-medium hover:bg-surface-hover"
-                href={href()}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Icon class="size-4" path={mdiOpenInNew} />
-                {messageTranslate("admin.oidc.documents.open")}
-              </a>
-            )}
-          </Show>
-          <Show when={props.copied}>
-            <span class="text-xs font-medium text-success" role="status">
-              {messageTranslate("admin.oidc.documents.copied")}
-            </span>
-          </Show>
-        </>
-      }
-      description={props.description}
-      title={props.title}
-    >
-      <div class="grid min-w-0 gap-4 px-5 py-4">
-        {props.children}
-        <details class="min-w-0 rounded-control border border-line-subtle">
-          <summary class="cursor-pointer px-2 py-1.5 text-xs font-medium">
-            {messageTranslate("admin.oidc.documents.showRaw")}
-          </summary>
+    <section class="min-w-0 rounded-panel border border-line bg-surface px-4 py-3">
+      <div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+        <h2 class="min-w-36 text-sm font-semibold">{props.title}</h2>
+        <Show when={props.url}>
+          {(url) => (
+            <Show
+              when={props.openHref}
+              fallback={<span class="min-w-0 flex-1 break-all font-mono text-xs text-muted-foreground">{url()}</span>}
+            >
+              {(href) => (
+                <a
+                  class="min-w-0 flex-1 break-all font-mono text-xs text-link hover:underline"
+                  href={href()}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {url()}
+                </a>
+              )}
+            </Show>
+          )}
+        </Show>
+        <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
+          {messageTranslate("admin.oidc.documents.copy")}
+        </AuthenticatedButton>
+        <Show when={props.copied}>
+          <span class="text-xs font-medium text-success" role="status">
+            {messageTranslate("admin.oidc.documents.copied")}
+          </span>
+        </Show>
+      </div>
+      <details class="min-w-0">
+        <summary class="cursor-pointer py-1.5 text-xs font-medium">
+          {messageTranslate("admin.oidc.documents.showRaw")}
+        </summary>
+        <div class="grid min-w-0 gap-3">
+          {props.children}
           <pre class="max-h-96 w-full min-w-0 overflow-auto whitespace-pre border-t border-line-subtle bg-muted px-4 py-3 font-mono text-xs leading-5">
             {props.json}
           </pre>
-        </details>
-      </div>
-    </AuthenticatedSection>
+        </div>
+      </details>
+    </section>
   )
 }

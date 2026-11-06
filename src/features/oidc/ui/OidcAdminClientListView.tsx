@@ -1,10 +1,8 @@
-import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
@@ -14,11 +12,11 @@ import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNoti
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcClient } from "../public/oidcClientSchema.js"
 import { OidcAdminClientFormFields } from "./OidcAdminClientFormFields.js"
@@ -50,15 +48,19 @@ export function OidcAdminClientListView(props: {
       type="button"
     >
       {client.name}
-      <Icon class="ms-1 inline size-4" path={mdiArrowRight} />
     </button>
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.clients.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <p class="text-sm text-muted-foreground">{messageTranslate("admin.oidc.clients.description")}</p>
-      <AuthenticatedToolbar
-        actions={
+    <section aria-label={messageTranslate("admin.oidc.clients.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <header class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-baseline gap-3">
+          <h1 class="text-lg font-semibold">{messageTranslate("admin.oidc.clients.title")}</h1>
+          <span class="text-xs text-muted-foreground">
+            {state.filteredClients().length} {messageTranslate("admin.redesign.onThisPage")}
+          </span>
+        </div>
+        {
           <AuthenticatedDialog
             description={messageTranslate("admin.oidc.clients.createDescription")}
             onOpenChange={state.createOpenSet}
@@ -118,8 +120,8 @@ export function OidcAdminClientListView(props: {
             </form>
           </AuthenticatedDialog>
         }
-        label={messageTranslate("admin.oidc.clients.title")}
-      >
+      </header>
+      <AuthenticatedToolbar label={messageTranslate("admin.oidc.clients.title")}>
         <Label class="sr-only" for="oidc-client-search">
           {messageTranslate("admin.oidc.clients.search")}
         </Label>
@@ -176,7 +178,7 @@ export function OidcAdminClientListView(props: {
                       },
                       {
                         label: messageTranslate("admin.oidc.updated"),
-                        value: localeDateFormat(client.updatedAt, { dateStyle: "medium" }),
+                        value: <AuthenticatedRelativeTime value={client.updatedAt} />,
                       },
                     ]}
                     status={
@@ -205,10 +207,10 @@ export function OidcAdminClientListView(props: {
                     {messageTranslate("admin.oidc.clients.type")}
                   </TableHead>
                   <TableHead class={authenticatedTableClasses.head}>
-                    {messageTranslate("admin.oidc.clients.redirectUris")}
+                    {messageTranslate("admin.oidc.clients.project")}
                   </TableHead>
-                  <TableHead class={authenticatedTableClasses.head}>
-                    {messageTranslate("admin.oidc.clients.consent")}
+                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
+                    {messageTranslate("admin.oidc.clients.redirectUris")}
                   </TableHead>
                   <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.status")}</TableHead>
                   <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.updated")}</TableHead>
@@ -224,10 +226,10 @@ export function OidcAdminClientListView(props: {
                       </TableCell>
                       {/* Long exact URIs stay on one line each and truncate, so rows never turn ragged. */}
                       <TableCell class={`${authenticatedTableClasses.cell} max-w-[26rem]`}>
-                        <OidcAdminUriList uris={client.redirectUris} />
+                        {state.projects().find((project) => project.id === client.projectId)?.name ?? "—"}
                       </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap`}>
-                        {consentLabel(client)}
+                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap text-right tabular-nums`}>
+                        {client.redirectUris.length}
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>
                         <AuthenticatedStatus
@@ -236,7 +238,7 @@ export function OidcAdminClientListView(props: {
                         />
                       </TableCell>
                       <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                        {localeDateFormat(client.updatedAt, { dateStyle: "medium" })}
+                        <AuthenticatedRelativeTime value={client.updatedAt} />
                       </TableCell>
                     </TableRow>
                   )}
