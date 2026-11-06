@@ -1,5 +1,5 @@
 const field =
-  "h-9 w-full rounded-control border border-line-strong/70 bg-surface px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus:border-accent disabled:opacity-50 dark:bg-muted"
+  "h-9 compact:h-8 compact:text-[13px] w-full rounded-control border border-line-strong/70 bg-surface px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus:border-accent disabled:opacity-50 dark:bg-muted"
 
 export const authenticatedControlClasses = {
   input: field,

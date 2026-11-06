@@ -13,7 +13,11 @@ export function AuthenticatedFieldList(props: {
 }) {
   return (
     <div
-      class={classMerge("grid gap-x-6 gap-y-4 sm:grid-cols-2", props.columns === 3 && "lg:grid-cols-3", props.class)}
+      class={classMerge(
+        "grid gap-x-6 gap-y-4 compact:gap-y-2 sm:grid-cols-2",
+        props.columns === 3 && "lg:grid-cols-3",
+        props.class,
+      )}
     >
       <For each={props.fields}>
         {(field) => (
@@ -27,7 +31,7 @@ export function AuthenticatedFieldList(props: {
             <dt class="text-xs font-medium text-muted-foreground">{field.label}</dt>
             <dd
               class={classMerge(
-                "mt-1 min-w-0 text-sm",
+                "mt-1 compact:mt-0 min-w-0 text-sm compact:text-[13px]",
                 field.identifier ? "truncate font-mono text-[0.8125rem] text-foreground/75" : "font-medium",
               )}
               title={field.identifier && typeof field.value === "string" ? field.value : undefined}

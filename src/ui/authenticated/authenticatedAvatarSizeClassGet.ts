@@ -1,7 +1,7 @@
 import type { AuthenticatedAvatarSize } from "./authenticatedAvatarSize.js"
 
 const sizeClasses: Record<AuthenticatedAvatarSize, string> = {
-  sm: "size-8 text-xs",
+  sm: "size-8 compact:size-6 text-xs",
   md: "size-10 text-sm",
   lg: "size-12 text-base",
   xl: "size-16 text-lg",

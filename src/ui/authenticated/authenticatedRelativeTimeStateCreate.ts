@@ -8,7 +8,10 @@ function relativeTimeTimestampNormalize(value: Date | number | string | null | u
   return Number.isNaN(timestamp) ? undefined : timestamp
 }
 
-export function authenticatedRelativeTimeStateCreate(value: () => Date | number | string | null | undefined) {
+export function authenticatedRelativeTimeStateCreate(
+  value: () => Date | number | string | null | undefined,
+  format: () => "long" | "short" = () => "long",
+) {
   const timestamp = () => relativeTimeTimestampNormalize(value())
   return {
     absolute: () => {
@@ -23,7 +26,7 @@ export function authenticatedRelativeTimeStateCreate(value: () => Date | number 
       const resolved = timestamp()
       return resolved === undefined
         ? undefined
-        : authenticatedRelativeTimeFormat(resolved, Date.now(), i18nStore.language.get())
+        : authenticatedRelativeTimeFormat(resolved, Date.now(), i18nStore.language.get(), format())
     },
   }
 }

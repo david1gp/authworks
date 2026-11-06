@@ -17,7 +17,7 @@ export function AuthenticatedStatTile(props: {
   const body = (
     <>
       <p class="truncate text-2xs font-medium tracking-wide text-muted-foreground uppercase">{props.label}</p>
-      <p class="mt-1 truncate text-2xl font-semibold tracking-tight tabular-nums">{props.value}</p>
+      <p class="mt-1 truncate text-2xl compact:text-lg font-semibold tracking-tight tabular-nums">{props.value}</p>
       <Show when={props.hint}>
         {(hint) => <p class="mt-1 line-clamp-2 text-[0.8125rem] leading-5 text-muted-foreground">{hint()}</p>}
       </Show>
@@ -27,7 +27,12 @@ export function AuthenticatedStatTile(props: {
     <Show
       when={props.href}
       fallback={
-        <div class={classMerge("rounded-panel border border-line bg-surface p-4 shadow-panel", props.class)}>
+        <div
+          class={classMerge(
+            "rounded-panel border border-line bg-surface p-4 compact:p-3 compact:rounded-lg shadow-panel",
+            props.class,
+          )}
+        >
           {body}
         </div>
       }
@@ -36,7 +41,7 @@ export function AuthenticatedStatTile(props: {
         <A
           aria-label={props.label}
           class={classMerge(
-            "block rounded-panel border border-line bg-surface p-4 shadow-panel transition-colors hover:border-line-strong hover:bg-surface-hover",
+            "block rounded-panel border border-line bg-surface p-4 compact:p-3 compact:rounded-lg shadow-panel transition-colors hover:border-line-strong hover:bg-surface-hover",
             props.class,
           )}
           href={href()}

@@ -1,14 +1,14 @@
 /**
  * Compact navigation language shared by the production authenticated shell and the demo shells,
- * so both render the same 208px rail, compact 32px rows, and a slim top bar that only appears on
+ * so both render the same 224px rail, compact 28px rows, and a slim top bar that only appears on
  * mobile or while the rail is collapsed. Global controls (organization, language, theme, identity)
  * live inside the rail rather than in a separate navbar.
  */
 export const authenticatedNavigationClasses = {
   /** Fixed desktop rail; pairs with `contentOffset`. Uses logical sides so RTL mirrors it. */
-  aside: "fixed inset-y-0 z-20 w-52 border-line bg-surface ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l",
+  aside: "fixed inset-y-0 z-20 w-56 border-line bg-surface ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l",
   /** Desktop content offset applied while the rail is open. */
-  contentOffset: "lg:ltr:ml-52 lg:rtl:mr-52",
+  contentOffset: "lg:ltr:ml-56 lg:rtl:mr-56",
   /** Sidebar brand row; the header has its own content-column framing. */
   brandRow: "flex h-14 shrink-0 items-center gap-2.5 border-b border-line ps-4 pe-2 max-lg:hidden",
   /** Sidebar context row carrying the organization selector and the collapse control. */
@@ -52,9 +52,9 @@ export const authenticatedNavigationClasses = {
     "grid size-6 shrink-0 place-items-center overflow-hidden rounded-md text-[0.625rem] font-semibold ring-1 ring-line-subtle ring-inset",
   frame: "flex h-full min-h-0 flex-col bg-surface",
   groupHeading:
-    "flex h-8 w-full items-center gap-2 rounded-control px-2 text-start text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground [&>span]:flex-1",
-  groupSection: "mt-5 first:mt-0",
-  link: "flex h-8 items-center gap-2.5 rounded-control px-2 text-sm font-medium transition-colors [&>svg]:size-4.5 [&>svg]:shrink-0",
+    "flex h-7 w-full items-center px-2 text-start text-2xs font-medium uppercase tracking-wide text-muted-foreground",
+  groupSection: "mt-3 first:mt-0",
+  link: "flex h-7 items-center gap-2.5 rounded-control px-2 text-[13px] font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
   linkActive: "bg-accent-soft font-semibold text-accent dark:bg-accent/20 dark:text-accent-hover",
   linkInactive: "text-foreground/80 hover:bg-surface-hover hover:text-foreground",
   nav: "min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pt-3 pb-3",
@@ -72,5 +72,6 @@ export const authenticatedNavigationClasses = {
   mobileContent: "h-[min(42rem,calc(95dvh-10rem))] w-[min(18rem,calc(100vw-5rem))]",
   mobileTitle: "text-[0.9375rem] font-semibold tracking-tight",
   mobileDescription: "mt-1 text-[0.8125rem] text-muted-foreground",
-  content: "mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8",
+  content:
+    "mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8 compact:max-w-none compact:px-4 compact:py-3 compact:sm:px-5",
 } as const

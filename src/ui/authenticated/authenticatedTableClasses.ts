@@ -5,17 +5,17 @@
 export const authenticatedTableClasses = {
   /** Right-aligned trailing action cell. */
   action: "w-0 whitespace-nowrap py-2 ps-2 pe-5 text-end",
-  cell: "px-3 py-3 align-middle first:ps-5 last:pe-5",
-  head: "h-10 whitespace-nowrap px-3 text-start text-xs font-medium text-muted-foreground first:ps-5 last:pe-5",
-  header: "bg-muted/70 [&_tr]:border-line",
+  cell: "px-3 py-3 align-middle compact:py-1.5 compact:whitespace-nowrap first:ps-5 last:pe-5",
+  head: "h-10 compact:h-8 whitespace-nowrap px-3 text-start text-xs font-medium text-muted-foreground first:ps-5 last:pe-5",
+  header: "bg-muted/70 [&_tr]:border-line compact:[&_th]:z-10 compact:[&_th]:bg-muted",
   /** Monospace, truncating cell for identifiers and other long technical values. */
   identifier:
-    "max-w-[22ch] truncate px-3 py-3 align-middle font-mono text-[0.8125rem] text-muted-foreground first:ps-5 last:pe-5",
+    "max-w-[22ch] truncate px-3 py-3 compact:py-1.5 compact:text-xs align-middle font-mono text-[0.8125rem] text-muted-foreground first:ps-5 last:pe-5",
   row: "border-line-subtle hover:bg-surface-hover/70",
-  table: "text-sm",
+  table: "text-sm compact:text-[13px] compact:tabular-nums",
   /**
    * Table half of a responsive pair: hidden below `md`, where `AuthenticatedRecordList` renders the
    * same records stacked so no column or action is clipped on a phone.
    */
-  tableWide: "hidden text-sm md:table",
+  tableWide: "hidden text-sm compact:text-[13px] compact:tabular-nums md:table",
 } as const

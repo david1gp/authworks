@@ -24,7 +24,7 @@ export function AuthenticatedTabs(props: {
           <a
             aria-current={item.value === props.active ? "page" : undefined}
             class={classMerge(
-              "flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors",
+              "flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm compact:px-2.5 compact:py-1.5 compact:text-[13px] font-medium whitespace-nowrap transition-colors",
               item.value === props.active
                 ? "border-accent text-accent"
                 : "border-transparent text-muted-foreground hover:border-line-strong hover:text-foreground",

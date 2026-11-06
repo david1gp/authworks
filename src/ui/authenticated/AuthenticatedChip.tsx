@@ -14,7 +14,7 @@ export function AuthenticatedChip(props: {
   return (
     <span
       class={classMerge(
-        "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-px text-xs font-medium leading-5",
+        "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-px text-xs font-medium leading-5 compact:px-1.5 compact:py-0 compact:text-2xs compact:leading-4",
         authenticatedChipToneClassGet(props.tone ?? "neutral"),
         props.class,
       )}

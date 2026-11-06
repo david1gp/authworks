@@ -1,6 +1,7 @@
 import type { JSX } from "solid-js"
-import { Show } from "solid-js"
+import { Show, useContext } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { AuthenticatedDensityContext } from "./AuthenticatedDensityContext.js"
 import { authenticatedRelativeTimeStateCreate } from "./authenticatedRelativeTimeStateCreate.js"
 
 /**
@@ -11,9 +12,14 @@ import { authenticatedRelativeTimeStateCreate } from "./authenticatedRelativeTim
 export function AuthenticatedRelativeTime(props: {
   readonly class?: string
   readonly fallback?: JSX.Element
+  readonly format?: "long" | "short"
   readonly value?: Date | number | string | null
 }) {
-  const state = authenticatedRelativeTimeStateCreate(() => props.value)
+  const density = useContext(AuthenticatedDensityContext)
+  const state = authenticatedRelativeTimeStateCreate(
+    () => props.value,
+    () => props.format ?? (density === "compact" ? "short" : "long"),
+  )
   return (
     <Show when={state.text()} fallback={props.fallback}>
       {(text) => (

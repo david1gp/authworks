@@ -16,7 +16,7 @@ export function AuthenticatedToolbar(props: {
   return (
     <div
       aria-label={props.label}
-      class="flex flex-wrap items-center gap-x-3 gap-y-2.5 [&_input[type=search]]:w-full sm:[&_input[type=search]]:w-auto"
+      class="flex flex-wrap items-center gap-x-3 gap-y-2.5 compact:gap-y-1.5 [&_input[type=search]]:w-full sm:[&_input[type=search]]:w-auto"
       role="group"
     >
       <Show when={props.children}>

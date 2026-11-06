@@ -15,6 +15,12 @@ export function authenticatedDialogStateCreate(open: () => boolean) {
 
   return {
     dialogId,
+    densityGet: () =>
+      (trigger ?? (typeof document === "undefined" ? undefined : document.activeElement))?.closest(
+        '[data-density="compact"]',
+      )
+        ? "compact"
+        : undefined,
     triggerRegister: (element: HTMLButtonElement) => {
       trigger = element
     },

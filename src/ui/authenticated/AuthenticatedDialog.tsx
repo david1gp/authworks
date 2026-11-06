@@ -56,7 +56,10 @@ export function AuthenticatedDialog(props: {
       </Show>
       <Dialog.Portal>
         <Dialog.Overlay class={classMerge(authenticatedDialogClasses.overlay, "z-40")} />
-        <Dialog.Content class={classMerge(authenticatedDialogClasses.content, "z-50 w-[calc(100vw-2rem)] max-w-lg")}>
+        <Dialog.Content
+          class={classMerge(authenticatedDialogClasses.content, "z-50 w-[calc(100vw-2rem)] max-w-lg")}
+          data-density={state.densityGet()}
+        >
           <div class="mb-4 flex items-start justify-between gap-2">
             <div class="min-w-0">
               <Dialog.Label class="break-words text-lg font-semibold tracking-tight">{props.title}</Dialog.Label>

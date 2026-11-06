@@ -22,16 +22,19 @@ export function AuthenticatedSection(props: {
   return (
     <section
       aria-label={props.label ?? props.title}
-      class={classMerge("overflow-hidden rounded-panel border border-line bg-surface shadow-panel", props.class)}
+      class={classMerge(
+        "overflow-hidden rounded-panel compact:rounded-lg border border-line bg-surface shadow-panel",
+        props.class,
+      )}
     >
       {/* The bar also carries description-only and action-only panels, so a section whose name is
           already spoken by the page heading can drop its title without losing its controls. */}
       <Show when={props.title !== undefined || props.description !== undefined || actions.toArray().length > 0}>
-        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line-subtle px-5 py-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line-subtle px-5 py-3.5 compact:px-4 compact:py-2">
           <div class="min-w-0">
             <Show when={props.title}>
               {(title) => (
-                <h2 class="flex min-w-0 items-center gap-2 text-[0.9375rem] font-semibold tracking-tight">
+                <h2 class="flex min-w-0 items-center gap-2 text-[0.9375rem] compact:text-sm font-semibold tracking-tight">
                   <Show when={props.icon}>
                     {(icon) => (
                       <span class="grid size-7 shrink-0 place-items-center rounded-control bg-accent-soft text-accent">
@@ -45,7 +48,12 @@ export function AuthenticatedSection(props: {
             </Show>
             <Show when={props.description}>
               {(description) => (
-                <p class={classMerge("text-[0.8125rem] text-muted-foreground", props.title ? "mt-0.5" : undefined)}>
+                <p
+                  class={classMerge(
+                    "text-[0.8125rem] compact:text-xs text-muted-foreground",
+                    props.title ? "mt-0.5" : undefined,
+                  )}
+                >
                   {description()}
                 </p>
               )}
@@ -56,7 +64,7 @@ export function AuthenticatedSection(props: {
           </Show>
         </div>
       </Show>
-      <div class={props.padded ? "px-5 py-4" : undefined}>{props.children}</div>
+      <div class={props.padded ? "px-5 py-4 compact:px-4 compact:py-3" : undefined}>{props.children}</div>
     </section>
   )
 }

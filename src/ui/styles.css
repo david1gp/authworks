@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+@custom-variant compact (&:where([data-density="compact"], [data-density="compact"] *));
 @custom-variant dark (&:where(.dark, .dark *));
 
 @source "./**/*.{ts,tsx}";
