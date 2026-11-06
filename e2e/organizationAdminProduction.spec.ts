@@ -286,16 +286,17 @@ test("revoking an organization invitation posts to the tenant revoke path", asyn
   expect(revokeHadCsrf).toBe(true)
 })
 
-test("revoking an administrator session deletes the user session path", async ({ page }) => {
-  let revoke: { csrf: boolean; method: string; pathname: string } | undefined
+test("revoking an administrator session deletes the admin session path", async ({ page }) => {
+  const revokes: { csrf: boolean; method: string; pathname: string }[] = []
+  const sessionPath = `/realms/${realmId}/admin/sessions/${sessionId}`
   await realmBackendMock(page, async (route, pathname) => {
-    if (pathname === `/realms/${realmId}/sessions`) return route.fulfill({ json: { items: [adminSession] } })
-    if (pathname === `/realms/${realmId}/users/${userId}/sessions/${sessionId}`) {
-      revoke = {
+    if (pathname === `/realms/${realmId}/admin/sessions`) return route.fulfill({ json: { items: [adminSession] } })
+    if (pathname === sessionPath) {
+      revokes.push({
         csrf: route.request().headers()["x-csrf-token"] === "csrf-e2e",
         method: route.request().method(),
         pathname,
-      }
+      })
       return route.fulfill({ json: { revoked: true } })
     }
     return route.fulfill({ json: { items: [] } })
@@ -305,17 +306,20 @@ test("revoking an administrator session deletes the user session path", async ({
 
   await expect(page.getByText(sessionId, { exact: true }).first()).toBeVisible()
   const revokeResponse = page.waitForResponse(
-    (response) =>
-      response.url().includes(`/users/${userId}/sessions/${sessionId}`) && response.request().method() === "DELETE",
+    (response) => new URL(response.url()).pathname === sessionPath && response.request().method() === "DELETE",
   )
-  await page.getByRole("listitem").getByRole("button", { name: "Revoke", exact: true }).first().click()
+  await page
+    .getByRole("row")
+    .filter({ hasText: sessionId })
+    .getByRole("button", { name: "Revoke", exact: true })
+    .click()
   const sessionConfirmation = page.getByRole("alertdialog")
   await expect(sessionConfirmation).toBeVisible()
+  expect(revokes).toEqual([])
   await sessionConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await revokeResponse
 
-  expect(revoke?.method).toBe("DELETE")
-  expect(revoke?.csrf).toBe(true)
+  expect(revokes).toEqual([{ csrf: true, method: "DELETE", pathname: sessionPath }])
 })
 
 test("saving the login policy persists the session lifetime with CSRF", async ({ page }) => {

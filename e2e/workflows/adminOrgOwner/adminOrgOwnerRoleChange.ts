@@ -17,18 +17,18 @@ export async function adminOrgOwnerRoleChange(setup: AdminOrgOwnerSetup): Promis
   await expect(adminCard).toBeVisible()
   await adminCard.click()
   await expect(page.getByText("The organization role was updated.")).toBeVisible()
-  await expect(adminCard).toHaveAttribute("aria-checked", "true")
+  await expect(adminCard).toBeChecked()
 
   await page.reload()
   await page.getByRole("link", { name: "Roles and access" }).click()
-  await expect(page.getByRole("radio", { name: "Admin" })).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByRole("radio", { name: "Admin" })).toBeChecked()
 
   const memberCard = page.getByRole("radio", { name: "Member" })
   await memberCard.click()
   await expect(page.getByText("The organization role was updated.")).toBeVisible()
-  await expect(memberCard).toHaveAttribute("aria-checked", "true")
+  await expect(memberCard).toBeChecked()
 
   await page.reload()
   await page.getByRole("link", { name: "Roles and access" }).click()
-  await expect(page.getByRole("radio", { name: "Member" })).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByRole("radio", { name: "Member" })).toBeChecked()
 }

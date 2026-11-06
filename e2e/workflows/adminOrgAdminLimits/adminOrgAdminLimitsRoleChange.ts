@@ -20,7 +20,7 @@ export async function adminOrgAdminLimitsRoleChange(setup: AdminOrgAdminLimitsSe
   const ownerOwnerCard = page.getByRole("radio", { name: "Owner" })
   await expect(ownerOwnerCard).toBeVisible()
   await expect(ownerOwnerCard).toBeDisabled()
-  await expect(ownerOwnerCard).toHaveAttribute("aria-checked", "true")
+  await expect(ownerOwnerCard).toBeChecked()
 
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
   await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
@@ -35,27 +35,27 @@ export async function adminOrgAdminLimitsRoleChange(setup: AdminOrgAdminLimitsSe
   await expect(adminCard).toBeVisible()
   await adminCard.click()
   await expect(page.getByText("The organization role was updated.")).toBeVisible()
-  await expect(adminCard).toHaveAttribute("aria-checked", "true")
+  await expect(adminCard).toBeChecked()
 
   await page.reload()
   await page.getByRole("link", { name: "Roles and access" }).click()
-  await expect(page.getByRole("radio", { name: "Admin" })).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByRole("radio", { name: "Admin" })).toBeChecked()
 
   const guestCard = page.getByRole("radio", { name: "Guest" })
   await guestCard.click()
   await expect(page.getByText("The organization role was updated.")).toBeVisible()
-  await expect(guestCard).toHaveAttribute("aria-checked", "true")
+  await expect(guestCard).toBeChecked()
 
   await page.reload()
   await page.getByRole("link", { name: "Roles and access" }).click()
-  await expect(page.getByRole("radio", { name: "Guest" })).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByRole("radio", { name: "Guest" })).toBeChecked()
 
   const memberCard = page.getByRole("radio", { name: "Member" })
   await memberCard.click()
   await expect(page.getByText("The organization role was updated.")).toBeVisible()
-  await expect(memberCard).toHaveAttribute("aria-checked", "true")
+  await expect(memberCard).toBeChecked()
 
   await page.reload()
   await page.getByRole("link", { name: "Roles and access" }).click()
-  await expect(page.getByRole("radio", { name: "Member" })).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByRole("radio", { name: "Member" })).toBeChecked()
 }
