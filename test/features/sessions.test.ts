@@ -15,6 +15,7 @@ import { realmAdministratorGrant } from "../../src/features/realms/actions/realm
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { realmServerAppCreate } from "../../src/features/realms/server/realmServerAppCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionList } from "../../src/features/sessions/actions/sessionList.js"
@@ -454,6 +455,10 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     if (!limited.success) return
     expect(limited.data.items).toHaveLength(1)
     expect(limited.data.items[0]).toMatchObject({ current: true, id: sessions[5]!.session.id })
+    expect(limited.data.items[0]).toMatchObject({
+      subjectDisplayName: "Session User",
+      subjectEmail: "session@example.com",
+    })
 
     const all = sessionList({
       currentSessionId: "unknown-session",
@@ -1150,4 +1155,74 @@ test("session CLI exposes session management commands", async () => {
   const helpOutput = await new Response(helpProcess.stdout).text()
   expect(await helpProcess.exited).toBe(0)
   expect(helpOutput).toContain("Manage sessions")
+})
+
+test("realm session administration is scoped to realm administrators and revokes target sessions", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createVerifiedUser(database, "realm-session-list.example.com")
+    const beta = await createVerifiedUser(database, "realm-session-list-other.example.com")
+    const admin = issueTestSession(database, testkit.runtime, alpha.realm.id, alpha.userId)
+    const second = issueTestSession(database, testkit.runtime, alpha.realm.id, alpha.userId)
+    issueTestSession(database, testkit.runtime, beta.realm.id, beta.userId)
+    const app = sessionServerAppCreate({ database })
+    const headers = { authorization: `Bearer ${admin.token}` }
+    const path = `http://server.test/realms/${alpha.realm.id}/admin/sessions`
+    expect((await app.request(path, { headers })).status).toBe(403)
+    expect((await app.request(`${path}/${second.session.id}`, { headers, method: "DELETE" })).status).toBe(403)
+    const realms = realmServerAppCreate({ database })
+    const summaryPath = `http://server.test/realms/${alpha.realm.id}/summary`
+    expect((await realms.request(summaryPath, { headers })).status).toBe(403)
+    expect(
+      realmAdministratorGrant({
+        context: realmSystemContextCreate("system"),
+        database,
+        realmId: alpha.realm.id,
+        userId: alpha.userId,
+      }).success,
+    ).toBe(true)
+    const summaryResponse = await realms.request(summaryPath, { headers })
+    expect(summaryResponse.status).toBe(200)
+    const summary = (await summaryResponse.json()) as {
+      organizations: number
+      users: number
+      realmAdministrators: number
+      oidcClients: number
+      activeSessions: number
+      auditEvents24h: number
+    }
+    expect(summary).toMatchObject({
+      organizations: 0,
+      users: 1,
+      realmAdministrators: 1,
+      oidcClients: 0,
+      activeSessions: 2,
+    })
+    expect(summary.auditEvents24h).toBeGreaterThan(0)
+    expect((await realms.request(`http://server.test/realms/${beta.realm.id}/summary`, { headers })).status).not.toBe(
+      200,
+    )
+    const first = await app.request(`${path}?pageSize=1`, { headers })
+    expect(first.status).toBe(200)
+    const page = (await first.json()) as {
+      items: Array<{ id: string; subjectDisplayName: string; subjectEmail: string }>
+      nextPageToken: string
+    }
+    expect(page.items).toHaveLength(1)
+    expect(page.items[0]).toMatchObject({ subjectDisplayName: "Session User", subjectEmail: "session@example.com" })
+    expect(page.nextPageToken).toBeTruthy()
+    const next = await app.request(`${path}?pageSize=1&pageToken=${encodeURIComponent(page.nextPageToken)}`, {
+      headers,
+    })
+    const nextPage = (await next.json()) as { items: Array<{ id: string }> }
+    expect(nextPage.items).toHaveLength(1)
+    expect(new Set([page.items[0]?.id, nextPage.items[0]?.id])).toEqual(new Set([admin.session.id, second.session.id]))
+    expect(
+      (await app.request(`http://server.test/realms/${beta.realm.id}/admin/sessions`, { headers })).status,
+    ).not.toBe(200)
+    const revoked = await app.request(`${path}/${second.session.id}`, { headers, method: "DELETE" })
+    expect(revoked.status).toBe(200)
+    expect(sessionAuthenticate({ database, realmId: alpha.realm.id, token: second.token }).success).toBe(false)
+    const after = (await (await realms.request(summaryPath, { headers })).json()) as { activeSessions: number }
+    expect(after.activeSessions).toBe(1)
+  })
 })

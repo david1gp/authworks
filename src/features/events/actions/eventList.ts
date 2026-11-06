@@ -1,8 +1,10 @@
 import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { userDisplayNameList } from "../../users/server/userDisplayNameList.js"
 import { eventAuthorizedRead } from "../domain/eventAuthorizedRead.js"
 import { eventListFiltersCreate } from "../domain/eventListFiltersCreate.js"
 import { eventListPageCreate } from "../domain/eventListPageCreate.js"
@@ -29,5 +31,20 @@ export function eventList(options: EventListOptions): Result<EventListResponse> 
     realmId: options.realmId,
   })
   if (!events.success) return events
-  return eventListPageCreate({ events: events.data, query: options.query })
+  const page = eventListPageCreate({ events: events.data, query: options.query })
+  if (!page.success) return page
+  const names = userDisplayNameList({
+    database: options.database,
+    realmId: options.realmId,
+    userIds: page.data.items.flatMap((event) => (event.actorId === undefined ? [] : [event.actorId])),
+  })
+  if (!names.success) return names
+  const namesById = new Map(names.data.map((user) => [user.id, user.displayName]))
+  return resultCreate({
+    ...page.data,
+    items: page.data.items.map((event) => ({
+      ...event,
+      actorDisplayName: event.actorId === undefined ? null : (namesById.get(event.actorId) ?? null),
+    })),
+  })
 }

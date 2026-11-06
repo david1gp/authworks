@@ -6,9 +6,8 @@ import * as v from "valibot"
 import { authorizationActorContextCreate } from "../../src/features/authorization/domain/authorizationActorContextCreate.js"
 import { eventExport } from "../../src/features/events/actions/eventExport.js"
 import { eventList } from "../../src/features/events/actions/eventList.js"
-import { eventUserSubjectTable } from "../../src/features/events/persistence/eventUserSubjectTable.js"
-import type { RealmTenantContext } from "../../src/features/realms/domain/realmTenantContext.js"
 import { eventApiClientCreate } from "../../src/features/events/client/eventApiClientCreate.js"
+import { eventUserSubjectTable } from "../../src/features/events/persistence/eventUserSubjectTable.js"
 import { eventListResponseSchema } from "../../src/features/events/public/eventListResponseSchema.js"
 import { eventServerAppCreate } from "../../src/features/events/server/eventServerAppCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
@@ -17,13 +16,14 @@ import { realmAdministratorGrant } from "../../src/features/realms/actions/realm
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import type { RealmTenantContext } from "../../src/features/realms/domain/realmTenantContext.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
 import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
+import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
-import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { storageEventAppend } from "../../src/platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../src/platform/storage/storageTransactionRun.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -561,5 +561,40 @@ test("event routes parse server-side filters and serve exports", async () => {
     if (!clientExport.success) return
     expect(clientExport.data.truncated).toBe(false)
     expect(clientExport.data.items).toHaveLength(1)
+  })
+})
+
+test("event list resolves realm user actor names and leaves unknown actors unnamed", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "events-actor-display.example.com")
+    const userId = createUser(database, realm.id, "named-actor")
+    if (userId === undefined) throw new Error("User creation failed")
+    for (const [index, actorId] of [userId, "missing-actor", undefined].entries()) {
+      const appended = storageEventAppend(database.db, {
+        actorId,
+        aggregateId: `actor-display-${index}`,
+        aggregateType: "actor-display",
+        aggregateVersion: 1,
+        commandIndex: 0,
+        correlationId: `actor-display-${index}`,
+        eventType: "actor.display.test",
+        metadata: {},
+        occurredAt: 1000 + index,
+        payload: {},
+        realmId: realm.id,
+      })
+      expect(appended.success).toBe(true)
+    }
+    const page = eventList({
+      context: realmSystemContextCreate(),
+      database,
+      realmId: realm.id,
+      query: { eventType: "actor.display.test" },
+    })
+    expect(page.success).toBe(true)
+    if (!page.success) return
+    expect(page.data.items.find((event) => event.actorId === userId)?.actorDisplayName).toBe("named-actor")
+    expect(page.data.items.find((event) => event.actorId === "missing-actor")?.actorDisplayName).toBeNull()
+    expect(page.data.items.find((event) => event.actorId === undefined)?.actorDisplayName).toBeNull()
   })
 })

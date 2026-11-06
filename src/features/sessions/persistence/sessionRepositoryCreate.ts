@@ -59,6 +59,21 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    sessionRealmList(realmId: string): Result<SessionRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(sessionTable)
+            .where(eq(sessionTable.realmId, realmId))
+            .orderBy(desc(sessionTable.lastUsedAt), desc(sessionTable.createdAt))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate("sessionRealmList", "The sessions could not be read.", "sessions.read-failed")
+      }
+    },
+
     sessionEventVersionGet(realmId: string, sessionId: string): Result<number> {
       try {
         const event = database

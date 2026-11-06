@@ -7,7 +7,7 @@ import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { userDisplayNameList } from "../../users/server/userDisplayNameList.js"
+import { userSessionDisplayList } from "../../users/server/userSessionDisplayList.js"
 import { organizationMembershipPublicViewCreate } from "../domain/organizationMembershipPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationMembershipListResponse } from "../public/organizationMembershipListResponseSchema.js"
@@ -69,18 +69,19 @@ export function organizationMembershipList(
     },
   })
   if (!page.success) return page
-  const names = userDisplayNameList({
+  const names = userSessionDisplayList({
     database: options.database,
     realmId: options.realmId,
     userIds: page.data.items.map((membership) => membership.userId),
   })
   if (!names.success) return names
-  const namesById = new Map(names.data.map((user) => [user.id, user.displayName]))
+  const namesById = new Map(names.data.map((user) => [user.id, user]))
   return resultCreate({
     ...page.data,
     items: page.data.items.map((membership) => ({
       ...membership,
-      displayName: namesById.get(membership.userId) ?? null,
+      displayName: namesById.get(membership.userId)?.displayName ?? null,
+      email: namesById.get(membership.userId)?.email ?? null,
     })),
   })
 }

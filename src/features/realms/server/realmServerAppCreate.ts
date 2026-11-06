@@ -21,6 +21,7 @@ import { realmBootstrapAdminCreate } from "../actions/realmBootstrapAdminCreate.
 import { realmCreate } from "../actions/realmCreate.js"
 import { realmGet } from "../actions/realmGet.js"
 import { realmList } from "../actions/realmList.js"
+import { realmSummaryGet } from "../actions/realmSummaryGet.js"
 import { realmTenantContextResolve } from "../actions/realmTenantContextResolve.js"
 import { realmUpdate } from "../actions/realmUpdate.js"
 import { realmSystemContextCreate } from "../domain/realmSystemContextCreate.js"
@@ -230,6 +231,17 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
       )
     },
   )
+
+  app.get("/realms/:realmId/summary", realmReadMiddleware, (context) => {
+    const tenant = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.realmRead,
+      realmId: context.req.param("realmId"),
+    })
+    if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+    return realmResultResponseCreate(context, realmSummaryGet(options.database, context.req.param("realmId")))
+  })
 
   app.patch("/realms/:realmId", realmWriteMiddleware, async (context) => {
     const tenant = realmAdministratorContextAuthorize({

@@ -11,6 +11,8 @@ import { sessionAdministratorRevoke } from "../actions/sessionAdministratorRevok
 import { sessionBootstrapAdminSignIn } from "../actions/sessionBootstrapAdminSignIn.js"
 import { sessionList } from "../actions/sessionList.js"
 import { sessionMeList } from "../actions/sessionMeList.js"
+import { sessionRealmList } from "../actions/sessionRealmList.js"
+import { sessionRealmRevoke } from "../actions/sessionRealmRevoke.js"
 import { sessionRecentList } from "../actions/sessionRecentList.js"
 import { sessionRecentResume } from "../actions/sessionRecentResume.js"
 import { sessionRevoke } from "../actions/sessionRevoke.js"
@@ -101,6 +103,33 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
   )
 
   app.get("/realms/:realmId/sessions", protectedMiddleware, (context) => sessionListRoute(context, options.database))
+
+  app.get("/realms/:realmId/admin/sessions", protectedMiddleware, (context) => {
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return sessionErrorResponseCreate(context, query)
+    return sessionResultResponseCreate(
+      context,
+      sessionRealmList({
+        actor: context.get("authorizationActor"),
+        currentSessionId: context.get("session").id,
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/admin/sessions/:sessionId", protectedMiddleware, (context) =>
+    sessionResultResponseCreate(
+      context,
+      sessionRealmRevoke({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        sessionId: context.req.param("sessionId"),
+      }),
+    ),
+  )
 
   app.get("/realms/:realmId/users/:userId/sessions", protectedMiddleware, (context) =>
     sessionAdministratorListRoute(context, options.database),

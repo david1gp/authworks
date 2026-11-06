@@ -94,6 +94,35 @@ async function createActiveUser(database: StorageDatabase, realmId: string, emai
   return created.data.user
 }
 
+test("organization membership lists include member display names and emails", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "members.example.com")
+    const user = await createActiveUser(database, realm.id, "member@example.com")
+    const context = realmSystemContextCreate("system")
+    const created = organizationCreate({
+      context,
+      database,
+      input: { name: "Members", ownerUserId: user.id },
+      realmId: realm.id,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    const memberships = organizationMembershipList({
+      context,
+      database,
+      realmId: realm.id,
+      organizationId: created.data.organization.id,
+    })
+    expect(memberships.success).toBe(true)
+    if (!memberships.success) return
+    expect(memberships.data.items[0]).toMatchObject({
+      userId: user.id,
+      displayName: "member@example.com",
+      email: "member@example.com",
+    })
+  })
+})
+
 test("organizations, roles, memberships, lifecycle, and switching stay inside an realm", async () => {
   await withDatabase(async (database) => {
     const alpha = await createRealm(database, "alpha.example.com")

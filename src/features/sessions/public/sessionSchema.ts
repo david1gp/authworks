@@ -24,6 +24,8 @@ export const sessionSchema = v.strictObject({
   mfaMethod: v.optional(sessionMfaMethodSchema),
   revokedAt: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
   subjectId: v.pipe(v.string(), v.minLength(1)),
+  subjectDisplayName: v.optional(v.nullable(v.string())),
+  subjectEmail: v.optional(v.nullable(v.string())),
   subjectType: sessionSubjectTypeSchema,
   userId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })

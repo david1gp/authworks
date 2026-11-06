@@ -16,13 +16,13 @@ import type { SessionListResponse } from "../public/sessionListResponseSchema.js
 import { sessionListResponseSchema } from "../public/sessionListResponseSchema.js"
 import type { SessionMeListResponse } from "../public/sessionMeListResponseSchema.js"
 import { sessionMeListResponseSchema } from "../public/sessionMeListResponseSchema.js"
+import type { SessionProtectedResponse } from "../public/sessionProtectedResponseSchema.js"
+import { sessionProtectedResponseSchema } from "../public/sessionProtectedResponseSchema.js"
 import type { SessionRecentListResponse } from "../public/sessionRecentListResponseSchema.js"
 import { sessionRecentListResponseSchema } from "../public/sessionRecentListResponseSchema.js"
 import type { SessionRecentResumeRequest } from "../public/sessionRecentResumeRequestSchema.js"
 import type { SessionRecentResumeResponse } from "../public/sessionRecentResumeResponseSchema.js"
 import { sessionRecentResumeResponseSchema } from "../public/sessionRecentResumeResponseSchema.js"
-import type { SessionProtectedResponse } from "../public/sessionProtectedResponseSchema.js"
-import { sessionProtectedResponseSchema } from "../public/sessionProtectedResponseSchema.js"
 import type { SessionResponse } from "../public/sessionResponseSchema.js"
 import { sessionResponseSchema } from "../public/sessionResponseSchema.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
@@ -97,6 +97,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
     sessionList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/sessions${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        sessionListResponseSchema,
+      )
+    },
+    sessionRealmList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/admin/sessions${listQueryToSearchParams(query)}`,
         { method: "GET" },
         sessionListResponseSchema,
       )

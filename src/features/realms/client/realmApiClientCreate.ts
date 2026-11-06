@@ -25,6 +25,7 @@ import {
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 import { type RealmListResponse, realmListResponseSchema } from "../public/realmListResponseSchema.js"
 import { type RealmResponse, realmResponseSchema } from "../public/realmResponseSchema.js"
+import { type RealmSummaryResponse, realmSummaryResponseSchema } from "../public/realmSummaryResponseSchema.js"
 import { type RealmUpdateRequest, realmUpdateRequestSchema } from "../public/realmUpdateRequestSchema.js"
 
 type RealmApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -63,6 +64,9 @@ export function realmApiClientCreate(options: RealmApiClientCreateOptions) {
     })
 
   return {
+    realmSummaryGet(realmId: string): Promise<Result<RealmSummaryResponse>> {
+      return request(`/realms/${encodeURIComponent(realmId)}/summary`, { method: "GET" }, realmSummaryResponseSchema)
+    },
     realmBootstrapAdminCreate(realmId: string): Promise<Result<RealmBootstrapAdminResponse>> {
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/bootstrap-admin`,

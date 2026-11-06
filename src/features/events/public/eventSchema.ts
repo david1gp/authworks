@@ -2,6 +2,7 @@ import * as v from "valibot"
 
 export const eventSchema = v.strictObject({
   actorId: v.optional(v.pipe(v.string(), v.minLength(1))),
+  actorDisplayName: v.optional(v.nullable(v.string())),
   aggregateId: v.pipe(v.string(), v.minLength(1)),
   aggregateType: v.pipe(v.string(), v.minLength(1)),
   aggregateVersion: v.pipe(v.number(), v.integer(), v.minValue(1)),
