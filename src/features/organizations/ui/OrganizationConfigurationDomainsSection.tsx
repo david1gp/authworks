@@ -56,7 +56,7 @@ export function OrganizationConfigurationDomainsSection(props: {
         <Show
           when={props.page.domains().length > 0}
           fallback={
-            <p class="px-5 py-4 text-sm text-muted-foreground">
+            <p class="px-4 py-3 text-sm text-muted-foreground">
               {messageTranslate("admin.organizations.domains.empty")}
             </p>
           }
@@ -64,7 +64,7 @@ export function OrganizationConfigurationDomainsSection(props: {
           <ul aria-label={messageTranslate("admin.configuration.domainsTitle")} class="divide-y divide-line-subtle">
             <For each={props.page.domains()}>
               {(domain) => (
-                <li class="grid min-w-0 gap-3 px-5 py-3.5">
+                <li class="grid min-w-0 gap-3 px-5 py-2">
                   <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                     <div class="flex min-w-0 flex-wrap items-center gap-2">
                       <h3 class="min-w-0 truncate font-mono text-sm font-medium" title={domain.domain}>
@@ -160,7 +160,7 @@ export function OrganizationConfigurationDomainsSection(props: {
           open={props.screen.domainClaimOpen()}
           title={messageTranslate("admin.configuration.dialogTitle")}
         >
-          <form class="grid gap-4" onSubmit={props.screen.domainClaimSubmit}>
+          <form class="grid gap-3" onSubmit={props.screen.domainClaimSubmit}>
             <div class="grid min-w-0 gap-1.5">
               <Label for="configuration-domain-claim">{messageTranslate("admin.configuration.domainName")}</Label>
               <AuthenticatedInput

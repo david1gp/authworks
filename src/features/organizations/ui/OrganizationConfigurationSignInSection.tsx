@@ -72,24 +72,24 @@ export function OrganizationConfigurationSignInSection(props: {
       status={props.page.status()}
     >
       <OrganizationAdminNotice notice={props.page.notice()} />
-      <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+      <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
         <AuthenticatedSection
           description={messageTranslate("admin.configuration.loginDescription")}
           title={messageTranslate("admin.configuration.loginTitle")}
         >
           <form
-            class="grid gap-4 px-5 py-4 [&_label]:text-[0.8125rem]"
+            class="grid gap-3 px-4 py-3 [&_label]:text-[0.8125rem]"
             onSubmit={(event) => {
               event.preventDefault()
               if (!props.canEdit) return
               void props.screen.policySubmit(event)
             }}
           >
-            <div class="grid items-start gap-2 sm:grid-cols-2">
+            <div class="grid items-start gap-2 sm:flex sm:flex-wrap">
               <For each={policyFields}>
                 {(field) => (
                   <label
-                    class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
+                    class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-1.5 text-[0.8125rem] font-medium"
                     for={`configuration-policy-${field.key}`}
                   >
                     <input
@@ -136,7 +136,7 @@ export function OrganizationConfigurationSignInSection(props: {
                 {messageTranslate("admin.organizations.policy.sessionLifetimeHint")}
               </p>
             </div>
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid gap-3 sm:grid-cols-3">
               <For each={policyMfaLifetimeFields}>
                 {(field) => (
                   <div class="grid min-w-0 content-start gap-1.5">
@@ -168,11 +168,11 @@ export function OrganizationConfigurationSignInSection(props: {
                 <p class="text-xs text-muted-foreground">
                   {messageTranslate("admin.organizations.policy.providerAllowlistDescription")}
                 </p>
-                <div class="grid items-start gap-2 sm:grid-cols-2">
+                <div class="grid items-start gap-2 sm:flex sm:flex-wrap">
                   <For each={props.page.providers()}>
                     {(provider) => (
                       <label
-                        class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
+                        class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-1.5 text-[0.8125rem] font-medium"
                         for={`configuration-policy-provider-${provider.id}`}
                       >
                         <input
@@ -238,7 +238,7 @@ export function OrganizationConfigurationSignInSection(props: {
               </div>
             </Show>
             <Show when={props.canEdit}>
-              <div class="flex justify-end">
+              <div class="sticky bottom-0 z-10 flex justify-end border-t border-line-subtle bg-surface px-4 py-2">
                 <AuthenticatedButton
                   disabled={props.page.pendingId() === "policy"}
                   icon={mdiContentSave}

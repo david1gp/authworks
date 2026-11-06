@@ -50,34 +50,34 @@ export function OrganizationConfigurationBrandingSection(props: {
       status={props.status as "empty" | "error" | "loading" | "ready"}
     >
       <OrganizationAdminNotice notice={props.notice} />
-      <div class="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] [&>*]:min-w-0">
-        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+      <div class="grid min-w-0 items-start gap-3 xl:grid-cols-[minmax(0,1fr)_22rem] [&>*]:min-w-0">
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0 [&_label]:text-[13px]">
           <AuthenticatedSection
             description={messageTranslate("admin.configuration.brandingFormDescription")}
             title={messageTranslate("admin.configuration.brandingFormTitle")}
           >
             <form
-              class="grid gap-5 px-5 py-4 [&_label]:text-[0.8125rem]"
+              class="grid gap-3 px-4 py-3 [&_label]:text-[0.8125rem]"
               onSubmit={(event) => {
                 event.preventDefault()
                 void state.save()
               }}
             >
-              <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+              <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
                 <For each={["light", "dark"] as const}>
                   {(theme) => (
-                    <fieldset class="grid min-w-0 gap-4 [&>*]:min-w-0">
+                    <fieldset class="grid min-w-0 gap-3 [&>*]:min-w-0">
                       <legend class="text-sm font-semibold">
                         {theme === "light"
                           ? messageTranslate("admin.configuration.themeLight")
                           : messageTranslate("admin.configuration.themeDark")}
                       </legend>
-                      <div class="grid gap-4 sm:grid-cols-2">
+                      <div class="grid gap-3 sm:grid-cols-2">
                         <For each={colorFields}>
                           {(field) => {
                             const id = `configuration-branding-${theme}-${field.key}`
                             return (
-                              <div class="grid min-w-0 gap-1.5">
+                              <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                                 <Label for={id}>{messageTranslate(field.labelKey)}</Label>
                                 <div class="flex items-center gap-2">
                                   <input
@@ -106,8 +106,8 @@ export function OrganizationConfigurationBrandingSection(props: {
                           }}
                         </For>
                       </div>
-                      <div class="grid gap-4 border-t border-line-subtle pt-4 sm:grid-cols-2">
-                        <div class="grid min-w-0 gap-1">
+                      <div class="grid gap-3 border-t border-line-subtle pt-4 sm:grid-cols-2">
+                        <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                           <Label for={`configuration-branding-${theme}-logoUrl`}>
                             {messageTranslate("admin.organizations.branding.logoUrl")}
                           </Label>
@@ -119,7 +119,7 @@ export function OrganizationConfigurationBrandingSection(props: {
                             value={state.themeAsset(theme, "logoUrl")}
                           />
                         </div>
-                        <div class="grid min-w-0 gap-1">
+                        <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                           <Label for={`configuration-branding-${theme}-iconUrl`}>
                             {messageTranslate("admin.organizations.branding.iconUrl")}
                           </Label>
@@ -137,9 +137,9 @@ export function OrganizationConfigurationBrandingSection(props: {
                 </For>
               </div>
 
-              <div class="grid gap-4 border-t border-line-subtle pt-4">
-                <div class="grid gap-4 sm:grid-cols-2">
-                  <div class="grid min-w-0 gap-1">
+              <div class="grid gap-3 border-t border-line-subtle pt-4">
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                     <Label for="configuration-branding-theme-mode">
                       {messageTranslate("admin.organizations.branding.themeMode")}
                     </Label>
@@ -181,8 +181,8 @@ export function OrganizationConfigurationBrandingSection(props: {
             description={messageTranslate("admin.configuration.fontDescription")}
             title={messageTranslate("admin.configuration.fontTitle")}
           >
-            <div class="grid gap-4 px-5 py-4 sm:grid-cols-2">
-              <div class="grid min-w-0 gap-1">
+            <div class="grid gap-3 px-4 py-3 sm:grid-cols-2">
+              <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                 <Label for="configuration-branding-font-family">
                   {messageTranslate("admin.configuration.fontFamily")}
                 </Label>
@@ -194,7 +194,7 @@ export function OrganizationConfigurationBrandingSection(props: {
                   value={state.fontFamily()}
                 />
               </div>
-              <div class="grid min-w-0 gap-1">
+              <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                 <Label for="configuration-branding-font-url">{messageTranslate("admin.configuration.fontUrl")}</Label>
                 <AuthenticatedInput
                   disabled={!props.canEdit}
@@ -216,8 +216,8 @@ export function OrganizationConfigurationBrandingSection(props: {
             description={messageTranslate("admin.configuration.legalDescription")}
             title={messageTranslate("admin.configuration.legalTitle")}
           >
-            <div class="grid gap-4 px-5 py-4 sm:grid-cols-2">
-              <div class="grid min-w-0 gap-1">
+            <div class="grid gap-3 px-4 py-3 sm:grid-cols-2">
+              <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                 <Label for="configuration-branding-privacy">{messageTranslate("admin.configuration.privacyUrl")}</Label>
                 <AuthenticatedInput
                   disabled={!props.canEdit}
@@ -227,7 +227,7 @@ export function OrganizationConfigurationBrandingSection(props: {
                   value={state.legalPrivacyUrl()}
                 />
               </div>
-              <div class="grid min-w-0 gap-1">
+              <div class="grid min-w-0 gap-x-3 gap-y-1 md:grid-cols-[minmax(0,150px)_minmax(0,1fr)] md:items-center">
                 <Label for="configuration-branding-terms">{messageTranslate("admin.configuration.termsUrl")}</Label>
                 <AuthenticatedInput
                   disabled={!props.canEdit}
@@ -255,7 +255,7 @@ export function OrganizationConfigurationBrandingSection(props: {
           </AuthenticatedSection>
         </div>
 
-        <div class="grid min-w-0 gap-4 xl:sticky xl:top-4 [&>*]:min-w-0">
+        <div class="grid min-w-0 gap-3 xl:sticky xl:top-4 [&>*]:min-w-0">
           <AuthenticatedSection
             actions={
               <div class="flex items-center gap-1.5">
@@ -278,7 +278,7 @@ export function OrganizationConfigurationBrandingSection(props: {
             description={messageTranslate("admin.configuration.previewDescription")}
             title={messageTranslate("admin.configuration.previewTitle")}
           >
-            <div class="px-5 py-4">
+            <div class="px-4 py-3">
               <OrganizationConfigurationPreviewCard
                 branding={state.branding()}
                 organizationName={props.organizationName ?? messageTranslate("app.name")}

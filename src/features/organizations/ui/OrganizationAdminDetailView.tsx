@@ -4,17 +4,19 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
+import { AuthenticatedDetailHeader } from "../../../ui/authenticated/AuthenticatedDetailHeader.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSettingsList } from "../../../ui/authenticated/AuthenticatedSettingsList.js"
+import { AuthenticatedSettingsRow } from "../../../ui/authenticated/AuthenticatedSettingsRow.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
@@ -42,11 +44,7 @@ export function OrganizationAdminDetailView(props: {
   readonly status: OrganizationAdminStatus
 }) {
   return (
-    <section aria-label={messageTranslate("admin.organizations.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <A class="text-xs font-medium text-accent hover:underline" href={props.backHref}>
-        {messageTranslate("admin.organizations.list.title")}
-      </A>
-
+    <section aria-label={messageTranslate("admin.organizations.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <OrganizationAdminNotice notice={props.notice} />
 
       <OrganizationAdminState
@@ -58,114 +56,78 @@ export function OrganizationAdminDetailView(props: {
         <Show when={props.organization}>
           {(organization) => (
             <>
-              <AuthenticatedSection
-                actions={
+              <AuthenticatedDetailHeader
+                backHref={props.backHref}
+                backLabel={messageTranslate("admin.organizations.list.title")}
+                title={organization().name}
+                badges={
                   <AuthenticatedStatus
                     label={messageTranslate(`admin.organizations.statusValue.${organization().status}`)}
                     tone={organizationAdminStatusTone(organization().status)}
                   />
                 }
-                padded
-                title={organization().name}
-              >
-                <AuthenticatedFieldList
-                  columns={3}
-                  fields={[
-                    {
-                      identifier: true,
-                      label: messageTranslate("admin.organizations.detail.realm"),
-                      value: organization().realmId,
-                    },
-                    {
-                      label: messageTranslate("admin.organizations.detail.created"),
-                      value: localeDateFormat(organization().createdAt, {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      }),
-                    },
-                    {
-                      label: messageTranslate("admin.organizations.detail.updated"),
-                      value: localeDateFormat(organization().updatedAt, {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      }),
-                    },
-                  ]}
-                />
-              </AuthenticatedSection>
+                facts={[
+                  {
+                    label: "ID",
+                    value: (
+                      <AuthenticatedCopyableId
+                        label={messageTranslate("admin.redesign.id")}
+                        value={organization().id}
+                      />
+                    ),
+                  },
+                  {
+                    label: messageTranslate("admin.organizations.detail.realm"),
+                    value: (
+                      <AuthenticatedCopyableId
+                        label={messageTranslate("admin.organizations.detail.realm")}
+                        value={organization().realmId}
+                      />
+                    ),
+                  },
+                  {
+                    label: messageTranslate("admin.organizations.detail.created"),
+                    value: <AuthenticatedRelativeTime value={organization().createdAt} />,
+                  },
+                  {
+                    label: messageTranslate("admin.organizations.detail.updated"),
+                    value: <AuthenticatedRelativeTime value={organization().updatedAt} />,
+                  },
+                ]}
+              />
 
               <AuthenticatedSection
                 description={messageTranslate("admin.organizations.detail.settingsDescription")}
                 title={messageTranslate("admin.organizations.detail.settingsTitle")}
               >
-                <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onRenameSubmit}>
-                  <div class="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                    <div class="grid min-w-0 gap-1.5">
-                      <Label class="text-[0.8125rem] font-medium" for="organization-detail-name">
-                        {messageTranslate("admin.organizations.list.name")}
-                      </Label>
-                      <AuthenticatedInput
-                        id="organization-detail-name"
-                        onInput={(event) => props.onNameInput(event.currentTarget.value)}
-                        value={props.name}
-                      />
-                    </div>
-                    <AuthenticatedButton
-                      size="sm"
-                      disabled={props.pendingId !== undefined}
-                      icon={mdiContentSave}
-                      type="submit"
-                      variant="filledBlue"
+                <form class="grid gap-3 px-4 py-3" onSubmit={props.onRenameSubmit}>
+                  <AuthenticatedSettingsList>
+                    <AuthenticatedSettingsRow
+                      label={messageTranslate("admin.organizations.list.name")}
+                      htmlFor="organization-detail-name"
                     >
-                      {messageTranslate("common.save")}
-                    </AuthenticatedButton>
-                  </div>
-                  <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
-                    <Show when={organization().status !== "active"}>
-                      <AuthenticatedButton
-                        size="sm"
-                        disabled={props.pendingId !== undefined}
-                        icon={mdiCheckCircle}
-                        onClick={() => props.onLifecycleSet("active")}
-                        variant="outline"
-                      >
-                        {messageTranslate("admin.organizations.lifecycle.activate")}
-                      </AuthenticatedButton>
-                    </Show>
-                    <Show when={organization().status === "active"}>
-                      <AuthenticatedButton
-                        size="sm"
-                        disabled={props.pendingId !== undefined}
-                        icon={mdiCancel}
-                        onClick={() => props.onLifecycleSet("inactive")}
-                        variant="outline"
-                      >
-                        {messageTranslate("admin.organizations.lifecycle.deactivate")}
-                      </AuthenticatedButton>
-                    </Show>
-                    <Show when={organization().status !== "removed"}>
-                      <AuthenticatedButton
-                        size="sm"
-                        disabled={props.pendingId !== undefined}
-                        icon={mdiDelete}
-                        onClick={() => props.onLifecycleSet("removed")}
-                        variant="outlineRed"
-                      >
-                        {messageTranslate("admin.organizations.lifecycle.remove")}
-                      </AuthenticatedButton>
-                    </Show>
-                  </div>
+                      <div class="flex items-center gap-2">
+                        <AuthenticatedInput
+                          id="organization-detail-name"
+                          onInput={(event) => props.onNameInput(event.currentTarget.value)}
+                          value={props.name}
+                        />
+                        <AuthenticatedButton
+                          size="sm"
+                          disabled={props.pendingId !== undefined}
+                          icon={mdiContentSave}
+                          type="submit"
+                          variant="filledBlue"
+                        >
+                          {messageTranslate("common.save")}
+                        </AuthenticatedButton>
+                      </div>
+                    </AuthenticatedSettingsRow>
+                  </AuthenticatedSettingsList>
                 </form>
               </AuthenticatedSection>
 
-              <AuthenticatedSection
-                actions={
-                  <A class="text-xs font-medium text-accent hover:underline" href={props.membershipsHref}>
-                    {messageTranslate("admin.organizations.memberships.title")}
-                  </A>
-                }
-                title={messageTranslate("admin.organizations.memberships.title")}
-              >
+              <AuthenticatedSection title={messageTranslate("admin.organizations.memberships.title")}>
                 <Show
                   when={props.memberships.length > 0}
                   fallback={
@@ -189,7 +151,10 @@ export function OrganizationAdminDetailView(props: {
                           ]}
                           title={
                             <span class="block truncate text-[0.8125rem]" title={membership.userId}>
-                              {membership.displayName?.trim() || membership.userId}
+                              {membership.displayName?.trim() || membership.email || membership.userId}
+                              <Show when={membership.email}>
+                                <span class="ml-2 text-xs font-normal text-muted-foreground">{membership.email}</span>
+                              </Show>
                             </span>
                           }
                         />
@@ -217,9 +182,20 @@ export function OrganizationAdminDetailView(props: {
                         {(membership) => (
                           <TableRow class={authenticatedTableClasses.row}>
                             <TableCell class={authenticatedTableClasses.cell} title={membership.userId}>
-                              {membership.displayName?.trim() || membership.userId}
+                              {membership.displayName?.trim() || membership.email || membership.userId}
+                              <Show when={membership.email}>
+                                <span class="ml-2 text-xs font-normal text-muted-foreground">{membership.email}</span>
+                              </Show>
                             </TableCell>
-                            <TableCell class={authenticatedTableClasses.cell}>{membership.roles.join(", ")}</TableCell>
+                            <TableCell class={authenticatedTableClasses.cell}>
+                              <For each={membership.roles}>
+                                {(role) => (
+                                  <span class="mr-1 inline-block rounded-control border border-line-subtle px-2 py-0.5 text-xs">
+                                    {role}
+                                  </span>
+                                )}
+                              </For>
+                            </TableCell>
                           </TableRow>
                         )}
                       </For>
@@ -228,22 +204,51 @@ export function OrganizationAdminDetailView(props: {
                 </Show>
               </AuthenticatedSection>
 
-              <AuthenticatedSection
-                actions={
-                  <A class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
-                    {messageTranslate("shell.nav.machineUsers")}
-                  </A>
-                }
-                description={messageTranslate("admin.machine.users.description")}
-                title={messageTranslate("shell.nav.machineUsers")}
-              >
-                <div class="flex flex-wrap gap-2 px-5 py-4">
+              <AuthenticatedSection title={messageTranslate("shell.nav.machineUsers")}>
+                <div class="flex flex-wrap gap-2 px-4 py-3">
                   <A class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
                     {messageTranslate("shell.nav.machineUsers")}
                   </A>
                   <A class="text-xs font-medium text-accent hover:underline" href={props.machineCredentialsHref}>
                     {messageTranslate("shell.nav.credentialsTokens")}
                   </A>
+                </div>
+              </AuthenticatedSection>
+              <AuthenticatedSection title={messageTranslate("admin.configuration.dangerTitle")}>
+                <div class="flex flex-wrap gap-2 px-4 py-2">
+                  <Show when={organization().status !== "active"}>
+                    <AuthenticatedButton
+                      size="sm"
+                      disabled={props.pendingId !== undefined}
+                      icon={mdiCheckCircle}
+                      onClick={() => props.onLifecycleSet("active")}
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.organizations.lifecycle.activate")}
+                    </AuthenticatedButton>
+                  </Show>
+                  <Show when={organization().status === "active"}>
+                    <AuthenticatedButton
+                      size="sm"
+                      disabled={props.pendingId !== undefined}
+                      icon={mdiCancel}
+                      onClick={() => props.onLifecycleSet("inactive")}
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.organizations.lifecycle.deactivate")}
+                    </AuthenticatedButton>
+                  </Show>
+                  <Show when={organization().status !== "removed"}>
+                    <AuthenticatedButton
+                      size="sm"
+                      disabled={props.pendingId !== undefined}
+                      icon={mdiDelete}
+                      onClick={() => props.onLifecycleSet("removed")}
+                      variant="outlineRed"
+                    >
+                      {messageTranslate("admin.organizations.lifecycle.remove")}
+                    </AuthenticatedButton>
+                  </Show>
                 </div>
               </AuthenticatedSection>
             </>

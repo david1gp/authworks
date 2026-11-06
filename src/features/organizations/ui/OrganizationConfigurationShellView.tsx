@@ -41,11 +41,8 @@ export function OrganizationConfigurationShellView(props: {
     })
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      <AuthenticatedPageHeader
-        description={messageTranslate("admin.configuration.description")}
-        title={messageTranslate("admin.configuration.title")}
-      />
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <AuthenticatedPageHeader title={messageTranslate("admin.configuration.title")} />
       <AuthenticatedTabs
         active={props.section}
         items={[

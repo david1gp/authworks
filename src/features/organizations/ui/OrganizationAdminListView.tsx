@@ -8,15 +8,16 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Organization } from "../public/organizationSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
@@ -49,8 +50,14 @@ export function OrganizationAdminListView(props: {
 }) {
   const statusOptions = () => ["active", "inactive", "all"]
   return (
-    <section aria-label={messageTranslate("admin.organizations.list.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      <AuthenticatedToolbar
+    <section aria-label={messageTranslate("admin.organizations.list.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <AuthenticatedPageHeader
+        title={messageTranslate("admin.organizations.list.title")}
+        meta={
+          <span>
+            {props.organizations.length} {messageTranslate("admin.redesign.organizations")}
+          </span>
+        }
         actions={
           <AuthenticatedDialog
             description={messageTranslate("admin.organizations.list.description")}
@@ -61,7 +68,7 @@ export function OrganizationAdminListView(props: {
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-4" onSubmit={props.onCreateSubmit}>
+            <form class="grid gap-3" onSubmit={props.onCreateSubmit}>
               <div class="grid gap-1.5">
                 <Label class="text-[0.8125rem] font-medium" for="organization-name">
                   {messageTranslate("admin.organizations.list.name")}
@@ -88,8 +95,8 @@ export function OrganizationAdminListView(props: {
             </form>
           </AuthenticatedDialog>
         }
-        label={messageTranslate("admin.organizations.list.title")}
-      >
+      />
+      <AuthenticatedToolbar label={messageTranslate("admin.organizations.list.title")}>
         <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Label class="sr-only" for="organization-search">
             {messageTranslate("admin.organizations.list.search")}
@@ -134,7 +141,7 @@ export function OrganizationAdminListView(props: {
                   fields={[
                     {
                       label: messageTranslate("admin.organizations.detail.created"),
-                      value: localeDateFormat(organization.createdAt, { dateStyle: "medium" }),
+                      value: <AuthenticatedRelativeTime value={organization.createdAt} />,
                     },
                   ]}
                   status={
@@ -195,7 +202,7 @@ export function OrganizationAdminListView(props: {
                       />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(organization.createdAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={organization.createdAt} />
                     </TableCell>
                   </TableRow>
                 )}

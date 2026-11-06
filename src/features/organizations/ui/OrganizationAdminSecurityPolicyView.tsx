@@ -1,11 +1,13 @@
 import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
-import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { For, Show } from "solid-js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSettingsList } from "../../../ui/authenticated/AuthenticatedSettingsList.js"
+import { AuthenticatedSettingsRow } from "../../../ui/authenticated/AuthenticatedSettingsRow.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
@@ -20,7 +22,6 @@ const factorLabelKeys = {
   recovery_code: "admin.organizations.policy.factor.recoveryCode",
   totp: "admin.organizations.policy.factor.totp",
 } as const satisfies Readonly<Record<MfaPolicyFactor, MessageKey>>
-const fieldsetClass = "min-w-0 rounded-control border border-line-subtle px-4 py-4"
 const selectClass = `${authenticatedControlClasses.select} appearance-none pe-9`
 
 type SecurityPolicyKey = "allowedFactors" | "minimumStepUpAssurance" | "preferredFactorOrder" | "requiredMfa"
@@ -45,7 +46,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
       : messageTranslate("admin.organizations.policy.organizationValue")
   const inheritanceControl = (key: SecurityPolicyKey) => (
     <Show when={props.scope === "organization"}>
-      <label class="mt-3 flex min-h-9 items-center gap-2 text-xs font-medium">
+      <label class="flex min-h-9 items-center gap-2 text-xs font-medium">
         <input
           checked={!props.fieldInherited(key)}
           class={authenticatedControlClasses.checkbox}
@@ -56,15 +57,6 @@ export function OrganizationAdminSecurityPolicyView(props: {
       </label>
     </Show>
   )
-  const fieldLegend = (key: SecurityPolicyKey, label: string) => (
-    <legend class="flex w-full flex-wrap items-center justify-between gap-2">
-      <span class="text-sm font-semibold">{label}</span>
-      <AuthenticatedStatus
-        label={props.fieldInherited(key) ? messageTranslate("admin.organizations.policy.inherited") : scopeLabel()}
-        tone={props.fieldInherited(key) ? "neutral" : "accent"}
-      />
-    </legend>
-  )
 
   return (
     <AuthenticatedSection
@@ -73,139 +65,170 @@ export function OrganizationAdminSecurityPolicyView(props: {
       padded
       title={messageTranslate("admin.organizations.policy.securityTitle")}
     >
-      <div class="grid min-w-0 max-w-3xl gap-4 md:grid-cols-2 [&>*]:min-w-0">
-        <fieldset class={fieldsetClass}>
-          {fieldLegend("requiredMfa", messageTranslate("admin.organizations.policy.requiredMfa"))}
-          <p class="mt-1 text-xs text-muted-foreground">
-            {messageTranslate("admin.organizations.policy.effectiveValue", {
-              value: props.requiredMfa
-                ? messageTranslate("admin.organizations.policy.required")
-                : messageTranslate("admin.organizations.policy.notRequired"),
-            })}
-          </p>
-          {inheritanceControl("requiredMfa")}
-          <div class="relative w-full min-w-0 mt-3 sm:max-w-xs">
-            <select
-              aria-label={messageTranslate("admin.organizations.policy.requiredMfa")}
-              class={selectClass}
-              disabled={props.fieldInherited("requiredMfa")}
-              onChange={(event) => props.onRequiredMfaInput(event.currentTarget.value === "required")}
-              value={props.requiredMfa ? "required" : "optional"}
+      <AuthenticatedSettingsList>
+        <AuthenticatedSettingsRow
+          description={messageTranslate("admin.organizations.policy.effectiveValue", {
+            value: props.requiredMfa
+              ? messageTranslate("admin.organizations.policy.required")
+              : messageTranslate("admin.organizations.policy.notRequired"),
+          })}
+          label={messageTranslate("admin.organizations.policy.requiredMfa")}
+          badge={
+            props.fieldInherited("requiredMfa") ? (
+              <span class="text-xs text-muted-foreground">{messageTranslate("admin.redesign.inherited")}</span>
+            ) : undefined
+          }
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            {inheritanceControl("requiredMfa")}
+            <div class="relative w-full min-w-0 sm:max-w-xs">
+              <select
+                aria-label={messageTranslate("admin.organizations.policy.requiredMfa")}
+                class={selectClass}
+                disabled={props.fieldInherited("requiredMfa")}
+                onChange={(event) => props.onRequiredMfaInput(event.currentTarget.value === "required")}
+                value={props.requiredMfa ? "required" : "optional"}
+              >
+                <option value="optional">{messageTranslate("admin.organizations.policy.notRequired")}</option>
+                <option value="required">{messageTranslate("admin.organizations.policy.required")}</option>
+              </select>
+              <Icon
+                path={mdiChevronDown}
+                class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+            </div>
+          </div>
+        </AuthenticatedSettingsRow>
+
+        <AuthenticatedSettingsRow
+          description={messageTranslate("admin.organizations.policy.effectiveValue", {
+            value: messageTranslate(`admin.organizations.policy.assurance.${props.assurance}`),
+          })}
+          label={messageTranslate("admin.organizations.policy.minimumAssurance")}
+          badge={
+            props.fieldInherited("minimumStepUpAssurance") ? (
+              <span class="text-xs text-muted-foreground">{messageTranslate("admin.redesign.inherited")}</span>
+            ) : undefined
+          }
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            {inheritanceControl("minimumStepUpAssurance")}
+            <div class="relative w-full min-w-0 sm:max-w-xs">
+              <select
+                aria-label={messageTranslate("admin.organizations.policy.minimumAssurance")}
+                class={selectClass}
+                disabled={props.fieldInherited("minimumStepUpAssurance")}
+                onChange={(event) =>
+                  props.onAssuranceInput(event.currentTarget.value as OrganizationLoginPolicyAssurance)
+                }
+                value={props.assurance}
+              >
+                <option value="none">{messageTranslate("admin.organizations.policy.assurance.none")}</option>
+                <option value="authenticated">
+                  {messageTranslate("admin.organizations.policy.assurance.authenticated")}
+                </option>
+                <option value="multi_factor">
+                  {messageTranslate("admin.organizations.policy.assurance.multi_factor")}
+                </option>
+              </select>
+              <Icon
+                path={mdiChevronDown}
+                class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+            </div>
+          </div>
+        </AuthenticatedSettingsRow>
+
+        <AuthenticatedSettingsRow
+          label={messageTranslate("admin.organizations.policy.allowedFactors")}
+          badge={
+            props.fieldInherited("allowedFactors") ? (
+              <span class="text-xs text-muted-foreground">{messageTranslate("admin.redesign.inherited")}</span>
+            ) : undefined
+          }
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="mt-1 text-xs text-muted-foreground">
+              {messageTranslate("admin.organizations.policy.allowedFactorsDescription")}
+            </p>
+            {inheritanceControl("allowedFactors")}
+            <div class="flex flex-wrap gap-1.5">
+              <For each={factors}>
+                {(factor) => (
+                  <label class="flex min-h-9 items-center gap-2 rounded-control border border-line-subtle px-2 text-xs font-medium">
+                    <input
+                      checked={props.allowedFactors.includes(factor)}
+                      class={authenticatedControlClasses.checkbox}
+                      disabled={props.fieldInherited("allowedFactors")}
+                      onChange={() => props.onAllowedFactorToggle(factor)}
+                      type="checkbox"
+                    />
+                    {messageTranslate(factorLabelKeys[factor])}
+                  </label>
+                )}
+              </For>
+            </div>
+          </div>
+        </AuthenticatedSettingsRow>
+
+        <AuthenticatedSettingsRow
+          label={messageTranslate("admin.organizations.policy.preferredOrder")}
+          badge={
+            props.fieldInherited("preferredFactorOrder") ? (
+              <span class="text-xs text-muted-foreground">{messageTranslate("admin.redesign.inherited")}</span>
+            ) : undefined
+          }
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="mt-1 text-xs text-muted-foreground">
+              {messageTranslate("admin.organizations.policy.preferredOrderDescription")}
+            </p>
+            {inheritanceControl("preferredFactorOrder")}
+            <ol
+              aria-label={messageTranslate("admin.organizations.policy.preferredOrder")}
+              class="flex flex-wrap gap-1.5"
             >
-              <option value="optional">{messageTranslate("admin.organizations.policy.notRequired")}</option>
-              <option value="required">{messageTranslate("admin.organizations.policy.required")}</option>
-            </select>
-            <Icon
-              path={mdiChevronDown}
-              class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            />
+              <For each={props.order}>
+                {(factor, index) => (
+                  <li class="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-control border border-line-subtle px-2 py-1.5">
+                    <span class="min-w-0 truncate text-xs font-medium tabular-nums">
+                      {index() + 1}. {messageTranslate(factorLabelKeys[factor])}
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                      <AuthenticatedButton
+                        aria-label={messageTranslate("admin.organizations.policy.moveUp", {
+                          factor: messageTranslate(factorLabelKeys[factor]),
+                        })}
+                        size="sm"
+                        disabled={props.fieldInherited("preferredFactorOrder") || index() === 0}
+                        icon={mdiArrowUp}
+                        onClick={() => props.onPreferredFactorMove(factor, -1)}
+                        type="button"
+                        variant="outline"
+                      >
+                        {messageTranslate("admin.organizations.policy.up")}
+                      </AuthenticatedButton>
+                      <AuthenticatedButton
+                        aria-label={messageTranslate("admin.organizations.policy.moveDown", {
+                          factor: messageTranslate(factorLabelKeys[factor]),
+                        })}
+                        size="sm"
+                        disabled={props.fieldInherited("preferredFactorOrder") || index() === props.order.length - 1}
+                        icon={mdiArrowDown}
+                        onClick={() => props.onPreferredFactorMove(factor, 1)}
+                        type="button"
+                        variant="outline"
+                      >
+                        {messageTranslate("admin.organizations.policy.down")}
+                      </AuthenticatedButton>
+                    </div>
+                  </li>
+                )}
+              </For>
+            </ol>
           </div>
-        </fieldset>
-
-        <fieldset class={fieldsetClass}>
-          {fieldLegend("minimumStepUpAssurance", messageTranslate("admin.organizations.policy.minimumAssurance"))}
-          <p class="mt-1 text-xs text-muted-foreground">
-            {messageTranslate("admin.organizations.policy.effectiveValue", {
-              value: messageTranslate(`admin.organizations.policy.assurance.${props.assurance}`),
-            })}
-          </p>
-          {inheritanceControl("minimumStepUpAssurance")}
-          <div class="relative w-full min-w-0 mt-3 sm:max-w-xs">
-            <select
-              aria-label={messageTranslate("admin.organizations.policy.minimumAssurance")}
-              class={selectClass}
-              disabled={props.fieldInherited("minimumStepUpAssurance")}
-              onChange={(event) =>
-                props.onAssuranceInput(event.currentTarget.value as OrganizationLoginPolicyAssurance)
-              }
-              value={props.assurance}
-            >
-              <option value="none">{messageTranslate("admin.organizations.policy.assurance.none")}</option>
-              <option value="authenticated">
-                {messageTranslate("admin.organizations.policy.assurance.authenticated")}
-              </option>
-              <option value="multi_factor">
-                {messageTranslate("admin.organizations.policy.assurance.multi_factor")}
-              </option>
-            </select>
-            <Icon
-              path={mdiChevronDown}
-              class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-          </div>
-        </fieldset>
-
-        <fieldset class={fieldsetClass}>
-          {fieldLegend("allowedFactors", messageTranslate("admin.organizations.policy.allowedFactors"))}
-          <p class="mt-1 text-xs text-muted-foreground">
-            {messageTranslate("admin.organizations.policy.allowedFactorsDescription")}
-          </p>
-          {inheritanceControl("allowedFactors")}
-          <div class="mt-2 grid gap-1.5">
-            <For each={factors}>
-              {(factor) => (
-                <label class="flex min-h-9 items-center gap-2 rounded-control border border-line-subtle px-2 text-xs font-medium">
-                  <input
-                    checked={props.allowedFactors.includes(factor)}
-                    class={authenticatedControlClasses.checkbox}
-                    disabled={props.fieldInherited("allowedFactors")}
-                    onChange={() => props.onAllowedFactorToggle(factor)}
-                    type="checkbox"
-                  />
-                  {messageTranslate(factorLabelKeys[factor])}
-                </label>
-              )}
-            </For>
-          </div>
-        </fieldset>
-
-        <fieldset class={fieldsetClass}>
-          {fieldLegend("preferredFactorOrder", messageTranslate("admin.organizations.policy.preferredOrder"))}
-          <p class="mt-1 text-xs text-muted-foreground">
-            {messageTranslate("admin.organizations.policy.preferredOrderDescription")}
-          </p>
-          {inheritanceControl("preferredFactorOrder")}
-          <ol aria-label={messageTranslate("admin.organizations.policy.preferredOrder")} class="mt-2 grid gap-1.5">
-            <For each={props.order}>
-              {(factor, index) => (
-                <li class="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-control border border-line-subtle px-2 py-1.5">
-                  <span class="min-w-0 truncate text-xs font-medium tabular-nums">
-                    {index() + 1}. {messageTranslate(factorLabelKeys[factor])}
-                  </span>
-                  <div class="flex items-center gap-1.5">
-                    <AuthenticatedButton
-                      aria-label={messageTranslate("admin.organizations.policy.moveUp", {
-                        factor: messageTranslate(factorLabelKeys[factor]),
-                      })}
-                      size="sm"
-                      disabled={props.fieldInherited("preferredFactorOrder") || index() === 0}
-                      icon={mdiArrowUp}
-                      onClick={() => props.onPreferredFactorMove(factor, -1)}
-                      type="button"
-                      variant="outline"
-                    >
-                      {messageTranslate("admin.organizations.policy.up")}
-                    </AuthenticatedButton>
-                    <AuthenticatedButton
-                      aria-label={messageTranslate("admin.organizations.policy.moveDown", {
-                        factor: messageTranslate(factorLabelKeys[factor]),
-                      })}
-                      size="sm"
-                      disabled={props.fieldInherited("preferredFactorOrder") || index() === props.order.length - 1}
-                      icon={mdiArrowDown}
-                      onClick={() => props.onPreferredFactorMove(factor, 1)}
-                      type="button"
-                      variant="outline"
-                    >
-                      {messageTranslate("admin.organizations.policy.down")}
-                    </AuthenticatedButton>
-                  </div>
-                </li>
-              )}
-            </For>
-          </ol>
-        </fieldset>
-      </div>
+        </AuthenticatedSettingsRow>
+      </AuthenticatedSettingsList>
 
       <div aria-live="polite" class="mt-2.5 rounded-control border border-line-subtle bg-muted px-3 py-2.5">
         <h3 class="text-xs font-semibold">{messageTranslate("admin.organizations.policy.enforcementTitle")}</h3>

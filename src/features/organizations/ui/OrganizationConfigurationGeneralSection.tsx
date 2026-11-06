@@ -1,19 +1,20 @@
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
-import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSettingsList } from "../../../ui/authenticated/AuthenticatedSettingsList.js"
+import { AuthenticatedSettingsRow } from "../../../ui/authenticated/AuthenticatedSettingsRow.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationStatus } from "../public/organizationStatusSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
@@ -34,18 +35,6 @@ export function OrganizationConfigurationGeneralSection(props: {
   const confirmName = createSignalObject("")
   const confirmAction = createSignalObject<OrganizationStatus | undefined>(undefined)
   const removeDialog = () => confirmAction.get() === "removed"
-  const copied = createSignalObject(false)
-
-  const copyValue = async (value: string) => {
-    try {
-      await navigator.clipboard.writeText(value)
-      copied.set(true)
-      setTimeout(() => copied.set(false), 2000)
-    } catch {
-      copied.set(false)
-    }
-  }
-
   const lifecycleConfirm = (status: OrganizationStatus) => {
     confirmName.set("")
     confirmAction.set(status)
@@ -67,96 +56,58 @@ export function OrganizationConfigurationGeneralSection(props: {
       <OrganizationAdminNotice notice={props.page.notice()} />
       <Show when={props.page.organization()}>
         {(organization) => (
-          <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
-            <AuthenticatedSection
-              actions={
-                <AuthenticatedStatus
-                  label={messageTranslate(`admin.organizations.statusValue.${organization().status}`)}
-                  tone={organizationAdminStatusTone(organization().status)}
-                />
-              }
-              description={messageTranslate("admin.configuration.statusDescription")}
-              title={messageTranslate("admin.configuration.statusTitle")}
-            >
-              <div class="px-5 py-4">
-                <p class="text-sm text-muted-foreground">
-                  {organization().status === "active"
-                    ? messageTranslate("admin.configuration.statusActive")
-                    : organization().status === "inactive"
-                      ? messageTranslate("admin.configuration.statusInactive")
-                      : messageTranslate("admin.configuration.statusRemoved")}
-                </p>
-              </div>
-            </AuthenticatedSection>
+          <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+            <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <AuthenticatedStatus
+                label={messageTranslate(`admin.organizations.statusValue.${organization().status}`)}
+                tone={organizationAdminStatusTone(organization().status)}
+              />
+              <AuthenticatedCopyableId
+                label={messageTranslate("admin.configuration.identifier")}
+                value={organization().id}
+              />
+              <span>
+                {messageTranslate("admin.configuration.created")}:{" "}
+                <AuthenticatedRelativeTime value={organization().createdAt} />
+              </span>
+            </div>
 
             <AuthenticatedSection
               description={messageTranslate("admin.configuration.nameDescription")}
               title={messageTranslate("admin.configuration.nameTitle")}
             >
-              <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.screen.organizationRenameSubmit}>
-                <div class="grid min-w-0 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <div class="grid min-w-0 gap-1.5">
-                    <Label class="text-[0.8125rem] font-medium" for="configuration-organization-name">
-                      {messageTranslate("admin.organizations.list.name")}
-                    </Label>
-                    <AuthenticatedInput
-                      disabled={!props.canEdit}
-                      id="configuration-organization-name"
-                      onInput={(event) => props.screen.form.detailName.set(event.currentTarget.value)}
-                      value={props.screen.form.detailName.get()}
-                    />
-                  </div>
-                  <AuthenticatedButton
-                    disabled={!props.canEdit || props.page.pendingId() !== undefined}
-                    icon={mdiContentSave}
-                    type="submit"
-                    variant="filledBlue"
+              <form class="grid gap-3 px-4 py-3" onSubmit={props.screen.organizationRenameSubmit}>
+                <AuthenticatedSettingsList>
+                  <AuthenticatedSettingsRow
+                    label={messageTranslate("admin.organizations.list.name")}
+                    htmlFor="configuration-organization-name"
                   >
-                    {messageTranslate("common.save")}
-                  </AuthenticatedButton>
-                </div>
+                    <div class="flex items-center gap-2">
+                      <AuthenticatedInput
+                        disabled={!props.canEdit}
+                        id="configuration-organization-name"
+                        onInput={(event) => props.screen.form.detailName.set(event.currentTarget.value)}
+                        value={props.screen.form.detailName.get()}
+                      />
+                      <AuthenticatedButton
+                        disabled={!props.canEdit || props.page.pendingId() !== undefined}
+                        icon={mdiContentSave}
+                        type="submit"
+                        variant="filledBlue"
+                      >
+                        {messageTranslate("common.save")}
+                      </AuthenticatedButton>
+                    </div>
+                  </AuthenticatedSettingsRow>
+                </AuthenticatedSettingsList>
               </form>
-            </AuthenticatedSection>
-
-            <AuthenticatedSection
-              description={messageTranslate("admin.configuration.metaDescription")}
-              title={messageTranslate("admin.configuration.metaTitle")}
-            >
-              <div class="px-5 py-4">
-                <AuthenticatedFieldList
-                  columns={3}
-                  fields={[
-                    {
-                      identifier: true,
-                      label: messageTranslate("admin.configuration.identifier"),
-                      value: organization().id,
-                    },
-                    {
-                      label: messageTranslate("admin.configuration.created"),
-                      value: localeDateFormat(organization().createdAt, { dateStyle: "medium", timeStyle: "short" }),
-                    },
-                  ]}
-                />
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <AuthenticatedButton
-                    icon={mdiContentCopy}
-                    onClick={() => void copyValue(organization().id)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    {copied.get()
-                      ? messageTranslate("admin.configuration.copied")
-                      : messageTranslate("admin.configuration.copy")}
-                  </AuthenticatedButton>
-                </div>
-              </div>
             </AuthenticatedSection>
 
             <AuthenticatedSection
               description={messageTranslate("admin.organizations.metadata.description")}
               title={messageTranslate("admin.organizations.metadata.title")}
             >
-              <div class="grid gap-4 px-5 py-4">
+              <div class="grid gap-3 px-4 py-3">
                 <Show
                   when={props.page.metadata().length > 0}
                   fallback={
@@ -168,8 +119,8 @@ export function OrganizationConfigurationGeneralSection(props: {
                   <ul class="divide-y divide-line-subtle rounded-control border border-line-subtle">
                     <For each={props.page.metadata()}>
                       {(entry) => (
-                        <li class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3 py-2.5">
-                          <div class="grid min-w-0 gap-0.5">
+                        <li class="grid min-w-0 items-center gap-2 px-3 py-1.5 sm:grid-cols-[minmax(0,1fr)_auto]">
+                          <div class="grid min-w-0 gap-1 sm:grid-cols-2">
                             <p class="min-w-0 truncate font-mono text-[0.8125rem] font-medium" title={entry.key}>
                               {entry.key}
                             </p>
@@ -234,7 +185,7 @@ export function OrganizationConfigurationGeneralSection(props: {
                 description={messageTranslate("admin.configuration.dangerDescription")}
                 title={messageTranslate("admin.configuration.dangerTitle")}
               >
-                <div class="flex flex-wrap gap-2 px-5 py-4">
+                <div class="flex flex-wrap gap-2 px-4 py-3">
                   <Show when={organization().status !== "active"}>
                     <AuthenticatedButton
                       disabled={props.page.pendingId() !== undefined}
@@ -294,7 +245,7 @@ export function OrganizationConfigurationGeneralSection(props: {
               : messageTranslate("admin.configuration.reactivate")
         }
       >
-        <div class="grid gap-4">
+        <div class="grid gap-3">
           <Show when={removeDialog()}>
             <div class="grid gap-1.5">
               <Label for="configuration-confirm-name">{messageTranslate("admin.configuration.typeName")}</Label>

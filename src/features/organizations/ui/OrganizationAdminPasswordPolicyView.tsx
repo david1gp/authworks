@@ -36,8 +36,8 @@ export function OrganizationAdminPasswordPolicyView(props: {
       description={messageTranslate("admin.organizations.passwordPolicy.description")}
       title={messageTranslate("admin.organizations.passwordPolicy.title")}
     >
-      <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onSubmit}>
-        <div class="grid gap-4 sm:grid-cols-3">
+      <form class="grid gap-3 px-4 py-3" onSubmit={props.onSubmit}>
+        <div class="grid gap-3 sm:grid-cols-3">
           <div class="grid min-w-0 gap-1.5">
             <Label class="text-[0.8125rem] font-medium" for="password-policy-minimum-length">
               {messageTranslate("admin.organizations.passwordPolicy.minimumLength")}
@@ -89,11 +89,11 @@ export function OrganizationAdminPasswordPolicyView(props: {
             </p>
           </div>
         </div>
-        <div class="grid items-start gap-2 sm:grid-cols-2">
+        <div class="grid items-start gap-2 sm:flex sm:flex-wrap">
           <For each={complexityFields}>
             {(field) => (
               <label
-                class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
+                class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-control border border-line-subtle px-3 py-1.5 text-[0.8125rem] font-medium"
                 for={`password-policy-${field.key}`}
               >
                 <input
@@ -111,7 +111,7 @@ export function OrganizationAdminPasswordPolicyView(props: {
         <Show when={props.validationMessage}>
           {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
         </Show>
-        <div class="flex justify-end">
+        <div class="sticky bottom-0 z-10 flex justify-end border-t border-line-subtle bg-surface px-4 py-2">
           <AuthenticatedButton disabled={props.pending} icon={mdiContentSave} type="submit" variant="filledBlue">
             {messageTranslate("common.save")}
           </AuthenticatedButton>
