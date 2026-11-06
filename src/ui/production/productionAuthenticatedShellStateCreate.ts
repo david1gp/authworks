@@ -152,6 +152,8 @@ export function productionAuthenticatedShellStateCreate(
         manualScope.set("organization")
         adminScopeStoredSet("organization")
       }
+      if (isRealmPath(location.pathname) || !isOrganizationPath(location.pathname)) navigate(organizationDefaultHref)
+      if (nextOrganizationId === organizationId()) return
       if (organizationPending.get() || session.organizationSwitchPending()) return
       organizationPending.set(true)
       organizationError.set(undefined)
@@ -159,7 +161,6 @@ export function productionAuthenticatedShellStateCreate(
         organizationPending.set(session.organizationSwitchPending())
         if (!result.success) organizationError.set(result.errorMessage)
       })
-      if (!isOrganizationPath(location.pathname)) navigate(organizationDefaultHref)
     },
     activeOrganization,
     organizationId,

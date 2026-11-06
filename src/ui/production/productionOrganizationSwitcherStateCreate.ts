@@ -68,7 +68,6 @@ export function productionOrganizationSwitcherStateCreate(options: {
     select: (organizationId: string) => {
       open.set(false)
       query.set("")
-      if (organizationId === active()?.id) return
       options.onSelect(organizationId)
     },
     /** Arrow keys move between options; ArrowDown from the filter field enters the list. */

@@ -41,7 +41,7 @@ test("disabled menu actions never run", async () => {
   expect(ran).toBe(0)
 })
 
-test("the organization switcher filters by name and ignores reselecting the active organization", () => {
+test("the organization switcher filters by name and selects an organization", () => {
   createRoot((dispose) => {
     const selected: string[] = []
     const organizations = [
@@ -60,13 +60,31 @@ test("the organization switcher filters by name and ignores reselecting the acti
     expect(state.searchVisible()).toBe(true)
     state.queryInput({ currentTarget: { value: "north" } } as InputEvent & { currentTarget: HTMLInputElement })
     expect(state.filtered().map((item) => item.id)).toEqual(["b"])
-    state.select("a")
-    expect(selected).toEqual([])
     state.select("b")
     expect(selected).toEqual(["b"])
     // Selecting closes the menu and clears the filter.
     expect(state.open()).toBe(false)
     expect(state.query()).toBe("")
+    dispose()
+  })
+})
+
+test("the organization switcher forwards the current organization selection from realm scope", () => {
+  createRoot((dispose) => {
+    let scope = "realm"
+    const selected: string[] = []
+    const state = productionOrganizationSwitcherStateCreate({
+      activeId: () => "a",
+      disabled: () => false,
+      onSelect: (id) => {
+        selected.push(id)
+        scope = "organization"
+      },
+      organizations: () => [{ id: "a", label: "Acme" }],
+    })
+    state.select("a")
+    expect(selected).toEqual(["a"])
+    expect(scope).toBe("organization")
     dispose()
   })
 })
