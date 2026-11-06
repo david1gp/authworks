@@ -4,12 +4,16 @@ import { Icon } from "#ui/static/icon/Icon.jsx"
 import { authenticatedCopyableIdStateCreate } from "./authenticatedCopyableIdStateCreate.js"
 
 /** A readable identifier with a copy action and the complete value in its title. */
-export function AuthenticatedCopyableId(props: { readonly label: string; readonly value: string }) {
+export function AuthenticatedCopyableId(props: {
+  readonly full?: boolean
+  readonly label: string
+  readonly value: string
+}) {
   const state = authenticatedCopyableIdStateCreate(() => props.value)
   return (
     <span class="inline-flex min-w-0 items-center gap-1">
       <span class="truncate font-mono text-xs" title={props.value}>
-        {state.text()}
+        {props.full ? props.value : state.text()}
       </span>
       <button
         aria-label={`Copy ${props.label}`}

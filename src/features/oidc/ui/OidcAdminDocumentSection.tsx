@@ -50,12 +50,12 @@ export function OidcAdminDocumentSection(props: {
           </span>
         </Show>
       </div>
+      <div class="mt-2 min-w-0">{props.children}</div>
       <details class="min-w-0">
         <summary class="cursor-pointer py-1.5 text-xs font-medium">
           {messageTranslate("admin.oidc.documents.showRaw")}
         </summary>
         <div class="grid min-w-0 gap-3">
-          {props.children}
           <pre class="max-h-96 w-full min-w-0 overflow-auto whitespace-pre border-t border-line-subtle bg-muted px-4 py-3 font-mono text-xs leading-5">
             {props.json}
           </pre>

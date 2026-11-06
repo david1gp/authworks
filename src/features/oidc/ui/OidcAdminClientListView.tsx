@@ -209,7 +209,7 @@ export function OidcAdminClientListView(props: {
                   <TableHead class={authenticatedTableClasses.head}>
                     {messageTranslate("admin.oidc.clients.project")}
                   </TableHead>
-                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
+                  <TableHead class={authenticatedTableClasses.head}>
                     {messageTranslate("admin.oidc.clients.redirectUris")}
                   </TableHead>
                   <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.status")}</TableHead>
@@ -228,8 +228,8 @@ export function OidcAdminClientListView(props: {
                       <TableCell class={`${authenticatedTableClasses.cell} max-w-[26rem]`}>
                         {state.projects().find((project) => project.id === client.projectId)?.name ?? "—"}
                       </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap text-right tabular-nums`}>
-                        {client.redirectUris.length}
+                      <TableCell class={`${authenticatedTableClasses.cell} max-w-[26rem]`}>
+                        <OidcAdminUriList uris={client.redirectUris} />
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>
                         <AuthenticatedStatus

@@ -127,7 +127,14 @@ export function OrganizationAdminDetailView(props: {
                 </form>
               </AuthenticatedSection>
 
-              <AuthenticatedSection title={messageTranslate("admin.organizations.memberships.title")}>
+              <AuthenticatedSection
+                actions={
+                  <A class="text-xs font-medium text-accent hover:underline" href={props.membershipsHref}>
+                    {messageTranslate("admin.organizations.memberships.title")}
+                  </A>
+                }
+                title={messageTranslate("admin.organizations.memberships.title")}
+              >
                 <Show
                   when={props.memberships.length > 0}
                   fallback={

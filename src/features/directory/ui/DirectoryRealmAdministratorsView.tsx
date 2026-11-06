@@ -51,6 +51,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
           <AuthenticatedAvatar class="size-6" name={administratorNameGet(admin)} size="sm" />
           <span class="grid min-w-0">
             <span class="truncate font-medium">{administratorNameGet(admin)}</span>
+            <span class="truncate text-xs text-muted-foreground">@{admin.user.userName}</span>
             <span class="truncate text-xs text-muted-foreground">{admin.user.email}</span>
           </span>
         </span>
@@ -202,6 +203,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                     <AuthenticatedRecordItem
                       compact
                       meta={[
+                        `@${admin.user.userName}`,
                         admin.user.email,
                         <AuthenticatedRelativeTime value={admin.createdAt} />,
                         admin.createdBy === undefined ? (

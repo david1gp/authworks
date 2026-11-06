@@ -57,7 +57,7 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
   )
 
   const projectGroup = (entry: DirectoryRolesProjectEntry) => (
-    <AuthenticatedSection>
+    <AuthenticatedSection label={entry.project.name}>
       <div class="flex flex-wrap items-center gap-2 border-b border-line-subtle px-4 py-2">
         <A
           class="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"

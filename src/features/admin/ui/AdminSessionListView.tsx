@@ -81,6 +81,7 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
                     <TableRow class={authenticatedTableClasses.row} data-admin-session={session.id}>
                       <TableCell class={authenticatedTableClasses.cell}>
                         {sessionDeviceLabelGet(session.device)}
+                        <span class="block font-mono text-xs text-muted-foreground">{session.id}</span>
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>
                         <span title={session.subjectId}>

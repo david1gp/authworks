@@ -218,6 +218,7 @@ export const productionRouteContractMap = {
         contracts: ["organizations.memberships.list", "authorization.roles.list"],
         guard: { ...organizationAdminGuard, organization: "not-required" },
         key: "roles",
+        ownsPageHeader: true,
         path: "/admin/roles",
         title: "shell.nav.roles",
       },

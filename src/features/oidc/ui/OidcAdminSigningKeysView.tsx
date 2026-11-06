@@ -135,6 +135,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                     {/* Key identifiers are long UUIDs, so the cell truncates and keeps the full value in its title. */}
                     <TableCell class={authenticatedTableClasses.identifier} title={key.publicJwk.kid}>
                       <AuthenticatedCopyableId
+                        full
                         label={messageTranslate("admin.oidc.keys.keyId")}
                         value={key.publicJwk.kid}
                       />
