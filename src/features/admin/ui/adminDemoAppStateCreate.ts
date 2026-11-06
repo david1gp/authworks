@@ -1,10 +1,10 @@
 import { mdiAccountMultipleOutline } from "@adaptive-ds/mdi/mdiAccountMultipleOutline.js"
 import { mdiAccountStarOutline } from "@adaptive-ds/mdi/mdiAccountStarOutline.js"
+import { mdiAccountSwitchOutline } from "@adaptive-ds/mdi/mdiAccountSwitchOutline.js"
 import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
 import { mdiCheckDecagramOutline } from "@adaptive-ds/mdi/mdiCheckDecagramOutline.js"
 import { mdiClipboardTextOutline } from "@adaptive-ds/mdi/mdiClipboardTextOutline.js"
 import { mdiCogOutline } from "@adaptive-ds/mdi/mdiCogOutline.js"
-import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
 import { mdiFileDocumentOutline } from "@adaptive-ds/mdi/mdiFileDocumentOutline.js"
 import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
@@ -15,7 +15,6 @@ import { mdiTuneVariant } from "@adaptive-ds/mdi/mdiTuneVariant.js"
 import { useLocation } from "@solidjs/router"
 import * as v from "valibot"
 import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.jsx"
-import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedSidebarDestinationSelect } from "../../../ui/authenticated/authenticatedSidebarDestinationSelect.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionNavigationActiveHrefSelect } from "../../../ui/production/productionNavigationActiveHrefSelect.js"
@@ -50,13 +49,12 @@ export type AdminDemoNavGroup = {
 
 /**
  * Demo navigation mirroring the production administration shell: organization items
- * top-level, realm items in a collapsed group. Visibility follows `?as=`.
+ * and realm items in always-expanded groups. Visibility follows `?as=`.
  */
 const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
   {
-    label: null,
+    label: "Organization",
     items: [
-      { access: "organization-admin", href: "/demo/admin/activity", icon: mdiClipboardTextOutline, label: "Activity" },
       { access: "organization-admin", href: "/demo/admin/users", icon: mdiAccountMultipleOutline, label: "Users" },
       { access: "organization-admin", href: "/demo/admin/roles", icon: mdiAccountStarOutline, label: "Roles" },
       {
@@ -71,12 +69,17 @@ const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
         icon: mdiCogOutline,
         label: "Configuration",
       },
+      {
+        access: "organization-admin",
+        href: "/demo/admin/impersonation",
+        icon: mdiAccountSwitchOutline,
+        label: "Impersonation",
+      },
+      { access: "organization-admin", href: "/demo/admin/activity", icon: mdiClipboardTextOutline, label: "Activity" },
     ],
   },
   {
     access: "realm-admin",
-    collapsible: true,
-    icon: mdiDomain,
     label: "Realm",
     items: [
       { access: "realm-admin", href: "/demo/admin/realm", icon: mdiCogOutline, label: "Overview and settings" },
@@ -93,6 +96,12 @@ const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
         label: "Organizations",
       },
       { access: "realm-admin", href: "/demo/admin/login-policy", icon: mdiTuneVariant, label: "Login and identity" },
+    ],
+  },
+  {
+    access: "realm-admin",
+    label: "OIDC",
+    items: [
       { access: "realm-admin", href: "/demo/admin/oidc-clients", icon: mdiOpenid, label: "OIDC clients" },
       { access: "realm-admin", href: "/demo/admin/signing-keys", icon: mdiKeyChain, label: "Signing keys" },
       {
@@ -107,6 +116,12 @@ const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
         icon: mdiFileDocumentOutline,
         label: "Protocol documents",
       },
+    ],
+  },
+  {
+    access: "realm-admin",
+    label: "Security & audit",
+    items: [
       { access: "realm-admin", href: "/demo/admin/sessions", icon: mdiMonitorCellphone, label: "Sessions" },
       { access: "realm-admin", href: "/demo/admin/events", icon: mdiClipboardTextOutline, label: "Events" },
     ],
@@ -130,6 +145,8 @@ const demoNavLabelTranslate = (label: string): string => {
       return messageTranslate("shell.nav.roles")
     case "Projects":
       return messageTranslate("shell.nav.projects")
+    case "Impersonation":
+      return messageTranslate("shell.nav.impersonation")
     case "Configuration":
       return messageTranslate("shell.nav.configuration")
     case "Overview and settings":
@@ -157,26 +174,9 @@ const demoNavLabelTranslate = (label: string): string => {
   }
 }
 
-const demoRealmGroupOpenSchema = v.optional(v.picklist(["open", "closed"]), "closed")
-
-function demoRealmGroupOpenStoredGet(): boolean {
-  if (typeof localStorage === "undefined") return false
-  return v.safeParse(demoRealmGroupOpenSchema, localStorage.getItem("authworks.demo.nav.realm-open")).output === "open"
-}
-
-function demoRealmGroupOpenStoredSet(open: boolean): void {
-  if (typeof localStorage === "undefined") return
-  try {
-    localStorage.setItem("authworks.demo.nav.realm-open", open ? "open" : "closed")
-  } catch {
-    // Browsers may block storage; the group simply falls back to closed.
-  }
-}
-
 export function adminDemoAppStateCreate() {
   const location = useLocation()
   const sidebar = createSidebarState()
-  const realmGroupManual = createSignalObject<boolean | undefined>(undefined)
   const access = () => adminDemoAccessSelect(location.search)
   const shellAccess = () => demoShellAccessResolve(access())
 
@@ -197,27 +197,20 @@ export function adminDemoAppStateCreate() {
       location.pathname,
     )
 
-  const groupOpen = (group: AdminDemoNavGroup) => {
-    if (group.collapsible !== true) return true
-    if (realmGroupManual.get() !== undefined) return realmGroupManual.get() as boolean
-    if (group.items.some((item) => item.href === activeHref())) return true
-    return demoRealmGroupOpenStoredGet()
-  }
-
-  const groupToggle = (group: AdminDemoNavGroup) => {
-    const next = !groupOpen(group)
-    realmGroupManual.set(next)
-    demoRealmGroupOpenStoredSet(next)
-  }
-
   return {
     access,
     collapseVisible: () => !sidebar.isMobile.get(),
     destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
-    groupOpen,
-    groupToggle,
     groupLabel: (group: AdminDemoNavGroup) =>
-      group.label === "Realm" ? messageTranslate("shell.nav.realmGroup") : (group.label ?? ""),
+      group.label === "OIDC"
+        ? messageTranslate("shell.nav.oidcGroup")
+        : group.label === "Security & audit"
+          ? messageTranslate("shell.nav.securityAuditGroup")
+          : group.label === "Realm"
+            ? messageTranslate("shell.nav.realmGroup")
+            : group.label === "Organization"
+              ? messageTranslate("shell.nav.organizationSwitcher")
+              : (group.label ?? ""),
     /** Only the most specific destination is highlighted, so `/realm/administrators` does not also light up `/realm`. */
     isActive: (href: string) => activeHref() === href,
     navigationGroups: translatedGroups,

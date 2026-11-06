@@ -7,7 +7,6 @@ import { mdiClipboardTextOutline } from "@adaptive-ds/mdi/mdiClipboardTextOutlin
 import { mdiCogOutline } from "@adaptive-ds/mdi/mdiCogOutline.js"
 import { mdiFileDocumentOutline } from "@adaptive-ds/mdi/mdiFileDocumentOutline.js"
 import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
-import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
@@ -19,13 +18,13 @@ import type { ProductionNavigationGroup } from "./productionNavigationGroup.js"
  * Production administration navigation: the sidebar shows one context at a time.
  * Organization items render when an organization is selected, realm items render
  * when the realm is selected in the administration context switcher (realm
- * administrators only). There is no collapsible Realm group.
+ * administrators only). All groups are always expanded.
  */
 export const productionShellNavigationGroups = {
   account: [],
   admin: [
     {
-      label: null,
+      label: "shell.nav.organizationSwitcher",
       scope: "organization",
       items: [
         {
@@ -43,15 +42,15 @@ export const productionShellNavigationGroups = {
         },
         {
           access: "organization-admin",
-          href: "/admin/impersonation",
-          icon: mdiAccountSwitchOutline,
-          label: "shell.nav.impersonation",
-        },
-        {
-          access: "organization-admin",
           href: "/admin/configuration/general",
           icon: mdiCogOutline,
           label: "shell.nav.configuration",
+        },
+        {
+          access: "organization-admin",
+          href: "/admin/impersonation",
+          icon: mdiAccountSwitchOutline,
+          label: "shell.nav.impersonation",
         },
         {
           access: "organization-admin",
@@ -63,7 +62,7 @@ export const productionShellNavigationGroups = {
     },
     {
       access: "realm-admin",
-      label: null,
+      label: "shell.nav.realmGroup",
       scope: "realm",
       items: [
         { access: "realm-admin", href: "/admin/realm", icon: mdiCogOutline, label: "shell.nav.realmOverviewSettings" },
@@ -85,6 +84,13 @@ export const productionShellNavigationGroups = {
           icon: mdiTuneVariant,
           label: "shell.nav.loginPolicy",
         },
+      ],
+    },
+    {
+      access: "realm-admin",
+      label: "shell.nav.oidcGroup",
+      scope: "realm",
+      items: [
         { access: "realm-admin", href: "/admin/oidc-clients", icon: mdiOpenid, label: "shell.nav.oidcClients" },
         { access: "realm-admin", href: "/admin/signing-keys", icon: mdiKeyChain, label: "shell.nav.signingKeys" },
         {
@@ -99,18 +105,19 @@ export const productionShellNavigationGroups = {
           icon: mdiFileDocumentOutline,
           label: "shell.nav.protocolDocuments",
         },
+      ],
+    },
+    {
+      access: "realm-admin",
+      label: "shell.nav.securityAuditGroup",
+      scope: "realm",
+      items: [
         { access: "realm-admin", href: "/admin/sessions", icon: mdiMonitorCellphone, label: "shell.nav.sessions" },
         {
           access: "realm-admin",
           href: "/admin/events",
           icon: mdiClipboardTextOutline,
           label: "shell.nav.auditEvents",
-        },
-        {
-          access: "realm-admin",
-          href: "/admin/sign-in",
-          icon: mdiLogin,
-          label: "shell.nav.administratorSignIn",
         },
       ],
     },

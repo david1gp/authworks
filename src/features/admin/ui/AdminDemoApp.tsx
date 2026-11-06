@@ -1,5 +1,4 @@
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
-import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
 import { A, useLocation, useNavigate } from "@solidjs/router"
@@ -8,10 +7,10 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedBrandMark } from "../../../ui/authenticated/AuthenticatedBrandMark.js"
+import { AuthenticatedDensityContext } from "../../../ui/authenticated/AuthenticatedDensityContext.js"
 import { authenticatedNavigationClasses } from "../../../ui/authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { ProductionIdentityMenu } from "../../../ui/production/ProductionIdentityMenu.js"
 import { adminDemoAppStateCreate } from "./adminDemoAppStateCreate.js"
 
@@ -60,57 +59,22 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
         <For each={state.navigationGroups()}>
           {(group) => (
             <section class={authenticatedNavigationClasses.groupSection}>
-              <Show
-                when={group.label !== null}
-                fallback={
-                  <div class="grid">
-                    <For each={group.items}>
-                      {(item) => (
-                        <A
-                          aria-current={state.isActive(item.href) ? "page" : undefined}
-                          class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
-                          href={hrefFor(item.href)}
-                          onClick={state.destinationSelect}
-                        >
-                          <Icon path={item.icon} />
-                          <span class="truncate">{item.label}</span>
-                        </A>
-                      )}
-                    </For>
-                  </div>
-                }
-              >
-                <button
-                  aria-expanded={state.groupOpen(group)}
-                  class={authenticatedNavigationClasses.groupHeading}
-                  onClick={() => state.groupToggle(group)}
-                  type="button"
-                >
-                  <Show when={group.icon}>{(icon) => <Icon class="size-4 shrink-0" path={icon()} />}</Show>
-                  <span class="truncate">{state.groupLabel(group)}</span>
-                  <Icon
-                    class={`size-4 shrink-0 transition-transform ${state.groupOpen(group) ? "" : "-rotate-90"}`}
-                    path={mdiChevronDown}
-                  />
-                </button>
-                <Show when={state.groupOpen(group)}>
-                  <div class="grid ps-2">
-                    <For each={group.items}>
-                      {(item) => (
-                        <A
-                          aria-current={state.isActive(item.href) ? "page" : undefined}
-                          class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
-                          href={hrefFor(item.href)}
-                          onClick={state.destinationSelect}
-                        >
-                          <Icon path={item.icon} />
-                          <span class="truncate">{item.label}</span>
-                        </A>
-                      )}
-                    </For>
-                  </div>
-                </Show>
-              </Show>
+              <p class={authenticatedNavigationClasses.groupHeading}>{state.groupLabel(group)}</p>
+              <div class="grid">
+                <For each={group.items}>
+                  {(item) => (
+                    <A
+                      aria-current={state.isActive(item.href) ? "page" : undefined}
+                      class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
+                      href={hrefFor(item.href)}
+                      onClick={state.destinationSelect}
+                    >
+                      <Icon path={item.icon} />
+                      <span class="truncate">{item.label}</span>
+                    </A>
+                  )}
+                </For>
+              </div>
             </section>
           )}
         </For>
@@ -156,17 +120,18 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
         titleClass={authenticatedNavigationClasses.mobileTitle}
         descriptionClass={authenticatedNavigationClasses.mobileDescription}
         desktopChildren={
-          <aside class={authenticatedNavigationClasses.aside}>
+          <aside class={authenticatedNavigationClasses.aside} data-density="compact">
             <AdminDemoNavigation state={state} />
           </aside>
         }
         mobileChildren={
-          <div class={authenticatedNavigationClasses.mobileContent}>
+          <div class={authenticatedNavigationClasses.mobileContent} data-density="compact">
             <AdminDemoNavigation state={state} />
           </div>
         }
       />
       <main
+        data-density="compact"
         class="min-h-dvh transition-[margin] [&_section>*]:min-w-0"
         classList={{ [authenticatedNavigationClasses.contentOffset]: state.sidebar.openDesktop.get() }}
       >
@@ -179,7 +144,9 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
             </A>
           </div>
         </Show>
-        <div class={authenticatedNavigationClasses.content}>{props.children}</div>
+        <div class={authenticatedNavigationClasses.content}>
+          <AuthenticatedDensityContext.Provider value="compact">{props.children}</AuthenticatedDensityContext.Provider>
+        </div>
       </main>
     </div>
   )

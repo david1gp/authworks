@@ -158,7 +158,7 @@ describe("production route contracts", () => {
     expect(adminUsers?.label).toBe("shell.nav.users")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.scope === "realm")
+    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.label === "shell.nav.oidcGroup")
     const adminConsents = realmGroup?.items.find((item) => item.href === "/admin/oidc-consents")
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
@@ -367,18 +367,23 @@ describe("production shell state", () => {
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
     expect(productionShellNavigationGroups.account).toEqual([])
-    expect(productionShellNavigationGroups.admin.map((group) => group.scope)).toEqual(["organization", "realm"])
+    expect(productionShellNavigationGroups.admin.map((group) => group.scope)).toEqual([
+      "organization",
+      "realm",
+      "realm",
+      "realm",
+    ])
     expect(productionShellNavigationGroups.admin[0]?.items.map((item) => item.href)).toEqual([
       "/admin/users",
       "/admin/roles",
       "/admin/projects",
-      "/admin/impersonation",
       "/admin/configuration/general",
+      "/admin/impersonation",
       "/admin/activity",
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin/configuration", "/admin/configuration/branding")).toBe(true)
-    expect(productionShellNavigationGroups.admin[0]?.items[4]?.href).toBe("/admin/configuration/general")
+    expect(productionShellNavigationGroups.admin[0]?.items[3]?.href).toBe("/admin/configuration/general")
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/admin", "/admin")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/account")).toBe(false)

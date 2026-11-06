@@ -98,7 +98,6 @@ export function ProductionOrganizationSwitcher(props: {
           <Popover.Trigger
             aria-busy={props.pending}
             aria-haspopup="listbox"
-            aria-label={`${messageTranslate("shell.nav.organizationSwitcher")}: ${activeLabel()}`}
             class={classMerge(
               authenticatedNavigationClasses.organizationCard,
               authenticatedNavigationClasses.organizationTrigger,
@@ -106,6 +105,7 @@ export function ProductionOrganizationSwitcher(props: {
             data-admin-context-switcher=""
             disabled={props.pending}
           >
+            <span class="sr-only">{messageTranslate("shell.nav.organizationSwitcher")}: </span>
             {identity()}
             <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiUnfoldMoreHorizontal} />
           </Popover.Trigger>

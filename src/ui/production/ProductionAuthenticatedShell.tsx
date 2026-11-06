@@ -6,6 +6,7 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { AuthenticatedDensityContext } from "../authenticated/AuthenticatedDensityContext.js"
 import { authenticatedAvatarColorGet } from "../authenticated/authenticatedAvatarColorGet.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../authenticated/authenticatedNavigationLinkClassGet.js"
@@ -136,12 +137,12 @@ export function ProductionAuthenticatedShell(props: {
           titleClass={authenticatedNavigationClasses.mobileTitle}
           descriptionClass={authenticatedNavigationClasses.mobileDescription}
           desktopChildren={
-            <aside class={authenticatedNavigationClasses.aside}>
+            <aside class={authenticatedNavigationClasses.aside} data-density="compact">
               <ProductionContextualNavigation state={state} />
             </aside>
           }
           mobileChildren={
-            <div class={authenticatedNavigationClasses.mobileContent}>
+            <div class={authenticatedNavigationClasses.mobileContent} data-density="compact">
               <ProductionContextualNavigation state={state} />
             </div>
           }
@@ -181,13 +182,16 @@ export function ProductionAuthenticatedShell(props: {
         </Show>
 
         <main
+          data-density={props.kind === "admin" ? "compact" : undefined}
           class={
             props.kind === "account"
               ? "mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6 2xl:px-8"
               : authenticatedNavigationClasses.content
           }
         >
-          {props.children}
+          <AuthenticatedDensityContext.Provider value={props.kind === "admin" ? "compact" : "comfortable"}>
+            {props.children}
+          </AuthenticatedDensityContext.Provider>
         </main>
       </div>
     </div>

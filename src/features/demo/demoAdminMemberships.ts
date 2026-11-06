@@ -2,6 +2,8 @@ import type { OrganizationMembership } from "../organizations/public/organizatio
 
 export const demoAdminMemberships: OrganizationMembership[] = [
   {
+    displayName: "Alex Morgan",
+    email: "alex.morgan@northwind.example",
     createdAt: 1_754_054_400_000,
     id: "01900000-0000-7000-8000-000000000061",
     realmId: "01900000-0000-7000-8000-000000000001",
@@ -11,6 +13,8 @@ export const demoAdminMemberships: OrganizationMembership[] = [
     userId: "01900000-0000-7000-8000-000000000021",
   },
   {
+    displayName: "Priya Raman",
+    email: "priya.raman@northwind.example",
     createdAt: 1_754_486_400_000,
     id: "01900000-0000-7000-8000-000000000062",
     realmId: "01900000-0000-7000-8000-000000000001",
