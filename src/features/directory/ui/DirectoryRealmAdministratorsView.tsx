@@ -5,6 +5,7 @@ import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
 import { AuthenticatedDataTable } from "../../../ui/authenticated/AuthenticatedDataTable.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
@@ -18,9 +19,9 @@ import { AuthenticatedRelativeTime } from "../../../ui/authenticated/Authenticat
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSkeleton } from "../../../ui/authenticated/AuthenticatedSkeleton.js"
 import type { AuthenticatedDataTableColumn } from "../../../ui/authenticated/authenticatedDataTableColumn.js"
+import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { RealmAdministrator } from "../../realms/public/realmAdministratorSchema.js"
 import {
@@ -30,7 +31,6 @@ import {
 } from "./directoryRealmAdministratorsAdapter.js"
 import type { DirectoryRealmAdministratorsViewState } from "./directoryRealmAdministratorsViewStateCreate.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
-import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 
 export type DirectoryRealmAdministratorsShellState = {
   readonly confirmState: ConfirmState
@@ -48,11 +48,10 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
     {
       cell: (admin) => (
         <span class="flex min-w-0 items-center gap-2.5">
-          <AuthenticatedAvatar name={administratorNameGet(admin)} size="sm" />
+          <AuthenticatedAvatar class="size-6" name={administratorNameGet(admin)} size="sm" />
           <span class="grid min-w-0">
             <span class="truncate font-medium">{administratorNameGet(admin)}</span>
             <span class="truncate text-xs text-muted-foreground">{admin.user.email}</span>
-            <span class="truncate font-mono text-[0.6875rem] text-muted-foreground">@{admin.user.userName}</span>
           </span>
         </span>
       ),
@@ -119,7 +118,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
       : messageTranslate("admin.realmAdministrators.count", { count: page().administrators().length })
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0 [&>header>div:first-child>div:first-child]:flex [&>header>div:first-child>div:first-child]:flex-wrap [&>header>div:first-child>div:first-child]:items-baseline [&>header>div:first-child>div:first-child]:gap-x-3">
       <ConfirmDialog state={props.state.confirmState} titleKey="admin.common.confirmTitle" />
       <AuthenticatedPageHeader
         actions={
@@ -131,7 +130,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
             {messageTranslate("admin.realmAdministrators.add")}
           </AuthenticatedButton>
         }
-        description={messageTranslate("admin.realmAdministrators.description")}
+        description={countLabel()}
         title={messageTranslate("admin.realmAdministrators.title")}
       />
       <Show when={page().notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
@@ -189,16 +188,31 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
               label={messageTranslate("admin.realmAdministrators.title")}
               title={messageTranslate("admin.realmAdministrators.title")}
             >
-              <AuthenticatedDataTable
-                caption={messageTranslate("admin.realmAdministrators.title")}
-                columns={administratorColumns()}
-                rowKey={(admin) => admin.userId}
-                rows={page().administrators()}
-              />
+              <div class="hidden md:block">
+                <AuthenticatedDataTable
+                  caption={messageTranslate("admin.realmAdministrators.title")}
+                  columns={administratorColumns()}
+                  rowKey={(admin) => admin.userId}
+                  rows={page().administrators()}
+                />
+              </div>
               <AuthenticatedRecordList label={messageTranslate("admin.realmAdministrators.title")}>
                 <For each={page().administrators()}>
                   {(admin) => (
                     <AuthenticatedRecordItem
+                      compact
+                      meta={[
+                        admin.user.email,
+                        <AuthenticatedRelativeTime value={admin.createdAt} />,
+                        admin.createdBy === undefined ? (
+                          messageTranslate("admin.realmAdministrators.systemAdded")
+                        ) : (
+                          <AuthenticatedCopyableId
+                            label={messageTranslate("admin.redesign.administratorId")}
+                            value={admin.createdBy}
+                          />
+                        ),
+                      ]}
                       actions={
                         <Show
                           when={!page().lastAdmin()}
@@ -229,22 +243,26 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                       fields={[
                         {
                           label: messageTranslate("admin.realmAdministrators.tableAdded"),
-                          value: localeDateFormat(admin.createdAt, { dateStyle: "medium" }),
+                          value: <AuthenticatedRelativeTime value={admin.createdAt} />,
                         },
                         {
                           label: messageTranslate("admin.realmAdministrators.tableAddedBy"),
                           value:
-                            admin.createdBy === undefined
-                              ? messageTranslate("admin.realmAdministrators.systemAdded")
-                              : admin.createdBy,
+                            admin.createdBy === undefined ? (
+                              messageTranslate("admin.realmAdministrators.systemAdded")
+                            ) : (
+                              <AuthenticatedCopyableId
+                                label={messageTranslate("admin.redesign.administratorId")}
+                                value={admin.createdBy}
+                              />
+                            ),
                         },
                       ]}
                       title={
                         <span class="flex items-center gap-2">
-                          <AuthenticatedAvatar name={administratorNameGet(admin)} size="sm" />
+                          <AuthenticatedAvatar class="size-6" name={administratorNameGet(admin)} size="sm" />
                           <span class="grid min-w-0">
                             <span class="truncate">{administratorNameGet(admin)}</span>
-                            <span class="truncate text-xs font-normal text-muted-foreground">{admin.user.email}</span>
                           </span>
                         </span>
                       }

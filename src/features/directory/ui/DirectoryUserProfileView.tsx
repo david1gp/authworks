@@ -1,5 +1,4 @@
 import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
-import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiBriefcase } from "@adaptive-ds/mdi/mdiBriefcase.js"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCellphone } from "@adaptive-ds/mdi/mdiCellphone.js"
@@ -16,7 +15,6 @@ import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiShieldOutline } from "@adaptive-ds/mdi/mdiShieldOutline.js"
 import { mdiTwoFactorAuthentication } from "@adaptive-ds/mdi/mdiTwoFactorAuthentication.js"
-import { A } from "@solidjs/router"
 import { createEffect, For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -25,14 +23,14 @@ import { AuthenticatedActionMenu } from "../../../ui/authenticated/Authenticated
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
+import { AuthenticatedDetailHeader } from "../../../ui/authenticated/AuthenticatedDetailHeader.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedOptionCard } from "../../../ui/authenticated/AuthenticatedOptionCard.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
-import { AuthenticatedProfileHeader } from "../../../ui/authenticated/AuthenticatedProfileHeader.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
@@ -43,6 +41,7 @@ import { AuthenticatedSkeleton } from "../../../ui/authenticated/AuthenticatedSk
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedTabs } from "../../../ui/authenticated/AuthenticatedTabs.js"
 import type { AuthenticatedActionMenuItem } from "../../../ui/authenticated/authenticatedActionMenuItem.js"
+import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 import type { AuthenticatedTabItem } from "../../../ui/authenticated/authenticatedTabItem.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
@@ -54,11 +53,10 @@ import type { OrganizationRoleId } from "../../organizations/public/organization
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
-import type { DirectoryUserProfilePageState } from "./directoryUserProfilePageStateCreate.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
+import type { DirectoryUserProfilePageState } from "./directoryUserProfilePageStateCreate.js"
 import { directoryUserProfileStateTone } from "./directoryUserProfilePermissions.js"
-import { authenticatedIconRegistry } from "../../../ui/authenticated/authenticatedIconRegistry.js"
 
 export type DirectoryUserProfileViewState = {
   readonly asParam: (() => string | undefined) | undefined
@@ -146,12 +144,6 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
     if (current === undefined) return []
     const can = page().permissionsGet()
     const items: AuthenticatedActionMenuItem[] = []
-    if (can.editProfile)
-      items.push({
-        icon: mdiPencil,
-        label: messageTranslate("admin.userProfile.editProfile"),
-        onSelect: () => editProfileOpen(state),
-      })
     if (can.unlock && current.state === "locked")
       items.push({
         icon: mdiCheck,
@@ -242,14 +234,6 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
   return (
     <AuthenticatedPageBody>
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
-      <A
-        class="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-accent hover:underline"
-        href={backHref()}
-      >
-        <Icon aria-hidden="true" class="size-3.5" path={mdiArrowLeft} />
-        {messageTranslate("admin.userProfile.backToUsers")}
-      </A>
-
       <Show when={page().noticeGet()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
 
       <Show
@@ -285,42 +269,56 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
           <Show when={user()}>
             {(current) => (
               <>
-                <AuthenticatedProfileHeader
-                  actions={<AuthenticatedActionMenu items={actionItems()} />}
-                  avatar={<AuthenticatedAvatar name={displayName()} size="xl" src={current().profile.picture?.url} />}
-                  chips={
+                <AuthenticatedDetailHeader
+                  backHref={backHref()}
+                  backLabel={messageTranslate("admin.userProfile.backToUsers")}
+                  actions={
                     <>
-                      <AuthenticatedChip
-                        label={messageTranslate(
-                          current().emailVerified
-                            ? "admin.userProfile.emailVerified"
-                            : "admin.userProfile.emailUnverified",
-                        )}
-                        tone={current().emailVerified ? "success" : "warning"}
-                      />
+                      <Show when={page().permissionsGet().editProfile}>
+                        <AuthenticatedButton
+                          icon={mdiPencil}
+                          onClick={() => editProfileOpen(state)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          {messageTranslate("admin.userProfile.editProfile")}
+                        </AuthenticatedButton>
+                      </Show>
+                      <AuthenticatedActionMenu items={actionItems()} />
+                    </>
+                  }
+                  leading={<AuthenticatedAvatar name={displayName()} size="sm" src={current().profile.picture?.url} />}
+                  badges={
+                    <>
                       <AuthenticatedChip
                         label={messageTranslate(`admin.users.lifecycle.${current().state}`)}
                         tone={directoryUserProfileStateTone(current().state)}
                       />
-                      <For each={page().targetRolesGet() ?? []}>
+                      <Show when={page().targetRolesGet()?.[0]}>
                         {(role) => (
                           <AuthenticatedChip
-                            icon={organizationRoleIcons[role]}
-                            label={messageTranslate(directoryRoleLabelKeyGet(role))}
+                            icon={organizationRoleIcons[role()]}
+                            label={messageTranslate(directoryRoleLabelKeyGet(role()))}
                             tone="accent"
                           />
                         )}
-                      </For>
-                      <Show when={page().profileGet()?.access?.realmAdministrator}>
-                        <AuthenticatedChip
-                          icon={directoryRoleIconGet("owner")}
-                          label={messageTranslate("admin.userProfile.realmAdminBadge")}
-                          tone="accent"
-                        />
                       </Show>
                     </>
                   }
-                  meta={[
+                  facts={[
+                    {
+                      label: "ID",
+                      value: (
+                        <AuthenticatedCopyableId
+                          label={messageTranslate("admin.redesign.userId")}
+                          value={current().id}
+                        />
+                      ),
+                    },
+                    {
+                      label: messageTranslate("admin.userProfile.username"),
+                      value: <span class="font-mono">@{current().userName}</span>,
+                    },
                     {
                       label: messageTranslate("admin.userProfile.lastSignIn"),
                       value: (
@@ -334,14 +332,23 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                     },
                     {
                       label: messageTranslate("admin.userProfile.memberSince"),
-                      value: <span>{localeDateFormat(current().createdAt, { dateStyle: "medium" })}</span>,
-                    },
-                    {
-                      label: messageTranslate("admin.userProfile.username"),
-                      value: <span class="font-mono">@{current().userName}</span>,
+                      value: <AuthenticatedRelativeTime value={current().createdAt} />,
                     },
                   ]}
-                  subtitle={current().email}
+                  subtitle={
+                    <span class="inline-flex items-center gap-1">
+                      {current().email}
+                      <Show when={current().emailVerified}>
+                        <span
+                          title={messageTranslate("admin.userProfile.emailVerified")}
+                          role="img"
+                          aria-label={messageTranslate("admin.userProfile.emailVerified")}
+                        >
+                          <Icon aria-hidden="true" class="size-3.5" path={mdiCheck} />
+                        </span>
+                      </Show>
+                    </span>
+                  }
                   title={displayName()}
                 />
 
@@ -396,60 +403,26 @@ function OverviewTab(props: { readonly state: DirectoryUserProfileViewState }) {
   const page = () => props.state.page
   const user = () => page().profileGet()?.user
   return (
-    <AuthenticatedSection
-      actions={
-        <Show when={page().permissionsGet().editProfile}>
-          <AuthenticatedButton
-            icon={mdiPencil}
-            onClick={() => editProfileOpen(props.state)}
-            size="sm"
-            variant="outline"
-          >
-            {messageTranslate("admin.userProfile.editProfile")}
-          </AuthenticatedButton>
-        </Show>
-      }
-      padded
-      title={messageTranslate("admin.userProfile.profileTitle")}
-    >
+    <AuthenticatedSection padded title={messageTranslate("admin.userProfile.profileTitle")}>
       <Show
         when={user()}
         fallback={<AuthenticatedEmptyState title={messageTranslate("admin.userProfile.missingId")} />}
       >
         {(current) => (
-          <div class="grid gap-5">
-            <AuthenticatedFieldList
-              columns={3}
-              fields={[
-                {
-                  label: messageTranslate("admin.userProfile.username"),
-                  value: <span class="font-mono">@{current().userName}</span>,
-                },
-                { label: messageTranslate("admin.userProfile.email"), value: current().email },
-                {
-                  label: messageTranslate("admin.userProfile.memberSince"),
-                  value: localeDateFormat(current().createdAt, { dateStyle: "medium", timeStyle: "short" }),
-                },
-              ]}
-            />
-            <div class="border-t border-line-subtle pt-4">
-              <h3 class="mb-3 text-sm font-medium">{messageTranslate("admin.userProfile.contactTitle")}</h3>
-              <AuthenticatedFieldList
-                columns={3}
-                fields={[
-                  { label: messageTranslate("admin.users.displayName"), value: current().profile.displayName ?? "—" },
-                  { label: messageTranslate("admin.users.firstName"), value: current().profile.firstName ?? "—" },
-                  { label: messageTranslate("admin.users.lastName"), value: current().profile.lastName ?? "—" },
-                  { label: messageTranslate("admin.users.nickName"), value: current().profile.nickName ?? "—" },
-                  {
-                    label: messageTranslate("admin.userProfile.preferredLanguage"),
-                    value: current().profile.preferredLanguage ?? "—",
-                  },
-                  { label: messageTranslate("admin.userProfile.phone"), value: current().phoneNumber ?? "—" },
-                ]}
-              />
-            </div>
-          </div>
+          <AuthenticatedFieldList
+            columns={3}
+            fields={[
+              { label: messageTranslate("admin.users.displayName"), value: current().profile.displayName ?? "—" },
+              { label: messageTranslate("admin.users.firstName"), value: current().profile.firstName ?? "—" },
+              { label: messageTranslate("admin.users.lastName"), value: current().profile.lastName ?? "—" },
+              { label: messageTranslate("admin.users.nickName"), value: current().profile.nickName ?? "—" },
+              {
+                label: messageTranslate("admin.userProfile.preferredLanguage"),
+                value: current().profile.preferredLanguage ?? "—",
+              },
+              { label: messageTranslate("admin.userProfile.phone"), value: current().phoneNumber ?? "—" },
+            ]}
+          />
         )}
       </Show>
     </AuthenticatedSection>
@@ -462,7 +435,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
   const membership = () => page().organizationMembershipGet()
   const assignments = () => page().assignmentGroups()
   return (
-    <div class="grid gap-5">
+    <div class="grid gap-3">
       <AuthenticatedSection
         description={messageTranslate("admin.userProfile.organizationRoleDescription")}
         padded
@@ -490,25 +463,30 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
           }
         >
           {(membershipEntry) => (
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div
+              class="grid gap-1 sm:grid-cols-2 xl:grid-cols-4"
+              role="radiogroup"
+              aria-label={messageTranslate("admin.userProfile.organizationRoleTitle")}
+            >
               <For each={["owner", "admin", "member", "guest"] as const}>
                 {(role) => (
-                  <AuthenticatedOptionCard
-                    bullets={[messageTranslate(`admin.roles.orgRole.${role}.bullet1`)]}
-                    checkedRole="radio"
-                    description={messageTranslate(`admin.roles.orgRole.${role}.description`)}
-                    disabled={
-                      !can().manageOrganizationRole ||
-                      (role === "owner" &&
-                        !page().actorGet().realmAdministrator &&
-                        !page().actorGet().organizationRoles.includes("owner")) ||
-                      page().pendingIdGet() !== undefined
-                    }
-                    icon={organizationRoleIcons[role]}
-                    onSelect={() => void page().organizationRoleSingleSet(role)}
-                    selected={membershipEntry().roles.includes(role)}
-                    title={messageTranslate(directoryRoleLabelKeyGet(role))}
-                  />
+                  <label class="flex cursor-pointer items-center gap-2 rounded-control border border-line px-3 py-2 text-[13px] hover:bg-surface-hover has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+                    <input
+                      type="radio"
+                      name="organization-role"
+                      checked={membershipEntry().roles.includes(role)}
+                      disabled={
+                        !can().manageOrganizationRole ||
+                        (role === "owner" &&
+                          !page().actorGet().realmAdministrator &&
+                          !page().actorGet().organizationRoles.includes("owner")) ||
+                        page().pendingIdGet() !== undefined
+                      }
+                      onChange={() => void page().organizationRoleSingleSet(role)}
+                    />
+                    <Icon aria-hidden="true" class="size-4 shrink-0 text-accent" path={organizationRoleIcons[role]} />
+                    <span>{messageTranslate(directoryRoleLabelKeyGet(role))}</span>
+                  </label>
                 )}
               </For>
             </div>
@@ -536,7 +514,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
                       },
                       {
                         label: messageTranslate("admin.userProfile.memberSince"),
-                        value: localeDateFormat(entry.createdAt, { dateStyle: "medium" }),
+                        value: <AuthenticatedRelativeTime value={entry.createdAt} />,
                       },
                     ]}
                     status={<MembershipRoleChips roles={entry.roles} />}
@@ -574,7 +552,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
                         <MembershipRoleChips roles={entry.roles} />
                       </TableCell>
                       <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                        {localeDateFormat(entry.createdAt, { dateStyle: "medium" })}
+                        <AuthenticatedRelativeTime value={entry.createdAt} />
                       </TableCell>
                     </TableRow>
                   )}
@@ -614,7 +592,15 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
                 <div class="flex flex-wrap items-center justify-between gap-2 rounded-control border border-line-subtle px-3.5 py-2.5">
                   <div class="flex min-w-0 flex-wrap items-center gap-1.5">
                     <Icon aria-hidden="true" class="size-4 shrink-0 text-accent" path={mdiBriefcase} />
-                    <span class="truncate text-sm font-medium">{assignment.projectName}</span>
+                    <Show
+                      when={/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(assignment.projectName)}
+                      fallback={<span class="truncate text-sm font-medium">{assignment.projectName}</span>}
+                    >
+                      <AuthenticatedCopyableId
+                        label={messageTranslate("admin.redesign.projectId")}
+                        value={assignment.projectName}
+                      />
+                    </Show>
                     <For each={assignment.roles}>
                       {(role) => <AuthenticatedChip label={role.displayName} tone="neutral" />}
                     </For>
@@ -643,7 +629,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
 function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
   const page = () => props.state.page
   return (
-    <div class="grid gap-5">
+    <div class="grid gap-3">
       <Show when={page().noticeGet()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
       <AuthenticatedSection
         description={messageTranslate("admin.userProfile.authDescription")}
@@ -742,7 +728,7 @@ function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
 function SessionRow(props: { readonly page: DirectoryUserProfilePageState; readonly session: Session }) {
   const metaClass = "flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground"
   return (
-    <li class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 py-3.5">
+    <li class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-2">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiMonitorCellphone} />
@@ -759,7 +745,7 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
           </span>
           <span>
             {messageTranslate("admin.users.sessions.created")}:{" "}
-            {localeDateFormat(props.session.createdAt, { dateStyle: "medium", timeStyle: "short" })}
+            <AuthenticatedRelativeTime value={props.session.createdAt} />
           </span>
           <Show when={props.session.device.ipAddress}>
             {(ipAddress) => (
@@ -947,7 +933,7 @@ function MethodRow(props: {
   readonly tone: "neutral" | "success"
 }) {
   return (
-    <li class="grid gap-2 px-5 py-3.5">
+    <li class="grid gap-1 px-4 py-2">
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h3 class="flex min-w-0 items-center gap-2 truncate text-sm font-medium">
           <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={props.icon} />

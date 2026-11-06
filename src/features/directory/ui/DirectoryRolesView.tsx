@@ -13,8 +13,8 @@ import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.j
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedOptionCard } from "../../../ui/authenticated/AuthenticatedOptionCard.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
+import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -23,37 +23,10 @@ import { AuthenticatedSkeleton } from "../../../ui/authenticated/AuthenticatedSk
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
-import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
-import type { DirectoryRolesProjectEntry } from "./directoryRolesAdapter.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
+import type { DirectoryRolesProjectEntry } from "./directoryRolesAdapter.js"
 import { directoryRolesMemberCountLabel } from "./directoryRolesMemberCountLabel.js"
 import type { DirectoryRolesViewState } from "./directoryRolesViewStateCreate.js"
-
-const organizationRoleIcons: Record<OrganizationRoleId, string> = {
-  admin: directoryRoleIconGet("admin"),
-  guest: directoryRoleIconGet("guest"),
-  member: directoryRoleIconGet("member"),
-  owner: directoryRoleIconGet("owner"),
-}
-
-const organizationRoleBullets: Record<OrganizationRoleId, readonly string[]> = {
-  admin: [
-    messageTranslate("admin.roles.orgRole.admin.bullet1"),
-    messageTranslate("admin.roles.orgRole.admin.bullet2"),
-    messageTranslate("admin.roles.orgRole.admin.bullet3"),
-  ],
-  guest: [messageTranslate("admin.roles.orgRole.guest.bullet1"), messageTranslate("admin.roles.orgRole.guest.bullet2")],
-  member: [
-    messageTranslate("admin.roles.orgRole.member.bullet1"),
-    messageTranslate("admin.roles.orgRole.member.bullet2"),
-    messageTranslate("admin.roles.orgRole.member.bullet3"),
-  ],
-  owner: [
-    messageTranslate("admin.roles.orgRole.owner.bullet1"),
-    messageTranslate("admin.roles.orgRole.owner.bullet2"),
-    messageTranslate("admin.roles.orgRole.owner.bullet3"),
-  ],
-}
 
 /** Shared stateless roles view: organization cards plus per-project role tables. */
 export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewState }) {
@@ -64,54 +37,51 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
     <Show when={page().canManage() && entry.owned}>
       <AuthenticatedButton
         disabled={page().pendingId() !== undefined}
+        aria-label={messageTranslate("admin.roles.edit")}
+        title={messageTranslate("admin.roles.edit")}
         icon={mdiPencil}
         onClick={() => state.editRoleOpenSet(entry.project.id, roleId)(true)}
         size="sm"
         variant="outline"
-      >
-        {messageTranslate("admin.roles.edit")}
-      </AuthenticatedButton>
+      />
       <AuthenticatedButton
         disabled={page().pendingId() !== undefined}
+        aria-label={messageTranslate("admin.roles.delete")}
+        title={messageTranslate("admin.roles.delete")}
         icon={mdiDelete}
         onClick={() => void page().roleDelete(entry.project.id, roleId)}
         size="sm"
         variant="outlineRed"
-      >
-        {messageTranslate("admin.roles.delete")}
-      </AuthenticatedButton>
+      />
     </Show>
   )
 
   const projectGroup = (entry: DirectoryRolesProjectEntry) => (
-    <AuthenticatedSection
-      actions={
-        <Show when={page().canManage() && entry.owned}>
-          <AuthenticatedButton
-            icon={mdiPlus}
-            onClick={() => state.newRoleOpenSet(entry.project.id)(true)}
-            size="sm"
-            variant="filledBlue"
-          >
-            {messageTranslate("admin.roles.projects.newRole")}
-          </AuthenticatedButton>
-        </Show>
-      }
-      label={entry.project.name}
-      title={entry.project.name}
-    >
-      <div class="flex flex-wrap items-center gap-2 px-5 pt-4">
-        <AuthenticatedChip
-          label={messageTranslate(entry.owned ? "admin.roles.projects.owned" : "admin.roles.projects.shared")}
-          tone={entry.owned ? "accent" : "neutral"}
-        />
+    <AuthenticatedSection>
+      <div class="flex flex-wrap items-center gap-2 border-b border-line-subtle px-4 py-2">
         <A
-          class="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline"
+          class="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
           href={state.projectHref(entry.project.id)}
         >
           {entry.project.name}
           <Icon aria-hidden="true" class="size-4" path={mdiArrowRight} />
         </A>
+        <AuthenticatedChip
+          label={messageTranslate(entry.owned ? "admin.roles.projects.owned" : "admin.roles.projects.shared")}
+          tone={entry.owned ? "accent" : "neutral"}
+        />
+        <div class="ml-auto">
+          <Show when={page().canManage() && entry.owned}>
+            <AuthenticatedButton
+              icon={mdiPlus}
+              onClick={() => state.newRoleOpenSet(entry.project.id)(true)}
+              size="sm"
+              variant="filledBlue"
+            >
+              {messageTranslate("admin.roles.projects.newRole")}
+            </AuthenticatedButton>
+          </Show>
+        </div>
       </div>
       <Show
         when={entry.roles.length > 0}
@@ -125,6 +95,8 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
           <For each={entry.roles}>
             {(role) => (
               <AuthenticatedRecordItem
+                compact
+                meta={[role.key, role.group ?? messageTranslate("admin.roles.groupFallback")]}
                 actions={roleActions(entry, role.id)}
                 fields={[
                   {
@@ -183,8 +155,10 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
 
   return (
     <AuthenticatedPageBody>
-      <p class="max-w-3xl text-sm text-muted-foreground">{messageTranslate("admin.roles.description")}</p>
-
+      <AuthenticatedPageHeader
+        title={messageTranslate("admin.roles.title")}
+        description={`${page().organizationRoles().length} organization roles · ${page().entries().length} projects`}
+      />
       <Show
         when={page().status() !== "loading"}
         fallback={
@@ -211,24 +185,25 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
           }
         >
           <AuthenticatedSection
-            description={messageTranslate("admin.roles.organizationRoles.description")}
             label={messageTranslate("admin.roles.organizationRoles.title")}
             title={messageTranslate("admin.roles.organizationRoles.title")}
           >
-            <div class="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="divide-y divide-line-subtle">
               <For each={page().organizationRoles()}>
                 {(role) => (
                   <A
                     aria-label={`${role.name} · ${directoryRolesMemberCountLabel(page().memberCount(role.id) ?? 0)}`}
-                    class="block rounded-panel transition-shadow hover:shadow-panel focus-visible:outline-2 focus-visible:outline-accent"
+                    class="flex min-w-0 items-center gap-3 px-4 py-2 text-[13px] hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-accent"
                     href={state.usersHref(role.id)}
                   >
-                    <AuthenticatedOptionCard
-                      bullets={[...organizationRoleBullets[role.id]]}
-                      description={messageTranslate(`admin.roles.orgRole.${role.id}.description`)}
-                      icon={organizationRoleIcons[role.id]}
-                      title={`${role.name} · ${directoryRolesMemberCountLabel(page().memberCount(role.id) ?? 0)}`}
-                    />
+                    <Icon aria-hidden="true" class="size-4 shrink-0 text-accent" path={directoryRoleIconGet(role.id)} />
+                    <span class="font-medium">{role.name}</span>
+                    <span class="text-xs text-muted-foreground">
+                      {directoryRolesMemberCountLabel(page().memberCount(role.id) ?? 0)}
+                    </span>
+                    <span class="ml-auto hidden truncate text-xs text-muted-foreground sm:block">
+                      {messageTranslate(`admin.roles.orgRole.${role.id}.description`)}
+                    </span>
                   </A>
                 )}
               </For>

@@ -29,7 +29,6 @@ import { authenticatedTableClasses } from "../../../ui/authenticated/authenticat
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { machineUserStatusTone } from "../../machineUsers/ui/machineUserStatusTone.js"
@@ -212,9 +211,6 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
         label={messageTranslate(`admin.users.lifecycle.${entry.user.state}`)}
         tone={directoryAdminUserStatusTone(entry.user.state)}
       />
-      <Show when={!entry.user.emailVerified}>
-        <AuthenticatedChip label={messageTranslate("admin.users.unverifiedEmail")} tone="warning" />
-      </Show>
     </span>
   )
 
@@ -222,16 +218,48 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     {
       cell: (entry: DirectoryEntry) => (
         <span class="flex min-w-0 items-center gap-2.5">
-          <AuthenticatedAvatar name={directoryUserNameGet(entry)} size="sm" src={entry.user.pictureUrl} />
-          <span class="grid min-w-0">
-            <span class="truncate font-medium">{directoryUserNameGet(entry)}</span>
-            <span class="truncate text-xs text-muted-foreground">{entry.user.email}</span>
-            <span class="truncate font-mono text-[0.6875rem] text-muted-foreground">@{entry.user.userName}</span>
+          <AuthenticatedAvatar
+            class="size-6"
+            name={directoryUserNameGet(entry)}
+            size="sm"
+            src={entry.user.pictureUrl}
+          />
+          <span class="truncate font-medium" title={directoryUserNameGet(entry)}>
+            {directoryUserNameGet(entry)}
           </span>
         </span>
       ),
-      header: messageTranslate("admin.users.directoryUser"),
+      header: messageTranslate("admin.users.displayName"),
       key: "user",
+    },
+    {
+      cell: (entry: DirectoryEntry) => (
+        <span class="font-mono text-xs" title={entry.user.userName}>
+          @{entry.user.userName}
+        </span>
+      ),
+      header: messageTranslate("admin.userProfile.username"),
+      key: "userName",
+      sortKey: "userName",
+    },
+    {
+      cell: (entry: DirectoryEntry) => (
+        <span class="flex min-w-0 items-center gap-1.5">
+          <span class="max-w-48 truncate text-muted-foreground" title={entry.user.email}>
+            {entry.user.email}
+          </span>
+          <Show when={!entry.user.emailVerified}>
+            <span
+              aria-label={messageTranslate("admin.users.unverifiedEmail")}
+              class="size-2 rounded-full bg-warning"
+              role="img"
+              title={messageTranslate("admin.users.unverifiedEmail")}
+            />
+          </Show>
+        </span>
+      ),
+      header: messageTranslate("admin.users.email"),
+      key: "email",
     },
     {
       cell: (entry: DirectoryEntry) => roleCells(entry),
@@ -252,18 +280,22 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       ),
       header: messageTranslate("admin.users.directoryLastSignIn"),
       key: "lastSignInAt",
+      align: "end" as const,
+      class: "whitespace-nowrap tabular-nums",
       sortKey: "lastSignInAt",
     },
     {
       cell: (entry: DirectoryEntry) => <AuthenticatedRelativeTime value={entry.user.createdAt} />,
       header: messageTranslate("admin.users.directoryCreated"),
       key: "createdAt",
+      align: "end" as const,
+      class: "whitespace-nowrap tabular-nums",
       sortKey: "createdAt",
     },
   ]
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0 [&>header>div:first-child>div:first-child]:flex [&>header>div:first-child>div:first-child]:flex-wrap [&>header>div:first-child>div:first-child]:items-baseline [&>header>div:first-child>div:first-child]:gap-x-3">
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
       <AuthenticatedPageHeader
         actions={
@@ -292,7 +324,12 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
 
       <Show when={page().notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
 
-      <AuthenticatedTabs active={activeTab()} items={tabItems()} label={messageTranslate("admin.users.title")} />
+      <AuthenticatedTabs
+        active={activeTab()}
+        class="flex-wrap sm:flex-nowrap"
+        items={tabItems()}
+        label={messageTranslate("admin.users.title")}
+      />
 
       <Show when={activeTab() === "people"}>
         <AuthenticatedToolbar
@@ -318,11 +355,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
           }
           label={messageTranslate("admin.users.directoryTabPeople")}
         >
-          <AuthenticatedSearchField
-            onInput={searchSet}
-            placeholder={messageTranslate("admin.users.directorySearchPlaceholder")}
-            value={query().q ?? ""}
-          />
+          <AuthenticatedSearchField onInput={searchSet} value={query().q ?? ""} />
           <fieldset class="flex flex-wrap items-center gap-1.5">
             <legend class="sr-only">{messageTranslate("admin.users.directoryRole")}</legend>
             <AuthenticatedButton
@@ -434,29 +467,16 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                 <For each={page().people()}>
                   {(entry) => (
                     <AuthenticatedRecordItem
-                      fields={[
-                        { label: messageTranslate("admin.users.email"), value: entry.user.email, wide: true },
-                        {
-                          label: messageTranslate("admin.users.directoryUserName"),
-                          value: `@${entry.user.userName}`,
-                        },
-                        {
-                          label: messageTranslate("admin.users.directoryRole"),
-                          value: roleCells(entry),
-                        },
-                        {
-                          label: messageTranslate("admin.users.directoryLastSignIn"),
-                          value: (
-                            <AuthenticatedRelativeTime
-                              fallback={
-                                <span class="text-muted-foreground">
-                                  {messageTranslate("admin.users.directoryNever")}
-                                </span>
-                              }
-                              value={entry.user.lastSignInAt}
-                            />
-                          ),
-                        },
+                      compact
+                      meta={[
+                        `@${entry.user.userName}`,
+                        personRoles(entry)
+                          .map((role) => messageTranslate(directoryRoleMessageKey(role)))
+                          .join(", ") || "—",
+                        <AuthenticatedRelativeTime
+                          fallback={messageTranslate("admin.users.directoryNever")}
+                          value={entry.user.lastSignInAt}
+                        />,
                       ]}
                       status={statusCell(entry)}
                       title={
@@ -550,7 +570,7 @@ function ServiceAccountsSection(props: {
 }) {
   const page = () => props.state.page
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedButton
@@ -641,7 +661,7 @@ function ServiceAccountsSection(props: {
                         />
                       </TableCell>
                       <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                        {localeDateFormat(account.createdAt, { dateStyle: "medium" })}
+                        <AuthenticatedRelativeTime value={account.createdAt} />
                       </TableCell>
                     </TableRow>
                   )}
@@ -660,7 +680,7 @@ function ServiceAccountsSection(props: {
                       },
                       {
                         label: messageTranslate("admin.users.directoryCreated"),
-                        value: localeDateFormat(account.createdAt, { dateStyle: "medium" }),
+                        value: <AuthenticatedRelativeTime value={account.createdAt} />,
                       },
                     ]}
                     status={
@@ -769,7 +789,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                     },
                     {
                       label: messageTranslate("admin.organizations.invitations.expires"),
-                      value: localeDateFormat(invitation.expiresAt, { dateStyle: "medium" }),
+                      value: <AuthenticatedRelativeTime value={invitation.expiresAt} />,
                     },
                   ]}
                   status={
@@ -835,10 +855,10 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                       />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(invitation.createdAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={invitation.createdAt} />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(invitation.expiresAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={invitation.expiresAt} />
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.action}>
                       <Show when={invitation.status === "pending"}>

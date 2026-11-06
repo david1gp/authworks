@@ -32,7 +32,7 @@ const demoUsers: User[] = adminDemoUserFixtures.map((user, index) => {
       ...user,
       emailVerifiedAt: undefined,
       lastSignInAt: demoNow - 5 * 60_000,
-      profile: { ...user.profile, firstName: "Ada", lastName: "Osei", nickName: "ada" },
+      profile: { ...user.profile, nickName: "alex" },
       state: user.state,
     }
   if (index === 1)
