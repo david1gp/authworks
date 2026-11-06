@@ -1,5 +1,4 @@
 import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
-import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiDeleteOutline } from "@adaptive-ds/mdi/mdiDeleteOutline.js"
@@ -7,17 +6,17 @@ import { mdiEyeOutline } from "@adaptive-ds/mdi/mdiEyeOutline.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiShieldOutline } from "@adaptive-ds/mdi/mdiShieldOutline.js"
 import { mdiTuneVariant } from "@adaptive-ds/mdi/mdiTuneVariant.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedActionMenu } from "../../../ui/authenticated/AuthenticatedActionMenu.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
+import { AuthenticatedDetailHeader } from "../../../ui/authenticated/AuthenticatedDetailHeader.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedProfileHeader } from "../../../ui/authenticated/AuthenticatedProfileHeader.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedTabs } from "../../../ui/authenticated/AuthenticatedTabs.js"
 import type { AuthenticatedActionMenuItem } from "../../../ui/authenticated/authenticatedActionMenuItem.js"
@@ -70,15 +69,7 @@ export function ProjectDetailView(props: { readonly state: ProjectDetailScreenSt
   }
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      <A
-        class="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-accent hover:underline"
-        href={state.detail.backHref()}
-      >
-        <Icon aria-hidden="true" class="size-3.5" path={mdiArrowLeft} />
-        {messageTranslate("admin.projects.detail.backToProjects")}
-      </A>
-
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <Show when={state.page.status() !== "loading"} fallback={<ProductionStatePanel state="loading" />}>
         <Show
           when={state.page.status() === "ready"}
@@ -97,11 +88,13 @@ export function ProjectDetailView(props: { readonly state: ProjectDetailScreenSt
             />
           }
         >
-          <AuthenticatedProfileHeader
+          <AuthenticatedDetailHeader
+            backHref={state.detail.backHref()}
+            backLabel={messageTranslate("admin.projects.detail.backToProjects")}
             actions={
               <AuthenticatedActionMenu items={actionItems()} label={messageTranslate("admin.projects.detailTitle")} />
             }
-            chips={
+            badges={
               <>
                 <AuthenticatedChip
                   label={messageTranslate(owned() ? "admin.projects.detail.owned" : "admin.projects.detail.shared")}
@@ -117,12 +110,31 @@ export function ProjectDetailView(props: { readonly state: ProjectDetailScreenSt
                 </Show>
               </>
             }
-            subtitle={
-              <Show when={project()}>
-                {(current) => <span>{state.page.organizationName(current().organizationId)}</span>}
-              </Show>
-            }
+            subtitle={project() ? state.page.organizationName(project()!.organizationId) : undefined}
             title={project()?.name ?? messageTranslate("admin.projects.detailTitle")}
+            facts={
+              project()
+                ? [
+                    {
+                      label: "ID",
+                      value: (
+                        <AuthenticatedCopyableId
+                          label={messageTranslate("admin.redesign.projectId")}
+                          value={project()!.id}
+                        />
+                      ),
+                    },
+                    {
+                      label: messageTranslate("admin.projects.detail.created"),
+                      value: <AuthenticatedRelativeTime value={project()!.createdAt} />,
+                    },
+                    {
+                      label: messageTranslate("admin.projects.detail.updated"),
+                      value: <AuthenticatedRelativeTime value={project()!.updatedAt} />,
+                    },
+                  ]
+                : []
+            }
           />
 
           <Show when={!owned()}>

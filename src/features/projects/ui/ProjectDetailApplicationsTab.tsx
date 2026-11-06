@@ -95,7 +95,7 @@ export function ProjectDetailApplicationsTab(props: {
   ]
 
   return (
-    <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <AuthenticatedSection
         actions={
           <Show when={props.owned}>

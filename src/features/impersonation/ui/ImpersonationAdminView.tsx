@@ -4,8 +4,9 @@ import { Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ImpersonationAdminBanner } from "./ImpersonationAdminBanner.js"
 import { ImpersonationAdminStartForm } from "./ImpersonationAdminStartForm.js"
@@ -20,7 +21,11 @@ export function ImpersonationAdminView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.impersonation.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.impersonation.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <AuthenticatedPageHeader
+        title={messageTranslate("admin.impersonation.title")}
+        description={messageTranslate("admin.impersonation.description")}
+      />
       {/* The banner stays visible in every guarded state, so an active session is never hidden. */}
       <Show when={state.active()}>
         {(session) => (
@@ -70,11 +75,11 @@ export function ImpersonationAdminView(props: {
                   },
                   {
                     label: messageTranslate("admin.impersonation.startedAt"),
-                    value: localeDateFormat(session().startedAt, { dateStyle: "medium", timeStyle: "short" }),
+                    value: <AuthenticatedRelativeTime value={session().startedAt} />,
                   },
                   {
                     label: messageTranslate("admin.impersonation.expires"),
-                    value: localeDateFormat(session().expiresAt, { dateStyle: "medium", timeStyle: "short" }),
+                    value: <AuthenticatedRelativeTime value={session().expiresAt} />,
                   },
                   { label: messageTranslate("admin.impersonation.reason"), value: session().reason ?? "" },
                 ]}
@@ -89,11 +94,8 @@ export function ImpersonationAdminView(props: {
 
 function ImpersonationAdminStartSection(props: { readonly state: ImpersonationAdminPageState }) {
   return (
-    <AuthenticatedSection
-      description={messageTranslate("admin.impersonation.description")}
-      title={messageTranslate("admin.impersonation.start")}
-    >
-      <div class="px-5 py-4">
+    <AuthenticatedSection title={messageTranslate("admin.impersonation.start")}>
+      <div class="px-4 py-3">
         <ImpersonationAdminStartForm state={props.state} />
       </div>
     </AuthenticatedSection>

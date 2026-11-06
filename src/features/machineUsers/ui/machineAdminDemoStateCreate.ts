@@ -15,9 +15,6 @@ import type { MachineAdminScreen } from "./machineAdminScreenSchema.js"
 import { machineAdminScreenStateCreate } from "./machineAdminScreenStateCreate.js"
 import { machineAdminSecretAcknowledgementStore } from "./machineAdminSecretAcknowledgementStore.js"
 
-/** The fixed "now" the credential fixtures are authored against, so expiry is deterministic. */
-const demoNow = 1_755_782_400_000
-
 export function machineAdminDemoStateCreate(options: {
   readonly machineUserId: () => string | undefined
   readonly screen: () => MachineAdminScreen
@@ -55,7 +52,7 @@ export function machineAdminDemoStateCreate(options: {
     basePath: "/demo/admin",
     issuedSecretSeed,
     machineUserId: options.machineUserId,
-    now: () => demoNow,
+    now: () => Date.now(),
     onIssuedSecretAcknowledge: (issued) =>
       machineAdminSecretAcknowledgementStore.acknowledge(
         machineAdminSecretAcknowledgementStore.markerBuild(issued.machineUserId, issued.kind),

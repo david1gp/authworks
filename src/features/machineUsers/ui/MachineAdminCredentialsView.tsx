@@ -2,6 +2,7 @@ import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
@@ -19,9 +20,10 @@ export function MachineAdminCredentialsView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.machine.credentials.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
-      {/* The subject selector is the page filter, so it shares the toolbar row with the issue action. */}
-      <AuthenticatedToolbar
+    <section aria-label={messageTranslate("admin.machine.credentials.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <AuthenticatedPageHeader
+        title={messageTranslate("admin.machine.credentials.title")}
+        description={`${state.page.credentials().length} credentials`}
         actions={
           <AuthenticatedDialog
             description={messageTranslate("admin.machine.credentials.issueDescription")}
@@ -34,9 +36,8 @@ export function MachineAdminCredentialsView(props: {
             <MachineAdminCredentialForm kindSet={state.issueKindSet} state={state.credentialForm} />
           </AuthenticatedDialog>
         }
-        label={messageTranslate("admin.machine.credentials.title")}
-        summary={messageTranslate("admin.machine.credentials.description")}
-      >
+      />
+      <AuthenticatedToolbar label={messageTranslate("admin.machine.credentials.title")}>
         <Label class="sr-only" for="machine-credential-subject">
           {messageTranslate("admin.machine.credentials.subject")}
         </Label>

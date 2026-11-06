@@ -21,7 +21,14 @@ export const machineAdminDemoRecordStore = {
    * invalidating the array references an already-created adapter holds.
    */
   reset: () => {
-    credentials.splice(0, credentials.length, ...demoAdminMachineCredentials.map((item) => ({ ...item })))
+    credentials.splice(
+      0,
+      credentials.length,
+      ...demoAdminMachineCredentials.map((item) => ({
+        ...item,
+        ...(item.name === "Deployment pipeline token" ? { expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000 } : {}),
+      })),
+    )
     machineUsers.splice(0, machineUsers.length, ...demoAdminMachineUsers.map((item) => ({ ...item })))
   },
 }

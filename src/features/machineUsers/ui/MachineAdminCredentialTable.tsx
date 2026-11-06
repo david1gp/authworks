@@ -5,9 +5,9 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineCredential } from "../public/machineCredentialSchema.js"
 import { MachineAdminScopeList } from "./MachineAdminScopeList.js"
@@ -34,9 +34,11 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
   const credentialName = (credential: MachineCredential) =>
     credential.name ?? messageTranslate("admin.machine.credentials.unnamed")
   const expiry = (credential: MachineCredential) =>
-    credential.expiresAt === undefined
-      ? messageTranslate("admin.machine.credentials.neverExpires")
-      : localeDateFormat(credential.expiresAt, { dateStyle: "medium" })
+    credential.expiresAt === undefined ? (
+      messageTranslate("admin.machine.credentials.neverExpires")
+    ) : (
+      <AuthenticatedRelativeTime value={credential.expiresAt} />
+    )
   const credentialStatus = (credential: MachineCredential) => (
     <AuthenticatedStatus
       label={messageTranslate(stateKeys[state.credentialState(credential)])}
@@ -48,13 +50,13 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
     <Show when={state.credentialState(credential) !== "revoked"}>
       <AuthenticatedButton
         size="sm"
+        aria-label={messageTranslate("admin.machine.credentials.revoke")}
+        title={`${messageTranslate("admin.machine.credentials.revoke")} ${credentialName(credential)}`}
         disabled={state.pendingId() !== undefined}
         icon={mdiKeyRemove}
         onClick={() => void state.credentialRevoke(credential.id)}
         variant="outlineRed"
-      >
-        {messageTranslate("admin.machine.credentials.revoke")}
-      </AuthenticatedButton>
+      />
     </Show>
   )
 
@@ -73,7 +75,7 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
                 { label: messageTranslate("admin.machine.credentials.expires"), value: expiry(credential) },
                 {
                   label: messageTranslate("admin.machine.created"),
-                  value: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
+                  value: <AuthenticatedRelativeTime value={credential.createdAt} />,
                 },
                 {
                   label: messageTranslate("admin.machine.credentials.scopes"),
@@ -125,7 +127,7 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
                   <MachineAdminScopeList scopes={credential.scopes} />
                 </TableCell>
                 <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                  {localeDateFormat(credential.createdAt, { dateStyle: "medium" })}
+                  {<AuthenticatedRelativeTime value={credential.createdAt} />}
                 </TableCell>
                 <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
                   {expiry(credential)}

@@ -59,11 +59,13 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
     },
     {
       cell: (project) => <span class="tabular-nums">{project.roleCount ?? 0}</span>,
+      align: "end",
       header: messageTranslate("admin.projects.list.roles"),
       key: "roles",
     },
     {
       cell: (project) => <span class="tabular-nums">{project.applicationCount ?? 0}</span>,
+      align: "end",
       header: messageTranslate("admin.projects.list.applications"),
       key: "applications",
     },
@@ -79,13 +81,14 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
     },
     {
       cell: (project) => <AuthenticatedRelativeTime value={project.createdAt} />,
+      align: "end",
       header: messageTranslate("admin.projects.detail.created"),
       key: "created",
     },
   ]
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <AuthenticatedPageHeader
         actions={
           <AuthenticatedDialog
@@ -132,8 +135,8 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
             </form>
           </AuthenticatedDialog>
         }
-        description={messageTranslate("admin.projects.list.subtitle")}
         title={messageTranslate("admin.projects.list.title")}
+        description={`${state.page.projects().length} projects`}
       />
 
       <AuthenticatedToolbar label={messageTranslate("admin.projects.list.title")}>

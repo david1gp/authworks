@@ -12,11 +12,11 @@ import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNoti
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineUser } from "../public/machineUserSchema.js"
 import { MachineAdminNotice } from "./MachineAdminNotice.js"
@@ -159,7 +159,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                     },
                     {
                       label: messageTranslate("admin.machine.updated"),
-                      value: localeDateFormat(machineUser.updatedAt, { dateStyle: "medium" }),
+                      value: <AuthenticatedRelativeTime value={machineUser.updatedAt} />,
                     },
                     {
                       label: messageTranslate("admin.machine.users.scopes"),
@@ -218,7 +218,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>{machineUserStatus(machineUser)}</TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      {localeDateFormat(machineUser.updatedAt, { dateStyle: "medium" })}
+                      <AuthenticatedRelativeTime value={machineUser.updatedAt} />
                     </TableCell>
                   </TableRow>
                 )}

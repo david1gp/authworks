@@ -20,26 +20,86 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
   const state = props.state
   return (
     <form
-      class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium"
+      class="grid gap-3 [&_label]:text-[0.8125rem] [&_label]:font-medium"
       onSubmit={(event) => {
         event.preventDefault()
         void state.impersonationStart()
       }}
     >
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="grid min-w-0 content-start gap-1.5">
-          <Label for="impersonation-target">{messageTranslate("admin.impersonation.target")}</Label>
+      <div class="grid max-w-[720px] gap-3">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="grid min-w-0 content-start gap-1.5">
+            <Label for="impersonation-target">{messageTranslate("admin.impersonation.target")}</Label>
+            <div class="relative w-full min-w-0">
+              <select
+                class={`${authenticatedControlClasses.select} appearance-none pe-9`}
+                id="impersonation-target"
+                onChange={(event) => state.targetUserId.set(event.currentTarget.value)}
+                value={state.targetUserId.get()}
+              >
+                <For each={state.users()}>
+                  {(user) => (
+                    <option disabled={user.state !== "active"} value={user.id}>
+                      {state.userLabel(user)}
+                    </option>
+                  )}
+                </For>
+              </select>
+              <Icon
+                path={mdiChevronDown}
+                class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+            </div>
+          </div>
+
+          <div class="grid min-w-0 content-start gap-1.5">
+            <Label for="impersonation-organization">{messageTranslate("admin.impersonation.organization")}</Label>
+            <div class="relative w-full min-w-0">
+              <select
+                class={`${authenticatedControlClasses.select} appearance-none pe-9`}
+                id="impersonation-organization"
+                onChange={(event) => state.organizationId.set(event.currentTarget.value)}
+                value={state.organizationId.get()}
+              >
+                <option value="">{messageTranslate("admin.impersonation.noOrganization")}</option>
+                <For each={state.organizations()}>
+                  {(organization) => <option value={organization.id}>{organization.name}</option>}
+                </For>
+              </select>
+              <Icon
+                path={mdiChevronDown}
+                class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+            </div>
+            <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.organizationHint")}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-1.5">
+          <Label for="impersonation-reason">{messageTranslate("admin.impersonation.reason")}</Label>
+          <AuthenticatedInput
+            id="impersonation-reason"
+            maxlength={256}
+            onInput={(event) => state.reason.set(event.currentTarget.value)}
+            required
+            value={state.reason.get()}
+          />
+          <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.reasonHint")}</p>
+        </div>
+
+        <div class="grid gap-1.5 sm:max-w-sm">
+          <Label for="impersonation-duration">{messageTranslate("admin.impersonation.duration")}</Label>
           <div class="relative w-full min-w-0">
             <select
               class={`${authenticatedControlClasses.select} appearance-none pe-9`}
-              id="impersonation-target"
-              onChange={(event) => state.targetUserId.set(event.currentTarget.value)}
-              value={state.targetUserId.get()}
+              id="impersonation-duration"
+              onChange={(event) => state.durationSeconds.set(Number(event.currentTarget.value))}
+              value={String(state.durationSeconds.get())}
             >
-              <For each={state.users()}>
-                {(user) => (
-                  <option disabled={user.state !== "active"} value={user.id}>
-                    {state.userLabel(user)}
+              <For each={impersonationAdminDurationOptions}>
+                {(seconds) => (
+                  <option value={String(seconds)}>
+                    {messageTranslate("admin.impersonation.durationMinutes", { count: seconds / 60 })}
                   </option>
                 )}
               </For>
@@ -49,74 +109,15 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
               class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             />
           </div>
+          <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.durationHint")}</p>
         </div>
 
-        <div class="grid min-w-0 content-start gap-1.5">
-          <Label for="impersonation-organization">{messageTranslate("admin.impersonation.organization")}</Label>
-          <div class="relative w-full min-w-0">
-            <select
-              class={`${authenticatedControlClasses.select} appearance-none pe-9`}
-              id="impersonation-organization"
-              onChange={(event) => state.organizationId.set(event.currentTarget.value)}
-              value={state.organizationId.get()}
-            >
-              <option value="">{messageTranslate("admin.impersonation.noOrganization")}</option>
-              <For each={state.organizations()}>
-                {(organization) => <option value={organization.id}>{organization.name}</option>}
-              </For>
-            </select>
-            <Icon
-              path={mdiChevronDown}
-              class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-          </div>
-          <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.organizationHint")}</p>
-        </div>
+        <Show when={state.validationMessage()}>
+          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+        </Show>
       </div>
-
-      <div class="grid gap-1.5">
-        <Label for="impersonation-reason">{messageTranslate("admin.impersonation.reason")}</Label>
-        <AuthenticatedInput
-          id="impersonation-reason"
-          maxlength={256}
-          onInput={(event) => state.reason.set(event.currentTarget.value)}
-          required
-          value={state.reason.get()}
-        />
-        <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.reasonHint")}</p>
-      </div>
-
-      <div class="grid gap-1.5 sm:max-w-sm">
-        <Label for="impersonation-duration">{messageTranslate("admin.impersonation.duration")}</Label>
-        <div class="relative w-full min-w-0">
-          <select
-            class={`${authenticatedControlClasses.select} appearance-none pe-9`}
-            id="impersonation-duration"
-            onChange={(event) => state.durationSeconds.set(Number(event.currentTarget.value))}
-            value={String(state.durationSeconds.get())}
-          >
-            <For each={impersonationAdminDurationOptions}>
-              {(seconds) => (
-                <option value={String(seconds)}>
-                  {messageTranslate("admin.impersonation.durationMinutes", { count: seconds / 60 })}
-                </option>
-              )}
-            </For>
-          </select>
-          <Icon
-            path={mdiChevronDown}
-            class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-        </div>
-        <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.durationHint")}</p>
-      </div>
-
-      <Show when={state.validationMessage()}>
-        {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-      </Show>
-
       <AuthenticatedButton
-        class={`justify-self-start ${authenticatedWarningOutlineButtonClass}`}
+        class={`justify-self-end ${authenticatedWarningOutlineButtonClass}`}
         disabled={state.pendingId() !== undefined}
         icon={mdiAccountArrowRight}
         type="submit"

@@ -7,6 +7,7 @@ import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
 import { AuthenticatedDataTable } from "../../../ui/authenticated/AuthenticatedDataTable.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
@@ -108,7 +109,9 @@ export function ProjectDetailAccessTab(props: {
   ]
   const assignmentColumns: AuthenticatedDataTableColumn<ProjectUserAssignment>[] = [
     {
-      cell: (assignment) => <span class="font-mono text-[0.8125rem]">{assignment.userId}</span>,
+      cell: (assignment) => (
+        <AuthenticatedCopyableId label={messageTranslate("admin.redesign.userId")} value={assignment.userId} />
+      ),
       header: messageTranslate("admin.projects.assignments.user"),
       key: "user",
     },
@@ -143,7 +146,7 @@ export function ProjectDetailAccessTab(props: {
   ]
 
   return (
-    <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <AuthenticatedSection
         actions={
           <Show when={props.owned}>
@@ -168,7 +171,7 @@ export function ProjectDetailAccessTab(props: {
                     valueText={(id) => state.page.organizationName(id)}
                   />
                 </div>
-                <fieldset class="grid gap-3 rounded-control border border-line bg-muted/40 p-4">
+                <fieldset class="flex flex-wrap gap-2 rounded-control border border-line bg-muted/40 p-3">
                   <legend class="px-1 text-[0.8125rem] font-medium">
                     {messageTranslate("admin.projects.access.selectRoles")}
                   </legend>
@@ -248,7 +251,7 @@ export function ProjectDetailAccessTab(props: {
                     value={state.assignUserId.get()}
                   />
                 </div>
-                <fieldset class="grid gap-3 rounded-control border border-line bg-muted/40 p-4">
+                <fieldset class="flex flex-wrap gap-2 rounded-control border border-line bg-muted/40 p-3">
                   <legend class="px-1 text-[0.8125rem] font-medium">
                     {messageTranslate("admin.projects.access.selectRoles")}
                   </legend>
