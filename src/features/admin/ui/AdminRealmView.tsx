@@ -1,12 +1,19 @@
+import { mdiAccountGroupOutline } from "@adaptive-ds/mdi/mdiAccountGroupOutline.js"
+import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDevices } from "@adaptive-ds/mdi/mdiDevices.js"
+import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
+import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { mdiPencilOutline } from "@adaptive-ds/mdi/mdiPencilOutline.js"
-import { useLocation, useNavigate } from "@solidjs/router"
+import { mdiShieldAccountOutline } from "@adaptive-ds/mdi/mdiShieldAccountOutline.js"
+import { A, useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
+import { AuthenticatedCopyableId } from "../../../ui/authenticated/AuthenticatedCopyableId.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
@@ -16,6 +23,7 @@ import { AuthenticatedStatTile } from "../../../ui/authenticated/AuthenticatedSt
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import { AdminEventTable } from "./AdminEventTable.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminRealmQueryParse } from "./adminRealmQuerySchema.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
@@ -33,47 +41,6 @@ const dialogQuerySet = (
   navigate(`${pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
 }
 
-type RealmExploreTile = {
-  readonly description: string
-  readonly href: (basePath: string) => string
-  readonly titleKey:
-    | "shell.nav.realmAdministrators"
-    | "shell.nav.organizations"
-    | "shell.nav.oidcClients"
-    | "shell.nav.sessions"
-    | "shell.nav.auditEvents"
-}
-
-const exploreTiles = (): readonly RealmExploreTile[] => [
-  {
-    description: messageTranslate("admin.realm.explore.administratorsDescription"),
-    href: (basePath) => `${basePath}/realm/administrators`,
-    titleKey: "shell.nav.realmAdministrators",
-  },
-  {
-    description: messageTranslate("admin.realm.explore.organizationsDescription"),
-    href: (basePath) => `${basePath}/organizations`,
-    titleKey: "shell.nav.organizations",
-  },
-  {
-    description: messageTranslate("admin.realm.explore.oidcClientsDescription"),
-    href: (basePath) => `${basePath}/oidc-clients`,
-    titleKey: "shell.nav.oidcClients",
-  },
-  {
-    description: messageTranslate("admin.realm.explore.sessionsDescription"),
-    href: (basePath) => `${basePath}/sessions`,
-    titleKey: "shell.nav.sessions",
-  },
-  {
-    description: messageTranslate("admin.realm.explore.auditEventsDescription"),
-    href: (basePath) => `${basePath}/events`,
-    titleKey: "shell.nav.auditEvents",
-  },
-]
-
-const exploreTileLabel = (titleKey: RealmExploreTile["titleKey"]): string => messageTranslate(titleKey)
-
 /** Merged realm overview and settings: identity header, editable settings, and explore links. */
 export function AdminRealmView(props: {
   readonly basePath: string
@@ -90,7 +57,7 @@ export function AdminRealmView(props: {
   }
 
   return (
-    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
 
       <Show when={props.state.status() === "permission-denied" && props.state.realm()}>
@@ -128,67 +95,129 @@ export function AdminRealmView(props: {
                     </AuthenticatedButton>
                   ) : undefined
                 }
-                description={messageTranslate("admin.realm.description")}
                 meta={
-                  <AuthenticatedStatus
-                    label={
-                      realm().status === "active"
-                        ? messageTranslate("admin.realm.statusActive")
-                        : messageTranslate("admin.realm.statusDisabled")
-                    }
-                    tone={realm().status === "active" ? "success" : "danger"}
-                  />
+                  <>
+                    <AuthenticatedStatus
+                      label={
+                        realm().status === "active"
+                          ? messageTranslate("admin.realm.statusActive")
+                          : messageTranslate("admin.realm.statusDisabled")
+                      }
+                      tone={realm().status === "active" ? "success" : "danger"}
+                    />
+                    <span>
+                      {messageTranslate("admin.realm.identifier")}{" "}
+                      <AuthenticatedCopyableId label={messageTranslate("admin.realm.identifier")} value={realm().id} />
+                    </span>
+                    <span>
+                      {messageTranslate("admin.realm.primaryDomain")} {realm().domain}
+                    </span>
+                    <span class="flex flex-wrap items-center gap-1">
+                      {messageTranslate("admin.realm.domains")}{" "}
+                      <For each={realm().domains}>{(domain) => <AuthenticatedChip label={domain} />}</For>
+                    </span>
+                  </>
                 }
                 title={realm().name}
               />
 
-              <AuthenticatedSection padded title={messageTranslate("admin.realm.identityTitle")}>
-                <AuthenticatedFieldList
-                  columns={3}
-                  fields={[
-                    { identifier: true, label: messageTranslate("admin.realm.identifier"), value: realm().id },
-                    { label: messageTranslate("admin.realm.primaryDomain"), value: realm().domain },
-                    {
-                      label: messageTranslate("admin.realm.status"),
-                      value:
-                        realm().status === "active"
-                          ? messageTranslate("admin.realm.statusActive")
-                          : messageTranslate("admin.realm.statusDisabled"),
-                    },
-                  ]}
-                />
-              </AuthenticatedSection>
-
-              <AuthenticatedSection padded title={messageTranslate("admin.realm.domains")}>
-                <ul class="grid min-w-0 gap-2">
-                  <For each={realm().domains}>
-                    {(domain) => (
-                      <li class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-                        <span class="min-w-0 truncate font-mono text-[0.8125rem]" title={domain}>
-                          {domain}
-                        </span>
-                        <Show when={domain === realm().domain}>
-                          <AuthenticatedChip label={messageTranslate("admin.realm.primary")} tone="accent" />
-                        </Show>
-                      </li>
-                    )}
-                  </For>
-                </ul>
-              </AuthenticatedSection>
-
-              <AuthenticatedSection title={messageTranslate("admin.realm.exploreTitle")}>
-                <div class="grid min-w-0 gap-4 px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <For each={exploreTiles()}>
-                    {(tile) => (
-                      <AuthenticatedStatTile
-                        hint={tile.description}
-                        href={tile.href(props.basePath)}
-                        label={exploreTileLabel(tile.titleKey)}
-                        value={exploreTileLabel(tile.titleKey)}
+              <Show when={props.state.realmSummary()}>
+                {(summary) => (
+                  <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiDomain}
                       />
-                    )}
-                  </For>
-                </div>
+                      <AuthenticatedStatTile
+                        label={messageTranslate("shell.nav.organizations")}
+                        value={summary().organizations}
+                        href={`${props.basePath}/organizations`}
+                      />
+                    </div>
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiAccountGroupOutline}
+                      />
+                      <AuthenticatedStatTile
+                        label={messageTranslate("shell.nav.users")}
+                        value={summary().users}
+                        href={`${props.basePath}/users`}
+                      />
+                    </div>
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiShieldAccountOutline}
+                      />
+                      <AuthenticatedStatTile
+                        label={messageTranslate("shell.nav.realmAdministrators")}
+                        value={summary().realmAdministrators}
+                        href={`${props.basePath}/realm/administrators`}
+                      />
+                    </div>
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiApplicationOutline}
+                      />
+                      <AuthenticatedStatTile
+                        label={messageTranslate("shell.nav.oidcClients")}
+                        value={summary().oidcClients}
+                        href={`${props.basePath}/oidc-clients`}
+                      />
+                    </div>
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiDevices}
+                      />
+                      <AuthenticatedStatTile
+                        label={messageTranslate("admin.redesign.activeSessions")}
+                        value={summary().activeSessions}
+                        href={`${props.basePath}/sessions`}
+                      />
+                    </div>
+                    <div class="relative min-w-0">
+                      <Icon
+                        aria-hidden="true"
+                        class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                        path={mdiHistory}
+                      />
+                      <AuthenticatedStatTile
+                        label={messageTranslate("admin.redesign.events24H")}
+                        value={summary().auditEvents24h}
+                        href={`${props.basePath}/events`}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Show>
+
+              <AuthenticatedSection
+                title={messageTranslate("admin.redesign.recentAuditEvents")}
+                actions={
+                  <A class="text-xs font-medium text-accent hover:underline" href={`${props.basePath}/events`}>
+                    {messageTranslate("admin.redesign.viewAll")}
+                  </A>
+                }
+              >
+                <Show
+                  when={props.state.events().length > 0}
+                  fallback={
+                    <p class="px-4 py-3 text-xs text-muted-foreground">
+                      {messageTranslate("admin.redesign.noRecentAuditEvents")}
+                    </p>
+                  }
+                >
+                  <AdminEventTable state={props.state} />
+                </Show>
               </AuthenticatedSection>
 
               <Show when={props.state.status() !== "permission-denied"}>

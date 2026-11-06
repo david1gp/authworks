@@ -4,6 +4,7 @@ import type { EventExportResponse } from "../../events/public/eventExportRespons
 import type { EventListQuery } from "../../events/public/eventListQuerySchema.js"
 import type { EventListResponse } from "../../events/public/eventListResponseSchema.js"
 import type { RealmResponse } from "../../realms/public/realmResponseSchema.js"
+import type { RealmSummaryResponse } from "../../realms/public/realmSummaryResponseSchema.js"
 import type { RealmUpdateRequest } from "../../realms/public/realmUpdateRequestSchema.js"
 import type { SessionListResponse } from "../../sessions/public/sessionListResponseSchema.js"
 import type { SessionRevocationResponse } from "../../sessions/public/sessionRevocationResponseSchema.js"
@@ -29,6 +30,7 @@ export type AdminAdapter = {
   readonly eventList: (query?: EventListQuery) => Promise<Result<EventListResponse>>
   /** Exports the filtered audit events; the payload keeps the redacted server representation. */
   readonly eventExport: (query?: EventListQuery) => Promise<Result<EventExportResponse>>
+  readonly realmSummaryGet: () => Promise<Result<RealmSummaryResponse>>
   readonly realmGet: () => Promise<Result<RealmResponse>>
   readonly realmUpdate: (input: RealmUpdateRequest) => Promise<Result<RealmResponse>>
 }

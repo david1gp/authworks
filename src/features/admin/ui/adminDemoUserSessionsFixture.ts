@@ -1,6 +1,6 @@
 import type { Session } from "../../sessions/public/sessionSchema.js"
 
-const now = Date.UTC(2026, 7, 21, 9, 30)
+const now = Date.now()
 
 /** Safe, deterministic device/session metadata for the administrator demo. */
 export const adminDemoUserSessionsFixture: readonly Session[] = [
@@ -17,6 +17,8 @@ export const adminDemoUserSessionsFixture: readonly Session[] = [
     realmId: "01900000-0000-7000-8000-000000000001",
     revokedAt: null,
     subjectId: "01900000-0000-7000-8000-000000000021",
+    subjectDisplayName: "Alex Morgan",
+    subjectEmail: "alex.morgan@northwind.example",
     subjectType: "user",
     userId: "01900000-0000-7000-8000-000000000021",
   },
@@ -32,6 +34,8 @@ export const adminDemoUserSessionsFixture: readonly Session[] = [
     realmId: "01900000-0000-7000-8000-000000000001",
     revokedAt: null,
     subjectId: "01900000-0000-7000-8000-000000000021",
+    subjectDisplayName: "Alex Morgan",
+    subjectEmail: "alex.morgan@northwind.example",
     subjectType: "user",
     userId: "01900000-0000-7000-8000-000000000021",
   },

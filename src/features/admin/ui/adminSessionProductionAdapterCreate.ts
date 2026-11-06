@@ -51,10 +51,10 @@ export function adminSessionProductionAdapterCreate(options: {
       if (realmId.length === 0) return missingRealm("adminSessionList")
       return options.api.sessionList(realmId, query)
     },
-    sessionRevoke: async (userId, sessionId) => {
+    sessionRevoke: async (_userId, sessionId) => {
       const realmId = options.realmId()
       if (realmId.length === 0) return missingRealm("adminSessionRevoke")
-      return options.api.userSessionRevoke(realmId, userId, sessionId)
+      return options.api.realmSessionRevoke(realmId, sessionId)
     },
   }
 }

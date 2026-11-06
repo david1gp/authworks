@@ -19,7 +19,7 @@ import type { adminPageStateCreate } from "./adminPageStateCreate.js"
  */
 export function AdminSignInView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <AuthenticatedPageBody class="max-w-3xl">
+    <AuthenticatedPageBody class="mx-auto w-full max-w-md">
       <Show when={props.state.status() === "loading"}>
         <ProductionStatePanel state="loading" />
       </Show>
@@ -79,7 +79,7 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
           class="in-[[data-shell=focus]]:rounded-none in-[[data-shell=focus]]:border-0 in-[[data-shell=focus]]:bg-transparent in-[[data-shell=focus]]:shadow-none in-[[data-shell=focus]]:[&>div:first-child]:border-0 in-[[data-shell=focus]]:[&>div:first-child]:px-0 in-[[data-shell=focus]]:[&>div:first-child]:pt-0 in-[[data-shell=focus]]:[&_form]:px-0 in-[[data-shell=focus]]:[&_form]:pb-0"
           description={messageTranslate("admin.signIn.description")}
         >
-          <form class="grid max-w-3xl gap-4 px-5 py-5" onSubmit={props.state.adminSignInSubmit}>
+          <form class="grid gap-3 px-4 py-3" onSubmit={props.state.adminSignInSubmit}>
             <div class="grid gap-1.5">
               <Label class="text-[0.8125rem] font-medium" for="admin-bootstrap-secret">
                 {messageTranslate("admin.signIn.credential")}

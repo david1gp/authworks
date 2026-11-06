@@ -1,19 +1,38 @@
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For, Show } from "solid-js"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
+import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
+import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 
 export function AdminSessionListView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <AuthenticatedSection title={messageTranslate("shell.nav.sessions")}>
+    <div class="grid min-w-0 gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-baseline gap-3">
+          <h1 class="text-lg font-semibold">{messageTranslate("shell.nav.sessions")}</h1>
+          <span class="text-xs text-muted-foreground">
+            {props.state.sessions().length} {messageTranslate("admin.redesign.sessionsOnThisPage")}
+          </span>
+        </div>
+        <AuthenticatedInput
+          class="w-full sm:w-64"
+          aria-label={messageTranslate("admin.redesign.searchSessions")}
+          type="search"
+          placeholder={messageTranslate("admin.redesign.searchSessions")}
+          value={props.state.sessionSearch.get()}
+          onInput={(event) => props.state.sessionSearch.set(event.currentTarget.value)}
+        />
+      </div>
       <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
       <Show
         when={props.state.status() === "ready"}
@@ -30,73 +49,92 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
           />
         }
       >
-        <ul class="divide-y divide-line-subtle">
-          <For each={props.state.sessions()}>
-            {(session) => {
-              return (
-                <li class="grid gap-2 px-5 py-3.5" data-admin-session={session.id}>
-                  <div class="flex items-start justify-between gap-3">
-                    <h3 class="text-sm font-medium">{sessionDeviceLabelGet(session.device)}</h3>
-                    <AuthenticatedButton
-                      size="sm"
-                      disabled={props.state.pendingId() !== undefined}
-                      icon={mdiCancel}
-                      onClick={() => void props.state.sessionRevoke(session.userId ?? session.subjectId, session.id)}
-                      variant="outline"
-                    >
-                      {messageTranslate("common.revoke")}
-                    </AuthenticatedButton>
-                  </div>
-                  <p class="break-all font-mono text-xs text-muted-foreground">{session.id}</p>
-                  <dl class="flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted-foreground [&_dt]:font-medium [&_dd]:mt-1 [&_dd]:text-[0.8125rem]">
-                    <div>
-                      <dt>{messageTranslate("admin.signIn.subject")}</dt>
-                      <dd class="break-all font-mono">{session.subjectId}</dd>
-                    </div>
-                    <div>
-                      <dt>{messageTranslate("admin.signIn.subjectType")}</dt>
-                      <dd>{session.subjectType}</dd>
-                    </div>
-                    <div>
-                      <dt>{messageTranslate("admin.users.sessions.lastUsed")}</dt>
-                      <dd>{localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" })}</dd>
-                    </div>
-                    <div>
-                      <dt>{messageTranslate("admin.users.sessions.expires")}</dt>
-                      <dd>{localeDateFormat(session.expiresAt, { dateStyle: "medium", timeStyle: "short" })}</dd>
-                    </div>
-                    <Show when={session.device.ipAddress}>
-                      {(ipAddress) => (
-                        <div>
-                          <dt>{messageTranslate("admin.users.sessions.ipAddress")}</dt>
-                          <dd class="font-mono">{ipAddress()}</dd>
-                        </div>
-                      )}
-                    </Show>
-                    <Show when={session.device.region}>
-                      {(region) => (
-                        <div>
-                          <dt>{messageTranslate("admin.users.sessions.region")}</dt>
-                          <dd>{region()}</dd>
-                        </div>
-                      )}
-                    </Show>
-                    <Show when={session.device.countryCode}>
-                      {(countryCode) => (
-                        <div>
-                          <dt>{messageTranslate("admin.users.sessions.country")}</dt>
-                          <dd>{countryCode()}</dd>
-                        </div>
-                      )}
-                    </Show>
-                  </dl>
-                </li>
-              )
-            }}
-          </For>
-        </ul>
+        <AuthenticatedSection>
+          <div class="overflow-x-auto">
+            <Table class={authenticatedTableClasses.tableWide}>
+              <TableHeader class={authenticatedTableClasses.header}>
+                <TableRow>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.redesign.device")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.users.directoryUser")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.redesign.ip")}</TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    {messageTranslate("admin.users.sessions.location")}
+                  </TableHead>
+                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
+                    {messageTranslate("login.chooser.lastUsed")}
+                  </TableHead>
+                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
+                    {messageTranslate("admin.users.sessions.expires")}
+                  </TableHead>
+                  <TableHead class={authenticatedTableClasses.head}>
+                    <span class="sr-only">{messageTranslate("admin.redesign.actions")}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <For each={props.state.sessions()}>
+                  {(session) => (
+                    <TableRow class={authenticatedTableClasses.row} data-admin-session={session.id}>
+                      <TableCell class={authenticatedTableClasses.cell}>
+                        {sessionDeviceLabelGet(session.device)}
+                      </TableCell>
+                      <TableCell class={authenticatedTableClasses.cell}>
+                        <span title={session.subjectId}>
+                          {session.subjectDisplayName || session.subjectEmail || session.subjectId}
+                        </span>
+                        <Show when={session.subjectDisplayName && session.subjectEmail}>
+                          <span class="ml-2 text-xs text-muted-foreground">{session.subjectEmail}</span>
+                        </Show>
+                      </TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} font-mono text-xs`}>
+                        {session.device.ipAddress || "—"}
+                      </TableCell>
+                      <TableCell class={authenticatedTableClasses.cell}>
+                        {[session.device.region, session.device.countryCode].filter(Boolean).join(", ") || "—"}
+                      </TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} text-right`}>
+                        <AuthenticatedRelativeTime value={session.lastUsedAt} />
+                      </TableCell>
+                      <TableCell class={`${authenticatedTableClasses.cell} text-right`}>
+                        <AuthenticatedRelativeTime value={session.expiresAt} />
+                      </TableCell>
+                      <TableCell class={authenticatedTableClasses.action}>
+                        <AuthenticatedButton
+                          aria-label={messageTranslate("common.revoke")}
+                          title={messageTranslate("common.revoke")}
+                          size="sm"
+                          disabled={props.state.pendingId() !== undefined}
+                          icon={mdiCancel}
+                          onClick={() =>
+                            void props.state.sessionRevoke(session.userId ?? session.subjectId, session.id)
+                          }
+                          variant="outline"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </For>
+              </TableBody>
+            </Table>
+          </div>
+          <Show when={props.state.sessions().length === 0}>
+            <p class="px-4 py-3 text-xs text-muted-foreground">
+              {messageTranslate("admin.redesign.noSessionsMatchYourSearch")}
+            </p>
+          </Show>
+          <AuthenticatedPagination
+            nextAvailable={props.state.hasNextPage()}
+            onNext={props.state.pageNext}
+            onPrevious={props.state.pagePrevious}
+            previousAvailable={props.state.hasPreviousPage()}
+          />
+        </AuthenticatedSection>
       </Show>
-      <Show when={props.state.status() === "ready" || props.state.status() === "empty"}>
+      <Show when={props.state.status() === "empty"}>
         <AuthenticatedPagination
           nextAvailable={props.state.hasNextPage()}
           onNext={props.state.pageNext}
@@ -104,6 +142,6 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
           previousAvailable={props.state.hasPreviousPage()}
         />
       </Show>
-    </AuthenticatedSection>
+    </div>
   )
 }

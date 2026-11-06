@@ -9,7 +9,7 @@ export function adminActivityDemoAdapterCreate(options: {
 }): AdminActivityAdapter {
   const page = (events: readonly Event[], size: number, token?: string) => {
     const offset = token === undefined ? 0 : Number(token)
-    const items = events.slice(offset, offset + size)
+    const items = [...events].sort((a, b) => b.occurredAt - a.occurredAt).slice(offset, offset + size)
     return createResult({ items, nextPageToken: offset + size < events.length ? String(offset + size) : undefined })
   }
   return {

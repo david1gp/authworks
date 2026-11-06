@@ -12,7 +12,7 @@ export function AdminDemoAdapter(props: { readonly screen: AdminScreen }) {
         <AdminRealmView basePath="/demo/admin" state={state} />
       ) : (
         <>
-          <h1 class="sr-only">{state.scenarioTitle()}</h1>
+          {props.screen === "sign-in" && <h1 class="sr-only">{state.scenarioTitle()}</h1>}
           <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
         </>
       )}

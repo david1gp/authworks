@@ -6,6 +6,7 @@ import type { Realm } from "../../realms/public/realmSchema.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import { adminDemoEventFixtures } from "./adminDemoEventFixtures.js"
 import { adminDemoRealmFixtureCreate } from "./adminDemoRealmFixtureCreate.js"
+import { adminDemoUserFixtures } from "./adminDemoUserFixtures.js"
 import { adminSessionDemoAdapterCreate } from "./adminSessionDemoAdapterCreate.js"
 
 /**
@@ -44,11 +45,52 @@ export function adminDemoAdapterCreate(
       if (failed !== undefined) return failed
       return resultCreate({ items: fixtureState() === "empty" ? [] : events, truncated: false })
     },
-    eventList: async () => {
+    eventList: async (query) => {
       if (fixtureState() === "loading") return pending()
       const failed = readFailure("adminDemoEventList")
       if (failed !== undefined) return failed
-      return resultCreate({ items: fixtureState() === "empty" ? [] : events })
+      return resultCreate({
+        items:
+          fixtureState() === "empty"
+            ? []
+            : [...events]
+                .sort((a, b) => b.occurredAt - a.occurredAt)
+                .slice(0, query?.pageSize ?? events.length)
+                .map((event) => ({
+                  ...event,
+                  actorDisplayName:
+                    adminDemoUserFixtures.find((user) => user.id === event.actorId)?.profile.displayName ??
+                    (event.actorId ? "Realm administrator" : null),
+                })),
+      })
+    },
+    realmSummaryGet: async () => {
+      if (fixtureState() === "loading") return pending()
+      if (fixtureState() === "permission-denied")
+        return resultErrorCodedCreate(
+          "adminDemoRealmSummaryGet",
+          "You do not have permission to read the realm summary.",
+          "realms.forbidden",
+        )
+      const failed = readFailure("adminDemoRealmSummaryGet")
+      if (failed !== undefined) return failed
+      if (fixtureState() === "empty")
+        return resultCreate({
+          organizations: 0,
+          users: 0,
+          realmAdministrators: 0,
+          oidcClients: 0,
+          activeSessions: 0,
+          auditEvents24h: 0,
+        })
+      return resultCreate({
+        organizations: 4,
+        users: 13,
+        realmAdministrators: 2,
+        oidcClients: 5,
+        activeSessions: 8,
+        auditEvents24h: 42,
+      })
     },
     realmGet: async () => {
       if (fixtureState() === "loading") return pending()

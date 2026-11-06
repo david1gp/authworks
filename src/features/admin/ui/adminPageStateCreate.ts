@@ -7,6 +7,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
+import type { RealmSummaryResponse } from "../../realms/public/realmSummaryResponseSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
 import { adminEventExportDownload } from "./adminEventExportDownload.js"
@@ -50,6 +51,9 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const events = createSignalObject<readonly TenantEvent[]>([])
   const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
+  const realmSummary = createSignalObject<RealmSummaryResponse | undefined>(undefined)
+  const sessionSearch = createSignalObject("")
+  const eventMoreFilters = createSignalObject(false)
   // Filters live in the URL; the state parses them on every load so typing stays in the address bar.
   const eventFilters = (): AdminEventFilters => adminEventFiltersParse(options.eventFilterSearch?.() ?? "")
   const eventFiltersKey = () =>
@@ -120,6 +124,10 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       const result = await options.adapter.realmGet()
       if (!result.success) return fail(result)
       realmApply(result.data.realm)
+      const summary = await options.adapter.realmSummaryGet()
+      realmSummary.set(summary.success ? summary.data : undefined)
+      const recent = await options.adapter.eventList({ pageSize: 8 })
+      events.set(recent.success ? recent.data.items : [])
       return status.set("ready")
     }
     if (options.screen() === "audit-events") {
@@ -203,7 +211,27 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       )
     },
     session: session.get,
-    sessions: sessions.get,
+    sessions: (): readonly Session[] => {
+      const search = sessionSearch.get().trim().toLowerCase()
+      return sessions
+        .get()
+        .slice()
+        .sort((a, b) => b.lastUsedAt - a.lastUsedAt)
+        .filter((item) =>
+          [
+            item.subjectDisplayName,
+            item.subjectEmail,
+            item.subjectId,
+            item.device.ipAddress,
+            item.device.region,
+            item.device.countryCode,
+          ].some((value) => value?.toLowerCase().includes(search)),
+        )
+    },
+    sessionSearch,
+    eventMoreFilters: eventMoreFilters.get,
+    eventMoreFiltersToggle: () => eventMoreFilters.set(!eventMoreFilters.get()),
+    realmSummary: realmSummary.get,
     signInSecret,
     error: error.get,
     // Events arrive server-filtered; the view renders the loaded page as-is.

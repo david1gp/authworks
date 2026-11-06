@@ -13,7 +13,7 @@ type AdminFetch = (input: string | URL | Request, init?: RequestInit) => Promise
 export function adminApiCreate(options: { readonly baseUrl: string; readonly fetch?: AdminFetch }) {
   const browserFetch: AdminFetch = (input, init) => (options.fetch ?? fetch)(input, { ...init, credentials: "include" })
   const users = userApiClientCreate({ baseUrl: options.baseUrl, fetch: options.fetch })
-  const realms = realmApiClientCreate({ baseUrl: options.baseUrl, fetch: options.fetch })
+  const realms = realmApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const events = eventApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const sessions = sessionApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
 
@@ -47,10 +47,21 @@ export function adminApiCreate(options: { readonly baseUrl: string; readonly fet
     eventExport: events.eventTenantExport,
     eventList: events.eventTenantList,
     realmGet: realms.realmTenantGet,
+    realmSummaryGet: realms.realmSummaryGet,
     realmUpdate: realms.realmTenantUpdate,
     sessionCurrent: sessions.sessionCurrent,
-    sessionList: sessions.sessionList,
+    sessionList: sessions.sessionRealmList,
     userAuthenticationMethodsGet: users.userTenantAuthenticationMethodsGet,
+    realmSessionRevoke: (realmId: string, sessionId: string) =>
+      sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "adminRealmSessionRevoke",
+        path: `/realms/${encodeURIComponent(realmId)}/admin/sessions/${encodeURIComponent(sessionId)}`,
+        realmId,
+        schema: sessionRevocationResponseSchema,
+      }),
     userSessionRevoke: (realmId: string, userId: string, sessionId: string) =>
       sessionBrowserRequest({
         baseUrl: options.baseUrl,

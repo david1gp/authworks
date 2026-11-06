@@ -102,7 +102,7 @@ describe("administrator session list", () => {
     const request = requests[0]
     expect(request?.credentials).toBe("include")
     const url = new URL(request?.url ?? "")
-    expect(url.pathname).toBe("/realms/realm-one/sessions")
+    expect(url.pathname).toBe("/realms/realm-one/admin/sessions")
     expect(url.searchParams.get("pageSize")).toBe("2")
     expect(url.searchParams.get("pageToken")).toBe("previous-sessions")
     realmId = ""

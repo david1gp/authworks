@@ -1,6 +1,6 @@
 import type { AdminSession } from "./adminAdapter.js"
 
-const fixtureNow = Date.UTC(2026, 7, 21, 9, 30)
+const fixtureNow = Date.now()
 
 export const adminDemoSessionFixture: AdminSession = {
   expiresAt: fixtureNow + 900_000,
