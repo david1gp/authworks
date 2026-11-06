@@ -99,6 +99,7 @@ test("public contracts include the previously omitted transport schemas", () => 
 test("every API client publishes its complete method set", () => {
   const options = { baseUrl: "https://identity.example.test" }
   expect(Object.keys(realms.realmApiClientCreate(options))).toEqual([
+    "realmSummaryGet",
     "realmBootstrapAdminCreate",
     "realmAdministratorList",
     "realmAdministratorGrant",
@@ -200,6 +201,7 @@ test("every API client publishes its complete method set", () => {
     "sessionProtectedGet",
     "sessionLogout",
     "sessionList",
+    "sessionRealmList",
     "sessionUserList",
     "sessionMeList",
     "sessionRecentList",
