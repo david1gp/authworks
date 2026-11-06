@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
@@ -48,6 +49,17 @@ export function MachineAdminCredentialsView(props: {
           />
         </div>
       </AuthenticatedToolbar>
+
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+        <Show when={state.activeMachineUserId() !== ""}>
+          <A class="font-medium text-accent hover:underline" href={state.machineUserDetailHref()}>
+            {state.page.machineUserName(state.activeMachineUserId())}
+          </A>
+        </Show>
+        <A class="font-medium text-accent hover:underline" href={state.serviceAccountsHref()}>
+          {messageTranslate("admin.users.directoryTabServiceAccounts")}
+        </A>
+      </div>
 
       <MachineAdminNotice notice={state.page.notice()} />
       <Show when={state.page.issuedSecret()}>

@@ -4,6 +4,7 @@ import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
 
 /** View state for the realm-wide credential overview: choosing a subject and issuing or revoking. */
 export function machineAdminCredentialsViewStateCreate(options: {
+  readonly basePath: string
   readonly issueKind: () => "api_key" | "personal_access_token"
   readonly issueKindSet: (kind: "api_key" | "personal_access_token") => void
   readonly issueOpen: () => boolean
@@ -33,6 +34,8 @@ export function machineAdminCredentialsViewStateCreate(options: {
     issueKindSet: options.issueKindSet,
     issueOpen: options.issueOpen,
     issueOpenSet: options.issueOpenSet,
+    machineUserDetailHref: () => `${options.basePath}/machine-users/${activeMachineUserId()}`,
+    serviceAccountsHref: () => `${options.basePath}/users?tab=service-accounts`,
     machineUserIdSignal: {
       get: () => (selectedId.get() === "" ? activeMachineUserId() : selectedId.get()),
       set: (machineUserId: string) => {

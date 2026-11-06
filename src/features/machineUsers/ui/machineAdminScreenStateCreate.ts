@@ -75,6 +75,7 @@ export function machineAdminScreenStateCreate(options: {
   return {
     confirmState,
     credentials: machineAdminCredentialsViewStateCreate({
+      basePath: options.basePath,
       issueKind,
       issueKindSet,
       issueOpen: () => dialogOpen("credential"),

@@ -618,12 +618,20 @@ function ServiceAccountsSection(props: {
                   {(account) => (
                     <TableRow class={authenticatedTableClasses.row}>
                       <TableCell class={authenticatedTableClasses.cell}>
-                        <A
-                          class="font-medium text-accent hover:underline"
-                          href={`${props.state.basePath}/machine-users/${account.id}`}
-                        >
-                          {account.displayName}
-                        </A>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <A
+                            class="font-medium text-accent hover:underline"
+                            href={`${props.state.basePath}/machine-users/${account.id}`}
+                          >
+                            {account.displayName}
+                          </A>
+                          <A
+                            class="text-xs font-medium text-accent hover:underline"
+                            href={`${props.state.basePath}/machine-credentials?machineUserId=${encodeURIComponent(account.id)}`}
+                          >
+                            {messageTranslate("shell.nav.credentialsTokens")}
+                          </A>
+                        </div>
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.identifier}>{account.userName}</TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>
@@ -667,6 +675,14 @@ function ServiceAccountsSection(props: {
                         href={`${props.state.basePath}/machine-users/${account.id}`}
                       >
                         {account.displayName}
+                      </A>
+                    }
+                    actions={
+                      <A
+                        class="text-xs font-medium text-accent hover:underline"
+                        href={`${props.state.basePath}/machine-credentials?machineUserId=${encodeURIComponent(account.id)}`}
+                      >
+                        {messageTranslate("shell.nav.credentialsTokens")}
                       </A>
                     }
                   />
