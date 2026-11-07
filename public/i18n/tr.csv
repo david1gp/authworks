@@ -7,217 +7,217 @@ admin.activity.error,Etkinlik yüklenemedi. Tekrar deneyin.
 admin.activity.organization,Kuruluş
 admin.activity.realm,IAM alanı
 shell.nav.activity,Etkinlik
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
-account.access.accepted,Invitation accepted
+account.confirmTitle,Bu işlemi onaylayın
+account.factors.authenticatorName,Kimlik doğrulayıcı adı
+account.factors.stepUpDescription,"Çok faktörlü kimlik doğrulamayla doğrulayın, ardından kimlik doğrulayıcı kaldırma işlemi yeniden denenecek."
+account.securityHistory.description,Bu hesaptaki son güvenlikle ilgili etkinlikleri inceleyin.
+account.access.accepted,Davet kabul edildi
 account.access.acceptedDetail,Artık bu kuruluşun bir üyesisiniz.
-account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
+account.access.active,Etkin kuruluş
+account.access.consentDescription,Hesabınızdaki bilgilere erişebilen uygulamalar.
 account.access.consentCount,{count} uygulama izni
 account.access.consentCountOne,{count} uygulama izni
 account.access.consentManage,Uygulama izni: {clientId}
 account.access.consentTitle,Uygulama izinleri
 account.access.consentUpdated,Güncellendi: {date}
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevokeConfirm,Revoke access for {clientId}?
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
-account.access.declined,Invitation declined
+account.access.consentEmpty,Bu hesaba erişimi olan uygulama yok.
+account.access.consentRevokeConfirm,{clientId} için erişim iptal edilsin mi?
+account.access.consentRevoked,Uygulama erişimi iptal edildi.
+account.access.created,Verildi: {date}
+account.access.declined,Davet reddedildi
 account.access.declinedDetail,Bu daveti reddettiniz.
 account.access.effectiveDescription,Bu hesap için bu kuruluşta kullanılabilen proje rollerini ve izinlerini inceleyin.
 account.access.effectiveDescription,Bu hesap için bu kuruluşta kullanılabilen proje rollerini ve izinlerini inceleyin.
 account.access.effectiveEmpty,Bu kuruluş için proje erişimi listelenmemiş.
 account.access.effectiveEmpty,Bu kuruluş için proje erişimi listelenmemiş.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,Üyelik rolleri: {roles}
+account.access.effectiveMembership,Üyelik rolleri: {roles}
+account.access.effectivePermissions,İzinler: {permissions}
+account.access.effectivePermissions,İzinler: {permissions}
+account.access.effectiveSource,Erişim kaynağı: {source}
+account.access.effectiveSource,Erişim kaynağı: {source}
 account.access.effectiveTitle,Etkin proje erişimi
 account.access.effectiveTitle,Etkin proje erişimi
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.email,E-posta
+account.access.error,Bu hesap bilgileri yüklenemedi.
+account.access.expired,Bu davetin süresi doldu.
 account.access.invitationDeclineConfirm,Bu davet reddedilsin mi?
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationDescription,Yanıtlamadan önce kuruluşu ve rolleri inceleyin.
+account.access.invitationEmpty,Bu hesap için bekleyen davet yok.
+account.access.invitationFor,{email} için davet
+account.access.invitationMissing,Devam etmek için davet bağlantısının tamamını açın.
 account.access.invitationOpen,Daveti aç
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
-account.access.membership,Membership roles
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.invitationReplay,Bu davet zaten kullanıldı veya artık geçerli değil.
+account.access.loadMore,Daha fazla erişim yükle
+account.access.loadMore,Daha fazla erişim yükle
+account.access.membership,Üyelik rolleri
+account.access.organizationAccess,Kuruluş erişimi
+account.access.organizationAccess,Kuruluş erişimi
 account.access.organizationCount,{count} kuruluş
 account.access.organizationCountOne,{count} kuruluş
 account.access.organizationDescription,Üyeliğinizi ve erişiminizi görüntülemek için bir kuruluş seçin. Bir kuruluşu görüntülemek etkin kuruluşunuzu değiştirmez.
-account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationEmpty,Bu hesap bir kuruluşa ait değil.
 account.access.organizationSelector,Görüntülenecek kuruluş
-account.access.permission,You do not have permission to perform this action.
+account.access.permission,Bu işlemi yapma izniniz yok.
 account.access.permissionsToggle,{source} tarafından verilen {count} izni göster
-account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
+account.access.roles,Roller: {roles}
+account.access.scopes,İzinler: {scopes}
+account.delete.confirmLabel,Onaylamak için {email} adresini girin
+account.delete.dangerZone,Tehlikeli bölge
 account.delete.dangerZoneToggle,Hesap silme seçeneklerini göster
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
-account.factors.addTotp,Add authenticator
+account.delete.deletedDetail,Hesabınız ve erişiminiz kalıcı olarak kaldırıldı.
+account.delete.deletedTitle,Hesap silindi
+account.delete.emailMismatch,E-posta adresi eşleşmiyor.
+account.delete.submit,Hesabı kalıcı olarak sil
+account.delete.title,Bu hesabı kalıcı olarak sil
+account.delete.warning,Bu işlem geri alınamaz. Oturumlarınız ve erişiminiz çalışmayı durdurur.
+account.export.description,"Kendi kayıtlarınız için profilinizin, e-postalarınızın, üyeliklerinizin ve oturum açma yöntemlerinizin bir JSON kopyasını indirin."
+account.export.download,Dışa aktarımı indir
+account.export.downloading,İndirme hazırlanıyor…
+account.export.title,Verilerinizi indirin
+account.export.unavailable,Veri dışa aktarımı şu anda kullanılamıyor.
+account.factors.addTotp,Kimlik doğrulayıcı ekle
 account.factors.authenticator,Kimlik doğrulama uygulaması
 account.factors.configured,Kimlik doğrulama uygulaması yapılandırıldı
 account.factors.count,{count} kimlik doğrulama uygulaması
 account.factors.missing,Kimlik doğrulama uygulaması yapılandırılmadı
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.factors.confirm,Onayla
+account.factors.description,Hesabınızda kullanılabilen kimlik doğrulama yöntemlerini inceleyin ve kimlik doğrulama uygulamanızı yönetin.
+account.factors.emailOtp,E-posta kodu
+account.factors.finishTotp,Kimlik doğrulayıcı kurulumunu tamamla
+account.factors.passkeyCount,{count} geçiş anahtarı
+account.factors.passkeys,Geçiş anahtarları
+account.factors.removeTotp,Kimlik doğrulayıcıyı kaldır
+account.factors.totp,Kimlik doğrulama uygulaması
+account.factors.totpSecretOnce,Bu gizli anahtarı kimlik doğrulama uygulamanıza ekleyin ve altı haneli kodunu girin. Bu kurulum gizli anahtarı yalnızca şimdi gösterilir.
+account.factors.verificationCode,Doğrulama kodu
+account.identities.alreadyLinked,Bu harici hesap zaten bağlı.
+account.identities.confirm,Bağlantıyı onayla
+account.identities.confirmDescription,Devam etmek için {provider} hesabınızın bağlanmasını onaylayın.
+account.identities.confirmTitle,Harici hesabı onayla
 account.identities.connecting,Sağlayıcının penceresinde devam edin ve bağlantıyı onaylamak için buraya geri dönün.
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.description,Authworks kimliğinize bağlı harici hesaplar. Artık kullanmadığınız hesapların bağlantısını kaldırın.
+account.identities.empty,Bağlı harici kimlik yok
+account.identities.externalAccount,harici hesap
+account.identities.linkDescription,Başka bir sağlayıcıyı kimlik doğrulama yöntemi olarak kullanmak için bağlayın.
+account.identities.linkIncomplete,Sağlayıcı penceresi bağlantı tamamlanmadan kapandı. Tekrar deneyin.
+account.identities.linkTitle,Harici hesap bağla
 account.identities.manage,{provider} hesabını yönet ({account})
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
-account.identities.unlink,Unlink
+account.identities.popupBlocked,Harici hesap bağlamak için açılır pencerelere izin verin.
+account.identities.recentAuthRequired,Güvenlik için harici hesap bağlamadan önce siz olduğunuzu doğrulayın. Çok faktörlü doğrulamayı tamamlayın veya yeniden oturum açıp tekrar deneyin.
+account.identities.signInAgain,Yeniden oturum aç
+account.identities.stepUpDescription,"Çok faktörlü kimlik doğrulamayla doğrulayın, ardından harici hesap işlemi yeniden denenecek."
+account.identities.unlink,Bağlantıyı kaldır
 account.identities.unlinkConfirm,Bu harici hesabın bağlantısı kaldırılsın mı?
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
+account.passkeys.add,Geçiş anahtarı ekle
+account.passkeys.created,Oluşturulma: {date}
+account.passkeys.description,"Geçiş anahtarları, güvenli oturum açma için cihazınızın ekran kilidini veya güvenlik anahtarını kullanır."
+account.passkeys.deviceBound,Cihaza bağlı geçiş anahtarı
+account.passkeys.empty,Kayıtlı geçiş anahtarı yok
 account.passkeys.manage,{kind} yönet ({id})
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.currentOptionalHint,Leave blank if no password is set yet.
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
+account.passkeys.remove,Kaldır
+account.passkeys.synced,Eşitlenen geçiş anahtarı
+account.password.changed,Şifreniz değiştirildi.
+account.password.confirm,Yeni şifreyi onaylayın
+account.password.current,Mevcut şifre
+account.password.currentOptionalHint,Henüz şifre belirlenmediyse boş bırakın.
+account.password.description,Diğer hizmetlerde kullanmadığınız benzersiz bir şifre kullanın.
+account.password.mismatch,Yeni şifreler eşleşmiyor.
+account.password.new,Yeni şifre
+account.password.set,Şifreniz belirlendi.
+account.password.setSubmit,Şifreyi belirle
+account.password.setTitle,Şifre belirle
+account.password.submit,Şifreyi değiştir
+account.password.title,Şifreyi değiştir
+account.password.tooShort,Yeni şifre en az 8 karakter içermelidir.
+account.profile.displayName,Görünen ad
 account.profile.copy,{field} kopyala
 account.profile.copied,{field} kopyalandı.
 account.profile.copyFailed,{field} kopyalanamadı. Değeri seçip elle kopyalayın.
 account.profile.cancel,İptal
 account.profile.edit,Profili düzenle
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
+account.profile.displayNameRequired,Görünen bir ad girin.
+account.profile.email,E-posta adresi
 account.profile.emailMissing,E-posta adresi ayarlanmadı
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,E-posta adresi ekle
+account.profile.emailAddDescription,Hesabınıza başka bir adres ekleyin. Doğruladıktan sonra kullanılabilir olur.
+account.profile.emailAddTitle,E-posta adresi ekle
+account.profile.emailAddresses,E-posta adresleri
+account.profile.emailAddressesEmpty,Kullanılabilir e-posta adresi yok.
+account.profile.emailAddressesSaved,E-posta adresleriniz güncellendi.
 account.profile.emailDescription,Hesabınıza bağlı e-posta adreslerini görüntüleyin ve yönetin.
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
-account.profile.firstName,First name
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
+account.profile.emailCodeSent,{email} adresine gönderilen doğrulama bağlantısını açın veya belirtecini aşağıya yapıştırın.
+account.profile.emailCodeSentGeneric,Yeni adresinize gönderilen doğrulama bağlantısını açın veya belirtecini aşağıya yapıştırın.
+account.profile.emailDifferent,Farklı bir adres kullanın
+account.profile.emailInvalid,Geçerli bir e-posta adresi girin.
+account.profile.emailMakePrimary,Birincil yap
+account.profile.emailNew,Yeni e-posta adresi
+account.profile.emailPrimary,Birincil
+account.profile.emailPrimaryRemoveBlocked,Birincil e-posta adresi kaldırılamaz.
+account.profile.emailRefresh,Adresleri yenile
+account.profile.emailRemove,Kaldır
+account.profile.emailRemoving,Kaldırılıyor…
+account.profile.emailResend,Doğrulama e-postasını yeniden gönder
+account.profile.emailSending,Doğrulama e-postası gönderiliyor…
+account.profile.emailToken,Doğrulama belirteci
+account.profile.emailTokenInvalid,E-postadaki doğrulama belirtecini girin.
+account.profile.emailUpdating,Güncelleniyor…
+account.profile.emailVerify,E-posta adresini doğrula
+account.profile.emailVerifying,Doğrulanıyor…
+account.profile.firstName,Ad
+account.profile.gender,Cinsiyet
+account.profile.gender.man,Erkek
+account.profile.gender.nonBinary,İkili olmayan
+account.profile.gender.unspecified,Belirtilmedi
+account.profile.gender.woman,Kadın
+account.profile.lastName,Soyadı
+account.profile.nickName,Takma ad
 account.profile.notSet,Ayarlanmadı
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.personalDescription,Uygulamalara ve yöneticilere gösterilen profili güncel tutun.
+account.profile.personalInformation,Kişisel bilgiler
+account.profile.phoneAdd,Telefon numarası ekle
+account.profile.phoneChange,Telefon numarasını değiştir
+account.profile.phoneCode,Altı haneli doğrulama kodu
+account.profile.phoneCodeInvalid,Altı haneli doğrulama kodunu girin.
+account.profile.phoneCodeSent,WhatsApp üzerinden {phoneNumber} numarasına gönderilen kodu girin.
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,Farklı bir numara kullanın
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,E.164 biçiminde geçerli bir telefon numarası girin.
+account.profile.phoneNew,Yeni telefon numarası
+account.profile.phoneNumber,Telefon numarası
 account.profile.phoneNumbers,Telefon numaraları
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,Kodu yeniden gönder
+account.profile.phoneSaved,Doğrulanan telefon numaranız güncellendi.
+account.profile.phoneSending,Kod gönderiliyor…
+account.profile.phoneVerify,Telefon numarasını doğrula
+account.profile.phoneVerifying,Doğrulanıyor…
+account.profile.picture,Profil resmi
 account.profile.pictureChange,Profil resmini değiştir
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,Bir resim dosyası seçin
 account.profile.pictureDropHint,Bir resmi buraya sürükleyip bırakın veya göz atmak için tıklayın
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,"En fazla 512 KiB boyutunda bir JPEG, PNG, WebP veya GIF resmi yükleyin."
 account.profile.picturePreview,Profil fotoğrafı önizlemesi
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,Resmi kaldır
 account.profile.pictureRemoving,Resim kaldırılıyor…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
-account.profile.preferredLanguage,Preferred language
+account.profile.pictureSaved,Profil resmi güncellendi.
+account.profile.pictureTooLarge,En fazla 512 KiB boyutunda bir resim seçin.
+account.profile.pictureTypeInvalid,"Bir JPEG, PNG, WebP veya GIF resmi seçin."
+account.profile.pictureUploading,Resim yükleniyor…
+account.profile.preferredLanguage,Tercih edilen dil
 account.profile.preferredLanguage.unspecified,Ayarlanmadı
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
+account.profile.save,Değişiklikleri kaydet
+account.profile.saved,Profiliniz kaydedildi.
+account.profile.userName,Kullanıcı adı
+account.profile.verificationPending,Doğrulama bekleniyor
+account.profile.verified,Doğrulandı
 account.recovery.description,Diğer yöntemleriniz kullanılamadığında oturum açmak için tek kullanımlık yedek kodlar oluşturun.
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
+account.recovery.generate,Yeni kodlar oluştur
+account.recovery.once,Bu kodları şimdi kopyalayın veya yazdırın. Tekrar gösterilemezler.
+account.recovery.remaining,{count} kullanılmamış kod kaldı. Yeni kod oluşturmak önceki grubu geçersiz kılar.
+account.recovery.saveNow,Kurtarma kodlarınızı şimdi kaydedin
+account.recovery.saved,Bu kodları kaydettim
 account.refreshTokens.active,Aktif
 account.refreshTokens.activeShown,{count} etkin gösteriliyor
 account.refreshTokens.countOneShown,{count} uygulama gösteriliyor
@@ -235,99 +235,99 @@ account.refreshTokens.revokeAll,Tüm aileleri iptal et
 account.refreshTokens.revokeAllConfirm,Bu hesap için tüm yenileme belirteci aileleri iptal edilsin mi?
 account.refreshTokens.revokeConfirm,Bu yenileme belirteci ailesi ve erişim belirteçleri iptal edilsin mi?
 account.refreshTokens.revoked,İptal edildi
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,{count} kapsam
 account.refreshTokens.title,Yenileme belirteci aileleri
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,Kimlik doğrulayıcılar
+account.security.identityCount,{count} bağlı kimlik
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,Çok faktörlü kimlik doğrulama (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,E-posta değişiklikleri
+account.securityHistory.category.impersonation,Kimliğe bürünme
+account.securityHistory.category.linkedIdentities,Bağlı kimlikler
+account.securityHistory.category.mfa,Çok faktörlü kimlik doğrulama
+account.securityHistory.category.passkeys,Geçiş anahtarları
+account.securityHistory.category.passwords,Şifreler
+account.securityHistory.category.refreshTokens,Yenileme belirteçleri
+account.securityHistory.category.sessions,Oturumlar
+account.securityHistory.empty,Kullanılabilir güvenlik etkinliği yok
 account.securityHistory.countOneShown,{count} olay gösteriliyor
 account.securityHistory.countShown,{count} olay gösteriliyor
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
+account.securityHistory.event.accessTokenRevoked,Bir erişim belirteci iptal edildi
+account.securityHistory.event.emailChangeFailed,Bir e-posta adresi değişikliği başarısız oldu
+account.securityHistory.event.emailChangeRequested,Bir e-posta adresi değişikliği istendi
+account.securityHistory.event.emailChangeVerified,Yeni bir e-posta adresi doğrulandı
+account.securityHistory.event.emailChanged,Hesap e-posta adresi değişti
+account.securityHistory.event.identityLinked,Harici bir kimlik bağlandı
+account.securityHistory.event.identityUnlinked,Harici bir kimliğin bağlantısı kaldırıldı
+account.securityHistory.event.impersonationEnded,Bir kimliğe bürünme oturumu sona erdi
+account.securityHistory.event.impersonationStarted,Bir kimliğe bürünme oturumu başladı
+account.securityHistory.event.mfaCompleted,Çok faktörlü doğrulama tamamlandı
+account.securityHistory.event.mfaFailed,Çok faktörlü doğrulama başarısız oldu
+account.securityHistory.event.mfaStarted,Çok faktörlü doğrulama başlatıldı
+account.securityHistory.event.passkeyAuthenticationCompleted,Geçiş anahtarıyla kimlik doğrulama tamamlandı
+account.securityHistory.event.passkeyAuthenticationStarted,Geçiş anahtarıyla kimlik doğrulama başlatıldı
+account.securityHistory.event.passkeyCredentialRenamed,Bir geçiş anahtarı yeniden adlandırıldı
+account.securityHistory.event.passkeyCredentialRevoked,Bir geçiş anahtarı iptal edildi
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,Bir geçiş anahtarı bir yönetici tarafından iptal edildi
+account.securityHistory.event.passkeyCredentialUsed,Bir geçiş anahtarı kullanıldı
+account.securityHistory.event.passkeyRegistrationCompleted,Geçiş anahtarı kaydı tamamlandı
+account.securityHistory.event.passkeyRegistrationStarted,Geçiş anahtarı kaydı başlatıldı
+account.securityHistory.event.passwordChanged,Şifre değişti
+account.securityHistory.event.passwordEmailVerified,Şifre e-posta adresi doğrulandı
+account.securityHistory.event.passwordLocked,Şifre hesabı kilitlendi
+account.securityHistory.event.passwordLoginFailed,Şifreyle oturum açma başarısız oldu
+account.securityHistory.event.passwordLoginSucceeded,Şifreyle oturum açma başarılı oldu
+account.securityHistory.event.passwordRecovered,Şifre kurtarıldı
+account.securityHistory.event.passwordRecoveryRequested,Şifre kurtarma istendi
+account.securityHistory.event.passwordUnlocked,Şifre hesabının kilidi açıldı
+account.securityHistory.event.passwordWhatsappVerified,WhatsApp oturum açma numarası doğrulandı
+account.securityHistory.event.recoveryCodeUsed,Bir kurtarma kodu kullanıldı
+account.securityHistory.event.recoveryCodesGenerated,Kurtarma kodları oluşturuldu
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Kurtarma kodları bir yönetici tarafından geçersiz kılındı
+account.securityHistory.event.refreshTokenFamilyRevoked,Bir yenileme belirteci ailesi iptal edildi
+account.securityHistory.event.sessionCreated,Bir oturum oluşturuldu
+account.securityHistory.event.sessionRevoked,Bir oturum iptal edildi
+account.securityHistory.event.sessionRotated,Bir oturum yenilendi
+account.securityHistory.event.sessionsRevoked,Tüm oturumlar iptal edildi
+account.securityHistory.event.totpEnrollmentConfirmed,Bir kimlik doğrulayıcı onaylandı
+account.securityHistory.event.totpEnrollmentStarted,Kimlik doğrulayıcı kurulumu başlatıldı
+account.securityHistory.event.totpRemoved,Bir kimlik doğrulayıcı kaldırıldı
+account.securityHistory.event.totpRemovedByAdministrator,Bir kimlik doğrulayıcı bir yönetici tarafından kaldırıldı
+account.securityHistory.event.totpRenamed,Bir kimlik doğrulayıcı yeniden adlandırıldı
+account.securityHistory.event.totpVerified,Kimlik doğrulayıcı doğrulaması başarılı oldu
+account.securityHistory.loadMore,Daha fazla güvenlik etkinliği yükle
+account.securityOverview.backupCodeCount,{count} yedek kod kaldı
+account.securityOverview.backupCodes,Yedek kodlar
+account.securityOverview.email,E-posta
+account.securityOverview.emailMissing,Doğrulanmış e-posta yok
+account.securityOverview.emailVerified,{email} doğrulandı
+account.securityOverview.passkeyCount,{count} geçiş anahtarı yapılandırıldı
+account.securityOverview.passkeys,Geçiş anahtarları
+account.securityOverview.password,Şifre
+account.securityOverview.passwordMissing,Belirlenmiş şifre yok
+account.securityOverview.passwordSet,Şifre belirlendi
+account.securityOverview.phone,Telefon
+account.securityOverview.phoneMissing,Doğrulanmış telefon yok
+account.securityOverview.phoneVerified,{phone} doğrulandı
+account.sessionExpired,Oturumunuzun süresi doldu
+account.sessions.current,Mevcut oturum
 account.sessions.count,{count} etkin oturum
 account.sessions.countOne,{count} etkin oturum
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.sessions.description,Hesabınızın oturum açtığı cihazları inceleyin ve tanımadığınız oturumları iptal edin.
+account.sessions.empty,Etkin oturum yok
+account.sessions.lastUsed,Son kullanım: {date}
 account.sessions.manage,{device} cihazındaki oturum
-account.sessions.revoke,Revoke session
-account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.revoke,Oturumu iptal et
+account.sessions.revokeConfirm,Bu oturum hemen iptal edilsin mi?
 account.sessions.deviceLabel,{browser} ({os})
 account.sessions.deviceLabelBrowser,{browser}
 account.sessions.deviceLabelOs,{os}
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,Bilinmeyen cihaz
+account.status.available,Kullanılabilir
+account.status.configured,Yapılandırıldı
+account.status.notConfigured,Yapılandırılmadı
+account.status.unavailable,Kullanılamıyor
 account.workspace.devicesTitle,Cihazlar ve uygulamalar
 admin.common.confirmTitle,Bu işlemi onaylayın
 admin.common.permission,Bu yönetim verilerini görüntüleme izniniz yok.
@@ -414,44 +414,44 @@ admin.events.systemActor,Sistem
 admin.events.title,Denetim olayları
 admin.events.type,Olay türü
 admin.events.userSubject,Kullanıcı konusu
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.activeTitle,Etkin kimliğe bürünme
+admin.impersonation.actor,Yönetici
+admin.impersonation.assuranceRequired,Bir kullanıcının yerine geçmek çok faktörlü kimlik doğrulama gerektirir. Devam etmek için ikinci faktörle yeniden oturum açın.
+admin.impersonation.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
+admin.impersonation.auditLink,Bu kimliğe bürünmenin denetim olaylarını görüntüleyin
+admin.impersonation.bannerLabel,Kimliğe bürünme sürüyor
+admin.impersonation.bannerSummary,"{actor}, {subject} olarak hareket ediyor. Bu oturum {remaining} içinde sona eriyor."
+admin.impersonation.description,"Kısa, kayıtlı bir destek oturumu için başka bir kişinin yerine geçin. Gerekçe ve sınırlı süre her zaman gereklidir."
+admin.impersonation.duration,Süre
+admin.impersonation.durationHint,Kimliğe bürünme her zaman en fazla on beş dakika sonra otomatik olarak sona erer.
+admin.impersonation.durationInvalid,Bir saniye ile on beş dakika arasında bir süre seçin.
+admin.impersonation.durationMinutes,{count} dakika
+admin.impersonation.end,Kimliğe bürünmeyi sonlandır
+admin.impersonation.endConfirm,{subject} için kimliğe bürünme şimdi sonlandırılsın mı?
+admin.impersonation.endedNotice,Kimliğe bürünme oturumu sonlandırıldı.
+admin.impersonation.expires,Bitiş
+admin.impersonation.expiringSoon,Bu kimliğe bürünme bir dakikadan kısa sürede sona eriyor.
+admin.impersonation.nestedRejected,Zaten başka bir kullanıcı olarak hareket ediyorsunuz. Yenisini başlatmadan önce mevcut kimliğe bürünmeyi sonlandırın.
+admin.impersonation.nestedRejectedTitle,İç içe kimliğe bürünmeye izin verilmez
+admin.impersonation.noOrganization,Kuruluş yok
+admin.impersonation.organization,Kuruluş
+admin.impersonation.organizationHint,"İsteğe bağlı. Oturumu, kişinin bir kuruluştaki izinleriyle sınırlayın."
+admin.impersonation.permissionDenied,Bu IAM alanında kullanıcıların yerine geçme izniniz yok.
 admin.impersonation.permissionDeniedTitle,Erişim kullanılamıyor
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,Gerekçe
+admin.impersonation.reasonHint,Denetim kaydına işlenir ve yerine geçtiğiniz kişiye gösterilir.
+admin.impersonation.reasonRequired,3 ile 256 karakter arasında bir gerekçe girin.
+admin.impersonation.remaining,Kalan
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,Kendi hesabınızın yerine geçemezsiniz.
+admin.impersonation.start,Kimliğe bürünmeyi başlat
+admin.impersonation.startConfirm,{subject} için kimliğe bürünme başlatılsın mı? Yaptığınız her şey kendi kimliğinize kaydedilecek.
+admin.impersonation.startedAt,Başlangıç
+admin.impersonation.startedNotice,Artık {subject} olarak hareket ediyorsunuz.
+admin.impersonation.subject,Kimliğine bürünülen
+admin.impersonation.target,Kimliğine bürünülecek kullanıcı
+admin.impersonation.targetRequired,Kimliğine bürünmek istediğiniz kullanıcıyı seçin.
+admin.impersonation.title,Kimliğe bürünme
 admin.machine.assuranceRequired,Makine kullanıcılarını ve kimlik bilgilerini yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.machine.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.machine.created,Oluşturuldu
@@ -523,8 +523,8 @@ admin.machine.users.created,Makine kullanıcısı oluşturuldu.
 admin.machine.users.description,"Bu realm'de istemci kimlik bilgileri, belirteçler veya API anahtarlarıyla kimlik doğrulayan insan olmayan kimlikler."
 admin.machine.users.detailTitle,Makine kullanıcısı ayrıntısı
 admin.machine.users.displayName,Görünen ad
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,Makine kullanıcısını düzenle
+admin.machine.users.editTitle,Makine kullanıcısını düzenle
 admin.machine.users.empty,Bu realm'de henüz makine kullanıcısı yok.
 admin.machine.users.identifier,Makine kullanıcısı tanımlayıcısı
 admin.machine.users.invalid,Bir görünen ad ve bir kullanıcı adı girin ve yalnızca geçerli kapsam değerleri kullanın.
@@ -535,23 +535,23 @@ admin.machine.users.scopes,Kapsamlar
 admin.machine.users.scopesHint,Kapsamları boşluk veya virgülle ayırın. Kapsamlar tam olarak eşleştirilir.
 admin.machine.users.search,Makine kullanıcılarını ara
 admin.machine.users.title,Makine kullanıcıları
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,Makine kullanıcısı güncellendi.
 admin.machine.users.userName,Kullanıcı adı
 admin.machine.users.userNameHint,İstemci kimlik bilgileri değiştirilirken istemci kimliği olarak kullanılır.
-admin.navigation.description,Choose an administration resource
+admin.navigation.description,Bir yönetim kaynağı seçin
 admin.navigation.label,Yönetim
-admin.navigation.title,Administration navigation
+admin.navigation.title,Yönetim gezintisi
 admin.oidc.assuranceRequired,OpenID Connect ayarlarını yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.oidc.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.oidc.clients.consent,Onay
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,Erişim belirteci ömrü (saniye)
+admin.oidc.clients.accessTokenRoleAssertion,Erişim belirteçlerine proje rollerini ekle
+admin.oidc.clients.accessTokenRoleAssertionHint,İstemcinin yapılandırılmış proje ve kuruluş bağlamında geçerli olan rolleri kullanır.
+admin.oidc.clients.additionalOrigins,Ek tarayıcı kaynakları
+admin.oidc.clients.additionalOriginsHint,Satır başına bir tam kaynak. Yönlendirme URI kaynakları zaten dahildir; joker karakter desteklenmez.
+admin.oidc.clients.application,Uygulama
+admin.oidc.clients.applicationNone,Uygulama yok
+admin.oidc.clients.compatibility,Uyumluluk ayarları
 admin.oidc.clients.consentRequired,Gerekli
 admin.oidc.clients.consentSkipped,Gerekli değil
 admin.oidc.clients.create,İstemci kaydet
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,Kişileri OpenID Connect ile oturum açtır
 admin.oidc.clients.created,İstemci kaydedildi.
 admin.oidc.clients.description,Bu alanda kişileri OpenID Connect üzerinden doğrulayan uygulamalar.
 admin.oidc.clients.detailTitle,OIDC istemci ayrıntısı
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,Geliştirme modu
+admin.oidc.clients.devModeHint,Herhangi bir ana bilgisayarda düz-http yönlendirmelerine izin verir. Yalnızca yerel geliştirme için kullanın.
 admin.oidc.clients.empty,Bu alanda henüz kayıtlı bir OpenID Connect istemcisi yok.
 admin.oidc.clients.emptySearch,Bu aramayla eşleşen istemci yok.
 admin.oidc.clients.exactMatchHint,Satır başına bir URI. Her yönlendirme tam olarak eşleştirilir; bu nedenle joker karakterler ve sondaki farklılıklar reddedilir.
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,Yetki türleri
 admin.oidc.clients.identifier,İstemci tanımlayıcısı
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,Kimlik belirteci ömrü (saniye)
+admin.oidc.clients.idTokenRoleAssertion,Kimlik belirteçlerine proje rollerini ekle
+admin.oidc.clients.idTokenRoleAssertionHint,İstemcinin yapılandırılmış proje ve kuruluş bağlamında geçerli olan rolleri kullanır.
+admin.oidc.clients.idTokenUserinfoAssertion,Kapsamla sınırlı UserInfo taleplerini kimlik belirteçlerine ekle
+admin.oidc.clients.idTokenUserinfoAssertionHint,Yalnızca verilen kapsamların izin verdiği kişisel talepleri kullanır.
 admin.oidc.clients.invalid,"Bir istemci adı, en az bir tam yönlendirme URI'si ve en az bir kapsam girin."
 admin.oidc.clients.lifecycleChanged,İstemcinin durumu değiştirildi.
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,Tam saniye. Sunucu varsayılanını kullanmak için boş bırakın.
+admin.oidc.clients.lifetimesInvalid,Ömürler izin verilen aralıkta tam saniye olmalıdır.
 admin.oidc.clients.missingId,Bu hedef için bir OIDC istemcisi seçilmiş olmalıdır.
 admin.oidc.clients.name,İstemci adı
 admin.oidc.clients.postLogoutUris,Oturum kapatma sonrası yönlendirme URI'leri
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,Proje
+admin.oidc.clients.projectNone,Proje yok
 admin.oidc.clients.redirectUris,Yönlendirme URI'leri
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,Mutlak yenileme belirteci ömrü (saniye)
+admin.oidc.clients.refreshTokenIdleLifetime,Boşta yenileme belirteci ömrü (saniye)
 admin.oidc.clients.removeConfirm,Bu OIDC istemcisi kaldırılsın mı? Onu kullanan uygulamalar anında çalışmayı durdurur.
 admin.oidc.clients.requireConsent,Kişiden bu uygulamayı onaylamasını iste
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,Yanıt türleri
 admin.oidc.clients.saved,İstemci kaydedildi.
 admin.oidc.clients.scopes,İzin verilen kapsamlar
 admin.oidc.clients.search,İstemci ara
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,Algoritma
 admin.oidc.keys.create,Anahtar ekle
 admin.oidc.keys.created,Yeni bir imzalama anahtarı yayımlandı.
 admin.oidc.keys.empty,Bu alan için henüz imzalama anahtarı yok.
+admin.oidc.keys.expires,Bitiş
 admin.oidc.keys.keyId,Anahtar kimliği
 admin.oidc.keys.privateNotice,Yalnızca açık anahtar meta verileri gösterilir. Özel anahtar materyali tarayıcıya asla gönderilmez.
 admin.oidc.keys.retire,Kullanımdan kaldır
@@ -682,7 +683,7 @@ admin.organizations.branding.saved,Marka görünümü kaydedildi.
 admin.organizations.branding.themeMode,Varsayılan tema
 admin.organizations.branding.warn,Uyarı rengi
 admin.organizations.detail.created,Oluşturulma
-admin.organizations.detail.realm,Realm
+admin.organizations.detail.realm,Alan
 admin.organizations.detail.settingsDescription,Kuruluş adını ve yaşam döngüsü durumunu yönetin.
 admin.organizations.detail.settingsTitle,Kuruluş ayarları
 admin.organizations.detail.updated,Son güncelleme
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,{domain} alan adı kaldırılsın mı?
 admin.organizations.domains.removed,Alan adı kaldırıldı.
 admin.organizations.domains.unverified,Doğrulama bekleniyor
 admin.organizations.domains.verificationRecord,"Bu DNS TXT kaydını ekleyin, ardından doğrulayın."
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,Doğrulandı
 admin.organizations.domains.verify,Alan adını doğrula
 admin.organizations.domains.verifyDone,Alan adı doğrulandı.
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,E-posta adresi
 admin.organizations.invitations.emailInvalid,Geçerli bir e-posta adresi girin.
 admin.organizations.invitations.empty,Bu kuruluş için hiç davet gönderilmedi.
 admin.organizations.invitations.expires,Sona eriyor
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,Kullanıcı
 admin.organizations.memberships.userId,Kullanıcı kimliği
 admin.organizations.permissionDenied,Bu kuruluşu görüntüleme veya değiştirme izniniz yok.
 admin.organizations.permissionDeniedTitle,Erişim kullanılamıyor
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,İzin verilen MFA faktörleri
+admin.organizations.policy.allowedFactorsDescription,MFA'yı yalnızca bu faktörler tamamlayabilir. WhatsApp ile oturum açma ve kurtarma kodları yapılandırılabilir faktör değildir.
+admin.organizations.policy.assurance.authenticated,Kimliği doğrulanmış oturum
+admin.organizations.policy.assurance.multi_factor,Çok faktörlü oturum
+admin.organizations.policy.assurance.none,Güvence gereksinimi yok
 admin.organizations.policy.description,Kişilerin hangi oturum açma yöntemlerini kullanabileceğini ve hangi yapılandırılmış sağlayıcıların görüneceğini seçin.
 admin.organizations.policy.domainDiscovery,Kuruluşu bir e-posta alan adından tanı
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,Aşağı
+admin.organizations.policy.effectiveValue,Etkin değer: {value}
 admin.organizations.policy.emailOtp,E-posta ile tek kullanımlık kod
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,"Korunan kuruluş işlemleri, kimliği doğrulanmış bir oturum gerektirir."
+admin.organizations.policy.enforcementMultiFactor,Korunan kuruluş işlemleri çok faktörlü bir oturum gerektirir ve gerektiğinde adım yükseltme ister.
+admin.organizations.policy.enforcementNone,Korunan kuruluş işlemleri ek bir güvence gereksinimi eklemez.
+admin.organizations.policy.enforcementOptional,"Oturum açma, ek bir MFA faktörü olmadan tamamlanabilir."
+admin.organizations.policy.enforcementRequired,İzin verilen bir MFA faktörü başarılı olmadan oturum açılamaz.
+admin.organizations.policy.enforcementTitle,Etkin uygulama
 admin.organizations.policy.externalIdentity,Harici kimlik sağlayıcıları
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.emailOtp,E-posta ile tek kullanımlık kod
+admin.organizations.policy.factor.passkey,Geçiş anahtarı
+admin.organizations.policy.factor.recoveryCode,Kurtarma kodu
+admin.organizations.policy.factor.totp,Kimlik doğrulama uygulaması (TOTP)
 admin.organizations.policy.inherited,Realm'den devralındı
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.minimumAssurance,En az adım yükseltme güvencesi
+admin.organizations.policy.moveDown,{factor} öğesini aşağı taşı
+admin.organizations.policy.moveUp,{factor} öğesini yukarı taşı
+admin.organizations.policy.notRequired,Gerekli değil
+admin.organizations.policy.organizationOverrides,Kuruluş geçersiz kılmaları
+admin.organizations.policy.organizationValue,Kuruluş geçersiz kılması
+admin.organizations.policy.overrideRealm,Realm değerini geçersiz kıl
+admin.organizations.policy.passkey,Geçiş anahtarları
 admin.organizations.policy.password,Şifre
 admin.organizations.policy.passwordRecovery,Parola kurtarma
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,Tercih edilen faktör sırası
+admin.organizations.policy.preferredOrderDescription,Klavye ile erişilebilir faktör tercihini ayarlamak için Yukarı ve Aşağı düğmelerini kullanın.
+admin.organizations.policy.realmDefaults,Realm varsayılanları
+admin.organizations.policy.realmValue,Realm değeri
 admin.organizations.policy.registration,Self servis kayıt
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,Kayıtlı izinli faktörü olmayan kişiler kilitlenmek yerine kayda ve düzeltmeye yönlendirilir.
+admin.organizations.policy.required,Gerekli
+admin.organizations.policy.requiredMfa,Gerekli MFA
 admin.organizations.policy.saved,Oturum açma politikası kaydedildi.
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,Şifre politikası
+admin.organizations.passwordPolicy.description,Alan genelinde şifreyle oturum açma için karmaşıklık ve kilitleme kuralları. Kuruluş oturumları bu değerleri devralır.
+admin.organizations.passwordPolicy.minimumLength,En az uzunluk
+admin.organizations.passwordPolicy.minimumLengthHint,1 ile 72 arasında karakter.
+admin.organizations.passwordPolicy.requireLowercase,Küçük harf gerektir
+admin.organizations.passwordPolicy.requireUppercase,Büyük harf gerektir
+admin.organizations.passwordPolicy.requireNumber,Sayı gerektir
+admin.organizations.passwordPolicy.requireSymbol,Simge gerektir
+admin.organizations.passwordPolicy.maximumAttempts,Kilitlenmeden önce başarısız deneme
+admin.organizations.passwordPolicy.maximumAttemptsHint,1 ile 100 arasında deneme.
+admin.organizations.passwordPolicy.lockoutMinutes,Kilitleme süresi (dakika)
+admin.organizations.passwordPolicy.lockoutMinutesHint,"Kilitlenen hesaplar, çok fazla başarısız denemeden sonra bu süre boyunca kilitli kalır."
+admin.organizations.passwordPolicy.saved,Şifre politikası kaydedildi.
+admin.organizations.passwordPolicy.validation.minimumLength,1 ile 72 arasında en az uzunluk girin.
+admin.organizations.passwordPolicy.validation.maximumAttempts,Kilitlenmeden önce 1 ile 100 arasında başarısız deneme girin.
+admin.organizations.passwordPolicy.validation.lockout,En az 1 dakikalık bir kilitleme süresi girin.
+admin.organizations.passwordPolicy.validation.policy,Şifre politikası geçersiz.
+admin.organizations.policy.scopeLabel,Politika kapsamı
+admin.organizations.policy.securityDescription,Oturum açma MFA'sını ve korunan kuruluş işlemleri için gereken güvenceyi ayarlayın.
+admin.organizations.policy.securityTitle,MFA ve güvence
 admin.organizations.policy.title,Oturum açma politikası
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,Yukarı
+admin.organizations.policy.validation.assuranceWeaker,Kuruluş güvence gereksinimi Realm değerinden zayıf olamaz.
+admin.organizations.policy.validation.factorNarrowing,"Kuruluş faktörleri, Realm faktör izin listesinin alt kümesi olmalıdır."
+admin.organizations.policy.validation.order,Tercih edilen sıra yalnızca izin verilen faktörleri içerebilir.
+admin.organizations.policy.validation.requiredFactors,Gerekli MFA için en az bir izin verilen faktör gerekir.
+admin.organizations.policy.validation.requiredMfaWeaker,"Kuruluş, Realm'in gerektirdiği MFA'yı kapatamaz."
 admin.organizations.providers.allowAccountCreation,Yeni kişiler için otomatik olarak hesap oluştur
 admin.organizations.providers.clientId,İstemci kimliği
 admin.organizations.providers.clientSecret,İstemci gizli anahtarı
@@ -821,7 +822,7 @@ admin.organizations.providers.description,"Bu kuruluş için yapılandırılmı�
 admin.organizations.providers.disable,Sağlayıcıyı devre dışı bırak
 admin.organizations.providers.disableConfirm,{displayName} devre dışı bırakılsın mı? İnsanlar artık bu sağlayıcıyla oturum açamaz.
 admin.organizations.providers.disabled,Sağlayıcı devre dışı bırakıldı.
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,Görünen ad
 admin.organizations.providers.empty,Henüz harici kimlik sağlayıcısı yapılandırılmadı.
 admin.organizations.providers.invalid,"Bir görünen ad, istemci kimliği, istemci parolası ve mutlak bir yönlendirme URI'si girin."
 admin.organizations.providers.redirectUri,Yönlendirme URI'si
@@ -893,7 +894,7 @@ admin.projects.grants.roleKeys,Verilen roller
 admin.projects.grants.title,Kuruluş yetkileri
 admin.projects.lifecycle.activate,Etkinleştir
 admin.projects.lifecycle.deactivate,Devre dışı bırak
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,Kaldır
 admin.projects.lifecycle.removeConfirm,Bu proje kaldırılsın mı?
 admin.projects.lifecycle.removeConfirmAccept,Projeyi kaldır
 admin.projects.lifecycle.removeConfirmTitle,Bu projeyi kaldır
@@ -918,7 +919,7 @@ admin.projects.overview.title,Projeye genel bakış
 admin.projects.roles.create,Rol oluştur
 admin.projects.roles.deleteConfirm,Bu proje rolü silinsin mi? Ona atıfta bulunan atamalar rolü kaybeder.
 admin.projects.roles.description,Bu projenin kuruluşlara ve üyelerine atayabileceği roller.
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,Görünen ad
 admin.projects.roles.empty,Bu proje henüz rol tanımlamıyor.
 admin.projects.roles.group,Grup
 admin.projects.roles.invalid,Bir rol anahtarı ve görünen ad girin.
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,{userName} silindi.
 admin.userProfile.editProfile,Profili düzenle
 admin.userProfile.editProfileTitle,Profili düzenle
 admin.userProfile.email,E-posta adresi
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,Bu kullanıcının doğrulanacak e-posta adresi yok.
 admin.userProfile.emailUnverified,Doğrulanmadı
 admin.userProfile.emailVerified,Doğrulandı
 admin.userProfile.impersonate,Kullanıcının yerine geç
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,Kuruluş rolü güncellendi.
 admin.userProfile.organizationRoleDescription,Etkin kuruluş için birincil rolü seçin.
 admin.userProfile.organizationRoleTitle,Kuruluş rolü
 admin.userProfile.overviewTab,Genel bakış
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,Geçiş anahtarını iptal et
+admin.userProfile.passkeyRevokeConfirm,{userName} adlı kullanıcının geçiş anahtarı iptal edilsin mi? Hemen çalışmayı durdurur.
+admin.userProfile.passkeyRevoked,Geçiş anahtarı iptal edildi.
 admin.userProfile.passwordConfirm,Yeni parolayı onaylayın
 admin.userProfile.passwordMismatch,Parolalar eşleşmiyor.
 admin.userProfile.passwordNew,Yeni parola
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,{projectName} ataması kaldırılsı
 admin.userProfile.projectRolesRemoved,Proje ataması kaldırıldı.
 admin.userProfile.projectRolesSaved,Proje atamaları kaydedildi.
 admin.userProfile.projectRolesTitle,Proje rolleri
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,Kullanıcı verilerini temizle
+admin.userProfile.purgeConfirm,{userName} adlı kullanıcının tüm kayıtları kalıcı olarak silinsin mi? Bu geri alınamaz.
+admin.userProfile.purgeConfirmTitle,Bu kullanıcıyı temizle
+admin.userProfile.purgeConfirmType,Onaylamak için {userName} yazın.
+admin.userProfile.purgeWarning,"Temizleme; kullanıcı satırını, oturumları, kimlik bilgilerini ve denetim geçmişini kaldırır."
+admin.userProfile.purged,{userName} temizlendi.
 admin.userProfile.reactivate,Kullanıcıyı yeniden etkinleştir
 admin.userProfile.reactivateConfirm,{userName} yeniden etkinleştirilsin mi? Kullanıcı yeniden oturum açabilir.
 admin.userProfile.reactivated,{userName} yeniden etkinleştirildi.
 admin.userProfile.realmAdminBadge,Realm yöneticisi
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,Kurtarma kodlarını geçersiz kıl
+admin.userProfile.recoveryCodesInvalidateConfirm,{userName} adlı kullanıcının kurtarma kodları geçersiz kılınsın mı? Mevcut kodlar hemen çalışmayı durdurur.
+admin.userProfile.recoveryCodesInvalidated,Kurtarma kodları geçersiz kılındı.
 admin.userProfile.removeRealmAdmin,Realm yöneticisini kaldır
 admin.userProfile.removeRealmAdminConfirm,{userName} kullanıcısının realm yöneticisi yetkileri kaldırılsın mı?
 admin.userProfile.removeRealmAdminDone,{userName} artık bir realm yöneticisi değil.
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,Doğrulama e-postasını yeniden gönder
+admin.userProfile.resendVerificationConfirm,{email} adresine yeni bir doğrulama e-postası gönderilsin mi?
+admin.userProfile.resendVerificationDone,{email} adresine bir doğrulama e-postası gönderildi.
 admin.userProfile.revokeAll,Tümünü iptal et
 admin.userProfile.revokeAllConfirm,{userName} kullanıcısının tüm oturumları iptal edilsin mi? Kullanıcının her yerde oturumu kapatılır.
 admin.userProfile.revokeAllDone,Tüm oturumlar iptal edildi.
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,Oturumlar ve cihazlar
 admin.userProfile.setPassword,Parola belirle
 admin.userProfile.setPasswordDescription,Oturum açma parolasını değiştirin ve kilitlenmeleri temizleyin.
 admin.userProfile.setPasswordTitle,Yeni parola belirle
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,Kullanıcıyı askıya al
+admin.userProfile.suspendConfirm,{userName} askıya alınsın mı? Kullanıcı artık oturum açamaz.
+admin.userProfile.suspended,{userName} askıya alındı.
+admin.userProfile.totpRemove,Kimlik doğrulayıcı kaydını kaldır
+admin.userProfile.totpRemoveConfirm,{userName} adlı kullanıcının kimlik doğrulayıcı kaydı kaldırılsın mı? Kullanıcının yeniden kaydolması gerekir.
+admin.userProfile.totpRemoved,Kimlik doğrulayıcı kaydı kaldırıldı.
 admin.userProfile.unlock,Kullanıcının kilidini aç
 admin.userProfile.unlockConfirm,{userName} kullanıcısının kilidi açılsın mı? Kullanıcı yeniden oturum açabilir.
 admin.userProfile.unlocked,{userName} kullanıcısının kilidi açıldı.
 admin.userProfile.username,Kullanıcı adı
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,{email} doğrulanmadı olarak işaretlendi (geçersiz kılma).
+admin.userProfile.verificationOverrideUnverify,E-postayı doğrulanmadı olarak işaretle (geçersiz kılma)
+admin.userProfile.verificationOverrideUnverifyConfirm,{email} doğrulanmadı olarak işaretlensin mi? Kullanıcının yeniden doğrulaması gerekir.
+admin.userProfile.verificationOverrideVerified,{email} doğrulandı olarak işaretlendi (geçersiz kılma).
+admin.userProfile.verificationOverrideVerify,E-postayı doğrulandı olarak işaretle (geçersiz kılma)
+admin.userProfile.verificationOverrideVerifyConfirm,"{email}, e-posta doğrulaması olmadan doğrulandı olarak işaretlensin mi? Bu, normal doğrulama akışını geçersiz kılar."
+admin.users.authentication.generated,Oluşturulma: {date}
+admin.users.authentication.neverUsed,Hiç kullanılmadı
+admin.users.authentication.passkeyMetadata,{deviceType} · oluşturulma {created} · son kullanım {lastUsed}
+admin.users.authentication.pending,Onay bekleniyor
+admin.users.authentication.recoveryCodes,Kurtarma kodları
+admin.users.authentication.recoveryCount,{count} kod kaldı
+admin.users.authentication.totpMetadata,{label} · onaylanma {confirmed}
 admin.users.count,{count} kullanıcı
 admin.users.create,Kullanıcı oluştur
 admin.users.createDescription,Geçerli realm'e bir insan kullanıcı ekleyin.
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,Hizmet hesapları
 admin.users.directoryUser,Kullanıcı
 admin.users.directoryUserInvited,Davet edildi
 admin.users.directoryUserName,Kullanıcı adı
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,Görünen ad
+admin.users.displayNameRequired,Görünen bir ad girin.
+admin.users.email,E-posta adresi
+admin.users.firstName,Ad
 admin.users.identifier,Kullanıcı tanımlayıcısı
 admin.users.invalid,Geçerli bir e-posta adresi ve kullanıcı adı girin.
 admin.users.inviteEmailInvalid,Geçerli bir e-posta adresi girin.
@@ -1241,35 +1242,35 @@ admin.users.inviteTokenCopy,Bağlantıyı kopyala
 admin.users.inviteTokenDismiss,Bu bağlantıyı kaydettim
 admin.users.inviteTokenOnce,Bu davet bağlantısı bir kez gösterilir. Davet ettiğiniz kişiyle paylaşın.
 admin.users.inviteTokenTitle,Davet bağlantısı
-admin.users.lastName,Last name
+admin.users.lastName,Soyadı
 admin.users.lifecycle.active,Etkin
 admin.users.lifecycle.deleted,Silindi
 admin.users.lifecycle.inactive,Etkin değil
 admin.users.lifecycle.initial,Başlangıç
 admin.users.lifecycle.locked,Kilitli
 admin.users.lifecycle.suspended,Askıya alındı
-admin.users.nickName,Nickname
+admin.users.nickName,Takma ad
 admin.users.serviceAccountCreated,Hizmet hesabı oluşturuldu.
 admin.users.serviceAccountInvalid,Hizmet hesabı için bir görünen ad ve kullanıcı adı girin.
 admin.users.sessions.country,Ülke
-admin.users.sessions.created,Created
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
+admin.users.sessions.created,Oluşturulma
+admin.users.sessions.expires,Bitiş
+admin.users.sessions.ipAddress,IP adresi
+admin.users.sessions.lastUsed,Son kullanım
 admin.users.sessions.location,Konum
-admin.users.sessions.method,Sign-in method
+admin.users.sessions.method,Oturum açma yöntemi
 admin.users.sessions.region,Bölge
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
 admin.users.unverifiedEmail,Doğrulanmamış e-posta
-admin.users.userName,Username
+admin.users.userName,Kullanıcı adı
 app.name,Authworks
 app.tagline,Güvenli kimlik hizmetleri
 common.back,Geri
 common.cancel,İptal
 common.close,Kapat
 common.continue,Devam et
-common.decline,Decline
+common.decline,Reddet
 common.disable,Kapat
 common.disabled,Kapalı
 common.enable,Aç
@@ -1281,7 +1282,7 @@ common.next,İleri
 common.pagination,Sayfalama
 common.previous,Geri
 common.retry,Tekrar deneyin
-common.revoke,Revoke
+common.revoke,İptal et
 common.save,Kaydet
 common.signIn,Giriş yap
 common.signOut,Çıkış yap
@@ -1289,28 +1290,28 @@ common.theme.dark,Koyu
 common.theme.light,Açık
 common.theme.system,Sistem
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,Adresiniz
+oidc.consent.approve,Onayla
+oidc.consent.approving,Onaylanıyor…
+oidc.consent.clientId,İstemci kimliği
+oidc.consent.deny,Reddet
+oidc.consent.denying,Reddediliyor…
+oidc.consent.description,{client} hesabınıza erişim istiyor.
+oidc.consent.email,E-posta adresiniz
+oidc.consent.expiredDescription,Bu yetkilendirme isteği artık geçerli değil. Uygulamadan yeniden başlayın.
+oidc.consent.expiredTitle,Yetkilendirme isteğinin süresi doldu
+oidc.consent.missingDescription,Bu sayfayı erişim isteyen uygulamadan açın.
+oidc.consent.missingTitle,Yetkilendirme isteği yok
+oidc.consent.offlineAccess,Çevrimdışıyken oturumunuz açık kalsın
+oidc.consent.openid,Kimliğinizi doğrulayın
+oidc.consent.phone,Telefon numaranız
+oidc.consent.profile,Temel profiliniz
+oidc.consent.redirectDescription,Onaydan sonra {redirectUri} adresine döneceksiniz.
+oidc.consent.redirectUri,Yönlendirme URI'si
+oidc.consent.resourceOwner,Kuruluş üyeliğiniz
+oidc.consent.scopeTitle,İstenen erişim
+oidc.consent.signInDescription,Bu yetkilendirme isteğini incelemek için oturum açın.
+oidc.consent.signInTitle,Oturum açma gerekli
 ui.authenticated.clearSearch,Aramayı temizle
 ui.authenticated.demo.adminBlurb,Yönetici: sahip olmadan üye ve proje ve kimlik bilgisi yönetir.
 ui.authenticated.demo.chipBlurb,Rol ve durum ve proje görünürlüğü için kompakt rozetler.
@@ -1410,7 +1411,7 @@ demo.admin.group.operations.title,İşlemler
 demo.admin.group.organizations.description,"Kuruluş ayarları, kişiler, davetler ve doğrulanmış alan adları."
 demo.admin.group.organizations.title,Kuruluşlar
 demo.admin.group.realm.description,"Realm genelinde kimlik, yaşam döngüsü ve giriş yapılandırması."
-demo.admin.group.realm.title,Realm
+demo.admin.group.realm.title,Alan
 demo.admin.group.users.description,"İnsan kimlikleri, kimlik bilgileri, oturumlar ve korunan destek eylemleri."
 demo.admin.group.users.title,Kullanıcılar
 demo.admin.realmFixtureName,Northwind müşteri kimliği
@@ -1943,89 +1944,89 @@ shell.state.loadingDetail,Bu sayfa ve güvenlik bağlamı hazırlanıyor.
 shell.state.nothingHere,Henüz burada bir şey yok
 shell.state.pageUnavailable,Bu sayfa kullanılamıyor
 shell.state.readyDetail,Bu sayfa özellik içeriği için hazır.
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,Uygulama erişimi onaylandı. Uygulamada devam edin.
+demo.consent.clientId,İstemci kimliği
+demo.consent.declined,Uygulama erişimi reddedildi.
+demo.consent.error,Yetkilendirme isteği yüklenemedi.
+demo.consent.expired,Bu yetkilendirme isteğinin süresi doldu. Uygulamadan yeniden başlayın.
+demo.consent.expiredTitle,Yetkilendirme isteğinin süresi doldu
+demo.consent.redirectDescription,Onaydan sonra {redirectUri} adresine döneceksiniz.
+demo.consent.redirectUri,Yönlendirme URI'si
+demo.consent.requestDescription,{application} hesabınıza erişim istiyor.
+demo.consent.scopeTitle,İstenen izinler
+demo.consent.scenario.description,Hazır veri destekli bir etkileşimle bir OpenID Connect uygulaması erişim isteğini onaylayın veya reddedin.
+demo.consent.scenario.title,Uygulama onayı
+demo.hub.consentDescription,Onaylama ve reddetme sonuçlarıyla bir OpenID Connect uygulaması erişim isteğini inceleyin.
+demo.hub.consentOpen,Onayı aç
+demo.hub.invitationsDescription,Oturum açmış hesaba gönderilen davetleri inceleyin ve yanıtlayın.
+demo.hub.invitationsOpen,Davetleri aç
+admin.organizations.policy.autoLinking,Harici kimlikleri otomatik bağla
+admin.organizations.policy.whatsappOtp,WhatsApp tek kullanımlık kodu
+admin.organizations.policy.sessionLifetime,Oturum ömrü (saniye)
+admin.organizations.policy.sessionLifetimeHint,Oturumun ne kadar geçerli kalacağı. Boş bırakmak mevcut değeri korur.
+admin.organizations.policy.mfaInitSkipLifetime,MFA atlama ömrü (saniye)
+admin.organizations.policy.secondFactorLifetime,İkinci faktör kontrol ömrü (saniye)
+admin.organizations.policy.multiFactorLifetime,Çok faktörlü kontrol ömrü (saniye)
+admin.organizations.policy.lifetimeUnsetHint,Boş bırakmak değeri ayarlanmamış bırakır.
+admin.organizations.policy.forceMfaLocalOnly,Yalnızca yerel MFA
+admin.organizations.policy.providerAllowlist,İzin verilen sağlayıcılar
+admin.organizations.policy.providerAllowlistDescription,Harici oturum açmayı yalnızca bu sağlayıcılar tamamlayabilir. Her sağlayıcıyı seçmek hepsine izin verir.
+admin.organizations.policy.providerAllowlistReset,Tüm sağlayıcılara izin ver
+admin.organizations.policy.validation.lifetime,1 ile 31536000 arasında bir ömür girin.
+admin.organizations.metadata.title,Kuruluş meta verileri
+admin.organizations.metadata.description,Bu kuruluşta saklanan özel anahtar/değer çiftleri. En fazla 50 girdi.
+admin.organizations.metadata.key,Anahtar
+admin.organizations.metadata.value,Değer
+admin.organizations.metadata.save,Girdiyi kaydet
+admin.organizations.metadata.remove,Kaldır
+admin.organizations.metadata.removeConfirm,{key} meta veri girdisi kaldırılsın mı?
+admin.organizations.metadata.empty,Henüz meta veri girdisi yok.
+admin.organizations.metadata.saved,Meta veri girdisi kaydedildi.
+admin.organizations.metadata.removed,Meta veri girdisi kaldırıldı.
+admin.organizations.metadata.invalid,Bir anahtar ve bir değer girin.
+admin.organizations.providers.issuer,Veren
+admin.organizations.providers.issuerHint,Genel OIDC sağlayıcıları için gereklidir.
+admin.organizations.providers.scopes,Kapsamlar
+admin.organizations.providers.scopesHint,"Virgülle ayrılmış liste, örneğin openid, email, profile."
+admin.organizations.providers.save,Sağlayıcıyı kaydet
+common.remove,Kaldır
+admin.oidc.clients.backToClients,OIDC istemcileri
+admin.oidc.clients.consentOptions,Seçenekler
+admin.oidc.clients.serverDefault,Sunucu varsayılanı
+admin.oidc.clients.tokenLifetimes,Belirteç ömürleri
+admin.oidc.secret.credentialsLifecycle,Kimlik bilgileri ve yaşam döngüsü
+admin.redesign.actions,İşlemler
+admin.redesign.activeSessions,Etkin oturumlar
+admin.redesign.administratorId,yönetici kimliği
+admin.redesign.consentTrust,Onay ve güven
+admin.redesign.device,Cihaz
+admin.redesign.documents,belgeler
+admin.redesign.events24H,Olaylar · 24 sa
+admin.redesign.from,Başlangıç
+admin.redesign.grantsScopes,Yetkiler ve kapsamlar
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,dev.
+admin.redesign.inherited,devralınan
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,Ömürler
+admin.redesign.machineUserId,makine kullanıcısı kimliği
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Realm varsayılanlarını ve kuruluş oturum açma geçersiz kılmalarını yönetin.
+admin.redesign.moreFilters,Diğer filtreler
+admin.redesign.noRecentAuditEvents,Son denetim olayı yok.
+admin.redesign.noSessionsMatchYourSearch,Aramanızla eşleşen oturum yok.
+admin.redesign.onThisPage,bu sayfada
+admin.redesign.organizations,kuruluşlar
+admin.redesign.projectId,proje kimliği
+admin.redesign.recentAuditEvents,Son denetim olayları
+admin.redesign.redirectsOrigins,Yönlendirmeler ve kaynaklar
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
-admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,Tüm olay ayrıntılarını görmek için yatay kaydırın.
+admin.redesign.searchSessions,Oturumlarda ara
+admin.redesign.sessionsOnThisPage,bu sayfadaki oturumlar
+admin.redesign.signInMethods,Oturum açma yöntemleri
+admin.redesign.to,Bitiş
+admin.redesign.tokens,Belirteçler
+admin.redesign.userId,kullanıcı kimliği
+admin.redesign.viewAll,Tümünü görüntüle
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Güvenlik ve denetim

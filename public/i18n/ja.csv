@@ -7,217 +7,217 @@ admin.activity.error,アクティビティを読み込めませんでした。�
 admin.activity.organization,組織
 admin.activity.realm,IAMレルム
 shell.nav.activity,アクティビティ
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
-account.access.accepted,Invitation accepted
+account.confirmTitle,この操作を確認
+account.factors.authenticatorName,認証アプリ名
+account.factors.stepUpDescription,多要素認証で確認すると、認証アプリの削除が再試行されます。
+account.securityHistory.description,このアカウントの最近のセキュリティ関連アクティビティを確認します。
+account.access.accepted,招待を受諾しました。
 account.access.acceptedDetail,この組織のメンバーになりました。
-account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
+account.access.active,アクティブな組織
+account.access.consentDescription,このアカウントの情報にアクセスできるアプリです。
 account.access.consentCount,アプリへの同意 {count} 件
 account.access.consentCountOne,アプリへの同意 {count} 件
 account.access.consentManage,アプリへの同意: {clientId}
 account.access.consentTitle,アプリへの同意
 account.access.consentUpdated,更新日時: {date}
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevokeConfirm,Revoke access for {clientId}?
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
-account.access.declined,Invitation declined
+account.access.consentEmpty,このアカウントにアクセスできるアプリはありません。
+account.access.consentRevokeConfirm,{clientId} へのアクセスを取り消しますか？
+account.access.consentRevoked,アプリへのアクセスを取り消しました。
+account.access.created,付与日: {date}
+account.access.declined,招待を辞退しました。
 account.access.declinedDetail,この招待を辞退しました。
 account.access.effectiveDescription,この組織でこのアカウントに付与されているプロジェクトのロールと権限を確認します。
 account.access.effectiveDescription,この組織でこのアカウントに付与されているプロジェクトのロールと権限を確認します。
 account.access.effectiveEmpty,この組織にはプロジェクトへのアクセスが記載されていません。
 account.access.effectiveEmpty,この組織にはプロジェクトへのアクセスが記載されていません。
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,メンバーシップのロール: {roles}
+account.access.effectiveMembership,メンバーシップのロール: {roles}
+account.access.effectivePermissions,権限: {permissions}
+account.access.effectivePermissions,権限: {permissions}
+account.access.effectiveSource,アクセス元: {source}
+account.access.effectiveSource,アクセス元: {source}
 account.access.effectiveTitle,有効なプロジェクトアクセス
 account.access.effectiveTitle,有効なプロジェクトアクセス
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.email,メール
+account.access.error,このアカウント情報を読み込めませんでした。もう一度お試しください。
+account.access.expired,この招待の有効期限が切れています。
 account.access.invitationDeclineConfirm,この招待を辞退しますか？
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationDescription,返答する前に組織とロールを確認してください。
+account.access.invitationEmpty,このアカウントへの保留中の招待はありません。
+account.access.invitationFor,{email} への招待
+account.access.invitationMissing,続行するには、招待の完全なリンクを開いてください。
 account.access.invitationOpen,招待を開く
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
-account.access.membership,Membership roles
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.invitationReplay,この招待はすでに使用されているか、利用できなくなりました。
+account.access.loadMore,アクセスをさらに読み込む
+account.access.loadMore,アクセスをさらに読み込む
+account.access.membership,メンバーシップのロール
+account.access.organizationAccess,組織アクセス
+account.access.organizationAccess,組織アクセス
 account.access.organizationCount,{count} 件の組織
 account.access.organizationCountOne,{count} 件の組織
 account.access.organizationDescription,組織を選択してメンバーシップとアクセス権を確認します。組織を表示してもアクティブな組織は変更されません。
-account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationEmpty,このアカウントはどの組織にも所属していません。
 account.access.organizationSelector,表示する組織
-account.access.permission,You do not have permission to perform this action.
+account.access.permission,この操作を行う権限がありません。
 account.access.permissionsToggle,{source} により付与された {count} 件の権限を表示
-account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
+account.access.roles,ロール: {roles}
+account.access.scopes,権限: {scopes}
+account.delete.confirmLabel,確認のため {email} と入力してください。
+account.delete.dangerZone,危険ゾーン
 account.delete.dangerZoneToggle,アカウント削除のオプションを表示
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
-account.factors.addTotp,Add authenticator
+account.delete.deletedDetail,アカウントとアクセスは完全に削除されました。
+account.delete.deletedTitle,アカウントを削除しました
+account.delete.emailMismatch,メールアドレスが一致しません。
+account.delete.submit,アカウントを完全に削除
+account.delete.title,このアカウントを完全に削除
+account.delete.warning,この操作は元に戻せません。セッションとアクセスは利用できなくなります。
+account.export.description,プロフィール、メールアドレス、メンバーシップ、サインイン方法のJSONコピーをご自身の記録用にダウンロードできます。
+account.export.download,エクスポートをダウンロード
+account.export.downloading,ダウンロードを準備中…
+account.export.title,データをダウンロード
+account.export.unavailable,データエクスポートは現在利用できません。
+account.factors.addTotp,認証アプリを追加
 account.factors.authenticator,認証アプリ
 account.factors.configured,認証アプリを設定済み
 account.factors.count,認証アプリ {count} 件
 account.factors.missing,認証アプリが未設定
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.factors.confirm,確認
+account.factors.description,このアカウントで利用できる認証方法を確認し、認証アプリを管理します。
+account.factors.emailOtp,メールコード
+account.factors.finishTotp,認証アプリの設定を完了
+account.factors.passkeyCount,パスキー {count} 件
+account.factors.passkeys,パスキー
+account.factors.removeTotp,認証アプリを削除
+account.factors.totp,認証アプリ
+account.factors.totpSecretOnce,このシークレットを認証アプリに追加し、6桁のコードを入力してください。このセットアップ用シークレットは今だけ表示されます。
+account.factors.verificationCode,確認コード
+account.identities.alreadyLinked,この外部アカウントはすでにリンクされています。
+account.identities.confirm,リンクを確認
+account.identities.confirmDescription,続行するには {provider} アカウントのリンクを確認してください。
+account.identities.confirmTitle,外部アカウントを確認
 account.identities.connecting,プロバイダーのウィンドウで操作を続けてから、ここに戻ってリンクを確認してください。
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.description,Authworks IDにリンクされている外部アカウントです。使用しなくなったアカウントのリンクを解除してください。
+account.identities.empty,リンクされている外部IDはありません
+account.identities.externalAccount,外部アカウント
+account.identities.linkDescription,別のプロバイダーを接続して認証方法として使用できます。
+account.identities.linkIncomplete,プロバイダーのウィンドウがリンク完了前に閉じられました。もう一度お試しください。
+account.identities.linkTitle,外部アカウントをリンク
 account.identities.manage,{provider} アカウントを管理（{account}）
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
-account.identities.unlink,Unlink
+account.identities.popupBlocked,外部アカウントを接続するにはポップアップを許可してください。
+account.identities.recentAuthRequired,安全のため、外部アカウントをリンクする前にご本人確認を行ってください。多要素認証を完了するか、もう一度サインインして再試行してください。
+account.identities.signInAgain,もう一度サインイン
+account.identities.stepUpDescription,多要素認証で確認すると、外部アカウントの操作が再試行されます。
+account.identities.unlink,リンクを解除
 account.identities.unlinkConfirm,この外部アカウントのリンクを解除しますか？
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
+account.passkeys.add,パスキーを追加
+account.passkeys.created,作成日: {date}
+account.passkeys.description,パスキーではデバイスの画面ロックまたはセキュリティキーを使用して安全にサインインします。
+account.passkeys.deviceBound,デバイスバウンドパスキー
+account.passkeys.empty,登録されているパスキーはありません
 account.passkeys.manage,{kind} を管理（{id}）
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.currentOptionalHint,Leave blank if no password is set yet.
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
+account.passkeys.remove,削除
+account.passkeys.synced,同期パスキー
+account.password.changed,パスワードを変更しました。
+account.password.confirm,新しいパスワード（確認）
+account.password.current,現在のパスワード
+account.password.currentOptionalHint,パスワードが未設定の場合は空白のままにしてください。
+account.password.description,他のサービスで使用していない一意のパスワードを使用してください。
+account.password.mismatch,新しいパスワードが一致しません。
+account.password.new,新しいパスワード
+account.password.set,パスワードを設定しました。
+account.password.setSubmit,パスワードを設定
+account.password.setTitle,パスワードを設定
+account.password.submit,パスワードを変更
+account.password.title,パスワードを変更
+account.password.tooShort,新しいパスワードは8文字以上で入力してください。
+account.profile.displayName,表示名
 account.profile.copy,{field} をコピー
 account.profile.copied,{field} をコピーしました。
 account.profile.copyFailed,{field} をコピーできませんでした。値を選択して手動でコピーしてください。
 account.profile.cancel,キャンセル
 account.profile.edit,プロフィールを編集
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
+account.profile.displayNameRequired,表示名を入力してください。
+account.profile.email,メールアドレス
 account.profile.emailMissing,メールアドレス未設定
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,メールアドレスを追加
+account.profile.emailAddDescription,アカウントに別のアドレスを追加します。確認後に利用できるようになります。
+account.profile.emailAddTitle,メールアドレスを追加
+account.profile.emailAddresses,メールアドレス
+account.profile.emailAddressesEmpty,利用可能なメールアドレスはありません。
+account.profile.emailAddressesSaved,メールアドレスを更新しました。
 account.profile.emailDescription,アカウントに登録されたメールアドレスを確認・管理します。
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
-account.profile.firstName,First name
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
+account.profile.emailCodeSent,{email} に送信された確認リンクを開くか、そのトークンを以下に貼り付けてください。
+account.profile.emailCodeSentGeneric,新しいアドレスに送信された確認リンクを開くか、そのトークンを以下に貼り付けてください。
+account.profile.emailDifferent,別のアドレスを使用
+account.profile.emailInvalid,有効なメールアドレスを入力してください。
+account.profile.emailMakePrimary,プライマリにする
+account.profile.emailNew,新しいメールアドレス
+account.profile.emailPrimary,プライマリ
+account.profile.emailPrimaryRemoveBlocked,プライマリメールアドレスは削除できません。
+account.profile.emailRefresh,アドレスを更新
+account.profile.emailRemove,削除
+account.profile.emailRemoving,削除中…
+account.profile.emailResend,確認メールを再送信
+account.profile.emailSending,確認メールを送信中…
+account.profile.emailToken,確認トークン
+account.profile.emailTokenInvalid,メールの確認トークンを入力してください。
+account.profile.emailUpdating,更新中…
+account.profile.emailVerify,メールアドレスを確認
+account.profile.emailVerifying,確認中…
+account.profile.firstName,名
+account.profile.gender,性別
+account.profile.gender.man,男性
+account.profile.gender.nonBinary,ノンバイナリー
+account.profile.gender.unspecified,指定なし
+account.profile.gender.woman,女性
+account.profile.lastName,姓
+account.profile.nickName,ニックネーム
 account.profile.notSet,未設定
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.personalDescription,アプリケーションや管理者に表示されるプロフィールを最新の状態に保ってください。
+account.profile.personalInformation,個人情報
+account.profile.phoneAdd,電話番号を追加
+account.profile.phoneChange,電話番号を変更
+account.profile.phoneCode,6桁の確認コード
+account.profile.phoneCodeInvalid,6桁の確認コードを入力してください。
+account.profile.phoneCodeSent,WhatsAppの {phoneNumber} に送信されたコードを入力してください。
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,別の番号を使用
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,有効な電話番号をE.164形式で入力してください。
+account.profile.phoneNew,新しい電話番号
+account.profile.phoneNumber,電話番号
 account.profile.phoneNumbers,電話番号
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,コードを再送信
+account.profile.phoneSaved,確認済みの電話番号を更新しました。
+account.profile.phoneSending,コードを送信中…
+account.profile.phoneVerify,電話番号を確認
+account.profile.phoneVerifying,確認中…
+account.profile.picture,プロフィール画像
 account.profile.pictureChange,プロフィール画像を変更
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,画像ファイルを選択
 account.profile.pictureDropHint,画像をここにドラッグ＆ドロップするか、クリックして参照
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,JPEG、PNG、WebP、GIF形式の512 KiB以下の画像をアップロードしてください。
 account.profile.picturePreview,プロフィール写真のプレビュー
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,画像を削除
 account.profile.pictureRemoving,画像を削除中…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
-account.profile.preferredLanguage,Preferred language
+account.profile.pictureSaved,プロフィール画像を更新しました。
+account.profile.pictureTooLarge,512 KiB以下の画像を選択してください。
+account.profile.pictureTypeInvalid,JPEG、PNG、WebP、GIF形式の画像を選択してください。
+account.profile.pictureUploading,画像をアップロード中…
+account.profile.preferredLanguage,優先言語
 account.profile.preferredLanguage.unspecified,未設定
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
+account.profile.save,変更を保存
+account.profile.saved,プロフィールを保存しました。
+account.profile.userName,ユーザー名
+account.profile.verificationPending,確認待ち
+account.profile.verified,確認済み
 account.recovery.description,他の方法が使えないときにサインインするための使い捨てバックアップコードを生成します。
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
+account.recovery.generate,新しいコードを生成
+account.recovery.once,これらのコードを今すぐコピーまたは印刷してください。再度表示することはできません。
+account.recovery.remaining,未使用のコードが {count} 件残っています。新しいコードを生成すると以前のセットは無効になります。
+account.recovery.saveNow,復旧コードを今すぐ保存
+account.recovery.saved,コードを保存しました
 account.refreshTokens.active,有効
 account.refreshTokens.activeShown,有効なものを {count} 件表示
 account.refreshTokens.countOneShown,アプリケーションを {count} 件表示
@@ -235,99 +235,99 @@ account.refreshTokens.revokeAll,すべてのファミリーを失効
 account.refreshTokens.revokeAllConfirm,このアカウントのすべてのリフレッシュトークンファミリーを失効させますか？
 account.refreshTokens.revokeConfirm,このリフレッシュトークンファミリーと関連するアクセストークンを失効させますか？
 account.refreshTokens.revoked,失効済み
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,スコープ {count} 件
 account.refreshTokens.title,リフレッシュトークンファミリー
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,認証アプリ
+account.security.identityCount,リンク済みの外部ID {count} 件
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,多要素認証 (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,メールの変更
+account.securityHistory.category.impersonation,なりすまし
+account.securityHistory.category.linkedIdentities,リンク済みの外部ID
+account.securityHistory.category.mfa,多要素認証
+account.securityHistory.category.passkeys,パスキー
+account.securityHistory.category.passwords,パスワード
+account.securityHistory.category.refreshTokens,リフレッシュトークン
+account.securityHistory.category.sessions,セッション
+account.securityHistory.empty,利用可能なセキュリティアクティビティはありません
 account.securityHistory.countOneShown,イベントを {count} 件表示
 account.securityHistory.countShown,イベントを {count} 件表示
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
+account.securityHistory.event.accessTokenRevoked,アクセストークンが取り消されました。
+account.securityHistory.event.emailChangeFailed,メールアドレスの変更に失敗しました。
+account.securityHistory.event.emailChangeRequested,メールアドレスの変更が要求されました。
+account.securityHistory.event.emailChangeVerified,新しいメールアドレスが確認されました。
+account.securityHistory.event.emailChanged,アカウントのメールアドレスが変更されました。
+account.securityHistory.event.identityLinked,外部IDがリンクされました。
+account.securityHistory.event.identityUnlinked,外部IDのリンクが解除されました。
+account.securityHistory.event.impersonationEnded,なりすましセッションが終了しました。
+account.securityHistory.event.impersonationStarted,なりすましセッションが開始されました。
+account.securityHistory.event.mfaCompleted,多要素認証チャレンジが完了しました。
+account.securityHistory.event.mfaFailed,多要素認証チャレンジに失敗しました。
+account.securityHistory.event.mfaStarted,多要素認証チャレンジが開始されました。
+account.securityHistory.event.passkeyAuthenticationCompleted,パスキー認証が完了しました。
+account.securityHistory.event.passkeyAuthenticationStarted,パスキー認証が開始されました。
+account.securityHistory.event.passkeyCredentialRenamed,パスキーの名前が変更されました。
+account.securityHistory.event.passkeyCredentialRevoked,パスキーが取り消されました。
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,パスキーが管理者により取り消されました。
+account.securityHistory.event.passkeyCredentialUsed,パスキーが使用されました。
+account.securityHistory.event.passkeyRegistrationCompleted,パスキーの登録が完了しました。
+account.securityHistory.event.passkeyRegistrationStarted,パスキーの登録が開始されました。
+account.securityHistory.event.passwordChanged,パスワードが変更されました。
+account.securityHistory.event.passwordEmailVerified,パスワード用メールアドレスが確認されました。
+account.securityHistory.event.passwordLocked,パスワードアカウントがロックされました。
+account.securityHistory.event.passwordLoginFailed,パスワードでのサインインに失敗しました。
+account.securityHistory.event.passwordLoginSucceeded,パスワードでのサインインに成功しました。
+account.securityHistory.event.passwordRecovered,パスワードが復旧されました。
+account.securityHistory.event.passwordRecoveryRequested,パスワードの復旧が要求されました。
+account.securityHistory.event.passwordUnlocked,パスワードアカウントのロックが解除されました。
+account.securityHistory.event.passwordWhatsappVerified,WhatsAppサインイン番号が確認されました。
+account.securityHistory.event.recoveryCodeUsed,復旧コードが使用されました。
+account.securityHistory.event.recoveryCodesGenerated,復旧コードが生成されました。
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,復旧コードが管理者により無効化されました。
+account.securityHistory.event.refreshTokenFamilyRevoked,リフレッシュトークンファミリーが取り消されました。
+account.securityHistory.event.sessionCreated,セッションが作成されました。
+account.securityHistory.event.sessionRevoked,セッションが取り消されました。
+account.securityHistory.event.sessionRotated,セッションが更新されました。
+account.securityHistory.event.sessionsRevoked,すべてのセッションが取り消されました。
+account.securityHistory.event.totpEnrollmentConfirmed,認証アプリが確認されました。
+account.securityHistory.event.totpEnrollmentStarted,認証アプリの設定が開始されました。
+account.securityHistory.event.totpRemoved,認証アプリが削除されました。
+account.securityHistory.event.totpRemovedByAdministrator,認証アプリが管理者により削除されました。
+account.securityHistory.event.totpRenamed,認証アプリの名前が変更されました。
+account.securityHistory.event.totpVerified,認証アプリのチャレンジに成功しました。
+account.securityHistory.loadMore,セキュリティアクティビティをさらに読み込む
+account.securityOverview.backupCodeCount,残りバックアップコード {count} 件
+account.securityOverview.backupCodes,バックアップコード
+account.securityOverview.email,メール
+account.securityOverview.emailMissing,確認済みメールはありません
+account.securityOverview.emailVerified,{email} 確認済み
+account.securityOverview.passkeyCount,設定済みパスキー {count} 件
+account.securityOverview.passkeys,パスキー
+account.securityOverview.password,パスワード
+account.securityOverview.passwordMissing,パスワード未設定
+account.securityOverview.passwordSet,パスワード設定済み
+account.securityOverview.phone,電話
+account.securityOverview.phoneMissing,確認済みの電話はありません
+account.securityOverview.phoneVerified,{phone} 確認済み
+account.sessionExpired,セッションの有効期限が切れています。
+account.sessions.current,現在のセッション
 account.sessions.count,有効なセッション {count} 件
 account.sessions.countOne,有効なセッション {count} 件
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.sessions.description,アカウントがサインインしているデバイスを確認し、身に覚えのないセッションを取り消してください。
+account.sessions.empty,アクティブなセッションはありません
+account.sessions.lastUsed,最終使用 {date}
 account.sessions.manage,{device} のセッション
-account.sessions.revoke,Revoke session
-account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.revoke,セッションを取り消し
+account.sessions.revokeConfirm,このセッションを直ちに取り消しますか？
 account.sessions.deviceLabel,{browser}（{os}）
 account.sessions.deviceLabelBrowser,{browser}
 account.sessions.deviceLabelOs,{os}
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,不明なデバイス
+account.status.available,利用可能
+account.status.configured,設定済み
+account.status.notConfigured,未設定
+account.status.unavailable,利用不可
 account.workspace.devicesTitle,デバイスとアプリケーション
 admin.common.confirmTitle,この操作を確認
 admin.common.permission,この管理データを表示する権限がありません。
@@ -414,44 +414,44 @@ admin.events.systemActor,システム
 admin.events.title,監査イベント
 admin.events.type,イベントの種類
 admin.events.userSubject,ユーザーサブジェクト
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.activeTitle,実行中のなりすまし
+admin.impersonation.actor,管理者
+admin.impersonation.assuranceRequired,ユーザーのなりすましには多要素認証が必要です。続行するには第2要素でもう一度サインインしてください。
+admin.impersonation.assuranceRequiredTitle,強化されたサインインが必要です
+admin.impersonation.auditLink,このなりすましの監査イベントを表示
+admin.impersonation.bannerLabel,なりすまし実行中
+admin.impersonation.bannerSummary,{actor} が {subject} として操作中です。このセッションは {remaining} で終了します。
+admin.impersonation.description,短時間の記録されるサポートセッションとして他のユーザーとして操作します。理由と期限のある期間は常に必須です。
+admin.impersonation.duration,期間
+admin.impersonation.durationHint,なりすましは最大15分で必ず自動的に終了します。
+admin.impersonation.durationInvalid,1秒から15分の間で期間を選択してください。
+admin.impersonation.durationMinutes,{count} 分
+admin.impersonation.end,なりすましを終了
+admin.impersonation.endConfirm,{subject} のなりすましを今すぐ終了しますか？
+admin.impersonation.endedNotice,なりすましセッションを終了しました。
+admin.impersonation.expires,終了
+admin.impersonation.expiringSoon,このなりすましは1分以内に終了します。
+admin.impersonation.nestedRejected,すでに他のユーザーとして操作中です。新しいなりすましを開始する前に現在のなりすましを終了してください。
+admin.impersonation.nestedRejectedTitle,なりすましの入れ子は許可されていません
+admin.impersonation.noOrganization,組織なし
+admin.impersonation.organization,組織
+admin.impersonation.organizationHint,任意。その人物がある組織で持つ権限にセッションを制限します。
+admin.impersonation.permissionDenied,このレルムでユーザーのなりすましを行う権限がありません。
 admin.impersonation.permissionDeniedTitle,アクセスできません
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,理由
+admin.impersonation.reasonHint,監査証跡に記録され、代理操作の対象者に表示されます。
+admin.impersonation.reasonRequired,3 文字以上 256 文字以下の理由を入力してください。
+admin.impersonation.remaining,残り時間
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,自分自身のアカウントになりすますことはできません。
+admin.impersonation.start,なりすましを開始
+admin.impersonation.startConfirm,{subject} として操作を開始しますか？すべての操作はあなた自身の ID に記録されます。
+admin.impersonation.startedAt,開始日時
+admin.impersonation.startedNotice,現在 {subject} として操作しています。
+admin.impersonation.subject,操作対象
+admin.impersonation.target,なりすます対象のユーザー
+admin.impersonation.targetRequired,操作対象のユーザーを選択してください。
+admin.impersonation.title,なりすまし
 admin.machine.assuranceRequired,マシンユーザーとその資格情報を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.machine.assuranceRequiredTitle,より強力なサインインが必要です
 admin.machine.created,作成日時
@@ -523,8 +523,8 @@ admin.machine.users.created,マシンユーザーを作成しました。
 admin.machine.users.description,このレルムでクライアント資格情報、トークン、または API キーを使って認証する非人間 ID です。
 admin.machine.users.detailTitle,マシンユーザーの詳細
 admin.machine.users.displayName,表示名
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,マシンユーザーを編集
+admin.machine.users.editTitle,マシンユーザーを編集
 admin.machine.users.empty,このレルムにはまだマシンユーザーが存在しません。
 admin.machine.users.identifier,マシンユーザー識別子
 admin.machine.users.invalid,表示名とユーザー名を入力し、有効なスコープ値のみを使用してください。
@@ -535,23 +535,23 @@ admin.machine.users.scopes,スコープ
 admin.machine.users.scopesHint,スコープはスペースまたはカンマで区切ります。スコープは完全一致で照合されます。
 admin.machine.users.search,マシンユーザーを検索
 admin.machine.users.title,マシンユーザー
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,マシンユーザーを更新しました。
 admin.machine.users.userName,ユーザー名
 admin.machine.users.userNameHint,クライアント資格情報を交換するときのクライアント ID として使用されます。
-admin.navigation.description,Choose an administration resource
+admin.navigation.description,管理リソースを選択してください。
 admin.navigation.label,管理
-admin.navigation.title,Administration navigation
+admin.navigation.title,管理ナビゲーション
 admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.oidc.assuranceRequiredTitle,より強力なサインインが必要です
 admin.oidc.clients.consent,同意
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,アクセストークンの有効期間（秒）
+admin.oidc.clients.accessTokenRoleAssertion,アクセストークンにプロジェクトロールを含める
+admin.oidc.clients.accessTokenRoleAssertionHint,クライアントに設定されたプロジェクトと組織のコンテキストで有効なロールを使用します。
+admin.oidc.clients.additionalOrigins,追加のブラウザーオリジン
+admin.oidc.clients.additionalOriginsHint,1 行につき 1 つの完全一致オリジン。リダイレクト URI のオリジンは既に含まれます。ワイルドカードはサポートされません。
+admin.oidc.clients.application,アプリケーション
+admin.oidc.clients.applicationNone,アプリケーションなし
+admin.oidc.clients.compatibility,互換性設定
 admin.oidc.clients.consentRequired,必要
 admin.oidc.clients.consentSkipped,不要
 admin.oidc.clients.create,クライアントを登録
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,OpenID Connect でサインインさせる�
 admin.oidc.clients.created,クライアントを登録しました。
 admin.oidc.clients.description,このレルムで OpenID Connect を通じて人を認証するアプリケーション。
 admin.oidc.clients.detailTitle,OIDC クライアントの詳細
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,開発モード
+admin.oidc.clients.devModeHint,任意のホストへの平文 http リダイレクトを許可します。ローカル開発でのみ使用してください。
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
 admin.oidc.clients.emptySearch,この検索に一致するクライアントはありません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,グラントタイプ
 admin.oidc.clients.identifier,クライアント識別子
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,ID トークンの有効期間（秒）
+admin.oidc.clients.idTokenRoleAssertion,ID トークンにプロジェクトロールを含める
+admin.oidc.clients.idTokenRoleAssertionHint,クライアントに設定されたプロジェクトと組織のコンテキストで有効なロールを使用します。
+admin.oidc.clients.idTokenUserinfoAssertion,ID トークンにスコープ別の UserInfo クレームを含める
+admin.oidc.clients.idTokenUserinfoAssertionHint,付与されたスコープで許可された個人クレームのみを使用します。
 admin.oidc.clients.invalid,クライアント名、完全一致のリダイレクト URI を 1 つ以上、スコープを 1 つ以上入力してください。
 admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,整数の秒数。空欄のままにするとサーバーの既定値を使用します。
+admin.oidc.clients.lifetimesInvalid,有効期間は許容範囲内の整数の秒数で入力してください。
 admin.oidc.clients.missingId,この宛先にはOIDCクライアントの選択が必要です。
 admin.oidc.clients.name,クライアント名
 admin.oidc.clients.postLogoutUris,サインアウト後のリダイレクト URI
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,プロジェクト
+admin.oidc.clients.projectNone,プロジェクトなし
 admin.oidc.clients.redirectUris,リダイレクト URI
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,リフレッシュトークンの絶対有効期間（秒）
+admin.oidc.clients.refreshTokenIdleLifetime,リフレッシュトークンのアイドル有効期間（秒）
 admin.oidc.clients.removeConfirm,このOIDCクライアントを削除しますか？それを使用するアプリケーションは即座に動作しなくなります。
 admin.oidc.clients.requireConsent,このアプリケーションの承認を本人に求める
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,レスポンスタイプ
 admin.oidc.clients.saved,クライアントを保存しました。
 admin.oidc.clients.scopes,許可されたスコープ
 admin.oidc.clients.search,クライアントを検索
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,アルゴリズム
 admin.oidc.keys.create,鍵を追加
 admin.oidc.keys.created,新しい署名鍵を公開しました。
 admin.oidc.keys.empty,このレルムにはまだ署名鍵がありません。
+admin.oidc.keys.expires,有効期限
 admin.oidc.keys.keyId,鍵 ID
 admin.oidc.keys.privateNotice,表示されるのは公開鍵のメタデータのみです。秘密鍵がブラウザーに送信されることはありません。
 admin.oidc.keys.retire,退役させる
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,ドメイン {domain} を削除しま�
 admin.organizations.domains.removed,ドメインを削除しました。
 admin.organizations.domains.unverified,検証待ち
 admin.organizations.domains.verificationRecord,この DNS TXT レコードを追加してから検証してください。
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,検証済み
 admin.organizations.domains.verify,ドメインを検証
 admin.organizations.domains.verifyDone,ドメインを検証しました。
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,メールアドレス
 admin.organizations.invitations.emailInvalid,有効なメールアドレスを入力してください。
 admin.organizations.invitations.empty,この組織に対して招待は送信されていません。
 admin.organizations.invitations.expires,有効期限
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,ユーザー
 admin.organizations.memberships.userId,ユーザー ID
 admin.organizations.permissionDenied,この組織を表示または変更する権限がありません。
 admin.organizations.permissionDeniedTitle,アクセスできません
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,許可された MFA ファクター
+admin.organizations.policy.allowedFactorsDescription,MFA を完了できるのはこれらのファクターのみです。WhatsApp サインインとリカバリーコードは設定可能なファクターではありません。
+admin.organizations.policy.assurance.authenticated,認証済みセッション
+admin.organizations.policy.assurance.multi_factor,多要素セッション
+admin.organizations.policy.assurance.none,アシュアランス要件なし
 admin.organizations.policy.description,利用できるサインイン方法と、表示する構成済みプロバイダーを選択します。
 admin.organizations.policy.domainDiscovery,メールドメインから組織を判別する
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,下へ
+admin.organizations.policy.effectiveValue,実効値: {value}
 admin.organizations.policy.emailOtp,メールワンタイムコード
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,保護された組織操作には認証済みセッションが必要です。
+admin.organizations.policy.enforcementMultiFactor,保護された組織操作には多要素セッションが必要で、必要に応じてステップアップを求めます。
+admin.organizations.policy.enforcementNone,保護された組織操作に追加のアシュアランス要件はありません。
+admin.organizations.policy.enforcementOptional,追加の MFA ファクターなしでログインを完了できます。
+admin.organizations.policy.enforcementRequired,許可された MFA ファクターが成功するまでログインは完了しません。
+admin.organizations.policy.enforcementTitle,実効される適用
 admin.organizations.policy.externalIdentity,外部 ID プロバイダー
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.emailOtp,メールワンタイムコード
+admin.organizations.policy.factor.passkey,パスキー
+admin.organizations.policy.factor.recoveryCode,リカバリーコード
+admin.organizations.policy.factor.totp,認証アプリ（TOTP）
 admin.organizations.policy.inherited,レルムから継承
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.minimumAssurance,最小ステップアップアシュアランス
+admin.organizations.policy.moveDown,{factor} を下へ移動
+admin.organizations.policy.moveUp,{factor} を上へ移動
+admin.organizations.policy.notRequired,不要
+admin.organizations.policy.organizationOverrides,組織のオーバーライド
+admin.organizations.policy.organizationValue,組織のオーバーライド値
+admin.organizations.policy.overrideRealm,レルムの値をオーバーライドする
+admin.organizations.policy.passkey,パスキー
 admin.organizations.policy.password,パスワード
 admin.organizations.policy.passwordRecovery,パスワードの復旧
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,優先ファクター順
+admin.organizations.policy.preferredOrderDescription,「上へ」「下へ」ボタンでキーボード操作可能なファクターの優先順位を設定します。
+admin.organizations.policy.realmDefaults,レルムの既定値
+admin.organizations.policy.realmValue,レルム値
 admin.organizations.policy.registration,セルフサービス登録
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,許可されたファクターを登録していない人はロックアウトされず、登録と修復に案内されます。
+admin.organizations.policy.required,必須
+admin.organizations.policy.requiredMfa,必須の MFA
 admin.organizations.policy.saved,サインインポリシーを保存しました。
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,パスワードポリシー
+admin.organizations.passwordPolicy.description,レルム全体のパスワードサインインに関する複雑さとロックアウトのルール。組織のログインはこの値を継承します。
+admin.organizations.passwordPolicy.minimumLength,最小文字数
+admin.organizations.passwordPolicy.minimumLengthHint,1 文字から 72 文字の間で指定します。
+admin.organizations.passwordPolicy.requireLowercase,小文字を必須にする
+admin.organizations.passwordPolicy.requireUppercase,大文字を必須にする
+admin.organizations.passwordPolicy.requireNumber,数字を必須にする
+admin.organizations.passwordPolicy.requireSymbol,記号を必須にする
+admin.organizations.passwordPolicy.maximumAttempts,ロックアウトまでの失敗回数
+admin.organizations.passwordPolicy.maximumAttemptsHint,1 回から 100 回の間で指定します。
+admin.organizations.passwordPolicy.lockoutMinutes,ロックアウト時間（分）
+admin.organizations.passwordPolicy.lockoutMinutesHint,失敗回数が多すぎると、アカウントはこの時間ロックされたままになります。
+admin.organizations.passwordPolicy.saved,パスワードポリシーを保存しました。
+admin.organizations.passwordPolicy.validation.minimumLength,最小文字数を 1 文字から 72 文字で入力してください。
+admin.organizations.passwordPolicy.validation.maximumAttempts,ロックアウトまでの失敗回数を 1 回から 100 回で入力してください。
+admin.organizations.passwordPolicy.validation.lockout,1 分以上のロックアウト時間を入力してください。
+admin.organizations.passwordPolicy.validation.policy,パスワードポリシーが無効です。
+admin.organizations.policy.scopeLabel,ポリシーの適用範囲
+admin.organizations.policy.securityDescription,ログインの MFA と保護された組織操作に必要なアシュアランスを設定します。
+admin.organizations.policy.securityTitle,MFA とアシュアランス
 admin.organizations.policy.title,サインインポリシー
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,上へ
+admin.organizations.policy.validation.assuranceWeaker,組織のアシュアランス要件をレルム値より弱くすることはできません。
+admin.organizations.policy.validation.factorNarrowing,組織のファクターはレルムのファクター許可リストのサブセットである必要があります。
+admin.organizations.policy.validation.order,優先順位には許可されたファクターのみを含めることができます。
+admin.organizations.policy.validation.requiredFactors,必須の MFA には許可されたファクターが少なくとも 1 つ必要です。
+admin.organizations.policy.validation.requiredMfaWeaker,組織はレルムで必須の MFA を無効にできません。
 admin.organizations.providers.allowAccountCreation,新しい人のアカウントを自動的に作成する
 admin.organizations.providers.clientId,クライアント ID
 admin.organizations.providers.clientSecret,クライアントシークレット
@@ -821,7 +822,7 @@ admin.organizations.providers.description,この組織に構成された Google�
 admin.organizations.providers.disable,プロバイダーを無効化
 admin.organizations.providers.disableConfirm,{displayName} を無効化しますか？ユーザーはこのプロバイダーでサインインできなくなります。
 admin.organizations.providers.disabled,プロバイダーを無効化しました。
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,表示名
 admin.organizations.providers.empty,外部 ID プロバイダーはまだ構成されていません。
 admin.organizations.providers.invalid,表示名、クライアント ID、クライアントシークレット、絶対リダイレクト URI を入力してください。
 admin.organizations.providers.redirectUri,リダイレクト URI
@@ -893,7 +894,7 @@ admin.projects.grants.roleKeys,付与されたロール
 admin.projects.grants.title,組織への付与
 admin.projects.lifecycle.activate,有効化
 admin.projects.lifecycle.deactivate,無効化
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,削除
 admin.projects.lifecycle.removeConfirm,このプロジェクトを削除しますか？
 admin.projects.lifecycle.removeConfirmAccept,プロジェクトを除去
 admin.projects.lifecycle.removeConfirmTitle,このプロジェクトを除去
@@ -918,7 +919,7 @@ admin.projects.overview.title,プロジェクト概要
 admin.projects.roles.create,ロールを作成
 admin.projects.roles.deleteConfirm,このプロジェクトロールを削除しますか？参照している付与はロールを失います。
 admin.projects.roles.description,このプロジェクトが組織とそのメンバーに割り当てられるロール。
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,表示名
 admin.projects.roles.empty,このプロジェクトにはまだロールが定義されていません。
 admin.projects.roles.group,グループ
 admin.projects.roles.invalid,ロールキーと表示名を入力してください。
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,{userName} を削除しました。
 admin.userProfile.editProfile,プロフィールを編集
 admin.userProfile.editProfileTitle,プロフィールの編集
 admin.userProfile.email,メールアドレス
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,このユーザーには確認すべきメールアドレスがありません。
 admin.userProfile.emailUnverified,未確認
 admin.userProfile.emailVerified,確認済み
 admin.userProfile.impersonate,ユーザーになりすます
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,組織ロールを更新しました�
 admin.userProfile.organizationRoleDescription,アクティブな組織での主なロールを選択します。
 admin.userProfile.organizationRoleTitle,組織ロール
 admin.userProfile.overviewTab,概要
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,パスキーを取り消す
+admin.userProfile.passkeyRevokeConfirm,{userName} のこのパスキーを取り消しますか？直ちに使用できなくなります。
+admin.userProfile.passkeyRevoked,パスキーを取り消しました。
 admin.userProfile.passwordConfirm,新しいパスワード(確認)
 admin.userProfile.passwordMismatch,パスワードが一致しません。
 admin.userProfile.passwordNew,新しいパスワード
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,{projectName} の割り当てを削�
 admin.userProfile.projectRolesRemoved,プロジェクトの割り当てを削除しました。
 admin.userProfile.projectRolesSaved,プロジェクトの割り当てを保存しました。
 admin.userProfile.projectRolesTitle,プロジェクトロール
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,ユーザーデータをパージする
+admin.userProfile.purgeConfirm,{userName} のすべての記録を完全にパージしますか？この操作は取り消せません。
+admin.userProfile.purgeConfirmTitle,このユーザーをパージする
+admin.userProfile.purgeConfirmType,確認のため {userName} と入力してください。
+admin.userProfile.purgeWarning,パージするとユーザーの行、セッション、資格情報、監査履歴が削除されます。
+admin.userProfile.purged,{userName} をパージしました。
 admin.userProfile.reactivate,ユーザーを再有効化
 admin.userProfile.reactivateConfirm,{userName} を再有効化しますか?ユーザーは再びサインインできます。
 admin.userProfile.reactivated,{userName} を再有効化しました。
 admin.userProfile.realmAdminBadge,レルム管理者
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,リカバリーコードを無効化する
+admin.userProfile.recoveryCodesInvalidateConfirm,{userName} のリカバリーコードを無効化しますか？既存のコードは直ちに使用できなくなります。
+admin.userProfile.recoveryCodesInvalidated,リカバリーコードを無効化しました。
 admin.userProfile.removeRealmAdmin,レルム管理者を解除
 admin.userProfile.removeRealmAdminConfirm,{userName} のレルム管理者権限を解除しますか?
 admin.userProfile.removeRealmAdminDone,{userName} はレルム管理者ではなくなりました。
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,確認メールを再送する
+admin.userProfile.resendVerificationConfirm,{email} に新しい確認メールを送信しますか？
+admin.userProfile.resendVerificationDone,{email} に確認メールを送信しました。
 admin.userProfile.revokeAll,すべて取り消し
 admin.userProfile.revokeAllConfirm,{userName} のすべてのセッションを取り消しますか?ユーザーはすべての場所でサインアウトされます。
 admin.userProfile.revokeAllDone,すべてのセッションを取り消しました。
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,セッションとデバイス
 admin.userProfile.setPassword,パスワードを設定
 admin.userProfile.setPasswordDescription,サインイン用パスワードを置き換え、ロックアウトを解除します。
 admin.userProfile.setPasswordTitle,新しいパスワードの設定
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,ユーザーを停止する
+admin.userProfile.suspendConfirm,{userName} を停止しますか？ユーザーはサインインできなくなります。
+admin.userProfile.suspended,{userName} を停止しました。
+admin.userProfile.totpRemove,TOTP の登録を削除する
+admin.userProfile.totpRemoveConfirm,{userName} の TOTP 登録を削除しますか？ユーザーは再登録が必要です。
+admin.userProfile.totpRemoved,TOTP の登録を削除しました。
 admin.userProfile.unlock,ユーザーのロックを解除
 admin.userProfile.unlockConfirm,{userName} のロックを解除しますか?ユーザーは再びサインインできます。
 admin.userProfile.unlocked,{userName} のロックを解除しました。
 admin.userProfile.username,ユーザー名
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,{email} を未確認としてマークしました（オーバーライド）。
+admin.userProfile.verificationOverrideUnverify,メールを未確認にする（オーバーライド）
+admin.userProfile.verificationOverrideUnverifyConfirm,{email} を未確認にしますか？ユーザーは再度確認が必要です。
+admin.userProfile.verificationOverrideVerified,{email} を確認済みとしてマークしました（オーバーライド）。
+admin.userProfile.verificationOverrideVerify,メールを確認済みにする（オーバーライド）
+admin.userProfile.verificationOverrideVerifyConfirm,メールチャレンジなしで {email} を確認済みにしますか？通常の確認フローを上書きします。
+admin.users.authentication.generated,生成日時: {date}
+admin.users.authentication.neverUsed,未使用
+admin.users.authentication.passkeyMetadata,{deviceType} · 作成 {created} · 最終使用 {lastUsed}
+admin.users.authentication.pending,確認待ち
+admin.users.authentication.recoveryCodes,リカバリーコード
+admin.users.authentication.recoveryCount,残り {count} 件のコード
+admin.users.authentication.totpMetadata,{label} · 確認済み {confirmed}
 admin.users.count,{count} 人のユーザー
 admin.users.create,ユーザーを作成
 admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,サービスアカウント
 admin.users.directoryUser,ユーザー
 admin.users.directoryUserInvited,招待済み
 admin.users.directoryUserName,ユーザー名
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,表示名
+admin.users.displayNameRequired,表示名を入力してください。
+admin.users.email,メールアドレス
+admin.users.firstName,名
 admin.users.identifier,ユーザー識別子
 admin.users.invalid,有効なメールアドレスとユーザー名を入力してください。
 admin.users.inviteEmailInvalid,有効なメールアドレスを入力してください。
@@ -1241,35 +1242,35 @@ admin.users.inviteTokenCopy,リンクをコピー
 admin.users.inviteTokenDismiss,リンクを保存しました
 admin.users.inviteTokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
 admin.users.inviteTokenTitle,招待リンク
-admin.users.lastName,Last name
+admin.users.lastName,姓
 admin.users.lifecycle.active,有効
 admin.users.lifecycle.deleted,削除済み
 admin.users.lifecycle.inactive,非アクティブ
 admin.users.lifecycle.initial,初期
 admin.users.lifecycle.locked,ロック済み
 admin.users.lifecycle.suspended,停止中
-admin.users.nickName,Nickname
+admin.users.nickName,ニックネーム
 admin.users.serviceAccountCreated,サービスアカウントを作成しました。
 admin.users.serviceAccountInvalid,サービスアカウントの表示名とユーザー名を入力してください。
 admin.users.sessions.country,国
-admin.users.sessions.created,Created
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
+admin.users.sessions.created,作成日時
+admin.users.sessions.expires,有効期限
+admin.users.sessions.ipAddress,IP アドレス
+admin.users.sessions.lastUsed,最終使用日時
 admin.users.sessions.location,場所
-admin.users.sessions.method,Sign-in method
+admin.users.sessions.method,サインイン方法
 admin.users.sessions.region,地域
 admin.users.state,状態
 admin.users.title,ユーザー
 admin.users.unverifiedEmail,未確認のメール
-admin.users.userName,Username
+admin.users.userName,ユーザー名
 app.name,Authworks
 app.tagline,安全なアイデンティティサービス
 common.back,戻る
 common.cancel,キャンセル
 common.close,閉じる
 common.continue,続行
-common.decline,Decline
+common.decline,辞退する
 common.disable,オフにする
 common.disabled,無効
 common.enable,オンにする
@@ -1281,7 +1282,7 @@ common.next,次へ
 common.pagination,ページ送り
 common.previous,戻る
 common.retry,もう一度お試しください
-common.revoke,Revoke
+common.revoke,取り消す
 common.save,保存
 common.signIn,サインイン
 common.signOut,サインアウト
@@ -1289,28 +1290,28 @@ common.theme.dark,ダーク
 common.theme.light,ライト
 common.theme.system,システム
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,あなたの住所
+oidc.consent.approve,承認する
+oidc.consent.approving,承認中…
+oidc.consent.clientId,クライアント ID
+oidc.consent.deny,拒否する
+oidc.consent.denying,拒否中…
+oidc.consent.description,{client} があなたのアカウントへのアクセスを要求しています。
+oidc.consent.email,あなたのメールアドレス
+oidc.consent.expiredDescription,この認可リクエストは無効になりました。アプリケーションからやり直してください。
+oidc.consent.expiredTitle,認可リクエストの有効期限切れ
+oidc.consent.missingDescription,アクセスを要求したアプリケーションからこのページを開いてください。
+oidc.consent.missingTitle,認可リクエストがありません
+oidc.consent.offlineAccess,オフラインのときもサインインを維持する
+oidc.consent.openid,あなたの本人確認
+oidc.consent.phone,あなたの電話番号
+oidc.consent.profile,あなたの基本プロフィール
+oidc.consent.redirectDescription,承認後、{redirectUri} に戻ります。
+oidc.consent.redirectUri,リダイレクト URI
+oidc.consent.resourceOwner,あなたの組織メンバーシップ
+oidc.consent.scopeTitle,要求されたアクセス
+oidc.consent.signInDescription,この認可リクエストを確認するにはサインインしてください。
+oidc.consent.signInTitle,サインインが必要です
 ui.authenticated.clearSearch,検索をクリア
 ui.authenticated.demo.adminBlurb,管理者: 所有者を除くメンバーとプロジェクトと資格情報を管理。
 ui.authenticated.demo.chipBlurb,役割と状態とプロジェクト可視性の小型トークン。
@@ -1943,89 +1944,89 @@ shell.state.loadingDetail,このページとセキュリティコンテキスト
 shell.state.nothingHere,ここにはまだ何もありません
 shell.state.pageUnavailable,このページは利用できません
 shell.state.readyDetail,このページはコンテンツを表示する準備ができています。
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,アプリケーションのアクセスが承認されました。アプリケーションで続行してください。
+demo.consent.clientId,クライアント ID
+demo.consent.declined,アプリケーションのアクセスが辞退されました。
+demo.consent.error,認可リクエストを読み込めませんでした。
+demo.consent.expired,この認可リクエストは有効期限が切れています。アプリケーションからやり直してください。
+demo.consent.expiredTitle,認可リクエストの有効期限切れ
+demo.consent.redirectDescription,承認後、{redirectUri} に戻ります。
+demo.consent.redirectUri,リダイレクト URI
+demo.consent.requestDescription,{application} があなたのアカウントへのアクセスを要求しています。
+demo.consent.scopeTitle,要求された権限
+demo.consent.scenario.description,フィクスチャーベースの操作で OpenID Connect アプリケーションのアクセス要求を承認または辞退します。
+demo.consent.scenario.title,アプリケーションの同意
+demo.hub.consentDescription,承認と辞退の結果を伴う OpenID Connect アプリケーションのアクセス要求を確認します。
+demo.hub.consentOpen,同意を開く
+demo.hub.invitationsDescription,サインイン中のアカウント宛ての招待を確認して応答します。
+demo.hub.invitationsOpen,招待を開く
+admin.organizations.policy.autoLinking,外部 ID を自動的にリンクする
+admin.organizations.policy.whatsappOtp,WhatsApp ワンタイムコード
+admin.organizations.policy.sessionLifetime,セッションの有効期間（秒）
+admin.organizations.policy.sessionLifetimeHint,セッションが有効な期間。空欄のままにすると現在の値を維持します。
+admin.organizations.policy.mfaInitSkipLifetime,MFA スキップの有効期間（秒）
+admin.organizations.policy.secondFactorLifetime,第 2 要素チェックの有効期間（秒）
+admin.organizations.policy.multiFactorLifetime,多要素チェックの有効期間（秒）
+admin.organizations.policy.lifetimeUnsetHint,空欄のままにすると値は未設定になります。
+admin.organizations.policy.forceMfaLocalOnly,ローカル MFA のみ
+admin.organizations.policy.providerAllowlist,許可されたプロバイダー
+admin.organizations.policy.providerAllowlistDescription,外部サインインを完了できるのはこれらのプロバイダーのみです。すべてのプロバイダーを選択するとすべて許可されます。
+admin.organizations.policy.providerAllowlistReset,すべてのプロバイダーを許可
+admin.organizations.policy.validation.lifetime,有効期間を 1 秒から 31536000 秒で入力してください。
+admin.organizations.metadata.title,組織のメタデータ
+admin.organizations.metadata.description,この組織に保存されるカスタムのキーと値のペア。最大 50 件まで。
+admin.organizations.metadata.key,キー
+admin.organizations.metadata.value,値
+admin.organizations.metadata.save,エントリを保存
+admin.organizations.metadata.remove,削除
+admin.organizations.metadata.removeConfirm,メタデータ「{key}」を削除しますか？
+admin.organizations.metadata.empty,メタデータはまだ登録されていません。
+admin.organizations.metadata.saved,メタデータを保存しました。
+admin.organizations.metadata.removed,メタデータを削除しました。
+admin.organizations.metadata.invalid,キーと値を入力してください。
+admin.organizations.providers.issuer,発行者
+admin.organizations.providers.issuerHint,汎用 OIDC プロバイダーには必須です。
+admin.organizations.providers.scopes,スコープ
+admin.organizations.providers.scopesHint,"カンマ区切りのリスト（例: openid, email, profile）。"
+admin.organizations.providers.save,プロバイダーを保存
+common.remove,削除
+admin.oidc.clients.backToClients,OIDC クライアント
+admin.oidc.clients.consentOptions,オプション
+admin.oidc.clients.serverDefault,サーバーの既定値
+admin.oidc.clients.tokenLifetimes,トークンの有効期間
+admin.oidc.secret.credentialsLifecycle,資格情報とライフサイクル
+admin.redesign.actions,操作
+admin.redesign.activeSessions,アクティブなセッション
+admin.redesign.administratorId,管理者 ID
+admin.redesign.consentTrust,同意と信頼
+admin.redesign.device,デバイス
+admin.redesign.documents,ドキュメント
+admin.redesign.events24H,イベント · 24 時間
+admin.redesign.from,開始
+admin.redesign.grantsScopes,付与とスコープ
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,継承
+admin.redesign.inherited,継承
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,有効期間
+admin.redesign.machineUserId,マシンユーザー ID
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,レルムの既定値と組織のサインインオーバーライドを管理します。
+admin.redesign.moreFilters,さらに絞り込む
+admin.redesign.noRecentAuditEvents,最近の監査イベントはありません。
+admin.redesign.noSessionsMatchYourSearch,検索に一致するセッションはありません。
+admin.redesign.onThisPage,このページ
+admin.redesign.organizations,組織
+admin.redesign.projectId,プロジェクト ID
+admin.redesign.recentAuditEvents,最近の監査イベント
+admin.redesign.redirectsOrigins,リダイレクトとオリジン
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
-admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,すべてのイベント詳細を見るには横にスクロールしてください。
+admin.redesign.searchSessions,セッションを検索
+admin.redesign.sessionsOnThisPage,このページのセッション
+admin.redesign.signInMethods,サインイン方法
+admin.redesign.to,終了
+admin.redesign.tokens,トークン
+admin.redesign.userId,ユーザー ID
+admin.redesign.viewAll,すべて表示
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,セキュリティと監査
