@@ -1,0 +1,157 @@
+# WhatsApp per-sender send quota + admin dashboard
+
+## Goal
+
+Limit WhatsApp (WAHA) message sending to **20/hour and 100/day per sender number**,
+count requests and actual sends, and show quota usage (sent / left, progress bars),
+logs/events, and request counts on a new admin web UI page.
+
+## User decisions (2026-11-07)
+
+- Limit scope: **per sender number** (each WAHA sender session gets its own
+  20/hour + 100/day). Sender selection must skip over-quota senders and use the
+  next healthy under-quota sender; sending is blocked only when every healthy
+  sender is exhausted.
+- Counted sends: **all WhatsApp sends** through the shared delivery port —
+  sign-in OTP, phone-change OTP, and password-registration codes. The dashboard
+  breaks counts down by purpose where known.
+- Admin UI: **new dedicated WhatsApp page** (quota bars, request counts, log).
+  The realm dashboard gets one summary tile linking to it.
+
+## Fixed design choices (do not re-decide in tasks)
+
+- **Rolling windows** computed from a persistent send log: sent-in-last-1h and
+  sent-in-last-24h per sender. One source of truth for enforcement, progress
+  bars, and the log. Do not add a parallel `rate_limits` fixed-window counter
+  for this quota. Existing per-user/per-IP 5-per-60s limits stay untouched.
+- **Send log is owned by the `waha` feature** (sender identity lives there):
+  one row per delivery attempt with endpoint id, sender session, purpose,
+  realm id (nullable), recipient phone **hash** (never plaintext), status
+  (`sent | failed | blocked`), created-at. `blocked` = no under-quota healthy
+  sender existed (sender session null).
+- **Counting point**: the production delivery implementation
+  `src/features/waha/server/wahaTextDeliveryCreate.ts` — the single choke point
+  for every real WAHA send. Demo/fixture adapters never reach it and never count.
+  Decoy/cooldown-suppressed OTP requests never reach it and never count as sends.
+- **Delivery port context**: extend `sendText` with optional
+  `{ realmId, purpose }` context. Callers: whatsappOtp actions
+  (`sign_in` / phone-change purpose constant), `passwordRegister`
+  (registration). Keep the two structurally identical port interfaces
+  (`WhatsappOtpDeliveryPort`, `PasswordWhatsappDeliveryPort`) in sync.
+- **Config**: env vars parsed next to existing WAHA config in
+  `src/features/waha/server/wahaConfigurationParse.ts`:
+  `AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT` (default 20),
+  `AUTHWORKS_WAHA_SENDER_DAILY_LIMIT` (default 100). Thread through
+  `src/outputs/server.ts` -> `serverApplicationCreate` like existing WAHA knobs.
+- **User-facing behavior on exhaustion**: unchanged. WhatsApp OTP actions keep
+  their generic accepted responses and fire-and-forget delivery (enumeration
+  oracle preserved); a blocked send is recorded in the log, not surfaced.
+  Availability must report unavailable when no healthy under-quota sender
+  exists, so the login UI hides WhatsApp instead of silently failing.
+- **Admin API**: `GET /realms/:realmId/whatsapp-otp/usage`, guarded exactly like
+  the events endpoints (session cookie+CSRF middleware +
+  `realmAdministratorContextAuthorize` with `eventRead`). whatsappOtp consumes
+  waha usage data only through an injected port implemented on waha's server
+  surface (composition wiring in `serverApplicationCreate.ts`), per AGENTS.md
+  feature-boundary rules. Response is a `public/` valibot schema; never expose
+  Drizzle rows. Usage numbers are deployment-wide per sender (that is the
+  quota scope); OTP request counts are realm-scoped.
+- **"Requests" on the dashboard** = two series, both shown:
+  1. OTP requests for the admin's realm: `whatsapp_otp.requested` events in
+     last 1h / 24h (precedent: `eventRecentRealmCount`).
+  2. WAHA delivery attempts from the send log in last 1h / 24h, split by
+     status (sent / failed / blocked) and purpose.
+- **Admin page**: new screen key `whatsapp` in `adminScreenSchema` + production
+  route contract, following `AdminEventListView` / `AdminRealmView` patterns.
+  Per-sender cards with two progress bars (hour, day) reusing the
+  `AccountSecurityProgress` pattern (`role="progressbar"`, aria values),
+  request-count stat tiles (`AuthenticatedStatTile`), recent send-log table.
+  Demo adapter + fixtures so `/demo/admin` renders it. All UI text via
+  `messageTranslate` keys (enforced by `check:no-literal-ui-text`).
+  One summary tile on `AdminRealmView` linking to the new page.
+- Follow the `code-style` skill: one export per file, subject-first names,
+  Result instead of throws, state extracted from `.tsx`, bounded contexts.
+- Tests: beside the feature, real temp SQLite + `platformTestkitCreate`
+  pattern from existing whatsappOtp tests. Focused runs only:
+  `bun test --max-concurrency=1 --dots <file>`. Never run full `bun run test`
+  or e2e during increments. `bun run check` runs once at the very end (Task 5).
+
+## Tasks (delegate one at a time, verify each before the next)
+
+### Task 1 — Send log persistence (waha feature)
+
+Drizzle table + repository in `src/features/waha/persistence/` (check how waha
+health tables/repositories are structured and how tables get created/migrated —
+follow that exactly). Repository operations: record attempt; count sent per
+(endpointId, session) since a timestamp; list recent attempts (bounded,
+newest first); count attempts by status/purpose since a timestamp.
+Unit tests beside it with temp SQLite. No behavior change anywhere else.
+
+### Task 2 — Quota-aware delivery + config + availability
+
+Parse the two env limits; thread config to `wahaTextDeliveryCreate`.
+Sender selection: among fresh healthy candidates, prefer under-quota ones
+(rolling 1h and 24h sent counts from Task 1 repository); record `sent` /
+`failed` per attempt (including the existing one-retry-on-second-candidate
+path — one row per WAHA attempt); record `blocked` when candidates exist but
+all are over quota **or** none are healthy — distinguish nothing in the row
+beyond status + null session for blocked. Extend the delivery ports with the
+optional context and pass it from the 4 whatsappOtp send call sites and
+`passwordRegister`. Make whatsappOtp availability require an under-quota
+healthy candidate through the existing injected availability wiring (extend
+the waha-side implementation, not the whatsappOtp feature's internals).
+Recipient stored only as hash — reuse the existing phone-hash approach
+available to the waha feature without importing whatsappOtp internals
+(HMAC/hash helper on the platform or waha server surface; if none exists,
+add a small one in waha with the system secret threaded like
+`rateLimitSecret` is).
+Tests: quota filtering, skip-to-next-sender, blocked recording, rolling
+window expiry via testkit time, availability false when exhausted.
+Focused test files only.
+
+### Task 3 — Admin usage API
+
+`public/` response schema + usage port (whatsappOtp side) + waha server-side
+implementation + route in `whatsappOtpServerAppCreate.ts` + composition
+wiring. Response: config limits, per-sender `{ endpointId, session,
+sentLastHour, sentLastDay, remainingHour, remainingDay }`, totals, realm OTP
+request counts (1h/24h from events), delivery attempt counts by status and
+purpose (1h/24h), recent send log (bounded page, newest first; phone hash
+truncated/redacted for display — never plaintext, no full hash needed).
+Client method in `whatsappOtpApiClientCreate.ts`, surfaced via
+`adminApiCreate.ts` + `AdminAdapter` (production + demo stub returning empty
+usage for now; fixtures arrive in Task 4). Tests: route auth (non-admin
+rejected), response shape against seeded send log + events. Focused only.
+
+### Task 4 — Admin WhatsApp page (UI)
+
+New `whatsapp` screen: route contract, nav entry wherever the other screens
+are listed, view + extracted state factory, per-sender quota cards with hour
+and day progress bars (sent / limit / left), request tiles, recent log table
+(time, sender, purpose, status), empty/error/loading states like sibling
+views. Demo fixtures with plausible multi-sender data. i18n keys for every
+string. Realm dashboard summary tile (e.g. sends today across senders +
+tightest remaining quota) linking to the page. Verify in a real browser via
+a browser subagent against the dev/demo route; screenshot-level check that
+bars render with correct widths. No e2e suite run.
+
+### Task 5 — Final validation
+
+`bun run check` (format, no-literal-ui-text, typecheck, full tests, build).
+Fix failures caused by Tasks 1–4 only; report pre-existing failures with
+proof (same failure on clean `main`). Then hand back for commits/merge.
+
+## Out of scope
+
+- Changing existing per-user/per-IP OTP rate limits or cooldowns.
+- Per-realm quota configuration, admin editing of limits in the UI (env only).
+- Alerting/notifications on quota exhaustion.
+- Updating `docs/20260817_authworks.md` (note the divergence in the final
+  report instead).
+
+## Status
+
+- Exploration: done (delegated research, 2026-11-07).
+- Decisions: done (user, 2026-11-07).
+- Tasks 1–5: pending. Work happens in worktree branch
+  `feat/whatsapp-send-quota`; merge to `main` after Task 5 passes.
