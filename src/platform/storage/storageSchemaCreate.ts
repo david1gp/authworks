@@ -206,8 +206,13 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS organization_memberships_realm_id_idx ON organization_memberships (realm_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS organization_invitations (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, email TEXT NOT NULL, roles TEXT NOT NULL CHECK (json_valid(roles)), token_hash TEXT NOT NULL UNIQUE, invited_by TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'declined', 'revoked', 'expired')), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), accepted_at INTEGER CHECK (accepted_at IS NULL OR accepted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS organization_invitations (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, email TEXT NOT NULL, roles TEXT NOT NULL CHECK (json_valid(roles)), token_hash TEXT NOT NULL UNIQUE, invited_by TEXT NOT NULL, team_id TEXT, status TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'declined', 'revoked', 'expired')), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), accepted_at INTEGER CHECK (accepted_at IS NULL OR accepted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run("ALTER TABLE organization_invitations ADD COLUMN team_id TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "team_id")) throw error
+    }
     database.run(
       "CREATE INDEX IF NOT EXISTS organization_invitations_organization_id_idx ON organization_invitations (organization_id)",
     )
@@ -217,6 +222,18 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS organization_invitations_pending_email_idx ON organization_invitations (organization_id, email) WHERE status = 'pending'",
     )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS teams (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, name TEXT NOT NULL, slug TEXT NOT NULL, leader_user_id TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, slug), UNIQUE (organization_id, name), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS teams_organization_id_idx ON teams (organization_id)")
+    database.run("CREATE INDEX IF NOT EXISTS teams_realm_id_idx ON teams (realm_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS team_memberships (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, team_id TEXT NOT NULL, user_id TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, user_id), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS team_memberships_organization_id_idx ON team_memberships (organization_id)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS team_memberships_team_id_idx ON team_memberships (team_id)")
     database.run(
       "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), last_sign_in_at INTEGER CHECK (last_sign_in_at IS NULL OR last_sign_in_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )

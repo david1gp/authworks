@@ -15,6 +15,7 @@ import { passwordsErrorCatalog } from "../../features/passwords/errors/passwords
 import { projectsErrorCatalog } from "../../features/projects/errors/projectsErrorCatalog.js"
 import { realmsErrorCatalog } from "../../features/realms/errors/realmsErrorCatalog.js"
 import { sessionsErrorCatalog } from "../../features/sessions/errors/sessionsErrorCatalog.js"
+import { teamsErrorCatalog } from "../../features/teams/errors/teamsErrorCatalog.js"
 import { usersErrorCatalog } from "../../features/users/errors/usersErrorCatalog.js"
 import { wahaErrorCatalog } from "../../features/waha/errors/wahaErrorCatalog.js"
 import { whatsappOtpErrorCatalog } from "../../features/whatsappOtp/errors/whatsappOtpErrorCatalog.js"
@@ -30,6 +31,7 @@ export const errorCatalog = errorCatalogCompose(
   organizationsErrorCatalog,
   machineUsersErrorCatalog,
   sessionsErrorCatalog,
+  teamsErrorCatalog,
   externalIdentitiesErrorCatalog,
   passkeysErrorCatalog,
   passwordsErrorCatalog,
