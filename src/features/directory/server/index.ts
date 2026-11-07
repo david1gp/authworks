@@ -1,3 +1,4 @@
+export { directoryLeaderAccessAuthorize } from "./directoryLeaderAccessAuthorize.js"
 export { directoryOrganizationUserList } from "./directoryOrganizationUserList.js"
 export { directoryOrganizationUserSummary } from "./directoryOrganizationUserSummary.js"
 export { directoryRealmUserList } from "./directoryRealmUserList.js"

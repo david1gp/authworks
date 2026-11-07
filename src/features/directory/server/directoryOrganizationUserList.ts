@@ -8,14 +8,20 @@ import { organizationRepositoryCreate } from "../../organizations/persistence/or
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import { organizationMembershipListByOrganization } from "../../organizations/server/organizationMembershipListByOrganization.js"
 import type { RealmTenantContext } from "../../realms/server/index.js"
+import { teamOrganizationAssignmentList } from "../../teams/server/teamOrganizationAssignmentList.js"
 import type { User } from "../../users/public/userSchema.js"
 import { userBulkRead } from "../../users/server/userBulkRead.js"
 import { directoryUserViewCreate } from "../domain/directoryUserViewCreate.js"
+import type { DirectoryEntryTeam } from "../public/directoryEntryTeamSchema.js"
 import type { DirectoryMembership } from "../public/directoryMembershipSchema.js"
 import { directoryMembershipSchema } from "../public/directoryMembershipSchema.js"
 import type { DirectoryUserListQuery, DirectoryUserListResponse } from "../public/directoryUserListSchema.js"
 import { directoryUserListQuerySchema } from "../public/directoryUserListSchema.js"
-import { directoryEntryListPageCreate, directoryRoleFilterApply } from "./directoryEntryListPageCreate.js"
+import {
+  directoryEntryListPageCreate,
+  directoryRoleFilterApply,
+  directoryTeamFilterApply,
+} from "./directoryEntryListPageCreate.js"
 
 type DirectoryOrganizationUserListOptions = {
   readonly context: RealmTenantContext
@@ -87,6 +93,18 @@ export function directoryOrganizationUserList(
       rows.sort((left, right) => left.organizationId.localeCompare(right.organizationId))
   }
 
+  const assignments = teamOrganizationAssignmentList({
+    database: options.database,
+    organizationId: options.organizationId,
+    realmId: options.realmId,
+  })
+  if (!assignments.success) return assignments
+  const teamById = new Map<string, DirectoryEntryTeam>(
+    assignments.data.teams.map((team) => [team.id, { id: team.id, name: team.name, slug: team.slug }] as const),
+  )
+  const teamIdByUserId = new Map<string, string>()
+  for (const membership of assignments.data.memberships) teamIdByUserId.set(membership.userId, membership.teamId)
+
   const entries: DirectoryUserListResponse["items"] = []
   for (const user of usersById.values()) {
     const membershipEntries: DirectoryMembership[] = []
@@ -118,15 +136,21 @@ export function directoryOrganizationUserList(
     }
     const userView = directoryUserViewCreate(user)
     if (!userView.success) return userView
-    entries.push({ memberships: membershipEntries, user: userView.data })
+    const teamId = teamIdByUserId.get(user.id)
+    entries.push({
+      memberships: membershipEntries,
+      team: teamId === undefined ? null : (teamById.get(teamId) ?? null),
+      user: userView.data,
+    })
   }
 
   // Organization-scoped counts and role pills describe membership of this organization only,
   // so the filter must ignore roles the person holds in other organizations.
-  const filtered =
+  const roleFiltered =
     parsed.output.role === undefined
       ? entries
       : directoryRoleFilterApply(entries, parsed.output.role, options.organizationId)
+  const filtered = directoryTeamFilterApply(roleFiltered, parsed.output.team, assignments.data.teams)
   return directoryEntryListPageCreate({
     entries: filtered,
     fallbackSortBy: "lastSignInAt",

@@ -5,6 +5,7 @@ export const organizationInvitationCreateRequestSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
   expiresAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   roles: organizationRolesSchema,
+  teamId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })
 
 export type OrganizationInvitationCreateRequest = v.InferOutput<typeof organizationInvitationCreateRequestSchema>

@@ -183,10 +183,13 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
           email: input.email,
           expiresAt: now + 604_800_000,
           id: demoResourceIdGenerate(),
+          invitedBy: null,
           organizationId: organizationId.length === 0 ? demoOrganizationId : organizationId,
           realmId: demoRealmId,
           roles: input.roles,
           status: "pending",
+          team: null,
+          teamId: null,
           updatedAt: now,
         }
         invitations.push(invitation)

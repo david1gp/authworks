@@ -4,9 +4,9 @@ import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { organizationInvitationPublicViewCreate } from "../domain/organizationInvitationPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationInvitationMeListResponse } from "../public/organizationInvitationMeListResponseSchema.js"
+import { organizationInvitationViewsAssemble } from "../server/organizationInvitationViewsAssemble.js"
 import { organizationSubjectUserGet } from "./organizationSubjectUserGet.js"
 
 type OrganizationInvitationMeListOptions = {
@@ -28,13 +28,14 @@ export function organizationInvitationMeList(
     subject.data.email,
   )
   if (!rows.success) return rows
-  const invitations: OrganizationInvitationMeListResponse["items"] = []
-  for (const row of rows.data) {
-    if (row.realmId !== options.realmId) continue
-    const view = organizationInvitationPublicViewCreate(row)
-    if (!view.success) return view
-    invitations.push(view.data)
-  }
+  const realmRows = rows.data.filter((row) => row.realmId === options.realmId)
+  const views = organizationInvitationViewsAssemble({
+    database: options.database,
+    realmId: options.realmId,
+    rows: realmRows,
+  })
+  if (!views.success) return views
+  const invitations: OrganizationInvitationMeListResponse["items"] = views.data
   return listRowsPage({
     idGet: (invitation) => invitation.id,
     query: options.query,

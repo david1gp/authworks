@@ -11,6 +11,7 @@ export const organizationInvitationTable = sqliteTable(
     realmId: text("realm_id").notNull(),
     invitedBy: text("invited_by").notNull(),
     organizationId: text("organization_id").notNull(),
+    teamId: text("team_id"),
     roles: text("roles").notNull(),
     status: text("status").notNull(),
     tokenHash: text("token_hash").notNull(),

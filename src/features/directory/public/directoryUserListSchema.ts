@@ -13,6 +13,7 @@ export const directoryUserListQuerySchema = v.strictObject({
   role: v.optional(organizationRoleIdSchema),
   sortBy: v.optional(directorySortBySchema),
   state: v.optional(userStateSchema),
+  team: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(64))),
 })
 
 export const directoryUserListResponseSchema = listResponseSchemaCreate(directoryEntrySchema)

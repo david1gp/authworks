@@ -10,8 +10,8 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { teamOrganizationAssignmentList } from "../../teams/server/teamOrganizationAssignmentList.js"
 import { organizationEmailNormalize } from "../domain/organizationEmailNormalize.js"
-import { organizationInvitationPublicViewCreate } from "../domain/organizationInvitationPublicViewCreate.js"
 import { organizationInvitationTokenHashCreate } from "../domain/organizationInvitationTokenHashCreate.js"
 import { organizationRolesEncode } from "../domain/organizationRolesEncode.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
@@ -24,6 +24,7 @@ import {
 } from "../public/organizationInvitationCreateRequestSchema.js"
 import type { OrganizationInvitationCreateResponse } from "../public/organizationInvitationCreateResponseSchema.js"
 import type { OrganizationInvitationDelivery } from "../public/organizationInvitationDeliverySchema.js"
+import { organizationInvitationViewsAssemble } from "../server/organizationInvitationViewsAssemble.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationInvitationCreateOptions = {
@@ -68,6 +69,19 @@ export function organizationInvitationCreate(
       organization.data.status !== "active"
     )
       return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
+    let teamLeaderUserId: string | null = null
+    if (parsed.output.teamId !== undefined) {
+      const assignments = teamOrganizationAssignmentList({
+        database: transaction,
+        organizationId: options.organizationId,
+        realmId: options.realmId,
+      })
+      if (!assignments.success) return assignments
+      const target = assignments.data.teams.find((candidate) => candidate.id === parsed.output.teamId)
+      if (target === undefined)
+        return resultErrorCodedCreate(op, "The invitation team was not found.", "teams.not-found")
+      teamLeaderUserId = target.leaderUserId
+    }
     const authorized = organizationContextAuthorize({
       context: options.context,
       database: options.database,
@@ -76,7 +90,20 @@ export function organizationInvitationCreate(
       requiredPermission: "organization.members.manage",
       requireOwner: parsed.output.roles.includes("owner"),
     })
-    if (!authorized.success) return authorized
+    if (!authorized.success) {
+      if (parsed.output.roles.includes("admin") || parsed.output.roles.includes("owner")) return authorized
+      const leaderAllowed = organizationInvitationLeaderAllowed({
+        actorId: options.context.kind === "tenant" ? options.context.actorId : null,
+        isTenantUser: options.context.kind === "tenant" && options.context.actor.kind === "user",
+        organizationId: options.organizationId,
+        repository,
+        rolesIncludeOwner: parsed.output.roles.includes("owner"),
+        teamId: parsed.output.teamId,
+        teamLeaderUserId,
+      })
+      if (!leaderAllowed.success) return leaderAllowed
+      if (!leaderAllowed.data) return authorized
+    }
 
     let commandIndex = 0
     const previous = repository.organizationInvitationPendingByEmail(options.organizationId, email.data)
@@ -127,6 +154,7 @@ export function organizationInvitationCreate(
       organizationId: options.organizationId,
       roles: roles.data,
       status: "pending",
+      teamId: parsed.output.teamId ?? null,
       tokenHash: organizationInvitationTokenHashCreate(token.valueGet()),
       updatedAt: createdAt,
       version: 1,
@@ -158,8 +186,6 @@ export function organizationInvitationCreate(
       runtime,
     )
     if (!event.success) return event
-    const view = organizationInvitationPublicViewCreate(invitation.data)
-    if (!view.success) return view
     return resultCreate({
       delivery: {
         email: email.data,
@@ -169,7 +195,7 @@ export function organizationInvitationCreate(
         invitedName: email.data,
         token: token.valueGet(),
       },
-      invitation: view.data,
+      row: invitation.data,
       token: token.valueGet(),
     })
   })
@@ -179,5 +205,32 @@ export function organizationInvitationCreate(
       void Promise.resolve(options.onInvitationDelivery(committed.data.delivery)).catch(() => undefined)
     }
   } catch (_error) {}
-  return resultCreate({ invitation: committed.data.invitation, token: committed.data.token })
+  const views = organizationInvitationViewsAssemble({
+    database: options.database,
+    realmId: options.realmId,
+    rows: [committed.data.row],
+  })
+  if (!views.success) return views
+  const view = views.data[0]
+  if (view === undefined)
+    return resultErrorCodedCreate(op, "The organization invitation could not be read.", "organizations.read-failed")
+  return resultCreate({ invitation: view, token: committed.data.token })
+}
+
+function organizationInvitationLeaderAllowed(input: {
+  readonly actorId: string | null
+  readonly isTenantUser: boolean
+  readonly organizationId: string
+  readonly repository: ReturnType<typeof organizationRepositoryCreate>
+  readonly rolesIncludeOwner: boolean
+  readonly teamId: string | undefined
+  readonly teamLeaderUserId: string | null
+}): Result<boolean> {
+  if (!input.isTenantUser || input.actorId === null) return resultCreate(false)
+  if (input.teamId === undefined || input.rolesIncludeOwner) return resultCreate(false)
+  if (input.teamLeaderUserId !== input.actorId) return resultCreate(false)
+  const membership = input.repository.organizationMembershipGetByOrganizationUser(input.organizationId, input.actorId)
+  if (!membership.success) return membership
+  if (membership.data === null) return resultCreate(false)
+  return resultCreate(true)
 }

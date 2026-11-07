@@ -13,6 +13,7 @@ import type { R2ObjectStorage } from "../../../platform/storage/r2/r2ObjectStora
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { directoryLeaderAccessAuthorize } from "../../directory/server/index.js"
 import type { RealmTenantContext } from "../../realms/server/index.js"
 import {
   realmAdministratorContextAuthorize,
@@ -783,14 +784,42 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
   })
 
   app.get("/realms/:realmId/users/:userId", userReadMiddleware, (context) => {
+    const realmId = context.req.param("realmId")
+    const targetUserId = context.req.param("userId")
     const authenticated = userAdministratorAuthorize(
       context,
       options.database,
-      context.req.param("realmId"),
+      realmId,
       authorizationPermissionDefinitions.userRead,
-      context.req.param("userId"),
+      targetUserId,
     )
-    if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    if (!authenticated.success) {
+      // A team leader may read the basic profile of their own team members so
+      // member profiles open from the team roster. Anything else keeps the
+      // denial non-privileged callers get.
+      const actor = context.get("authorizationActor")
+      if (actor.kind !== "user") return userErrorResponseCreate(context, authenticated)
+      const leader = directoryLeaderAccessAuthorize({
+        actorId: actor.actorId,
+        database: options.database,
+        realmId,
+        targetUserId,
+      })
+      if (!leader.success) return userErrorResponseCreate(context, leader)
+      if (!leader.data) return userErrorResponseCreate(context, authenticated)
+      const result = userGet({
+        context: userTenantContextShape(actor, realmId),
+        database: options.database,
+        realmId,
+        userId: targetUserId,
+      })
+      return userResultResponseCreate(
+        context,
+        result,
+        200,
+        result.success ? new Date(result.data.user.updatedAt) : undefined,
+      )
+    }
     const result = userGet({
       context: authenticated.data,
       database: options.database,
@@ -1217,6 +1246,13 @@ function userBootstrapFallback(
 function userRequestHostGet(headerHost: string | undefined, requestUrl: string): string {
   const host = headerHost ?? new URL(requestUrl).hostname
   return host.startsWith("[") ? host.slice(1, host.indexOf("]")) : (host.split(":")[0] ?? "")
+}
+
+function userTenantContextShape(
+  actor: AuthorizationActorContext,
+  realmId: string,
+): RealmTenantContext & { kind: "tenant" } {
+  return { actor, actorId: actor.actorId, kind: "tenant", realmId }
 }
 
 function userAdministratorAuthorize(

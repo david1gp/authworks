@@ -34,6 +34,7 @@ function directoryQueryToSearchParams(query: DirectoryUserListQuery | ListQuery 
   if (filters.emailVerified !== undefined) params.set("emailVerified", filters.emailVerified ? "true" : "false")
   if (filters.role !== undefined) params.set("role", filters.role)
   if (filters.state !== undefined) params.set("state", filters.state)
+  if (filters.team !== undefined) params.set("team", filters.team)
   const encoded = params.toString()
   return encoded.length === 0 ? "" : `?${encoded}`
 }

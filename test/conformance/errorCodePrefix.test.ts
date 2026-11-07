@@ -17,6 +17,8 @@ import { join } from "node:path"
 //   already handle the sessions and organizations variants.
 // - users.not-found in projects: a project user assignment references a user,
 //   so a missing user surfaces the users code.
+// - teams.not-found in organizations: an invitation references a team,
+//   so a missing team surfaces the teams code.
 // - platform.configuration-invalid in emailOtp, passwords, whatsappOtp:
 //   rate limiting requires a deployment secret, and a missing secret is a
 //   platform deployment failure rather than feature-domain input.
@@ -24,6 +26,7 @@ const codeExceptionAllow = new Map<string, readonly string[]>([
   ["authorization", []],
   ["sessions.assurance-required", ["organizations"]],
   ["users.not-found", ["projects"]],
+  ["teams.not-found", ["organizations"]],
   ["platform.configuration-invalid", ["emailOtp", "passwords", "whatsappOtp"]],
 ])
 
