@@ -188,6 +188,8 @@ proof (same failure on clean `main`). Then hand back for commits/merge.
   tests). Two Task 1–4 fallout fixes: library-exports expectation for
   `whatsappOtpUsageGet`; waha-owned error codes in `wahaUsageReaderCreate`.
   Suspected `productionRouteAppStateCreate` failure did not reproduce.
-- Remaining: commits on `feat/whatsapp-send-quota`, merge to `main`, push,
-  worktree cleanup. Work happens in worktree branch
+- E2E: 55/55 admin-shell/demo specs pass (Playwright, dedicated port; default
+  port 5174 on this machine is occupied by a foreign app — environmental).
+- Done: 4 commits on `feat/whatsapp-send-quota`, merged to `main`, pushed,
+  worktree + branch removed. Work happens in worktree branch
   `feat/whatsapp-send-quota`; merge to `main` after Task 5 passes.
