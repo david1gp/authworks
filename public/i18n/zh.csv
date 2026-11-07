@@ -7,217 +7,217 @@ admin.activity.error,无法加载活动。请重试。
 admin.activity.organization,组织
 admin.activity.realm,IAM 领域
 shell.nav.activity,活动
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
-account.access.accepted,Invitation accepted
+account.confirmTitle,确认此操作
+account.factors.authenticatorName,身份验证器名称
+account.factors.stepUpDescription,请先完成多因素身份验证，然后将重试移除身份验证器。
+account.securityHistory.description,查看此账户近期与安全相关的活动。
+account.access.accepted,邀请已接受
 account.access.acceptedDetail,您现在是此组织的成员。
-account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
+account.access.active,活动组织
+account.access.consentDescription,可访问您账户信息的应用。
 account.access.consentCount,{count} 个应用授权
 account.access.consentCountOne,{count} 个应用授权
 account.access.consentManage,应用授权：{clientId}
 account.access.consentTitle,应用授权
 account.access.consentUpdated,更新于 {date}
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevokeConfirm,Revoke access for {clientId}?
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
-account.access.declined,Invitation declined
+account.access.consentEmpty,没有应用可以访问此账户。
+account.access.consentRevokeConfirm,要撤销 {clientId} 的访问权限吗？
+account.access.consentRevoked,应用访问权限已撤销。
+account.access.created,授予于 {date}
+account.access.declined,邀请已拒绝
 account.access.declinedDetail,您已拒绝此邀请。
 account.access.effectiveDescription,查看此账户在此组织中可用的项目角色和权限。
 account.access.effectiveDescription,查看此账户在此组织中可用的项目角色和权限。
 account.access.effectiveEmpty,此组织未列出任何项目访问权限。
 account.access.effectiveEmpty,此组织未列出任何项目访问权限。
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,成员资格角色：{roles}
+account.access.effectiveMembership,成员资格角色：{roles}
+account.access.effectivePermissions,权限：{permissions}
+account.access.effectivePermissions,权限：{permissions}
+account.access.effectiveSource,访问来源：{source}
+account.access.effectiveSource,访问来源：{source}
 account.access.effectiveTitle,有效项目访问权限
 account.access.effectiveTitle,有效项目访问权限
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.email,电子邮件
+account.access.error,无法加载此账户信息。
+account.access.expired,此邀请已过期。
 account.access.invitationDeclineConfirm,要拒绝此邀请吗？
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationDescription,请在回复前查看组织和角色。
+account.access.invitationEmpty,此账户没有待处理的邀请。
+account.access.invitationFor,{email} 的邀请
+account.access.invitationMissing,请打开完整的邀请链接以继续。
 account.access.invitationOpen,打开邀请
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
-account.access.membership,Membership roles
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.invitationReplay,此邀请已被使用或不再可用。
+account.access.loadMore,加载更多访问权限
+account.access.loadMore,加载更多访问权限
+account.access.membership,成员资格角色
+account.access.organizationAccess,组织访问权限
+account.access.organizationAccess,组织访问权限
 account.access.organizationCount,{count} 个组织
 account.access.organizationCountOne,{count} 个组织
 account.access.organizationDescription,选择一个组织以查看您的成员资格和访问权限。查看组织不会更改您的活动组织。
-account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationEmpty,此账户不属于任何组织。
 account.access.organizationSelector,要查看的组织
-account.access.permission,You do not have permission to perform this action.
+account.access.permission,您没有执行此操作的权限。
 account.access.permissionsToggle,显示由 {source} 授予的 {count} 项权限
-account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
+account.access.roles,角色：{roles}
+account.access.scopes,权限：{scopes}
+account.delete.confirmLabel,输入 {email} 以确认
+account.delete.dangerZone,危险区
 account.delete.dangerZoneToggle,显示账户删除选项
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
-account.factors.addTotp,Add authenticator
+account.delete.deletedDetail,您的账户和访问权限已永久移除。
+account.delete.deletedTitle,账户已删除
+account.delete.emailMismatch,电子邮件地址不匹配。
+account.delete.submit,永久删除账户
+account.delete.title,永久删除此账户
+account.delete.warning,此操作无法撤销。您的会话和访问权限将停止生效。
+account.export.description,下载您的个人资料、电子邮件、成员资格和登录方式的 JSON 副本，以留存记录。
+account.export.download,下载导出文件
+account.export.downloading,正在准备下载…
+account.export.title,下载您的数据
+account.export.unavailable,数据导出目前不可用。
+account.factors.addTotp,添加身份验证器
 account.factors.authenticator,身份验证器
 account.factors.configured,已配置身份验证器
 account.factors.count,{count} 个身份验证器
 account.factors.missing,未配置身份验证器
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.factors.confirm,确认
+account.factors.description,查看此账户可用的身份验证方式，并管理您的身份验证器应用。
+account.factors.emailOtp,电子邮件验证码
+account.factors.finishTotp,完成身份验证器设置
+account.factors.passkeyCount,{count} 个通行密钥
+account.factors.passkeys,通行密钥
+account.factors.removeTotp,移除身份验证器
+account.factors.totp,身份验证器应用
+account.factors.totpSecretOnce,将此密钥添加到您的身份验证器，然后输入其六位数代码。此设置密钥仅在此处显示一次。
+account.factors.verificationCode,验证码
+account.identities.alreadyLinked,此外部账户已关联。
+account.identities.confirm,确认关联
+account.identities.confirmDescription,请确认关联您的 {provider} 账户以继续。
+account.identities.confirmTitle,确认外部账户
 account.identities.connecting,请在提供商窗口中继续操作，然后返回此处确认关联。
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.description,与您的 Authworks 身份关联的外部账户。请取消关联不再使用的账户。
+account.identities.empty,未关联外部身份
+account.identities.externalAccount,外部账户
+account.identities.linkDescription,关联其他提供方，将其用作身份验证方式。
+account.identities.linkIncomplete,提供方窗口在关联完成前关闭。请重试。
+account.identities.linkTitle,关联外部账户
 account.identities.manage,管理 {provider} 账户（{account}）
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
-account.identities.unlink,Unlink
+account.identities.popupBlocked,请允许弹出窗口以关联外部账户。
+account.identities.recentAuthRequired,出于安全考虑，请在关联外部账户前先验证身份。请完成多因素验证，或重新登录后重试。
+account.identities.signInAgain,重新登录
+account.identities.stepUpDescription,请先完成多因素身份验证，然后将重试外部账户操作。
+account.identities.unlink,取消关联
 account.identities.unlinkConfirm,要取消关联此外部账户吗？
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
+account.passkeys.add,添加通行密钥
+account.passkeys.created,创建于 {date}
+account.passkeys.description,通行密钥使用您的设备屏幕锁或安全密钥实现安全登录。
+account.passkeys.deviceBound,设备绑定通行密钥
+account.passkeys.empty,未注册通行密钥
 account.passkeys.manage,管理 {kind}（{id}）
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.currentOptionalHint,Leave blank if no password is set yet.
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
+account.passkeys.remove,移除
+account.passkeys.synced,已同步通行密钥
+account.password.changed,您的密码已更改。
+account.password.confirm,确认新密码
+account.password.current,当前密码
+account.password.currentOptionalHint,如果尚未设置密码，请留空。
+account.password.description,请使用未在其他服务中使用过的密码。
+account.password.mismatch,两次输入的新密码不匹配。
+account.password.new,新密码
+account.password.set,您的密码已设置。
+account.password.setSubmit,设置密码
+account.password.setTitle,设置密码
+account.password.submit,更改密码
+account.password.title,更改密码
+account.password.tooShort,新密码必须包含至少 8 个字符。
+account.profile.displayName,显示名称
 account.profile.copy,复制{field}
 account.profile.copied,已复制{field}。
 account.profile.copyFailed,无法复制{field}。请选择该值并手动复制。
 account.profile.cancel,取消
 account.profile.edit,编辑个人资料
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
+account.profile.displayNameRequired,请输入显示名称。
+account.profile.email,电子邮件地址
 account.profile.emailMissing,未设置邮箱
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,添加电子邮件地址
+account.profile.emailAddDescription,向您的账户添加另一个地址。验证后即可使用。
+account.profile.emailAddTitle,添加电子邮件地址
+account.profile.emailAddresses,电子邮件地址
+account.profile.emailAddressesEmpty,没有可用的电子邮件地址。
+account.profile.emailAddressesSaved,您的电子邮件地址已更新。
 account.profile.emailDescription,查看和管理关联到您账户的邮箱地址。
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
-account.profile.firstName,First name
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
+account.profile.emailCodeSent,请打开发送至 {email} 的验证链接，或在下方粘贴其令牌。
+account.profile.emailCodeSentGeneric,请打开发送至您的新地址的验证链接，或在下方粘贴其令牌。
+account.profile.emailDifferent,使用其他地址
+account.profile.emailInvalid,请输入有效的电子邮件地址。
+account.profile.emailMakePrimary,设为主要
+account.profile.emailNew,新的电子邮件地址
+account.profile.emailPrimary,主要
+account.profile.emailPrimaryRemoveBlocked,主要电子邮件地址无法移除。
+account.profile.emailRefresh,刷新地址
+account.profile.emailRemove,移除
+account.profile.emailRemoving,正在移除…
+account.profile.emailResend,重新发送验证电子邮件
+account.profile.emailSending,正在发送验证电子邮件…
+account.profile.emailToken,验证令牌
+account.profile.emailTokenInvalid,请输入电子邮件中的验证令牌。
+account.profile.emailUpdating,正在更新…
+account.profile.emailVerify,验证电子邮件地址
+account.profile.emailVerifying,正在验证…
+account.profile.firstName,名字
+account.profile.gender,性别
+account.profile.gender.man,男性
+account.profile.gender.nonBinary,非二元性别
+account.profile.gender.unspecified,未指定
+account.profile.gender.woman,女性
+account.profile.lastName,姓氏
+account.profile.nickName,昵称
 account.profile.notSet,未设置
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.personalDescription,请及时更新向应用和管理员展示的个人资料。
+account.profile.personalInformation,个人信息
+account.profile.phoneAdd,添加电话号码
+account.profile.phoneChange,更改电话号码
+account.profile.phoneCode,六位数验证码
+account.profile.phoneCodeInvalid,请输入六位数验证码。
+account.profile.phoneCodeSent,请输入发送至 WhatsApp {phoneNumber} 的验证码。
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,使用其他号码
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,请输入有效的 E.164 格式电话号码。
+account.profile.phoneNew,新的电话号码
+account.profile.phoneNumber,电话号码
 account.profile.phoneNumbers,电话号码
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,重新发送验证码
+account.profile.phoneSaved,您已验证的电话号码已更新。
+account.profile.phoneSending,正在发送验证码…
+account.profile.phoneVerify,验证电话号码
+account.profile.phoneVerifying,正在验证…
+account.profile.picture,头像
 account.profile.pictureChange,更换头像
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,选择图片文件
 account.profile.pictureDropHint,将图片拖放至此处，或点击浏览
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,请上传不超过 512 KiB 的 JPEG、PNG、WebP 或 GIF 图片。
 account.profile.picturePreview,个人资料图片预览
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,移除头像
 account.profile.pictureRemoving,正在删除头像…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
-account.profile.preferredLanguage,Preferred language
+account.profile.pictureSaved,头像已更新。
+account.profile.pictureTooLarge,请选择不超过 512 KiB 的图片。
+account.profile.pictureTypeInvalid,请选择 JPEG、PNG、WebP 或 GIF 图片。
+account.profile.pictureUploading,正在上传头像…
+account.profile.preferredLanguage,偏好语言
 account.profile.preferredLanguage.unspecified,未设置
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
+account.profile.save,保存更改
+account.profile.saved,您的个人资料已保存。
+account.profile.userName,用户名
+account.profile.verificationPending,待验证
+account.profile.verified,已验证
 account.recovery.description,生成一次性备用代码，以便在其他方式不可用时登录。
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
+account.recovery.generate,生成新的代码
+account.recovery.once,请立即复制或打印这些代码。它们将不再显示。
+account.recovery.remaining,还剩 {count} 个未使用的代码。生成新的代码将使上一组代码失效。
+account.recovery.saveNow,立即保存您的恢复代码
+account.recovery.saved,我已保存这些代码
 account.refreshTokens.active,有效
 account.refreshTokens.activeShown,已显示 {count} 个有效应用
 account.refreshTokens.countOneShown,已显示 {count} 个应用
@@ -235,99 +235,99 @@ account.refreshTokens.revokeAll,撤销所有令牌族
 account.refreshTokens.revokeAllConfirm,要撤销此账户的所有刷新令牌族吗？
 account.refreshTokens.revokeConfirm,要撤销此刷新令牌族及其访问令牌吗？
 account.refreshTokens.revoked,已撤销
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,{count} 个作用域
 account.refreshTokens.title,刷新令牌族
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,身份验证器
+account.security.identityCount,{count} 个已关联身份
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,多重身份验证 (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,电子邮件变更
+account.securityHistory.category.impersonation,身份模拟
+account.securityHistory.category.linkedIdentities,已关联身份
+account.securityHistory.category.mfa,多因素身份验证
+account.securityHistory.category.passkeys,通行密钥
+account.securityHistory.category.passwords,密码
+account.securityHistory.category.refreshTokens,刷新令牌
+account.securityHistory.category.sessions,会话
+account.securityHistory.empty,暂无安全活动
 account.securityHistory.countOneShown,已显示 {count} 条事件
 account.securityHistory.countShown,已显示 {count} 条事件
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
+account.securityHistory.event.accessTokenRevoked,访问令牌已撤销
+account.securityHistory.event.emailChangeFailed,电子邮件地址更改失败
+account.securityHistory.event.emailChangeRequested,已请求更改电子邮件地址
+account.securityHistory.event.emailChangeVerified,新的电子邮件地址已验证
+account.securityHistory.event.emailChanged,账户电子邮件地址已更改
+account.securityHistory.event.identityLinked,外部身份已关联
+account.securityHistory.event.identityUnlinked,外部身份已取消关联
+account.securityHistory.event.impersonationEnded,身份模拟会话已结束
+account.securityHistory.event.impersonationStarted,身份模拟会话已开始
+account.securityHistory.event.mfaCompleted,多因素验证已完成
+account.securityHistory.event.mfaFailed,多因素验证失败
+account.securityHistory.event.mfaStarted,多因素验证已开始
+account.securityHistory.event.passkeyAuthenticationCompleted,通行密钥验证已完成
+account.securityHistory.event.passkeyAuthenticationStarted,通行密钥验证已开始
+account.securityHistory.event.passkeyCredentialRenamed,通行密钥已重命名
+account.securityHistory.event.passkeyCredentialRevoked,通行密钥已撤销
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,通行密钥已被管理员撤销
+account.securityHistory.event.passkeyCredentialUsed,通行密钥已被使用
+account.securityHistory.event.passkeyRegistrationCompleted,通行密钥注册已完成
+account.securityHistory.event.passkeyRegistrationStarted,通行密钥注册已开始
+account.securityHistory.event.passwordChanged,密码已更改
+account.securityHistory.event.passwordEmailVerified,密码电子邮件地址已验证
+account.securityHistory.event.passwordLocked,密码账户已锁定
+account.securityHistory.event.passwordLoginFailed,密码登录失败
+account.securityHistory.event.passwordLoginSucceeded,密码登录成功
+account.securityHistory.event.passwordRecovered,密码已恢复
+account.securityHistory.event.passwordRecoveryRequested,已请求密码恢复
+account.securityHistory.event.passwordUnlocked,密码账户已解锁
+account.securityHistory.event.passwordWhatsappVerified,WhatsApp 登录号码已验证
+account.securityHistory.event.recoveryCodeUsed,恢复代码已被使用
+account.securityHistory.event.recoveryCodesGenerated,恢复代码已生成
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,恢复代码已被管理员作废
+account.securityHistory.event.refreshTokenFamilyRevoked,刷新令牌族已撤销
+account.securityHistory.event.sessionCreated,会话已创建
+account.securityHistory.event.sessionRevoked,会话已撤销
+account.securityHistory.event.sessionRotated,会话已续期
+account.securityHistory.event.sessionsRevoked,所有会话已撤销
+account.securityHistory.event.totpEnrollmentConfirmed,身份验证器已确认
+account.securityHistory.event.totpEnrollmentStarted,身份验证器设置已开始
+account.securityHistory.event.totpRemoved,身份验证器已移除
+account.securityHistory.event.totpRemovedByAdministrator,身份验证器已被管理员移除
+account.securityHistory.event.totpRenamed,身份验证器已重命名
+account.securityHistory.event.totpVerified,身份验证器验证成功
+account.securityHistory.loadMore,加载更多安全活动
+account.securityOverview.backupCodeCount,还剩 {count} 个备用代码
+account.securityOverview.backupCodes,备用代码
+account.securityOverview.email,电子邮件
+account.securityOverview.emailMissing,没有已验证的电子邮件
+account.securityOverview.emailVerified,{email} 已验证
+account.securityOverview.passkeyCount,已配置 {count} 个通行密钥
+account.securityOverview.passkeys,通行密钥
+account.securityOverview.password,密码
+account.securityOverview.passwordMissing,未设置密码
+account.securityOverview.passwordSet,已设置密码
+account.securityOverview.phone,电话
+account.securityOverview.phoneMissing,没有已验证的电话
+account.securityOverview.phoneVerified,{phone} 已验证
+account.sessionExpired,您的会话已过期
+account.sessions.current,当前会话
 account.sessions.count,{count} 个有效会话
 account.sessions.countOne,{count} 个有效会话
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.sessions.description,查看您的账户已登录的设备，并撤销任何无法识别的会话。
+account.sessions.empty,没有活动会话
+account.sessions.lastUsed,上次使用 {date}
 account.sessions.manage,{device} 上的会话
-account.sessions.revoke,Revoke session
-account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.revoke,撤销会话
+account.sessions.revokeConfirm,要立即撤销此会话吗？
 account.sessions.deviceLabel,{browser}（{os}）
 account.sessions.deviceLabelBrowser,{browser}
 account.sessions.deviceLabelOs,{os}
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,未知设备
+account.status.available,可用
+account.status.configured,已配置
+account.status.notConfigured,未配置
+account.status.unavailable,不可用
 account.workspace.devicesTitle,设备和应用
 admin.common.confirmTitle,确认此操作
 admin.common.permission,您没有权限查看这些管理数据。
@@ -414,44 +414,44 @@ admin.events.systemActor,系统
 admin.events.title,审计事件
 admin.events.type,事件类型
 admin.events.userSubject,用户主体
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.activeTitle,进行中的身份模拟
+admin.impersonation.actor,管理员
+admin.impersonation.assuranceRequired,模拟用户需要多因素身份验证。请使用第二因素重新登录以继续。
+admin.impersonation.assuranceRequiredTitle,需要更强的登录验证
+admin.impersonation.auditLink,查看此次身份模拟的审计事件
+admin.impersonation.bannerLabel,身份模拟进行中
+admin.impersonation.bannerSummary,{actor} 正在模拟 {subject}。此会话将于 {remaining} 后结束。
+admin.impersonation.description,以支持为目的，短暂模拟他人身份，所有会话均会被记录。始终需要填写原因并限定持续时间。
+admin.impersonation.duration,持续时间
+admin.impersonation.durationHint,身份模拟始终会自动结束，最长为十五分钟。
+admin.impersonation.durationInvalid,请选择一秒至十五分钟之间的持续时间。
+admin.impersonation.durationMinutes,{count} 分钟
+admin.impersonation.end,结束身份模拟
+admin.impersonation.endConfirm,要立即结束对 {subject} 的模拟吗？
+admin.impersonation.endedNotice,身份模拟会话已结束。
+admin.impersonation.expires,结束于
+admin.impersonation.expiringSoon,此身份模拟将于不到一分钟后结束。
+admin.impersonation.nestedRejected,您已在模拟其他用户。请先结束当前身份模拟，再开始新的模拟。
+admin.impersonation.nestedRejectedTitle,不允许嵌套身份模拟
+admin.impersonation.noOrganization,无组织
+admin.impersonation.organization,组织
+admin.impersonation.organizationHint,可选。将此会话限制为该人员在一个组织中拥有的权限。
+admin.impersonation.permissionDenied,您没有在此领域中模拟用户的权限。
 admin.impersonation.permissionDeniedTitle,无法访问
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,原因
+admin.impersonation.reasonHint,将记录在审计日志中，并向被模拟用户显示。
+admin.impersonation.reasonRequired,请输入 3 到 256 个字符的理由。
+admin.impersonation.remaining,剩余时间
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,您不能模拟自己的账户。
+admin.impersonation.start,开始模拟
+admin.impersonation.startConfirm,要以 {subject} 身份开始操作吗？您的所有操作都将记录在您自己的名下。
+admin.impersonation.startedAt,已开始
+admin.impersonation.startedNotice,您现在正以 {subject} 身份操作。
+admin.impersonation.subject,模拟身份
+admin.impersonation.target,要模拟的用户
+admin.impersonation.targetRequired,请选择要模拟的用户。
+admin.impersonation.title,模拟用户
 admin.machine.assuranceRequired,管理机器用户及其凭据需要更强、更近期的登录。请重新登录以继续。
 admin.machine.assuranceRequiredTitle,需要更强的登录
 admin.machine.created,创建时间
@@ -523,8 +523,8 @@ admin.machine.users.created,机器用户已创建。
 admin.machine.users.description,在此 realm 中使用客户端凭据、令牌或 API 密钥进行身份验证的非人类身份。
 admin.machine.users.detailTitle,机器用户详情
 admin.machine.users.displayName,显示名称
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,编辑机器用户
+admin.machine.users.editTitle,编辑机器用户
 admin.machine.users.empty,此 realm 中尚不存在机器用户。
 admin.machine.users.identifier,机器用户标识符
 admin.machine.users.invalid,请输入显示名称和用户名，并且仅使用有效的作用域值。
@@ -535,23 +535,23 @@ admin.machine.users.scopes,作用域
 admin.machine.users.scopesHint,使用空格或逗号分隔作用域。作用域按完全匹配进行比较。
 admin.machine.users.search,搜索机器用户
 admin.machine.users.title,机器用户
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,机器用户已更新。
 admin.machine.users.userName,用户名
 admin.machine.users.userNameHint,在交换客户端凭据时用作客户端 ID。
-admin.navigation.description,Choose an administration resource
+admin.navigation.description,选择一项管理资源
 admin.navigation.label,管理
-admin.navigation.title,Administration navigation
+admin.navigation.title,管理导航
 admin.oidc.assuranceRequired,管理 OpenID Connect 设置需要更强、更近期的登录。请重新登录以继续。
 admin.oidc.assuranceRequiredTitle,需要更强的登录方式
 admin.oidc.clients.consent,授权
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,访问令牌有效期（秒）
+admin.oidc.clients.accessTokenRoleAssertion,在访问令牌中添加项目角色
+admin.oidc.clients.accessTokenRoleAssertionHint,使用在客户端配置的项目和组织上下文中生效的角色。
+admin.oidc.clients.additionalOrigins,附加浏览器来源
+admin.oidc.clients.additionalOriginsHint,每行一个精确来源。重定向 URI 的来源已包含在内；不支持通配符。
+admin.oidc.clients.application,应用
+admin.oidc.clients.applicationNone,无应用
+admin.oidc.clients.compatibility,兼容性设置
 admin.oidc.clients.consentRequired,必需
 admin.oidc.clients.consentSkipped,不必需
 admin.oidc.clients.create,注册客户端
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,注册一个通过 OpenID Connect 让用户
 admin.oidc.clients.created,客户端已注册。
 admin.oidc.clients.description,在此域中通过 OpenID Connect 验证用户身份的应用。
 admin.oidc.clients.detailTitle,OIDC 客户端详情
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,开发模式
+admin.oidc.clients.devModeHint,允许在任何主机上使用纯 HTTP 重定向。仅用于本地开发。
 admin.oidc.clients.empty,此域中尚未注册任何 OpenID Connect 客户端。
 admin.oidc.clients.emptySearch,没有与此搜索匹配的客户端。
 admin.oidc.clients.exactMatchHint,每行一个 URI。每个重定向都按完全匹配进行校验，因此通配符和结尾差异都会被拒绝。
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,授权类型
 admin.oidc.clients.identifier,客户端标识
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,ID 令牌有效期（秒）
+admin.oidc.clients.idTokenRoleAssertion,在 ID 令牌中添加项目角色
+admin.oidc.clients.idTokenRoleAssertionHint,使用在客户端配置的项目和组织上下文中生效的角色。
+admin.oidc.clients.idTokenUserinfoAssertion,在 ID 令牌中添加限定范围的 UserInfo 声明
+admin.oidc.clients.idTokenUserinfoAssertionHint,仅使用已授予作用域允许的个人声明。
 admin.oidc.clients.invalid,请输入客户端名称、至少一个精确的重定向 URI 和至少一个作用域。
 admin.oidc.clients.lifecycleChanged,客户端状态已更改。
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,以整秒为单位。留空则使用服务器默认值。
+admin.oidc.clients.lifetimesInvalid,有效期必须为允许范围内的整秒数。
 admin.oidc.clients.missingId,此目的地必须选择 OIDC 客户端。
 admin.oidc.clients.name,客户端名称
 admin.oidc.clients.postLogoutUris,登出后重定向 URI
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,项目
+admin.oidc.clients.projectNone,无项目
 admin.oidc.clients.redirectUris,重定向 URI
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,刷新令牌绝对有效期（秒）
+admin.oidc.clients.refreshTokenIdleLifetime,刷新令牌空闲有效期（秒）
 admin.oidc.clients.removeConfirm,移除此 OIDC 客户端？使用它的应用将立即无法工作。
 admin.oidc.clients.requireConsent,要求用户批准此应用
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,响应类型
 admin.oidc.clients.saved,客户端已保存。
 admin.oidc.clients.scopes,允许的范围
 admin.oidc.clients.search,搜索客户端
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,算法
 admin.oidc.keys.create,添加密钥
 admin.oidc.keys.created,已发布新的签名密钥。
 admin.oidc.keys.empty,此域尚不存在签名密钥。
+admin.oidc.keys.expires,过期时间
 admin.oidc.keys.keyId,密钥 ID
 admin.oidc.keys.privateNotice,仅显示公钥元数据。私钥内容绝不会发送到浏览器。
 admin.oidc.keys.retire,停用
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,移除域名 {domain}？针对它的�
 admin.organizations.domains.removed,域名已移除。
 admin.organizations.domains.unverified,等待验证
 admin.organizations.domains.verificationRecord,添加此 DNS TXT 记录，然后进行验证。
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,已验证
 admin.organizations.domains.verify,验证域名
 admin.organizations.domains.verifyDone,域名已验证。
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,邮箱地址
 admin.organizations.invitations.emailInvalid,请输入有效的电子邮件地址。
 admin.organizations.invitations.empty,尚未为此组织发送任何邀请。
 admin.organizations.invitations.expires,过期时间
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,用户
 admin.organizations.memberships.userId,用户 ID
 admin.organizations.permissionDenied,您没有权限查看或更改此组织。
 admin.organizations.permissionDeniedTitle,无法访问
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,允许的 MFA 因素
+admin.organizations.policy.allowedFactorsDescription,只有这些因素可完成 MFA。WhatsApp 登录和恢复代码不是可配置的因素。
+admin.organizations.policy.assurance.authenticated,已认证会话
+admin.organizations.policy.assurance.multi_factor,多因素会话
+admin.organizations.policy.assurance.none,无保证要求
 admin.organizations.policy.description,选择用户可以使用哪些登录方式，以及显示哪些已配置的提供方。
 admin.organizations.policy.domainDiscovery,通过电子邮件域名识别组织
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,下移
+admin.organizations.policy.effectiveValue,有效值：{value}
 admin.organizations.policy.emailOtp,电子邮件一次性验证码
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,受保护的组织操作需要已认证会话。
+admin.organizations.policy.enforcementMultiFactor,受保护的组织操作需要多因素会话，并在需要时提示进行逐步验证。
+admin.organizations.policy.enforcementNone,受保护的组织操作不附加保证要求。
+admin.organizations.policy.enforcementOptional,登录无需额外的 MFA 因素即可完成。
+admin.organizations.policy.enforcementRequired,登录必须在允许的 MFA 因素验证成功后才能完成。
+admin.organizations.policy.enforcementTitle,实际执行要求
 admin.organizations.policy.externalIdentity,外部身份提供方
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.emailOtp,电子邮件一次性验证码
+admin.organizations.policy.factor.passkey,通行密钥
+admin.organizations.policy.factor.recoveryCode,恢复代码
+admin.organizations.policy.factor.totp,验证器应用 (TOTP)
 admin.organizations.policy.inherited,继承自领域
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.minimumAssurance,最低逐步验证保证
+admin.organizations.policy.moveDown,将 {factor} 下移
+admin.organizations.policy.moveUp,将 {factor} 上移
+admin.organizations.policy.notRequired,非必需
+admin.organizations.policy.organizationOverrides,组织覆盖
+admin.organizations.policy.organizationValue,组织覆盖值
+admin.organizations.policy.overrideRealm,覆盖领域值
+admin.organizations.policy.passkey,通行密钥
 admin.organizations.policy.password,密码
 admin.organizations.policy.passwordRecovery,密码恢复
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,首选因素顺序
+admin.organizations.policy.preferredOrderDescription,使用上移和下移按钮设置键盘可访问的因素偏好顺序。
+admin.organizations.policy.realmDefaults,领域默认值
+admin.organizations.policy.realmValue,领域值
 admin.organizations.policy.registration,自助注册
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,未注册允许因素的人员将被引导至注册和补救流程，而不会被锁定。
+admin.organizations.policy.required,必需
+admin.organizations.policy.requiredMfa,必需的 MFA
 admin.organizations.policy.saved,登录策略已保存。
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,密码策略
+admin.organizations.passwordPolicy.description,整个领域密码登录的复杂度和锁定规则。组织登录将继承这些值。
+admin.organizations.passwordPolicy.minimumLength,最小长度
+admin.organizations.passwordPolicy.minimumLengthHint,1 到 72 个字符。
+admin.organizations.passwordPolicy.requireLowercase,需要小写字母
+admin.organizations.passwordPolicy.requireUppercase,需要大写字母
+admin.organizations.passwordPolicy.requireNumber,需要数字
+admin.organizations.passwordPolicy.requireSymbol,需要符号
+admin.organizations.passwordPolicy.maximumAttempts,锁定前失败尝试次数
+admin.organizations.passwordPolicy.maximumAttemptsHint,1 到 100 次。
+admin.organizations.passwordPolicy.lockoutMinutes,锁定持续时间（分钟）
+admin.organizations.passwordPolicy.lockoutMinutesHint,失败尝试次数过多后，账户将被锁定此时长。
+admin.organizations.passwordPolicy.saved,密码策略已保存。
+admin.organizations.passwordPolicy.validation.minimumLength,请输入 1 到 72 个字符的最小长度。
+admin.organizations.passwordPolicy.validation.maximumAttempts,请输入锁定前 1 到 100 次失败尝试。
+admin.organizations.passwordPolicy.validation.lockout,请输入至少 1 分钟的锁定持续时间。
+admin.organizations.passwordPolicy.validation.policy,密码策略无效。
+admin.organizations.policy.scopeLabel,策略范围
+admin.organizations.policy.securityDescription,设置登录 MFA 以及受保护组织操作所需的保证。
+admin.organizations.policy.securityTitle,MFA 与保证
 admin.organizations.policy.title,登录策略
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,上移
+admin.organizations.policy.validation.assuranceWeaker,组织的保证要求不能弱于领域值。
+admin.organizations.policy.validation.factorNarrowing,组织因素必须是领域因素允许列表的子集。
+admin.organizations.policy.validation.order,首选顺序只能包含允许的因素。
+admin.organizations.policy.validation.requiredFactors,必需的 MFA 至少需要一个允许的因素。
+admin.organizations.policy.validation.requiredMfaWeaker,组织不能关闭领域要求的 MFA。
 admin.organizations.providers.allowAccountCreation,自动为新用户创建账户
 admin.organizations.providers.clientId,客户端 ID
 admin.organizations.providers.clientSecret,客户端密钥
@@ -821,7 +822,7 @@ admin.organizations.providers.description,为此组织配置的 Google、GitHub 
 admin.organizations.providers.disable,禁用提供方
 admin.organizations.providers.disableConfirm,禁用 {displayName}？用户将无法继续使用此提供者登录。
 admin.organizations.providers.disabled,提供方已禁用。
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,显示名称
 admin.organizations.providers.empty,尚未配置任何外部身份提供方。
 admin.organizations.providers.invalid,请输入显示名称、客户端 ID、客户端密钥和绝对重定向 URI。
 admin.organizations.providers.redirectUri,重定向 URI
@@ -893,7 +894,7 @@ admin.projects.grants.roleKeys,已授予的角色
 admin.projects.grants.title,组织授权
 admin.projects.lifecycle.activate,启用
 admin.projects.lifecycle.deactivate,停用
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,移除
 admin.projects.lifecycle.removeConfirm,移除此项目？
 admin.projects.lifecycle.removeConfirmAccept,移除项目
 admin.projects.lifecycle.removeConfirmTitle,移除此项目
@@ -918,7 +919,7 @@ admin.projects.overview.title,项目概览
 admin.projects.roles.create,创建角色
 admin.projects.roles.deleteConfirm,删除此项目角色？引用它的授权将失去该角色。
 admin.projects.roles.description,此项目可分配给组织及其成员的角色。
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,显示名称
 admin.projects.roles.empty,此项目尚未定义任何角色。
 admin.projects.roles.group,分组
 admin.projects.roles.invalid,请输入角色键和显示名称。
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,已删除 {userName}。
 admin.userProfile.editProfile,编辑个人资料
 admin.userProfile.editProfileTitle,编辑个人资料
 admin.userProfile.email,邮箱地址
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,该用户没有可验证的邮箱地址。
 admin.userProfile.emailUnverified,未验证
 admin.userProfile.emailVerified,已验证
 admin.userProfile.impersonate,模拟该用户
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,组织角色已更新。
 admin.userProfile.organizationRoleDescription,为当前组织选择主要角色。
 admin.userProfile.organizationRoleTitle,组织角色
 admin.userProfile.overviewTab,概览
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,撤销通行密钥
+admin.userProfile.passkeyRevokeConfirm,要撤销 {userName} 的此通行密钥吗？它将立即失效。
+admin.userProfile.passkeyRevoked,通行密钥已撤销。
 admin.userProfile.passwordConfirm,确认新密码
 admin.userProfile.passwordMismatch,两次输入的密码不一致。
 admin.userProfile.passwordNew,新密码
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,要移除 {projectName} 的分配吗
 admin.userProfile.projectRolesRemoved,已移除该项目分配。
 admin.userProfile.projectRolesSaved,项目分配已保存。
 admin.userProfile.projectRolesTitle,项目角色
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,清除用户数据
+admin.userProfile.purgeConfirm,要永久清除 {userName} 的所有记录吗？此操作无法撤销。
+admin.userProfile.purgeConfirmTitle,清除此用户
+admin.userProfile.purgeConfirmType,请输入 {userName} 以确认。
+admin.userProfile.purgeWarning,清除将移除用户记录、会话、凭据和审计历史。
+admin.userProfile.purged,已清除 {userName}。
 admin.userProfile.reactivate,重新启用用户
 admin.userProfile.reactivateConfirm,要重新启用 {userName} 吗？该用户可再次登录。
 admin.userProfile.reactivated,已重新启用 {userName}。
 admin.userProfile.realmAdminBadge,领域管理员
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,作废恢复代码
+admin.userProfile.recoveryCodesInvalidateConfirm,要作废 {userName} 的恢复代码吗？现有代码将立即失效。
+admin.userProfile.recoveryCodesInvalidated,恢复代码已作废。
 admin.userProfile.removeRealmAdmin,取消领域管理员
 admin.userProfile.removeRealmAdminConfirm,要取消 {userName} 的领域管理员权限吗？
 admin.userProfile.removeRealmAdminDone,{userName} 不再是领域管理员。
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,重新发送验证邮件
+admin.userProfile.resendVerificationConfirm,要向 {email} 发送新的验证邮件吗？
+admin.userProfile.resendVerificationDone,验证邮件已发送到 {email}。
 admin.userProfile.revokeAll,全部撤销
 admin.userProfile.revokeAllConfirm,要撤销 {userName} 的所有会话吗？该用户将在所有位置退出登录。
 admin.userProfile.revokeAllDone,所有会话已撤销。
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,会话与设备
 admin.userProfile.setPassword,设置密码
 admin.userProfile.setPasswordDescription,替换登录密码并清除锁定状态。
 admin.userProfile.setPasswordTitle,设置新密码
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,停用用户
+admin.userProfile.suspendConfirm,要停用 {userName} 吗？该用户将无法登录。
+admin.userProfile.suspended,已停用 {userName}。
+admin.userProfile.totpRemove,移除 TOTP 注册
+admin.userProfile.totpRemoveConfirm,要移除 {userName} 的 TOTP 注册吗？该用户必须重新注册。
+admin.userProfile.totpRemoved,TOTP 注册已移除。
 admin.userProfile.unlock,解锁用户
 admin.userProfile.unlockConfirm,要解锁 {userName} 吗？该用户可再次登录。
 admin.userProfile.unlocked,已解锁 {userName}。
 admin.userProfile.username,用户名
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,{email} 已被标记为未验证（覆盖）。
+admin.userProfile.verificationOverrideUnverify,标记邮箱为未验证（覆盖）
+admin.userProfile.verificationOverrideUnverifyConfirm,要将 {email} 标记为未验证吗？该用户必须重新验证。
+admin.userProfile.verificationOverrideVerified,{email} 已被标记为已验证（覆盖）。
+admin.userProfile.verificationOverrideVerify,标记邮箱为已验证（覆盖）
+admin.userProfile.verificationOverrideVerifyConfirm,要将 {email} 标记为已验证（免邮箱验证）吗？这将覆盖正常的验证流程。
+admin.users.authentication.generated,生成于 {date}
+admin.users.authentication.neverUsed,从未使用
+admin.users.authentication.passkeyMetadata,{deviceType} · 创建于 {created} · 上次使用 {lastUsed}
+admin.users.authentication.pending,待确认
+admin.users.authentication.recoveryCodes,恢复代码
+admin.users.authentication.recoveryCount,剩余 {count} 个恢复代码
+admin.users.authentication.totpMetadata,{label} · 确认于 {confirmed}
 admin.users.count,{count} 个用户
 admin.users.create,创建用户
 admin.users.createDescription,向当前领域添加一个真人用户。
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,服务账号
 admin.users.directoryUser,用户
 admin.users.directoryUserInvited,已邀请
 admin.users.directoryUserName,用户名
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,显示名称
+admin.users.displayNameRequired,请输入显示名称。
+admin.users.email,邮箱地址
+admin.users.firstName,名
 admin.users.identifier,用户标识符
 admin.users.invalid,请输入有效的电子邮件地址和用户名。
 admin.users.inviteEmailInvalid,请输入有效的邮箱地址。
@@ -1241,35 +1242,35 @@ admin.users.inviteTokenCopy,复制链接
 admin.users.inviteTokenDismiss,我已保存此链接
 admin.users.inviteTokenOnce,此邀请链接仅显示一次。请将其分享给受邀人。
 admin.users.inviteTokenTitle,邀请链接
-admin.users.lastName,Last name
+admin.users.lastName,姓
 admin.users.lifecycle.active,启用中
 admin.users.lifecycle.deleted,已删除
 admin.users.lifecycle.inactive,未激活
 admin.users.lifecycle.initial,初始
 admin.users.lifecycle.locked,已锁定
 admin.users.lifecycle.suspended,已暂停
-admin.users.nickName,Nickname
+admin.users.nickName,昵称
 admin.users.serviceAccountCreated,服务账号已创建。
 admin.users.serviceAccountInvalid,请输入服务账号的显示名称和用户名。
 admin.users.sessions.country,国家
-admin.users.sessions.created,Created
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
+admin.users.sessions.created,创建时间
+admin.users.sessions.expires,过期时间
+admin.users.sessions.ipAddress,IP 地址
+admin.users.sessions.lastUsed,上次使用
 admin.users.sessions.location,位置
-admin.users.sessions.method,Sign-in method
+admin.users.sessions.method,登录方式
 admin.users.sessions.region,地区
 admin.users.state,状态
 admin.users.title,用户
 admin.users.unverifiedEmail,未验证的邮箱
-admin.users.userName,Username
+admin.users.userName,用户名
 app.name,Authworks
 app.tagline,安全的身份服务
 common.back,返回
 common.cancel,取消
 common.close,关闭
 common.continue,继续
-common.decline,Decline
+common.decline,拒绝
 common.disable,关闭
 common.disabled,已禁用
 common.enable,开启
@@ -1281,7 +1282,7 @@ common.next,下一页
 common.pagination,分页
 common.previous,上一页
 common.retry,重试
-common.revoke,Revoke
+common.revoke,撤销
 common.save,保存
 common.signIn,登录
 common.signOut,退出登录
@@ -1289,28 +1290,28 @@ common.theme.dark,深色
 common.theme.light,浅色
 common.theme.system,系统
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,您的地址
+oidc.consent.approve,批准
+oidc.consent.approving,正在批准…
+oidc.consent.clientId,客户端 ID
+oidc.consent.deny,拒绝
+oidc.consent.denying,正在拒绝…
+oidc.consent.description,{client} 正在请求访问您的账户。
+oidc.consent.email,您的电子邮件地址
+oidc.consent.expiredDescription,此授权请求已失效。请从应用重新开始。
+oidc.consent.expiredTitle,授权请求已过期
+oidc.consent.missingDescription,请从请求访问的应用打开此页面。
+oidc.consent.missingTitle,无授权请求
+oidc.consent.offlineAccess,在离线时保持登录状态
+oidc.consent.openid,验证您的身份
+oidc.consent.phone,您的电话号码
+oidc.consent.profile,您的基本资料
+oidc.consent.redirectDescription,批准后，您将返回到 {redirectUri}。
+oidc.consent.redirectUri,重定向 URI
+oidc.consent.resourceOwner,您的组织成员资格
+oidc.consent.scopeTitle,请求的访问权限
+oidc.consent.signInDescription,请登录以查看此授权请求。
+oidc.consent.signInTitle,需要登录
 ui.authenticated.clearSearch,清除搜索
 ui.authenticated.demo.adminBlurb,管理员:管理成员项目和凭证但不含所有者。
 ui.authenticated.demo.chipBlurb,角色状态与项目可见性的紧凑标记。
@@ -1943,90 +1944,90 @@ shell.state.loadingDetail,正在准备此页面及其安全上下文。
 shell.state.nothingHere,此处暂无内容
 shell.state.pageUnavailable,此页面不可用
 shell.state.readyDetail,此页面已准备好展示功能内容。
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,应用访问已获批准。请返回应用继续操作。
+demo.consent.clientId,客户端 ID
+demo.consent.declined,应用访问已被拒绝。
+demo.consent.error,无法加载授权请求。
+demo.consent.expired,此授权请求已过期。请从应用重新开始。
+demo.consent.expiredTitle,授权请求已过期
+demo.consent.redirectDescription,批准后，您将返回到 {redirectUri}。
+demo.consent.redirectUri,重定向 URI
+demo.consent.requestDescription,{application} 正在请求访问您的账户。
+demo.consent.scopeTitle,请求的权限
+demo.consent.scenario.description,使用测试数据支持的交互批准或拒绝 OpenID Connect 应用访问请求。
+demo.consent.scenario.title,应用程序同意
+demo.hub.consentDescription,查看 OpenID Connect 应用访问请求，并选择批准或拒绝。
+demo.hub.consentOpen,打开授权
+demo.hub.invitationsDescription,查看并回复发送给已登录账户的邀请。
+demo.hub.invitationsOpen,打开邀请
+admin.organizations.policy.autoLinking,自动关联外部身份
+admin.organizations.policy.whatsappOtp,WhatsApp 一次性验证码
+admin.organizations.policy.sessionLifetime,会话有效期（秒）
+admin.organizations.policy.sessionLifetimeHint,会话保持有效的时间。留空则保留当前值。
+admin.organizations.policy.mfaInitSkipLifetime,MFA 跳过有效期（秒）
+admin.organizations.policy.secondFactorLifetime,第二因素检查有效期（秒）
+admin.organizations.policy.multiFactorLifetime,多因素检查有效期（秒）
+admin.organizations.policy.lifetimeUnsetHint,留空则不设置该值。
+admin.organizations.policy.forceMfaLocalOnly,仅本地 MFA
+admin.organizations.policy.providerAllowlist,允许的提供方
+admin.organizations.policy.providerAllowlistDescription,只有这些提供方可完成外部登录。选择所有提供方即允许全部。
+admin.organizations.policy.providerAllowlistReset,允许所有提供方
+admin.organizations.policy.validation.lifetime,请输入 1 到 31536000 秒的有效期。
+admin.organizations.metadata.title,组织元数据
+admin.organizations.metadata.description,存储在此组织上的自定义键值对。最多 50 条。
+admin.organizations.metadata.key,键
+admin.organizations.metadata.value,值
+admin.organizations.metadata.save,保存条目
+admin.organizations.metadata.remove,移除
+admin.organizations.metadata.removeConfirm,要移除 {key} 元数据条目吗？
+admin.organizations.metadata.empty,暂无元数据条目。
+admin.organizations.metadata.saved,元数据条目已保存。
+admin.organizations.metadata.removed,元数据条目已移除。
+admin.organizations.metadata.invalid,请输入键和值。
+admin.organizations.providers.issuer,颁发者
+admin.organizations.providers.issuerHint,通用 OIDC 提供方必填。
+admin.organizations.providers.scopes,作用域
+admin.organizations.providers.scopesHint,以逗号分隔的列表，例如 openid、email、profile。
+admin.organizations.providers.save,保存提供方
+common.remove,移除
+admin.oidc.clients.backToClients,OIDC 客户端
+admin.oidc.clients.consentOptions,选项
+admin.oidc.clients.serverDefault,服务器默认值
+admin.oidc.clients.tokenLifetimes,令牌有效期
+admin.oidc.secret.credentialsLifecycle,凭据与生命周期
+admin.redesign.actions,操作
+admin.redesign.activeSessions,活跃会话
+admin.redesign.administratorId,管理员 ID
+admin.redesign.consentTrust,授权与信任
+admin.redesign.device,设备
+admin.redesign.documents,文档
+admin.redesign.events24H,事件 · 24 小时
+admin.redesign.from,从
+admin.redesign.grantsScopes,授权与范围
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,继承
+admin.redesign.inherited,已继承
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,有效期
+admin.redesign.machineUserId,机器用户 ID
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,管理领域默认值和组织登录覆盖设置。
+admin.redesign.moreFilters,更多筛选
+admin.redesign.noRecentAuditEvents,暂无近期审计事件。
+admin.redesign.noSessionsMatchYourSearch,没有与此搜索匹配的会话。
+admin.redesign.onThisPage,本页
+admin.redesign.organizations,组织
+admin.redesign.projectId,项目 ID
+admin.redesign.recentAuditEvents,近期审计事件
+admin.redesign.redirectsOrigins,重定向与来源
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
-admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,请横向滚动以查看所有事件详情。
+admin.redesign.searchSessions,搜索会话
+admin.redesign.sessionsOnThisPage,本页会话
+admin.redesign.signInMethods,登录方式
+admin.redesign.to,到
+admin.redesign.tokens,令牌
+admin.redesign.userId,用户 ID
+admin.redesign.viewAll,查看全部
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,安全与审计
 admin.whatsapp.blockedDay,已阻止 · 最近24小时

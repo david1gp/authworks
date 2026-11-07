@@ -292,6 +292,8 @@ test("duplicate English catalog values resolve by the intended key rather than a
 })
 
 // Locale/key pairs whose correct translation is spelled exactly like the English word.
+// Task 5 translators kept these identical deliberately: each is a valid cognate,
+// standard tech loanword, acronym, or proper noun in that language.
 const identicalWordTranslations = new Set([
   ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.oidcGroup`),
   ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.whatsapp`),
@@ -306,6 +308,160 @@ const identicalWordTranslations = new Set([
   "nl/demo.nav.label",
   "pl/demo.nav.label",
   "pt/demo.nav.label",
+  "tr/demo.nav.label",
+  // "Authenticator" is also the natural German term for this credential.
+  "de/account.factors.authenticator",
+  "de/account.factors.passkeys",
+  "de/account.securityHistory.category.passkeys",
+  "de/account.securityOverview.passkeys",
+  "de/admin.events.systemActor",
+  "de/admin.impersonation.actor",
+  "de/admin.machine.credentials.name",
+  "de/admin.machine.credentials.scopes",
+  "de/admin.machine.status",
+  "de/admin.machine.users.scopes",
+  "de/admin.navigation.label",
+  "de/admin.oidc.consents.user",
+  "de/admin.oidc.documents.jwksTitle",
+  "de/admin.oidc.status",
+  "de/admin.organizations.detail.realm",
+  "de/admin.organizations.policy.factor.passkey",
+  "de/admin.organizations.policy.passkey",
+  "de/admin.organizations.providers.scopes",
+  "de/admin.organizations.status",
+  "de/admin.projects.status",
+  "de/admin.realm.domains",
+  "de/admin.realm.status",
+  "de/admin.users.lifecycle.initial",
+  "de/admin.users.sessions.region",
+  "de/admin.whatsapp.status",
+  "de/demo.account.scenario.passkeys.title",
+  "de/demo.admin.group.realm.title",
+  "de/demo.admin.scenario.branding.title",
+  "de/ui.authenticated.demo.avatarTitle",
+  "de/ui.authenticated.demo.chipsTitle",
+  "de/ui.authenticated.demo.profileName",
+  "de/ui.authenticated.demo.tabsTitle",
+  "es/account.access.roles",
+  "es/admin.activity.actor",
+  "es/admin.events.actor",
+  "es/admin.organizations.detail.realm",
+  "es/admin.organizations.memberships.roles",
+  "es/admin.projects.detail.rolesTab",
+  "es/admin.redesign.tokens",
+  "es/admin.userProfile.membershipRoles",
+  "es/admin.whatsapp.endpoint",
+  "es/demo.admin.group.realm.title",
+  "es/ui.authenticated.demo.avatarTitle",
+  "es/ui.authenticated.demo.profileName",
+  "fr/account.securityHistory.category.sessions",
+  "fr/admin.impersonation.durationMinutes",
+  "fr/admin.navigation.label",
+  "fr/admin.oidc.clients.application",
+  "fr/admin.oidc.clients.consentOptions",
+  "fr/admin.oidc.clients.typePublic",
+  "fr/admin.oidc.consents.client",
+  "fr/admin.organizations.detail.realm",
+  "fr/admin.organizations.invitations.title",
+  "fr/admin.projects.applications.title",
+  "fr/admin.projects.detail.applicationsTab",
+  "fr/admin.redesign.actions",
+  "fr/admin.redesign.documents",
+  "fr/admin.users.directorySubtitleInvitations",
+  "fr/admin.users.directorySubtitleInvitationsOne",
+  "fr/admin.users.lifecycle.initial",
+  "fr/common.pagination",
+  "fr/demo.admin.scenario.applications.title",
+  "fr/demo.admin.scenario.invitations.title",
+  "fr/demo.admin.scenario.sessions.title",
+  "fr/demo.consent.clientId",
+  "fr/demo.nav.compact",
+  "fr/oidc.consent.clientId",
+  "fr/ui.authenticated.demo.avatarTitle",
+  "fr/ui.authenticated.demo.profileName",
+  "hu/admin.oidc.documents.jwksUri",
+  "hu/admin.organizations.policy.factor.passkey",
+  "hu/admin.organizations.policy.passkey",
+  "hu/ui.authenticated.demo.avatarTitle",
+  "hu/ui.authenticated.demo.profileName",
+  "it/account.access.email",
+  "it/account.securityOverview.email",
+  "it/account.securityOverview.password",
+  "it/admin.events.payload",
+  "it/admin.organizations.detail.realm",
+  "it/admin.organizations.policy.factor.passkey",
+  "it/admin.organizations.policy.password",
+  "it/admin.organizations.providers.type",
+  "it/admin.users.nickName",
+  "it/admin.whatsapp.endpoint",
+  "it/demo.account.scenario.password.title",
+  "it/demo.admin.group.realm.title",
+  "it/demo.nav.account",
+  "it/ui.authenticated.demo.avatarTitle",
+  "it/ui.authenticated.demo.profileName",
+  "ja/admin.oidc.documents.jwksUri",
+  "nl/account.factors.passkeyCount",
+  "nl/account.factors.passkeys",
+  "nl/account.profile.gender.man",
+  "nl/account.refreshTokens.scopeCount",
+  "nl/account.security.authenticators",
+  "nl/account.securityHistory.category.passkeys",
+  "nl/account.securityOverview.passkeys",
+  "nl/admin.activity.actor",
+  "nl/admin.events.actor",
+  "nl/admin.events.payload",
+  "nl/admin.machine.credentials.scopes",
+  "nl/admin.machine.status",
+  "nl/admin.machine.users.scopes",
+  "nl/admin.oidc.clients.project",
+  "nl/admin.oidc.documents.jwksTitle",
+  "nl/admin.oidc.status",
+  "nl/admin.organizations.detail.realm",
+  "nl/admin.organizations.policy.factor.passkey",
+  "nl/admin.organizations.policy.passkey",
+  "nl/admin.organizations.providers.scopes",
+  "nl/admin.organizations.providers.type",
+  "nl/admin.organizations.status",
+  "nl/admin.projects.status",
+  "nl/admin.realm.status",
+  "nl/admin.redesign.tokens",
+  "nl/admin.whatsapp.endpoint",
+  "nl/admin.whatsapp.status",
+  "nl/demo.account.scenario.passkeys.title",
+  "nl/demo.admin.group.realm.title",
+  "nl/demo.nav.account",
+  "nl/demo.nav.compact",
+  "nl/ui.authenticated.demo.avatarTitle",
+  "nl/ui.authenticated.demo.chipsTitle",
+  "nl/ui.authenticated.demo.profileName",
+  "nl/ui.authenticated.demo.tabsTitle",
+  "pl/admin.events.systemActor",
+  "pl/admin.impersonation.actor",
+  "pl/admin.organizations.detail.realm",
+  "pl/admin.users.sessions.region",
+  "pl/admin.whatsapp.status",
+  "pl/demo.admin.group.realm.title",
+  "pl/demo.admin.scenario.branding.title",
+  "pl/ui.authenticated.demo.profileName",
+  "pt/account.factors.passkeyCount",
+  "pt/account.factors.passkeys",
+  "pt/account.securityHistory.category.passkeys",
+  "pt/account.securityOverview.passkeys",
+  "pt/admin.events.payload",
+  "pt/admin.organizations.detail.realm",
+  "pt/admin.organizations.policy.factor.passkey",
+  "pt/admin.organizations.policy.passkey",
+  "pt/admin.redesign.tokens",
+  "pt/admin.whatsapp.endpoint",
+  "pt/demo.account.scenario.passkeys.title",
+  "pt/demo.admin.group.realm.title",
+  "pt/ui.authenticated.demo.avatarTitle",
+  "pt/ui.authenticated.demo.profileName",
+  "ru/admin.organizations.detail.realm",
+  "tr/ui.authenticated.demo.avatarTitle",
+  "tr/ui.authenticated.demo.profileName",
+  "uk/admin.organizations.detail.realm",
+  "zh/admin.oidc.documents.jwksUri",
 ])
 
 // Keys introduced with the production shell, guard, confirmation, and fixture-state work.
@@ -552,6 +708,59 @@ test("login and demo catalogs do not leak new English source literals", async ()
     for (const key of loginKeys) {
       if (intentionalIdenticalLoginTranslations.has(`${option.code}/${key}`)) continue
       expect(parsed.data[key], `${option.code}/${key}`).not.toBe(englishCatalog[key as keyof typeof englishCatalog])
+    }
+  }
+})
+
+// Catalog keys whose value is legitimately identical to English in every locale.
+// Source: /tmp/i18n-todo/allowlist.json from the Task 4 inventory; each entry keeps its reason.
+const identicalAllowlist: readonly string[] = [
+  // Brand/product name, never translated.
+  "app.name",
+  // Pan-locale acronym for identifier.
+  "admin.redesign.id",
+  // Pan-locale acronym for Internet Protocol.
+  "admin.redesign.ip",
+  // OpenID Connect acronym, identical in all 14 locales.
+  "shell.nav.oidcGroup",
+  // Official protocol/standard name (proper noun).
+  "demo.admin.group.oidc.title",
+  // Placeholder-only string, no translatable text.
+  "account.sessions.deviceLabelBrowser",
+  // Placeholder-only string, no translatable text.
+  "account.sessions.deviceLabelOs",
+  // Pure time-format string, no words.
+  "admin.impersonation.remainingValue",
+  // SI unit symbol for seconds (input suffix next to seconds-lifetime fields); identical by standard.
+  "admin.redesign.s",
+  // E.164 example phone number, not prose.
+  "account.profile.phonePlaceholder",
+  // RFC 2606 example domain used as an input placeholder.
+  "admin.organizations.domains.placeholder",
+  // URL scheme prefix, not prose.
+  "common.urlPlaceholder",
+  // Em-dash placeholder for a missing sender, not prose; identical in every locale.
+  "admin.whatsapp.noSender",
+  // Placeholder-only quota-bar template with no translatable words.
+  "admin.whatsapp.quotaBarLabel",
+]
+
+test("no catalog cell copies English outside the allowlist and identical-word sets", async () => {
+  const allowedIdentical = new Set([...identicalWordTranslations, ...intentionalIdenticalLoginTranslations])
+  const catalogKeys = Object.keys(englishCatalog)
+  for (const option of languagesSupported.filter((entry) => entry.code !== "en")) {
+    const parsed = translationCsvParse(
+      await Bun.file(new URL(`../../public/i18n/${option.code}.csv`, import.meta.url)).text(),
+    )
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) continue
+
+    for (const key of catalogKeys) {
+      if (identicalAllowlist.includes(key)) continue
+      if (allowedIdentical.has(`${option.code}/${key}`)) continue
+      expect(parsed.data[key], `${option.code}/${key} must not be an English copy`).not.toBe(
+        englishCatalog[key as keyof typeof englishCatalog],
+      )
     }
   }
 })

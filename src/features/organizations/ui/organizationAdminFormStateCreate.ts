@@ -53,6 +53,7 @@ export function organizationAdminFormStateCreate() {
     if (providerEdits.get()[provider.id] !== undefined) return
     providerEdits.set({ ...providerEdits.get(), [provider.id]: organizationAdminProviderEditDraftCreate(provider) })
   }
+  const metadataEdits = createSignalObject<Record<string, string>>({})
   const metadataKey = createSignalObject("")
   const metadataValue = createSignalObject("")
 
@@ -146,6 +147,19 @@ export function organizationAdminFormStateCreate() {
     membershipRoles,
     membershipRolesToggle: (role: OrganizationRoleId) => rolesToggle(membershipRoles, role),
     membershipUserId,
+    metadataEdits,
+    metadataEditClear: (key: string) => {
+      const edits = { ...metadataEdits.get() }
+      delete edits[key]
+      metadataEdits.set(edits)
+    },
+    metadataEditInput: (key: string, value: string) => {
+      metadataEdits.set({ ...metadataEdits.get(), [key]: value })
+    },
+    metadataEditRequest: (key: string) => {
+      const draft = metadataEdits.get()[key]
+      return draft === undefined ? undefined : { value: draft }
+    },
     metadataKey,
     metadataValue,
     providerCreate,
@@ -179,6 +193,8 @@ export function organizationAdminFormStateCreate() {
       v.safeParse(organizationMetadataKeySchema, metadataKey.get().trim()).success && metadataValue.get().length > 0
         ? valid()
         : invalid("admin.organizations.metadata.invalid"),
+    validateMetadataEdit: (value: string) =>
+      value.length > 0 ? valid() : invalid("admin.organizations.metadata.invalid"),
     validateDomainClaim: () =>
       v.safeParse(organizationDomainClaimRequestSchema, {
         domain: claimDomain.get(),

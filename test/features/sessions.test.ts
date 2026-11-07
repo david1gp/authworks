@@ -1226,3 +1226,123 @@ test("realm session administration is scoped to realm administrators and revokes
     expect(after.activeSessions).toBe(1)
   })
 })
+
+test("realm session search filters server-side across the whole realm before paginating", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { domain: "session-search.example.com", name: "session-search.example.com" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) throw new Error(realm.errorMessage)
+    const realmId = realm.data.realm.id
+    const context = realmTenantContextCreate(realmId, "anonymous")
+    const register = (email: string, userName: string, displayName: string) => {
+      let userId = ""
+      const registered = passwordRegister({
+        context,
+        database,
+        input: { email, password: "Correct Horse 12", profile: { displayName }, userName },
+        realmId,
+        onVerificationToken: (delivery) => {
+          userId = delivery.userId
+        },
+      })
+      expect(registered.success).toBe(true)
+      if (!registered.success) throw new Error(registered.errorMessage)
+      return userId
+    }
+    const aliceId = register("alice@example.com", "alice-user", "Alice Anderson")
+    const bobId = register("bob@example.com", "robert-b", "Bob Brown")
+    const issue = (userId: string, ipAddress: string) => {
+      testkit.advance(1)
+      const issued = sessionIssue({
+        assurance: "authenticated",
+        authenticationMethod: "password",
+        database,
+        deviceMetadata: { ipAddress },
+        realmId,
+        runtime: testkit.runtime,
+        userId,
+      })
+      if (!issued.success) throw new Error(issued.errorMessage)
+      return issued.data
+    }
+    // Bob's session is the newest, so paginating first and filtering the page would hide Alice.
+    const aliceFirst = issue(aliceId, "192.0.2.11")
+    const aliceSecond = issue(aliceId, "192.0.2.12")
+    const bob = issue(bobId, "198.51.100.7")
+
+    const unfiltered = sessionList({ database, realmId, realmWide: true })
+    expect(unfiltered.success).toBe(true)
+    if (unfiltered.success) expect(unfiltered.data.items).toHaveLength(3)
+
+    const byName = sessionList({ database, query: { search: "alice" }, realmId, realmWide: true })
+    expect(byName.success).toBe(true)
+    if (byName.success) {
+      expect(byName.data.items).toHaveLength(2)
+      for (const item of byName.data.items) expect(item.subjectDisplayName).toBe("Alice Anderson")
+    }
+
+    const caseInsensitive = sessionList({
+      database,
+      query: { search: "ALICE@EXAMPLE.COM" },
+      realmId,
+      realmWide: true,
+    })
+    expect(caseInsensitive.success).toBe(true)
+    if (caseInsensitive.success) expect(caseInsensitive.data.items).toHaveLength(2)
+
+    const byUserName = sessionList({ database, query: { search: "robert-b" }, realmId, realmWide: true })
+    expect(byUserName.success).toBe(true)
+    if (byUserName.success) {
+      expect(byUserName.data.items).toHaveLength(1)
+      expect(byUserName.data.items[0]).toMatchObject({ subjectId: bobId })
+    }
+
+    const byIp = sessionList({ database, query: { search: "198.51.100" }, realmId, realmWide: true })
+    expect(byIp.success).toBe(true)
+    if (byIp.success) {
+      expect(byIp.data.items).toHaveLength(1)
+      expect(byIp.data.items[0]?.id).toBe(bob.session.id)
+    }
+
+    const byId = sessionList({ database, query: { search: bob.session.id }, realmId, realmWide: true })
+    expect(byId.success).toBe(true)
+    if (byId.success) {
+      expect(byId.data.items).toHaveLength(1)
+      expect(byId.data.items[0]?.id).toBe(bob.session.id)
+    }
+
+    const noMatch = sessionList({ database, query: { search: "no-such-session" }, realmId, realmWide: true })
+    expect(noMatch.success).toBe(true)
+    if (noMatch.success) {
+      expect(noMatch.data.items).toHaveLength(0)
+      expect(noMatch.data.nextPageToken).toBeUndefined()
+    }
+
+    const firstPage = sessionList({
+      database,
+      query: { pageSize: 1, search: "alice" },
+      realmId,
+      realmWide: true,
+    })
+    expect(firstPage.success).toBe(true)
+    if (!firstPage.success) throw new Error(firstPage.errorMessage)
+    expect(firstPage.data.items).toHaveLength(1)
+    expect(firstPage.data.nextPageToken).toBeTruthy()
+    const secondPage = sessionList({
+      database,
+      query: { pageSize: 1, pageToken: firstPage.data.nextPageToken, search: "alice" },
+      realmId,
+      realmWide: true,
+    })
+    expect(secondPage.success).toBe(true)
+    if (!secondPage.success) throw new Error(secondPage.errorMessage)
+    expect(secondPage.data.items).toHaveLength(1)
+    expect(new Set([firstPage.data.items[0]?.id, secondPage.data.items[0]?.id])).toEqual(
+      new Set([aliceFirst.session.id, aliceSecond.session.id]),
+    )
+  })
+})

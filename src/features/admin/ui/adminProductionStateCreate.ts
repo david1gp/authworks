@@ -32,6 +32,7 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
     adapter: adminProductionAdapterCreate({ api: adminApiCreate({ baseUrl }), realmId: realmId.get }),
     confirm: confirmState.confirm,
     eventFilterSearch: () => location.search,
+    sessionListSearch: () => new URLSearchParams(location.search).get("q") ?? "",
     reloadKey: realmId.get,
     screen,
   })

@@ -6,6 +6,7 @@ export const oidcSigningKeyTable = sqliteTable(
     algorithm: text("algorithm").notNull(),
     createdAt: integer("created_at").notNull(),
     encryptedPrivateKey: text("encrypted_private_key").notNull(),
+    expiresAt: integer("expires_at"),
     id: text("id").primaryKey(),
     realmId: text("realm_id").notNull(),
     publicJwk: text("public_jwk").notNull(),

@@ -178,4 +178,78 @@ describe("organization administration metadata page state", () => {
     form.metadataKey.set("not valid!")
     expect(form.validateMetadata()).toBe(false)
   })
+
+  test("edits a metadata value in place, bumping the version and preserving createdAt", async () => {
+    const adapter = organizationAdminDemoAdapterCreate(() => "success")
+    const seenPending: (string | undefined)[] = []
+    const page = organizationAdminPageStateCreate({
+      adapter: {
+        ...adapter,
+        metadataSet: (id, key, input) => {
+          seenPending.push(page.pendingId())
+          return adapter.metadataSet(id, key, input)
+        },
+      },
+      confirm: () => true,
+      organizationId: () => organizationId,
+      screen: () => "configuration",
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    expect(await page.metadataSet("team", "platform")).toBe(true)
+    const created = page.metadata().find((item) => item.key === "team")
+    expect(created?.value).toBe("platform")
+    expect(created?.version).toBe(1)
+    expect(seenPending.at(-1)).toBe("metadata:team")
+
+    expect(await page.metadataSet("team", "core")).toBe(true)
+    const edited = page.metadata().find((item) => item.key === "team")
+    expect(edited?.value).toBe("core")
+    expect(edited?.version).toBe(2)
+    expect(edited?.createdAt).toBe(created?.createdAt)
+    expect(page.metadata().filter((item) => item.key === "team")).toHaveLength(1)
+    expect(page.notice()).toBe("metadata-saved")
+  })
+
+  test("adds a metadata row through the add-row form state", async () => {
+    const adapter = organizationAdminDemoAdapterCreate(() => "success")
+    const page = organizationAdminPageStateCreate({
+      adapter,
+      confirm: () => true,
+      organizationId: () => organizationId,
+      screen: () => "configuration",
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    const form = organizationAdminFormStateCreate()
+    form.metadataKey.set("team")
+    form.metadataValue.set("platform")
+    expect(form.validateMetadata()).toBe(true)
+
+    expect(await page.metadataSet(form.metadataKey.get().trim(), form.metadataValue.get())).toBe(true)
+    expect(page.metadata().map((item) => [item.key, item.value])).toEqual([["team", "platform"]])
+    expect(page.notice()).toBe("metadata-saved")
+  })
+
+  test("tracks metadata edit drafts per key", () => {
+    const form = organizationAdminFormStateCreate()
+    expect(form.metadataEditRequest("team")).toBeUndefined()
+
+    form.metadataEditInput("team", "core")
+    expect(form.metadataEditRequest("team")).toEqual({ value: "core" })
+
+    form.metadataEditInput("team", "next")
+    expect(form.metadataEditRequest("team")).toEqual({ value: "next" })
+
+    form.metadataEditClear("team")
+    expect(form.metadataEditRequest("team")).toBeUndefined()
+  })
+
+  test("validates the metadata edit value", () => {
+    const form = organizationAdminFormStateCreate()
+    expect(form.validateMetadataEdit("")).toBe(false)
+    expect(form.validateMetadataEdit("core")).toBe(true)
+  })
 })

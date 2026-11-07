@@ -12,6 +12,7 @@ import { demoAdminProjects } from "../../demo/demoAdminProjects.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
+import { oidcSigningKeyValidityMs } from "../public/oidcSigningKeyValidityMs.js"
 import { oidcClientSchema, type OidcClient } from "../public/oidcClientSchema.js"
 import type { OidcSigningKey } from "../public/oidcSigningKeySchema.js"
 import type { OidcAdminAdapter } from "./oidcAdminAdapter.js"
@@ -261,6 +262,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
     return {
       algorithm: "RS256",
       createdAt: timestamp,
+      expiresAt: timestamp + oidcSigningKeyValidityMs,
       id,
       realmId: demoRealmId,
       publicJwk: {

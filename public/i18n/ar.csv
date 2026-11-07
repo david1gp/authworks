@@ -7,10 +7,10 @@ admin.activity.error,تعذر تحميل النشاط. حاول مرة أخرى.
 admin.activity.organization,المنظمة
 admin.activity.realm,نطاق IAM
 shell.nav.activity,النشاط
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
+account.confirmTitle,تأكيد هذا الإجراء
+account.factors.authenticatorName,اسم تطبيق المصادقة
+account.factors.stepUpDescription,تحقق باستخدام المصادقة متعددة العوامل، ثم ستُعاد محاولة إزالة تطبيق المصادقة.
+account.securityHistory.description,راجع نشاط الأمان الأخير والحساس على هذا الحساب.
 account.access.accepted,تم قبول الدعوة
 account.access.acceptedDetail,أنت الآن عضو في هذه المنظمة.
 account.access.active,المنظمة النشطة
@@ -30,12 +30,12 @@ account.access.effectiveDescription,راجع أدوار المشروع والأ�
 account.access.effectiveDescription,راجع أدوار المشروع والأذونات المتاحة لهذا الحساب في هذه المؤسسة.
 account.access.effectiveEmpty,لا يوجد وصول إلى المشاريع مدرج لهذه المؤسسة.
 account.access.effectiveEmpty,لا يوجد وصول إلى المشاريع مدرج لهذه المؤسسة.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,أدوار العضوية: {roles}
+account.access.effectiveMembership,أدوار العضوية: {roles}
+account.access.effectivePermissions,الأذونات: {permissions}
+account.access.effectivePermissions,الأذونات: {permissions}
+account.access.effectiveSource,مصدر الوصول: {source}
+account.access.effectiveSource,مصدر الوصول: {source}
 account.access.effectiveTitle,الوصول الفعلي إلى المشاريع
 account.access.effectiveTitle,الوصول الفعلي إلى المشاريع
 account.access.email,البريد الإلكتروني
@@ -48,11 +48,11 @@ account.access.invitationFor,دعوة إلى {email}
 account.access.invitationMissing,افتح رابط الدعوة الكامل للمتابعة.
 account.access.invitationOpen,فتح الدعوة
 account.access.invitationReplay,تم استخدام هذه الدعوة بالفعل أو لم تعد متاحة.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
+account.access.loadMore,تحميل المزيد من عناصر الوصول
+account.access.loadMore,تحميل المزيد من عناصر الوصول
 account.access.membership,أدوار العضوية
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.organizationAccess,الوصول إلى المنظمة
+account.access.organizationAccess,الوصول إلى المنظمة
 account.access.organizationCount,{count} منظمات
 account.access.organizationCountOne,{count} منظمة
 account.access.organizationDescription,اختر منظمة لعرض عضويتك ووصولك إليها. لا يؤدي عرض المنظمة إلى تغيير منظمتك النشطة.
@@ -71,11 +71,11 @@ account.delete.emailMismatch,عنوان البريد الإلكتروني غير
 account.delete.submit,حذف الحساب نهائيًا
 account.delete.title,حذف هذا الحساب نهائيًا
 account.delete.warning,لا يمكن التراجع عن هذا الإجراء. ستتوقف جلساتك وحق الوصول الخاص بك عن العمل.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
+account.export.description,نزّل نسخة JSON من ملفك الشخصي وعناوين بريدك الإلكتروني وعضوياتك وطرق تسجيل الدخول الخاصة بك لسجلاتك الخاصة.
+account.export.download,تنزيل التصدير
+account.export.downloading,جارٍ تجهيز التنزيل…
+account.export.title,تنزيل بياناتك
+account.export.unavailable,تصدير البيانات غير متاح حاليًا.
 account.factors.addTotp,إضافة تطبيق مصادقة
 account.factors.authenticator,تطبيق المصادقة
 account.factors.configured,تم إعداد تطبيق المصادقة
@@ -91,22 +91,22 @@ account.factors.removeTotp,إزالة تطبيق المصادقة
 account.factors.totp,تطبيق المصادقة
 account.factors.totpSecretOnce,أضف هذا المفتاح السري إلى تطبيق المصادقة الخاص بك، ثم أدخل الرمز المكون من ستة أرقام. يتم عرض مفتاح الإعداد هذا الآن فقط.
 account.factors.verificationCode,رمز التحقق
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.identities.alreadyLinked,هذا الحساب الخارجي مرتبط بالفعل.
+account.identities.confirm,تأكيد الربط
+account.identities.confirmDescription,أكّد ربط حساب {provider} الخاص بك للمتابعة.
+account.identities.confirmTitle,تأكيد الحساب الخارجي
 account.identities.connecting,تابع في نافذة موفّر الخدمة ثم عد إلى هنا لتأكيد الربط.
 account.identities.description,الحسابات الخارجية المرتبطة بهويتك في Authworks. قم بإلغاء ربط الحسابات التي لم تعد تستخدمها.
 account.identities.empty,لا توجد هويات خارجية مرتبطة
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.externalAccount,حساب خارجي
+account.identities.linkDescription,اربط موفّرًا آخر لاستخدامه كطريقة مصادقة.
+account.identities.linkIncomplete,أُغلقت نافذة الموفّر قبل اكتمال الربط. حاول مرة أخرى.
+account.identities.linkTitle,ربط حساب خارجي
 account.identities.manage,إدارة حساب {provider} ({account})
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
+account.identities.popupBlocked,اسمح بالنوافذ المنبثقة لربط حساب خارجي.
+account.identities.recentAuthRequired,لأسباب أمنية، تحقق من هويتك قبل ربط حساب خارجي. أكمل التحقق متعدد العوامل، أو سجّل الدخول مرة أخرى وأعد المحاولة.
+account.identities.signInAgain,سجّل الدخول مرة أخرى
+account.identities.stepUpDescription,تحقق باستخدام المصادقة متعددة العوامل، ثم ستُعاد محاولة إجراء الحساب الخارجي.
 account.identities.unlink,إلغاء الربط
 account.identities.unlinkConfirm,هل تريد إلغاء ربط هذا الحساب الخارجي؟
 account.passkeys.add,إضافة مفتاح مرور
@@ -120,13 +120,13 @@ account.passkeys.synced,مفتاح مرور متزامن
 account.password.changed,تم تغيير كلمة المرور الخاصة بك.
 account.password.confirm,تأكيد كلمة المرور الجديدة
 account.password.current,كلمة المرور الحالية
-account.password.currentOptionalHint,Leave blank if no password is set yet.
+account.password.currentOptionalHint,اتركه فارغًا إذا لم يتم تعيين كلمة مرور بعد.
 account.password.description,استخدم كلمة مرور فريدة لا تستخدمها في خدمات أخرى.
 account.password.mismatch,كلمات المرور الجديدة غير متطابقة.
 account.password.new,كلمة المرور الجديدة
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
+account.password.set,تم تعيين كلمة المرور الخاصة بك.
+account.password.setSubmit,تعيين كلمة المرور
+account.password.setTitle,تعيين كلمة المرور
 account.password.submit,تغيير كلمة المرور
 account.password.title,تغيير كلمة المرور
 account.password.tooShort,يجب أن تحتوي كلمة المرور الجديدة على 8 أحرف على الأقل.
@@ -139,72 +139,72 @@ account.profile.edit,تعديل الملف الشخصي
 account.profile.displayNameRequired,أدخل اسمًا معروضًا.
 account.profile.email,عنوان البريد الإلكتروني
 account.profile.emailMissing,لم يُضف بريد إلكتروني
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,إضافة عنوان بريد إلكتروني
+account.profile.emailAddDescription,أضف عنوانًا آخر إلى حسابك. يصبح متاحًا بعد التحقق منه.
+account.profile.emailAddTitle,إضافة عنوان بريد إلكتروني
+account.profile.emailAddresses,عناوين البريد الإلكتروني
+account.profile.emailAddressesEmpty,لا توجد عناوين بريد إلكتروني متاحة.
+account.profile.emailAddressesSaved,تم تحديث عناوين بريدك الإلكتروني.
 account.profile.emailDescription,راجع عناوين البريد الإلكتروني المرتبطة بحسابك وأدرها.
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
+account.profile.emailCodeSent,افتح رابط التحقق المرسل إلى {email}، أو الصق الرمز المميز أدناه.
+account.profile.emailCodeSentGeneric,افتح رابط التحقق المرسل إلى عنوانك الجديد، أو الصق الرمز المميز أدناه.
+account.profile.emailDifferent,استخدام عنوان مختلف
+account.profile.emailInvalid,أدخل عنوان بريد إلكتروني صالحًا.
+account.profile.emailMakePrimary,تعيين كأساسي
+account.profile.emailNew,عنوان بريد إلكتروني جديد
+account.profile.emailPrimary,أساسي
+account.profile.emailPrimaryRemoveBlocked,لا يمكن إزالة عنوان البريد الإلكتروني الأساسي.
+account.profile.emailRefresh,تحديث العناوين
+account.profile.emailRemove,إزالة
+account.profile.emailRemoving,جارٍ الإزالة…
+account.profile.emailResend,إعادة إرسال رسالة التحقق
+account.profile.emailSending,جارٍ إرسال رسالة التحقق…
+account.profile.emailToken,رمز التحقق المميز
+account.profile.emailTokenInvalid,أدخل رمز التحقق المميز من البريد الإلكتروني.
+account.profile.emailUpdating,جارٍ التحديث…
+account.profile.emailVerify,التحقق من عنوان البريد الإلكتروني
+account.profile.emailVerifying,جارٍ التحقق…
 account.profile.firstName,الاسم الأول
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
+account.profile.gender,الجنس
+account.profile.gender.man,رجل
+account.profile.gender.nonBinary,غير ثنائي
+account.profile.gender.unspecified,غير محدد
+account.profile.gender.woman,امرأة
 account.profile.lastName,اسم العائلة
 account.profile.nickName,الاسم المستعار
 account.profile.notSet,غير محدد
 account.profile.personalDescription,حافظ على تحديث الملف الشخصي المعروض للتطبيقات والمسؤولين.
 account.profile.personalInformation,المعلومات الشخصية
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.phoneAdd,إضافة رقم هاتف
+account.profile.phoneChange,تغيير رقم الهاتف
+account.profile.phoneCode,رمز التحقق المكون من ستة أرقام
+account.profile.phoneCodeInvalid,أدخل رمز التحقق المكون من ستة أرقام.
+account.profile.phoneCodeSent,أدخل الرمز المرسل إلى {phoneNumber} على واتساب.
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,استخدام رقم مختلف
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,أدخل رقم هاتف صالحًا بتنسيق E.164.
+account.profile.phoneNew,رقم هاتف جديد
+account.profile.phoneNumber,رقم الهاتف
 account.profile.phoneNumbers,أرقام الهاتف
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,إعادة إرسال الرمز
+account.profile.phoneSaved,تم تحديث رقم هاتفك المتحقق منه.
+account.profile.phoneSending,جارٍ إرسال الرمز…
+account.profile.phoneVerify,التحقق من رقم الهاتف
+account.profile.phoneVerifying,جارٍ التحقق…
+account.profile.picture,صورة الملف الشخصي
 account.profile.pictureChange,تغيير صورة الملف الشخصي
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,اختيار ملف صورة
 account.profile.pictureDropHint,اسحب الصورة وأفلتها هنا، أو انقر للاستعراض
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,ارفع صورة JPEG أو PNG أو WebP أو GIF بحجم أقصاه 512 كيبيبايت.
 account.profile.picturePreview,معاينة صورة الملف الشخصي
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,إزالة الصورة
 account.profile.pictureRemoving,جارٍ إزالة الصورة…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
+account.profile.pictureSaved,تم تحديث صورة الملف الشخصي.
+account.profile.pictureTooLarge,اختر صورة بحجم أقصاه 512 كيبيبايت.
+account.profile.pictureTypeInvalid,اختر صورة JPEG أو PNG أو WebP أو GIF.
+account.profile.pictureUploading,جارٍ رفع الصورة…
 account.profile.preferredLanguage,اللغة المفضلة
 account.profile.preferredLanguage.unspecified,غير محددة
 account.profile.save,حفظ التغييرات
@@ -235,81 +235,81 @@ account.refreshTokens.revokeAll,إلغاء جميع العائلات
 account.refreshTokens.revokeAllConfirm,هل تريد إلغاء جميع عائلات رموز التحديث لهذا الحساب؟
 account.refreshTokens.revokeConfirm,هل تريد إلغاء عائلة رمز التحديث هذه ورموز الوصول الخاصة بها؟
 account.refreshTokens.revoked,ملغى
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,{count} من النطاقات
 account.refreshTokens.title,عائلات رموز التحديث
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,تطبيقات المصادقة
+account.security.identityCount,{count} من الهويات المرتبطة
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,المصادقة متعددة العوامل (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,تغييرات البريد الإلكتروني
+account.securityHistory.category.impersonation,انتحال الهوية
+account.securityHistory.category.linkedIdentities,الهويات المرتبطة
+account.securityHistory.category.mfa,المصادقة متعددة العوامل
+account.securityHistory.category.passkeys,مفاتيح المرور
+account.securityHistory.category.passwords,كلمات المرور
+account.securityHistory.category.refreshTokens,رموز التحديث
+account.securityHistory.category.sessions,الجلسات
+account.securityHistory.empty,لا يتوفر نشاط أمان
 account.securityHistory.countOneShown,{count} حدث معروض
 account.securityHistory.countShown,{count} أحداث معروضة
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
+account.securityHistory.event.accessTokenRevoked,تم إبطال رمز وصول
+account.securityHistory.event.emailChangeFailed,فشل تغيير عنوان البريد الإلكتروني
+account.securityHistory.event.emailChangeRequested,تم طلب تغيير عنوان البريد الإلكتروني
+account.securityHistory.event.emailChangeVerified,تم التحقق من عنوان بريد إلكتروني جديد
+account.securityHistory.event.emailChanged,تم تغيير عنوان البريد الإلكتروني للحساب
+account.securityHistory.event.identityLinked,تم ربط هوية خارجية
+account.securityHistory.event.identityUnlinked,تم إلغاء ربط هوية خارجية
+account.securityHistory.event.impersonationEnded,انتهت جلسة انتحال هوية
+account.securityHistory.event.impersonationStarted,بدأت جلسة انتحال هوية
+account.securityHistory.event.mfaCompleted,اكتمل تحدٍّ للمصادقة متعددة العوامل
+account.securityHistory.event.mfaFailed,فشل تحدٍّ للمصادقة متعددة العوامل
+account.securityHistory.event.mfaStarted,بدأ تحدٍّ للمصادقة متعددة العوامل
+account.securityHistory.event.passkeyAuthenticationCompleted,اكتملت مصادقة مفتاح مرور
+account.securityHistory.event.passkeyAuthenticationStarted,بدأت مصادقة مفتاح مرور
+account.securityHistory.event.passkeyCredentialRenamed,تمت إعادة تسمية مفتاح مرور
+account.securityHistory.event.passkeyCredentialRevoked,تم إبطال مفتاح مرور
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,تم إبطال مفتاح مرور من قبل مسؤول
+account.securityHistory.event.passkeyCredentialUsed,تم استخدام مفتاح مرور
+account.securityHistory.event.passkeyRegistrationCompleted,اكتمل تسجيل مفتاح مرور
+account.securityHistory.event.passkeyRegistrationStarted,بدأ تسجيل مفتاح مرور
+account.securityHistory.event.passwordChanged,تم تغيير كلمة المرور
+account.securityHistory.event.passwordEmailVerified,تم التحقق من عنوان البريد الإلكتروني لكلمة المرور
+account.securityHistory.event.passwordLocked,تم قفل حساب كلمة المرور
+account.securityHistory.event.passwordLoginFailed,فشل تسجيل الدخول بكلمة المرور
+account.securityHistory.event.passwordLoginSucceeded,نجح تسجيل الدخول بكلمة المرور
+account.securityHistory.event.passwordRecovered,تمت استعادة كلمة المرور
+account.securityHistory.event.passwordRecoveryRequested,تم طلب استعادة كلمة المرور
+account.securityHistory.event.passwordUnlocked,تم إلغاء قفل حساب كلمة المرور
+account.securityHistory.event.passwordWhatsappVerified,تم التحقق من رقم واتساب لتسجيل الدخول
+account.securityHistory.event.recoveryCodeUsed,تم استخدام رمز استرداد
+account.securityHistory.event.recoveryCodesGenerated,تم إنشاء رموز استرداد
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,تم إبطال رموز الاسترداد من قبل مسؤول
+account.securityHistory.event.refreshTokenFamilyRevoked,تم إلغاء عائلة رمز تحديث
+account.securityHistory.event.sessionCreated,تم إنشاء جلسة
+account.securityHistory.event.sessionRevoked,تم إلغاء جلسة
+account.securityHistory.event.sessionRotated,تم تجديد جلسة
+account.securityHistory.event.sessionsRevoked,تم إلغاء جميع الجلسات
+account.securityHistory.event.totpEnrollmentConfirmed,تم تأكيد تطبيق مصادقة
+account.securityHistory.event.totpEnrollmentStarted,بدأ إعداد تطبيق مصادقة
+account.securityHistory.event.totpRemoved,تمت إزالة تطبيق مصادقة
+account.securityHistory.event.totpRemovedByAdministrator,تمت إزالة تطبيق مصادقة من قبل مسؤول
+account.securityHistory.event.totpRenamed,تمت إعادة تسمية تطبيق مصادقة
+account.securityHistory.event.totpVerified,نجح تحدٍّ لتطبيق مصادقة
+account.securityHistory.loadMore,تحميل المزيد من نشاط الأمان
+account.securityOverview.backupCodeCount,تبقى {count} من رموز الاسترداد
+account.securityOverview.backupCodes,رموز الاسترداد
+account.securityOverview.email,البريد الإلكتروني
+account.securityOverview.emailMissing,لا يوجد بريد إلكتروني متحقق منه
+account.securityOverview.emailVerified,تم التحقق من {email}
+account.securityOverview.passkeyCount,تم إعداد {count} من مفاتيح المرور
+account.securityOverview.passkeys,مفاتيح المرور
+account.securityOverview.password,كلمة المرور
+account.securityOverview.passwordMissing,لم يتم تعيين كلمة مرور
+account.securityOverview.passwordSet,تم تعيين كلمة المرور
+account.securityOverview.phone,الهاتف
+account.securityOverview.phoneMissing,لا يوجد هاتف متحقق منه
+account.securityOverview.phoneVerified,تم التحقق من {phone}
 account.sessionExpired,انتهت صلاحية جلستك
 account.sessions.current,الجلسة الحالية
 account.sessions.count,{count} جلسات نشطة
@@ -414,44 +414,44 @@ admin.events.systemActor,النظام
 admin.events.title,أحداث التدقيق
 admin.events.type,نوع الحدث
 admin.events.userSubject,موضوع المستخدم
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.activeTitle,انتحال هوية نشط
+admin.impersonation.actor,المسؤول
+admin.impersonation.assuranceRequired,يتطلب انتحال هوية مستخدم المصادقة متعددة العوامل. سجّل الدخول مرة أخرى بعامل ثانٍ للمتابعة.
+admin.impersonation.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
+admin.impersonation.auditLink,عرض أحداث التدقيق لانتحال الهوية هذا
+admin.impersonation.bannerLabel,انتحال الهوية جارٍ
+admin.impersonation.bannerSummary,يتصرف {actor} نيابة عن {subject}. تنتهي هذه الجلسة خلال {remaining}.
+admin.impersonation.description,تصرّف نيابة عن شخص آخر لجلسة دعم قصيرة ومسجلة. السبب ومدة محدودة مطلوبان دائمًا.
+admin.impersonation.duration,المدة
+admin.impersonation.durationHint,ينتهي انتحال الهوية تلقائيًا دائمًا، بعد خمس عشرة دقيقة كحد أقصى.
+admin.impersonation.durationInvalid,اختر مدة بين ثانية واحدة وخمس عشرة دقيقة.
+admin.impersonation.durationMinutes,{count} من الدقائق
 admin.impersonation.end,إنهاء انتحال الهوية
 admin.impersonation.endConfirm,هل تريد إنهاء انتحال هوية {subject} الآن؟
 admin.impersonation.endedNotice,تم إنهاء جلسة انتحال الهوية.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.expires,تنتهي في
+admin.impersonation.expiringSoon,ينتهي انتحال الهوية هذا خلال أقل من دقيقة.
+admin.impersonation.nestedRejected,أنت تتصرف بالفعل نيابة عن مستخدم آخر. أنهِ انتحال الهوية الحالي قبل بدء انتحال جديد.
+admin.impersonation.nestedRejectedTitle,انتحال الهوية المتداخل غير مسموح به
+admin.impersonation.noOrganization,لا توجد منظمة
+admin.impersonation.organization,المنظمة
+admin.impersonation.organizationHint,اختياري. اقصر الجلسة على الأذونات التي يملكها الشخص في منظمة واحدة.
+admin.impersonation.permissionDenied,ليس لديك إذن لانتحال هوية المستخدمين في هذا النطاق.
 admin.impersonation.permissionDeniedTitle,الوصول غير متاح
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,السبب
+admin.impersonation.reasonHint,يُسجَّل في سجل التدقيق ويُعرض للشخص الذي تتصرف نيابة عنه.
+admin.impersonation.reasonRequired,أدخل سببًا من 3 إلى 256 حرفًا.
+admin.impersonation.remaining,المتبقي
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,لا يمكنك انتحال هوية حسابك الخاص.
+admin.impersonation.start,بدء انتحال الهوية
+admin.impersonation.startConfirm,هل تريد بدء التصرف نيابة عن {subject}؟ سيُسجَّل كل ما تفعله باسم هويتك الخاصة.
+admin.impersonation.startedAt,بدأت في
+admin.impersonation.startedNotice,أنت الآن تتصرف نيابة عن {subject}.
+admin.impersonation.subject,تتصرف نيابة عن
+admin.impersonation.target,المستخدم المراد انتحال هويته
+admin.impersonation.targetRequired,اختر المستخدم الذي تريد التصرف نيابة عنه.
+admin.impersonation.title,انتحال الهوية
 admin.machine.assuranceRequired,تتطلب إدارة مستخدمي الأجهزة وبيانات اعتمادهم تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
 admin.machine.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
 admin.machine.created,تاريخ الإنشاء
@@ -523,8 +523,8 @@ admin.machine.users.created,تم إنشاء مستخدم الجهاز.
 admin.machine.users.description,هويات غير بشرية تُصادق في هذا النطاق باستخدام بيانات اعتماد العميل أو الرموز أو مفاتيح واجهة البرمجة.
 admin.machine.users.detailTitle,تفاصيل مستخدم الآلة
 admin.machine.users.displayName,الاسم المعروض
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,تعديل مستخدم الجهاز
+admin.machine.users.editTitle,تعديل مستخدم الجهاز
 admin.machine.users.empty,لا يوجد بعد أي مستخدم جهاز في هذا النطاق.
 admin.machine.users.identifier,معرّف مستخدم الجهاز
 admin.machine.users.invalid,أدخل اسم عرض واسم مستخدم، واستخدم قيم نطاقات صالحة فقط.
@@ -535,7 +535,7 @@ admin.machine.users.scopes,النطاقات
 admin.machine.users.scopesHint,افصل بين النطاقات بمسافات أو فواصل. تُطابَق النطاقات مطابقةً تامة.
 admin.machine.users.search,البحث عن مستخدمي الأجهزة
 admin.machine.users.title,مستخدمو الأجهزة
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,تم تحديث مستخدم الجهاز.
 admin.machine.users.userName,اسم المستخدم
 admin.machine.users.userNameHint,يُستخدم كمعرّف عميل عند استبدال بيانات اعتماد العميل.
 admin.navigation.description,اختر مورداً إدارياً
@@ -544,14 +544,14 @@ admin.navigation.title,التنقل في الإدارة
 admin.oidc.assuranceRequired,تتطلب إدارة إعدادات OpenID Connect تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
 admin.oidc.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
 admin.oidc.clients.consent,الموافقة
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,مدة صلاحية رمز الوصول (بالثواني)
+admin.oidc.clients.accessTokenRoleAssertion,إضافة أدوار المشروع إلى رموز الوصول
+admin.oidc.clients.accessTokenRoleAssertionHint,يستخدم الأدوار الفعلية في سياق المشروع والمنظمة المكوّنين للعميل.
+admin.oidc.clients.additionalOrigins,مصادر المتصفح الإضافية
+admin.oidc.clients.additionalOriginsHint,مصدر واحد دقيق في كل سطر. مصادر عناوين URI لإعادة التوجيه مضمنة بالفعل؛ أحرف البدل غير مدعومة.
+admin.oidc.clients.application,التطبيق
+admin.oidc.clients.applicationNone,لا يوجد تطبيق
+admin.oidc.clients.compatibility,إعدادات التوافق
 admin.oidc.clients.consentRequired,مطلوبة
 admin.oidc.clients.consentSkipped,غير مطلوبة
 admin.oidc.clients.create,تسجيل عميل
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,سجّل تطبيقًا يسجّل دخول
 admin.oidc.clients.created,تم تسجيل العميل.
 admin.oidc.clients.description,التطبيقات التي تصادق الأشخاص عبر OpenID Connect في هذا النطاق.
 admin.oidc.clients.detailTitle,تفاصيل عميل OIDC
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,وضع التطوير
+admin.oidc.clients.devModeHint,يسمح بعمليات إعادة التوجيه http الصريحة على أي مضيف. للاستخدام في التطوير المحلي فقط.
 admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
 admin.oidc.clients.emptySearch,لا يوجد عملاء يطابقون هذا البحث.
 admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,أنواع المنح
 admin.oidc.clients.identifier,معرّف العميل
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,مدة صلاحية رمز المعرف (بالثواني)
+admin.oidc.clients.idTokenRoleAssertion,إضافة أدوار المشروع إلى رموز المعرف
+admin.oidc.clients.idTokenRoleAssertionHint,يستخدم الأدوار الفعلية في سياق المشروع والمنظمة المكوّنين للعميل.
+admin.oidc.clients.idTokenUserinfoAssertion,إضافة مطالبات UserInfo الشخصية إلى رموز المعرف
+admin.oidc.clients.idTokenUserinfoAssertionHint,يستخدم فقط المطالبات الشخصية التي تسمح بها النطاقات الممنوحة.
 admin.oidc.clients.invalid,أدخل اسم عميل، ومعرّف URI واحداً على الأقل لإعادة التوجيه المطابق تماماً، ونطاقاً واحداً على الأقل.
 admin.oidc.clients.lifecycleChanged,تم تغيير حالة العميل.
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,ثوانٍ كاملة. اتركه فارغًا لاستخدام الإعداد الافتراضي للخادم.
+admin.oidc.clients.lifetimesInvalid,يجب أن تكون مدد الصلاحية ثوانٍ كاملة ضمن النطاق المسموح به.
 admin.oidc.clients.missingId,يجب اختيار عميل OIDC لهذه الوجهة.
 admin.oidc.clients.name,اسم العميل
 admin.oidc.clients.postLogoutUris,معرّفات URI لإعادة التوجيه بعد تسجيل الخروج
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,المشروع
+admin.oidc.clients.projectNone,لا يوجد مشروع
 admin.oidc.clients.redirectUris,معرّفات URI لإعادة التوجيه
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,مدة الصلاحية المطلقة لرمز التحديث (بالثواني)
+admin.oidc.clients.refreshTokenIdleLifetime,مدة صلاحية الخمول لرمز التحديث (بالثواني)
 admin.oidc.clients.removeConfirm,هل تريد إزالة عميل OIDC هذا؟ ستتوقف التطبيقات التي تستخدمه عن العمل فوراً.
 admin.oidc.clients.requireConsent,اطلب من الشخص الموافقة على هذا التطبيق
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,أنواع الاستجابة
 admin.oidc.clients.saved,تم حفظ العميل.
 admin.oidc.clients.scopes,النطاقات المسموح بها
 admin.oidc.clients.search,البحث عن العملاء
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,الخوارزمية
 admin.oidc.keys.create,إضافة مفتاح
 admin.oidc.keys.created,تم نشر مفتاح توقيع جديد.
 admin.oidc.keys.empty,لا توجد بعد مفاتيح توقيع لهذا النطاق.
+admin.oidc.keys.expires,تنتهي الصلاحية
 admin.oidc.keys.keyId,معرّف المفتاح
 admin.oidc.keys.privateNotice,تُعرض بيانات تعريف المفتاح العام فقط. ولا تُرسل مادة المفتاح الخاص إلى المتصفح أبدًا.
 admin.oidc.keys.retire,إحالة إلى التقاعد
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,هل تريد إزالة النطاق 
 admin.organizations.domains.removed,تمت إزالة النطاق.
 admin.organizations.domains.unverified,في انتظار التحقق
 admin.organizations.domains.verificationRecord,أضف سجل DNS TXT هذا، ثم تحقّق.
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,تم التحقق منه
 admin.organizations.domains.verify,التحقق من النطاق
 admin.organizations.domains.verifyDone,تم التحقق من النطاق.
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,عنوان البريد الإلكتروني
 admin.organizations.invitations.emailInvalid,أدخل عنوان بريد إلكتروني صالحاً.
 admin.organizations.invitations.empty,لم تُرسل أي دعوة لهذه المؤسسة.
 admin.organizations.invitations.expires,ينتهي في
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,المستخدم
 admin.organizations.memberships.userId,معرّف المستخدم
 admin.organizations.permissionDenied,ليس لديك إذن لعرض هذه المؤسسة أو تغييرها.
 admin.organizations.permissionDeniedTitle,الوصول غير متاح
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,عوامل المصادقة متعددة العوامل المسموح بها
+admin.organizations.policy.allowedFactorsDescription,يمكن إكمال المصادقة متعددة العوامل بهذه العوامل فقط. تسجيل الدخول عبر واتساب ورموز الاسترداد ليسا عاملين قابلين للتكوين.
+admin.organizations.policy.assurance.authenticated,جلسة مصادق عليها
+admin.organizations.policy.assurance.multi_factor,جلسة متعددة العوامل
+admin.organizations.policy.assurance.none,لا يوجد متطلب ضمان
 admin.organizations.policy.description,اختر طرق تسجيل الدخول التي يمكن للأشخاص استخدامها وموفري الهوية المكوّنين الذين سيظهرون.
 admin.organizations.policy.domainDiscovery,اكتشاف المؤسسة من نطاق البريد الإلكتروني
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,لأسفل
+admin.organizations.policy.effectiveValue,القيمة الفعلية: {value}
 admin.organizations.policy.emailOtp,رمز لمرة واحدة عبر البريد الإلكتروني
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,تتطلب عمليات المنظمة المحمية جلسة مصادق عليها.
+admin.organizations.policy.enforcementMultiFactor,تتطلب عمليات المنظمة المحمية جلسة متعددة العوامل وتطلب الترقية عند الحاجة.
+admin.organizations.policy.enforcementNone,لا تضيف عمليات المنظمة المحمية أي متطلب ضمان.
+admin.organizations.policy.enforcementOptional,يمكن إكمال تسجيل الدخول دون عامل مصادقة متعددة العوامل إضافي.
+admin.organizations.policy.enforcementRequired,لا يمكن إكمال تسجيل الدخول حتى ينجح عامل مصادقة متعددة العوامل مسموح به.
+admin.organizations.policy.enforcementTitle,الإنفاذ الفعلي
 admin.organizations.policy.externalIdentity,مزوّدو الهوية الخارجيون
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.emailOtp,رمز البريد الإلكتروني لمرة واحدة
+admin.organizations.policy.factor.passkey,مفتاح المرور
+admin.organizations.policy.factor.recoveryCode,رمز الاسترداد
+admin.organizations.policy.factor.totp,تطبيق المصادقة (TOTP)
 admin.organizations.policy.inherited,موروث من النطاق
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.minimumAssurance,الحد الأدنى لضمان الترقية
+admin.organizations.policy.moveDown,نقل {factor} لأسفل
+admin.organizations.policy.moveUp,نقل {factor} لأعلى
+admin.organizations.policy.notRequired,غير مطلوب
+admin.organizations.policy.organizationOverrides,تجاوزات المنظمة
+admin.organizations.policy.organizationValue,قيمة المنظمة
+admin.organizations.policy.overrideRealm,تجاوز قيمة النطاق
+admin.organizations.policy.passkey,مفاتيح المرور
 admin.organizations.policy.password,كلمة المرور
 admin.organizations.policy.passwordRecovery,استعادة كلمة المرور
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,ترتيب العوامل المفضل
+admin.organizations.policy.preferredOrderDescription,استخدم زري لأعلى ولأسفل لتعيين تفضيل العوامل المتاح بلوحة المفاتيح.
+admin.organizations.policy.realmDefaults,الإعدادات الافتراضية للنطاق
+admin.organizations.policy.realmValue,قيمة النطاق
 admin.organizations.policy.registration,التسجيل الذاتي
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,يُوجَّه الأشخاص الذين ليس لديهم عامل مسموح به مسجل إلى التسجيل والمعالجة بدلًا من حظرهم.
+admin.organizations.policy.required,مطلوب
+admin.organizations.policy.requiredMfa,المصادقة متعددة العوامل المطلوبة
 admin.organizations.policy.saved,تم حفظ سياسة تسجيل الدخول.
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,سياسة كلمة المرور
+admin.organizations.passwordPolicy.description,قواعد التعقيد والقفل لتسجيل الدخول بكلمة المرور عبر النطاق. ترث عمليات تسجيل الدخول للمنظمة هذه القيم.
+admin.organizations.passwordPolicy.minimumLength,الحد الأدنى للطول
+admin.organizations.passwordPolicy.minimumLengthHint,بين حرف واحد و72 حرفًا.
+admin.organizations.passwordPolicy.requireLowercase,اشتراط حرف صغير
+admin.organizations.passwordPolicy.requireUppercase,اشتراط حرف كبير
+admin.organizations.passwordPolicy.requireNumber,اشتراط رقم
+admin.organizations.passwordPolicy.requireSymbol,اشتراط رمز
+admin.organizations.passwordPolicy.maximumAttempts,المحاولات الفاشلة قبل القفل
+admin.organizations.passwordPolicy.maximumAttemptsHint,بين محاولة واحدة و100 محاولة.
+admin.organizations.passwordPolicy.lockoutMinutes,مدة القفل (بالدقائق)
+admin.organizations.passwordPolicy.lockoutMinutesHint,تظل الحسابات المقفلة مقفلة لهذه المدة بعد تجاوز عدد المحاولات الفاشلة.
+admin.organizations.passwordPolicy.saved,تم حفظ سياسة كلمة المرور.
+admin.organizations.passwordPolicy.validation.minimumLength,أدخل حدًا أدنى للطول بين حرف واحد و72 حرفًا.
+admin.organizations.passwordPolicy.validation.maximumAttempts,أدخل من محاولة واحدة إلى 100 محاولة فاشلة قبل القفل.
+admin.organizations.passwordPolicy.validation.lockout,أدخل مدة قفل لا تقل عن دقيقة واحدة.
+admin.organizations.passwordPolicy.validation.policy,سياسة كلمة المرور غير صالحة.
+admin.organizations.policy.scopeLabel,نطاق السياسة
+admin.organizations.policy.securityDescription,عيّن المصادقة متعددة العوامل لتسجيل الدخول والضمان المطلوب لعمليات المنظمة المحمية.
+admin.organizations.policy.securityTitle,المصادقة متعددة العوامل والضمان
 admin.organizations.policy.title,سياسة تسجيل الدخول
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,لأعلى
+admin.organizations.policy.validation.assuranceWeaker,لا يمكن أن يكون متطلب ضمان المنظمة أضعف من قيمة النطاق.
+admin.organizations.policy.validation.factorNarrowing,يجب أن تكون عوامل المنظمة مجموعة فرعية من قائمة عوامل النطاق المسموح بها.
+admin.organizations.policy.validation.order,يجب أن يحتوي الترتيب المفضل على العوامل المسموح بها فقط.
+admin.organizations.policy.validation.requiredFactors,تتطلب المصادقة متعددة العوامل الإلزامية عاملًا مسموحًا به واحدًا على الأقل.
+admin.organizations.policy.validation.requiredMfaWeaker,لا يمكن للمنظمة إيقاف المصادقة متعددة العوامل التي يتطلبها النطاق.
 admin.organizations.providers.allowAccountCreation,إنشاء حسابات للأشخاص الجدد تلقائياً
 admin.organizations.providers.clientId,معرّف العميل
 admin.organizations.providers.clientSecret,سر العميل
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,تم حذف {userName}.
 admin.userProfile.editProfile,تعديل الملف الشخصي
 admin.userProfile.editProfileTitle,تعديل الملف الشخصي
 admin.userProfile.email,عنوان البريد الإلكتروني
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,ليس لدى هذا المستخدم عنوان بريد إلكتروني للتحقق منه.
 admin.userProfile.emailUnverified,لم يتم التحقق
 admin.userProfile.emailVerified,تم التحقق
 admin.userProfile.impersonate,انتحال صفة المستخدم
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,تم تحديث دور المؤسسة.
 admin.userProfile.organizationRoleDescription,اختر الدور الأساسي للمؤسسة النشطة.
 admin.userProfile.organizationRoleTitle,دور المؤسسة
 admin.userProfile.overviewTab,نظرة عامة
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,إبطال مفتاح المرور
+admin.userProfile.passkeyRevokeConfirm,هل تريد إبطال مفتاح المرور هذا لـ {userName}؟ يتوقف عن العمل فورًا.
+admin.userProfile.passkeyRevoked,تم إبطال مفتاح المرور.
 admin.userProfile.passwordConfirm,تأكيد كلمة المرور الجديدة
 admin.userProfile.passwordMismatch,كلمتا المرور غير متطابقتين.
 admin.userProfile.passwordNew,كلمة مرور جديدة
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,هل تريد إزالة تعيين 
 admin.userProfile.projectRolesRemoved,تمت إزالة تعيين المشروع.
 admin.userProfile.projectRolesSaved,تم حفظ تعيينات المشاريع.
 admin.userProfile.projectRolesTitle,أدوار المشاريع
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,إزالة بيانات المستخدم نهائيًا
+admin.userProfile.purgeConfirm,هل تريد إزالة كل سجل لـ {userName} نهائيًا؟ لا يمكن التراجع عن هذا.
+admin.userProfile.purgeConfirmTitle,إزالة هذا المستخدم نهائيًا
+admin.userProfile.purgeConfirmType,اكتب {userName} للتأكيد.
+admin.userProfile.purgeWarning,تؤدي الإزالة النهائية إلى حذف صف المستخدم والجلسات وبيانات الاعتماد وسجل التدقيق.
+admin.userProfile.purged,تمت إزالة {userName} نهائيًا.
 admin.userProfile.reactivate,إعادة تنشيط المستخدم
 admin.userProfile.reactivateConfirm,هل تريد إعادة تنشيط {userName}؟ سيتمكن المستخدم من تسجيل الدخول مجدداً.
 admin.userProfile.reactivated,تمت إعادة تنشيط {userName}.
 admin.userProfile.realmAdminBadge,مسؤول النطاق
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,إبطال رموز الاسترداد
+admin.userProfile.recoveryCodesInvalidateConfirm,هل تريد إبطال رموز الاسترداد لـ {userName}؟ تتوقف الرموز الحالية عن العمل فورًا.
+admin.userProfile.recoveryCodesInvalidated,تم إبطال رموز الاسترداد.
 admin.userProfile.removeRealmAdmin,إزالة مسؤول النطاق
 admin.userProfile.removeRealmAdminConfirm,هل تريد إزالة صلاحيات مسؤول النطاق من {userName}؟
 admin.userProfile.removeRealmAdminDone,لم يعد {userName} مسؤول النطاق.
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,إعادة إرسال رسالة التحقق
+admin.userProfile.resendVerificationConfirm,هل تريد إرسال رسالة تحقق جديدة إلى {email}؟
+admin.userProfile.resendVerificationDone,تم إرسال رسالة تحقق إلى {email}.
 admin.userProfile.revokeAll,إلغاء الكل
 admin.userProfile.revokeAllConfirm,هل تريد إلغاء كل جلسات {userName}؟ سيُسجَّل خروج المستخدم في كل مكان.
 admin.userProfile.revokeAllDone,تم إلغاء كل الجلسات.
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,الجلسات والأجهزة
 admin.userProfile.setPassword,تعيين كلمة مرور
 admin.userProfile.setPasswordDescription,استبدل كلمة مرور تسجيل الدخول وأزل أي قفل.
 admin.userProfile.setPasswordTitle,تعيين كلمة مرور جديدة
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,تعليق المستخدم
+admin.userProfile.suspendConfirm,هل تريد تعليق {userName}؟ لن يتمكن المستخدم من تسجيل الدخول.
+admin.userProfile.suspended,تم تعليق {userName}.
+admin.userProfile.totpRemove,إزالة تسجيل TOTP
+admin.userProfile.totpRemoveConfirm,هل تريد إزالة تسجيل TOTP لـ {userName}؟ يجب على المستخدم التسجيل مرة أخرى.
+admin.userProfile.totpRemoved,تمت إزالة تسجيل TOTP.
 admin.userProfile.unlock,إلغاء قفل المستخدم
 admin.userProfile.unlockConfirm,هل تريد إلغاء قفل {userName}؟ سيتمكن المستخدم من تسجيل الدخول مجدداً.
 admin.userProfile.unlocked,تم إلغاء قفل {userName}.
 admin.userProfile.username,اسم المستخدم
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,تم وضع علامة غير متحقق على {email} (تجاوز).
+admin.userProfile.verificationOverrideUnverify,وضع علامة غير متحقق على البريد الإلكتروني (تجاوز)
+admin.userProfile.verificationOverrideUnverifyConfirm,هل تريد وضع علامة غير متحقق على {email}؟ يجب على المستخدم التحقق مرة أخرى.
+admin.userProfile.verificationOverrideVerified,تم وضع علامة تم التحقق على {email} (تجاوز).
+admin.userProfile.verificationOverrideVerify,وضع علامة تم التحقق على البريد الإلكتروني (تجاوز)
+admin.userProfile.verificationOverrideVerifyConfirm,هل تريد وضع علامة تم التحقق على {email} دون تحدٍّ عبر البريد الإلكتروني؟ يتجاوز هذا تدفق التحقق العادي.
+admin.users.authentication.generated,تم الإنشاء في {date}
+admin.users.authentication.neverUsed,لم يُستخدم من قبل
+admin.users.authentication.passkeyMetadata,{deviceType} · أُنشئ في {created} · آخر استخدام {lastUsed}
+admin.users.authentication.pending,بانتظار التأكيد
+admin.users.authentication.recoveryCodes,رموز الاسترداد
+admin.users.authentication.recoveryCount,تبقى {count} من الرموز
+admin.users.authentication.totpMetadata,{label} · تم التأكيد في {confirmed}
 admin.users.count,{count} مستخدماً
 admin.users.create,إنشاء مستخدم
 admin.users.createDescription,أضف مستخدماً بشرياً إلى النطاق الحالي.
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,حسابات الخدمة
 admin.users.directoryUser,المستخدم
 admin.users.directoryUserInvited,مدعو
 admin.users.directoryUserName,اسم المستخدم
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,الاسم المعروض
+admin.users.displayNameRequired,أدخل اسمًا معروضًا.
+admin.users.email,عنوان البريد الإلكتروني
+admin.users.firstName,الاسم الأول
 admin.users.identifier,معرّف المستخدم
 admin.users.invalid,أدخل عنوان بريد إلكتروني واسم مستخدم صالحين.
 admin.users.inviteEmailInvalid,أدخل عنوان بريد إلكتروني صالحاً.
@@ -1241,14 +1242,14 @@ admin.users.inviteTokenCopy,نسخ الرابط
 admin.users.inviteTokenDismiss,لقد حفظت هذا الرابط
 admin.users.inviteTokenOnce,يُعرض رابط الدعوة هذا مرة واحدة. شاركه مع الشخص الذي دعوته.
 admin.users.inviteTokenTitle,رابط الدعوة
-admin.users.lastName,Last name
+admin.users.lastName,اسم العائلة
 admin.users.lifecycle.active,نشط
 admin.users.lifecycle.deleted,محذوف
 admin.users.lifecycle.inactive,غير نشط
 admin.users.lifecycle.initial,مبدئي
 admin.users.lifecycle.locked,مقفل
 admin.users.lifecycle.suspended,موقوف
-admin.users.nickName,Nickname
+admin.users.nickName,الاسم المستعار
 admin.users.serviceAccountCreated,تم إنشاء حساب الخدمة.
 admin.users.serviceAccountInvalid,أدخل اسماً معروضاً واسم مستخدم لحساب الخدمة.
 admin.users.sessions.country,البلد
@@ -1262,14 +1263,14 @@ admin.users.sessions.region,المنطقة
 admin.users.state,الحالة
 admin.users.title,المستخدمون
 admin.users.unverifiedEmail,بريد إلكتروني غير مؤكد
-admin.users.userName,Username
+admin.users.userName,اسم المستخدم
 app.name,Authworks
 app.tagline,خدمات هوية آمنة
 common.back,رجوع
 common.cancel,إلغاء
 common.close,إغلاق
 common.continue,متابعة
-common.decline,Decline
+common.decline,رفض
 common.disable,إيقاف
 common.disabled,معطل
 common.enable,تشغيل
@@ -1289,28 +1290,28 @@ common.theme.dark,داكن
 common.theme.light,فاتح
 common.theme.system,النظام
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,عنوانك
+oidc.consent.approve,موافقة
+oidc.consent.approving,جارٍ الموافقة…
+oidc.consent.clientId,معرّف العميل
+oidc.consent.deny,رفض
+oidc.consent.denying,جارٍ الرفض…
+oidc.consent.description,يطلب {client} الوصول إلى حسابك.
+oidc.consent.email,عنوان بريدك الإلكتروني
+oidc.consent.expiredDescription,لم يعد طلب التفويض هذا صالحًا. ابدأ مرة أخرى من التطبيق.
+oidc.consent.expiredTitle,انتهت صلاحية طلب التفويض
+oidc.consent.missingDescription,افتح هذه الصفحة من التطبيق الذي طلب الوصول.
+oidc.consent.missingTitle,لا يوجد طلب تفويض
+oidc.consent.offlineAccess,البقاء مسجل الدخول عندما تكون غير متصل
+oidc.consent.openid,التحقق من هويتك
+oidc.consent.phone,رقم هاتفك
+oidc.consent.profile,ملفك الشخصي الأساسي
+oidc.consent.redirectDescription,بعد الموافقة، ستعود إلى {redirectUri}.
+oidc.consent.redirectUri,عنوان URI لإعادة التوجيه
+oidc.consent.resourceOwner,عضويتك في المنظمة
+oidc.consent.scopeTitle,الوصول المطلوب
+oidc.consent.signInDescription,سجّل الدخول لمراجعة طلب التفويض هذا.
+oidc.consent.signInTitle,تسجيل الدخول مطلوب
 ui.authenticated.clearSearch,مسح البحث
 ui.authenticated.demo.adminBlurb,المشرف: يدير الأعضاء والمشاريع وبيانات الاعتماد دون المالكين.
 ui.authenticated.demo.chipBlurb,شارات مدمجة للدور والحالة وظهور المشروع.
@@ -1943,90 +1944,90 @@ shell.state.loadingDetail,جارٍ إعداد هذه الصفحة وسياق ا�
 shell.state.nothingHere,لا يوجد شيء هنا بعد
 shell.state.pageUnavailable,هذه الصفحة غير متاحة
 shell.state.readyDetail,هذه الصفحة جاهزة لمحتوى الميزة الخاصة بها.
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,تمت الموافقة على وصول التطبيق. تابع في التطبيق.
+demo.consent.clientId,معرّف العميل
+demo.consent.declined,تم رفض وصول التطبيق.
+demo.consent.error,تعذر تحميل طلب التفويض.
+demo.consent.expired,انتهت صلاحية طلب التفويض هذا. ابدأ مرة أخرى من التطبيق.
+demo.consent.expiredTitle,انتهت صلاحية طلب التفويض
+demo.consent.redirectDescription,بعد الموافقة، ستعود إلى {redirectUri}.
+demo.consent.redirectUri,عنوان URI لإعادة التوجيه
+demo.consent.requestDescription,يطلب {application} الوصول إلى حسابك.
+demo.consent.scopeTitle,الأذونات المطلوبة
+demo.consent.scenario.description,الموافقة على طلب وصول لتطبيق OpenID Connect أو رفضه باستخدام تفاعل مدعوم ببيانات تجريبية.
+demo.consent.scenario.title,موافقة التطبيق
+demo.hub.consentDescription,راجع طلب وصول لتطبيق OpenID Connect مع نتيجتي الموافقة والرفض.
+demo.hub.consentOpen,فتح الموافقة
+demo.hub.invitationsDescription,راجع الدعوات الموجهة إلى الحساب المسجل دخوله ورد عليها.
+demo.hub.invitationsOpen,فتح الدعوات
+admin.organizations.policy.autoLinking,ربط الهويات الخارجية تلقائيًا
+admin.organizations.policy.whatsappOtp,رمز واتساب لمرة واحدة
+admin.organizations.policy.sessionLifetime,مدة صلاحية الجلسة (بالثواني)
+admin.organizations.policy.sessionLifetimeHint,مدة بقاء الجلسة صالحة. إفراغه يُبقي القيمة الحالية.
+admin.organizations.policy.mfaInitSkipLifetime,مدة تخطي المصادقة متعددة العوامل (بالثواني)
+admin.organizations.policy.secondFactorLifetime,مدة صلاحية التحقق بالعامل الثاني (بالثواني)
+admin.organizations.policy.multiFactorLifetime,مدة صلاحية التحقق متعدد العوامل (بالثواني)
+admin.organizations.policy.lifetimeUnsetHint,إفراغه يُبقي القيمة غير معينة.
+admin.organizations.policy.forceMfaLocalOnly,المصادقة متعددة العوامل المحلية فقط
+admin.organizations.policy.providerAllowlist,الموفّرون المسموح بهم
+admin.organizations.policy.providerAllowlistDescription,يمكن إكمال تسجيل الدخول الخارجي بهؤلاء الموفّرين فقط. تحديد كل الموفّرين يسمح بهم جميعًا.
+admin.organizations.policy.providerAllowlistReset,السماح بجميع الموفّرين
+admin.organizations.policy.validation.lifetime,أدخل مدة صلاحية بين 1 و31536000 ثانية.
+admin.organizations.metadata.title,البيانات الوصفية للمنظمة
+admin.organizations.metadata.description,أزواج مفاتيح/قيم مخصصة مخزنة على هذه المنظمة. 50 إدخالًا كحد أقصى.
+admin.organizations.metadata.key,المفتاح
+admin.organizations.metadata.value,القيمة
+admin.organizations.metadata.save,حفظ الإدخال
+admin.organizations.metadata.remove,إزالة
+admin.organizations.metadata.removeConfirm,هل تريد إزالة إدخال البيانات الوصفية {key}؟
+admin.organizations.metadata.empty,لا توجد إدخالات بيانات وصفية بعد.
+admin.organizations.metadata.saved,تم حفظ إدخال البيانات الوصفية.
+admin.organizations.metadata.removed,تمت إزالة إدخال البيانات الوصفية.
+admin.organizations.metadata.invalid,أدخل مفتاحًا وقيمة.
+admin.organizations.providers.issuer,المُصدِر
+admin.organizations.providers.issuerHint,مطلوب لموفّري OIDC العامين.
+admin.organizations.providers.scopes,النطاقات
+admin.organizations.providers.scopesHint,قائمة مفصولة بفواصل، على سبيل المثال openid، وemail، وprofile.
+admin.organizations.providers.save,حفظ الموفّر
+common.remove,إزالة
+admin.oidc.clients.backToClients,عملاء OIDC
+admin.oidc.clients.consentOptions,الخيارات
+admin.oidc.clients.serverDefault,الإعداد الافتراضي للخادم
+admin.oidc.clients.tokenLifetimes,مدد صلاحية الرموز
+admin.oidc.secret.credentialsLifecycle,بيانات الاعتماد ودورة الحياة
+admin.redesign.actions,الإجراءات
+admin.redesign.activeSessions,الجلسات النشطة
+admin.redesign.administratorId,معرّف المسؤول
+admin.redesign.consentTrust,الموافقة والثقة
+admin.redesign.device,الجهاز
+admin.redesign.documents,المستندات
+admin.redesign.events24H,الأحداث · 24 ساعة
+admin.redesign.from,من
+admin.redesign.grantsScopes,المنح والنطاقات
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,موروث.
+admin.redesign.inherited,موروث
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,مدد الصلاحية
+admin.redesign.machineUserId,معرّف مستخدم الجهاز
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,إدارة الإعدادات الافتراضية للنطاق وتجاوزات تسجيل الدخول للمنظمة.
+admin.redesign.moreFilters,عوامل تصفية إضافية
+admin.redesign.noRecentAuditEvents,لا توجد أحداث تدقيق أخيرة.
+admin.redesign.noSessionsMatchYourSearch,لا توجد جلسات تطابق بحثك.
+admin.redesign.onThisPage,في هذه الصفحة
+admin.redesign.organizations,المنظمات
+admin.redesign.projectId,معرّف المشروع
+admin.redesign.recentAuditEvents,أحداث التدقيق الأخيرة
+admin.redesign.redirectsOrigins,عمليات إعادة التوجيه والمصادر
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
-admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,مرر أفقيًا لعرض جميع تفاصيل الحدث.
+admin.redesign.searchSessions,البحث في الجلسات
+admin.redesign.sessionsOnThisPage,جلسات في هذه الصفحة
+admin.redesign.signInMethods,طرق تسجيل الدخول
+admin.redesign.to,إلى
+admin.redesign.tokens,الرموز
+admin.redesign.userId,معرّف المستخدم
+admin.redesign.viewAll,عرض الكل
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,الأمان والتدقيق
 admin.whatsapp.blockedDay,محظور · آخر 24 ساعة

@@ -28,6 +28,7 @@ test("production signing-key ensure creates once, then reuses without rotation",
     expect(keys.data.items).toHaveLength(1)
     expect(keys.data.items[0]).toMatchObject({ algorithm: "RS256", retiredAt: null, status: "active" })
     expect(keys.data.items[0]?.id).toBe(keys.data.items[0]?.publicJwk.kid)
+    expect(keys.data.items[0]?.expiresAt).toBe((keys.data.items[0]?.createdAt ?? 0) + 365 * 24 * 60 * 60 * 1_000)
   } finally {
     await fixture.remove()
   }

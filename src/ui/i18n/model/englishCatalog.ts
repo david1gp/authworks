@@ -681,6 +681,7 @@ export const englishCatalog = {
   "admin.oidc.keys.create": "Add key",
   "admin.oidc.keys.created": "A new signing key was published.",
   "admin.oidc.keys.empty": "No signing keys exist for this realm yet.",
+  "admin.oidc.keys.expires": "Expires",
   "admin.oidc.keys.keyId": "Key ID",
   "admin.oidc.keys.privateNotice":
     "Only public key metadata is shown. Private key material is never sent to the browser.",

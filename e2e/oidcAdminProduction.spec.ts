@@ -37,6 +37,7 @@ const client = {
 const signingKey = {
   algorithm: "RS256",
   createdAt: 1,
+  expiresAt: 31_536_000_001,
   id: keyId,
   publicJwk: { alg: "RS256", e: "AQAB", kid: keyId, kty: "RSA", n: "modulus", use: "sig" },
   realmId,

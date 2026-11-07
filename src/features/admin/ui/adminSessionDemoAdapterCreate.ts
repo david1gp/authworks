@@ -1,5 +1,6 @@
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { AdminAdapter } from "./adminAdapter.js"
@@ -50,7 +51,7 @@ export function adminSessionDemoAdapterCreate(options: {
       if (!signedIn && options.signedInInitially !== true) return expired("adminDemoSessionCurrent")
       return resultCreate(structuredClone(adminDemoSessionFixture))
     },
-    sessionList: async () => {
+    sessionList: async (query?: ListQuery) => {
       if (state() === "loading") return pending()
       if (state() === "error")
         return resultErrorCodedCreate(
@@ -65,7 +66,24 @@ export function adminSessionDemoAdapterCreate(options: {
           "realms.forbidden",
         )
       if (state() === "expired") return expired("adminDemoSessionList")
-      return resultCreate({ items: state() === "empty" ? [] : structuredClone(listed) })
+      const search = query?.search?.trim().toLowerCase() ?? ""
+      const items = state() === "empty" ? [] : structuredClone(listed)
+      return resultCreate({
+        items:
+          search.length === 0
+            ? items
+            : items.filter((session) =>
+                [
+                  session.id,
+                  session.subjectDisplayName,
+                  session.subjectEmail,
+                  session.subjectId,
+                  session.device.ipAddress,
+                  session.device.region,
+                  session.device.countryCode,
+                ].some((value) => value?.toLowerCase().includes(search)),
+              ),
+      })
     },
     sessionRevoke: async (userId, sessionId) => {
       if (state() === "permission-denied")

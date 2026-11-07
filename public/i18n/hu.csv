@@ -7,217 +7,217 @@ admin.activity.error,A tevékenység nem tölthető be. Próbálja újra.
 admin.activity.organization,Szervezet
 admin.activity.realm,IAM-tartomány
 shell.nav.activity,Tevékenység
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
-account.access.accepted,Invitation accepted
+account.confirmTitle,Erősítse meg ezt a műveletet
+account.factors.authenticatorName,Hitelesítő neve
+account.factors.stepUpDescription,"Igazolja magát többtényezős hitelesítéssel, ezután a hitelesítő eltávolítása újra megkísérlésre kerül."
+account.securityHistory.description,Tekintse át fiókja legutóbbi biztonsági szempontból érzékeny tevékenységeit.
+account.access.accepted,Meghívó elfogadva
 account.access.acceptedDetail,Ön mostantól ennek a szervezetnek a tagja.
-account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
+account.access.active,Aktív szervezet
+account.access.consentDescription,"Azok az alkalmazások, amelyek hozzáférhetnek a fiókja adataihoz."
 account.access.consentCount,{count} alkalmazásengedély
 account.access.consentCountOne,{count} alkalmazásengedély
 account.access.consentManage,Alkalmazásengedély: {clientId}
 account.access.consentTitle,Alkalmazásengedélyek
 account.access.consentUpdated,Frissítve: {date}
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevokeConfirm,Revoke access for {clientId}?
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
-account.access.declined,Invitation declined
+account.access.consentEmpty,Egyetlen alkalmazás sem fér hozzá ehhez a fiókhoz.
+account.access.consentRevokeConfirm,Visszavonja a(z) {clientId} hozzáférését?
+account.access.consentRevoked,Az alkalmazás hozzáférését visszavonták.
+account.access.created,Megadva: {date}
+account.access.declined,Meghívó elutasítva
 account.access.declinedDetail,Elutasította ezt a meghívást.
 account.access.effectiveDescription,Tekintse át a fiók számára ebben a szervezetben elérhető projektszerepköröket és jogosultságokat.
 account.access.effectiveDescription,Tekintse át a fiók számára ebben a szervezetben elérhető projektszerepköröket és jogosultságokat.
 account.access.effectiveEmpty,Ehhez a szervezethez nincs projekt-hozzáférés feltüntetve.
 account.access.effectiveEmpty,Ehhez a szervezethez nincs projekt-hozzáférés feltüntetve.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,Tagsági szerepkörök: {roles}
+account.access.effectiveMembership,Tagsági szerepkörök: {roles}
+account.access.effectivePermissions,Jogosultságok: {permissions}
+account.access.effectivePermissions,Jogosultságok: {permissions}
+account.access.effectiveSource,Hozzáférés forrása: {source}
+account.access.effectiveSource,Hozzáférés forrása: {source}
 account.access.effectiveTitle,Tényleges projekt-hozzáférés
 account.access.effectiveTitle,Tényleges projekt-hozzáférés
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.email,E-mail
+account.access.error,A fiókadatokat nem sikerült betölteni.
+account.access.expired,Ez a meghívó lejárt.
 account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationDescription,Válaszadás előtt tekintse át a szervezetet és a szerepköröket.
+account.access.invitationEmpty,Ehhez a fiókhoz nincsenek függőben lévő meghívók.
+account.access.invitationFor,Meghívó {email} számára
+account.access.invitationMissing,A folytatáshoz nyissa meg a teljes meghívóhivatkozást.
 account.access.invitationOpen,Meghívó megnyitása
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
-account.access.membership,Membership roles
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.invitationReplay,"Ezt a meghívót már felhasználták, vagy már nem érhető el."
+account.access.loadMore,További hozzáférések betöltése
+account.access.loadMore,További hozzáférések betöltése
+account.access.membership,Tagsági szerepkörök
+account.access.organizationAccess,Szervezeti hozzáférés
+account.access.organizationAccess,Szervezeti hozzáférés
 account.access.organizationCount,{count} szervezet
 account.access.organizationCountOne,{count} szervezet
 account.access.organizationDescription,Válasszon szervezetet a tagság és a hozzáférés megtekintéséhez. Egy szervezet megtekintése nem változtatja meg az aktív szervezetet.
-account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationEmpty,Ez a fiók nem tartozik egyetlen szervezethez sem.
 account.access.organizationSelector,Megtekintendő szervezet
-account.access.permission,You do not have permission to perform this action.
+account.access.permission,Nincs jogosultsága végrehajtani ezt a műveletet.
 account.access.permissionsToggle,A(z) {source} által adott {count} jogosultság megjelenítése
-account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
+account.access.roles,Szerepkörök: {roles}
+account.access.scopes,Jogosultságok: {scopes}
+account.delete.confirmLabel,A megerősítéshez írja be: {email}
+account.delete.dangerZone,Veszélyes zóna
 account.delete.dangerZoneToggle,A fióktörlési lehetőségek megjelenítése
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
-account.factors.addTotp,Add authenticator
+account.delete.deletedDetail,Fiókja és hozzáférései véglegesen törlésre kerültek.
+account.delete.deletedTitle,A fiók törölve
+account.delete.emailMismatch,Az e-mail-cím nem egyezik.
+account.delete.submit,Fiók végleges törlése
+account.delete.title,A fiók végleges törlése
+account.delete.warning,Ez a művelet nem vonható vissza. Munkamenetei és hozzáférései leállnak.
+account.export.description,"Töltse le profilja, e-mail-címei, tagságai és bejelentkezési módszerei JSON-másolatát saját nyilvántartása számára."
+account.export.download,Exportálás letöltése
+account.export.downloading,Letöltés előkészítése…
+account.export.title,Adatai letöltése
+account.export.unavailable,Az adatexportálás jelenleg nem érhető el.
+account.factors.addTotp,Hitelesítő hozzáadása
 account.factors.authenticator,Hitelesítő alkalmazás
 account.factors.configured,Hitelesítő alkalmazás beállítva
 account.factors.count,{count} hitelesítő alkalmazás
 account.factors.missing,Nincs beállított hitelesítő alkalmazás
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.factors.confirm,Megerősítés
+account.factors.description,"Tekintse át a fiókjához elérhető hitelesítési módszereket, és kezelje hitelesítő alkalmazását."
+account.factors.emailOtp,E-mail-kód
+account.factors.finishTotp,Hitelesítő beállításának befejezése
+account.factors.passkeyCount,{count} passkey
+account.factors.passkeys,Passkey-k
+account.factors.removeTotp,Hitelesítő eltávolítása
+account.factors.totp,Hitelesítő alkalmazás
+account.factors.totpSecretOnce,"Adja hozzá ezt a titkot a hitelesítő alkalmazásához, majd írja be a hatjegyű kódját. Ez a beállítási titok csak most látható."
+account.factors.verificationCode,Ellenőrző kód
+account.identities.alreadyLinked,Ez a külső fiók már össze van kapcsolva.
+account.identities.confirm,Összekapcsolás megerősítése
+account.identities.confirmDescription,A folytatáshoz erősítse meg a(z) {provider}-fiókja összekapcsolását.
+account.identities.confirmTitle,Külső fiók megerősítése
 account.identities.connecting,"Folytassa a szolgáltató ablakában, majd térjen vissza ide az összekapcsolás megerősítéséhez."
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.description,"Az Authworks-identitásához kapcsolt külső fiókok. Válassza le azokat a fiókokat, amelyeket már nem használ."
+account.identities.empty,Nincsenek kapcsolt külső identitások
+account.identities.externalAccount,külső fiók
+account.identities.linkDescription,"Csatlakoztasson egy másik szolgáltatót, hogy hitelesítési módszerként használhassa."
+account.identities.linkIncomplete,A szolgáltató ablaka az összekapcsolás befejezése előtt bezárult. Próbálja újra.
+account.identities.linkTitle,Külső fiók összekapcsolása
 account.identities.manage,{provider}-fiók kezelése ({account})
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
-account.identities.unlink,Unlink
+account.identities.popupBlocked,Engedélyezze az előugró ablakokat egy külső fiók csatlakoztatásához.
+account.identities.recentAuthRequired,"Biztonsági okokból igazolja, hogy Ön az, mielőtt külső fiókot kapcsol össze. Végezze el a többtényezős ellenőrzést, vagy jelentkezzen be újra, majd próbálja újra."
+account.identities.signInAgain,Jelentkezzen be újra
+account.identities.stepUpDescription,"Igazolja magát többtényezős hitelesítéssel, ezután a külső fiókkal végzett művelet újra megkísérlésre kerül."
+account.identities.unlink,Leválasztás
 account.identities.unlinkConfirm,Leválasztja ezt a külső fiókot?
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
+account.passkeys.add,Passkey hozzáadása
+account.passkeys.created,Létrehozva: {date}
+account.passkeys.description,A passkey-k az eszköz képernyőzárját vagy biztonsági kulcsát használják a biztonságos bejelentkezéshez.
+account.passkeys.deviceBound,Eszközhöz kötött passkey
+account.passkeys.empty,Nincsenek regisztrált passkey-k
 account.passkeys.manage,{kind} kezelése ({id})
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.currentOptionalHint,Leave blank if no password is set yet.
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
+account.passkeys.remove,Eltávolítás
+account.passkeys.synced,Szinkronizált passkey
+account.password.changed,Jelszava megváltozott.
+account.password.confirm,Új jelszó megerősítése
+account.password.current,Jelenlegi jelszó
+account.password.currentOptionalHint,"Hagyja üresen, ha még nincs beállított jelszó."
+account.password.description,"Használjon egyedi jelszót, amelyet más szolgáltatásokhoz nem használ."
+account.password.mismatch,Az új jelszavak nem egyeznek.
+account.password.new,Új jelszó
+account.password.set,Jelszava beállítva.
+account.password.setSubmit,Jelszó beállítása
+account.password.setTitle,Jelszó beállítása
+account.password.submit,Jelszó módosítása
+account.password.title,Jelszó módosítása
+account.password.tooShort,Az új jelszónak legalább 8 karaktert kell tartalmaznia.
+account.profile.displayName,Megjelenített név
 account.profile.copy,{field} másolása
 account.profile.copied,{field} másolva.
 account.profile.copyFailed,Nem sikerült másolni: {field}. Jelölje ki az értéket és másolja ki kézzel.
 account.profile.cancel,Mégse
 account.profile.edit,Profil szerkesztése
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
+account.profile.displayNameRequired,Adjon meg egy megjelenített nevet.
+account.profile.email,E-mail-cím
 account.profile.emailMissing,Nincs megadva e-mail-cím
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,E-mail-cím hozzáadása
+account.profile.emailAddDescription,Adjon hozzá egy másik címet a fiókjához. Az ellenőrzés után válik elérhetővé.
+account.profile.emailAddTitle,E-mail-cím hozzáadása
+account.profile.emailAddresses,E-mail-címek
+account.profile.emailAddressesEmpty,Nincsenek elérhető e-mail-címek.
+account.profile.emailAddressesSaved,E-mail-címei frissültek.
 account.profile.emailDescription,Tekintse át és kezelje a fiókjához kapcsolt e-mail-címeket.
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
-account.profile.firstName,First name
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
+account.profile.emailCodeSent,"Nyissa meg a(z) {email} címre küldött ellenőrző hivatkozást, vagy illessze be a tokenját alább."
+account.profile.emailCodeSentGeneric,"Nyissa meg az új címére küldött ellenőrző hivatkozást, vagy illessze be a tokenját alább."
+account.profile.emailDifferent,Másik cím használata
+account.profile.emailInvalid,Adjon meg egy érvényes e-mail-címet.
+account.profile.emailMakePrimary,Elsődlegessé tétel
+account.profile.emailNew,Új e-mail-cím
+account.profile.emailPrimary,Elsődleges
+account.profile.emailPrimaryRemoveBlocked,Az elsődleges e-mail-cím nem távolítható el.
+account.profile.emailRefresh,Címek frissítése
+account.profile.emailRemove,Eltávolítás
+account.profile.emailRemoving,Eltávolítás…
+account.profile.emailResend,Megerősítő e-mail újraküldése
+account.profile.emailSending,Megerősítő e-mail küldése…
+account.profile.emailToken,Ellenőrző token
+account.profile.emailTokenInvalid,Adja meg az e-mailben kapott ellenőrző tokent.
+account.profile.emailUpdating,Frissítés…
+account.profile.emailVerify,E-mail-cím megerősítése
+account.profile.emailVerifying,Megerősítés…
+account.profile.firstName,Keresztnév
+account.profile.gender,Nem
+account.profile.gender.man,Férfi
+account.profile.gender.nonBinary,Nem bináris
+account.profile.gender.unspecified,Nincs megadva
+account.profile.gender.woman,Nő
+account.profile.lastName,Vezetéknév
+account.profile.nickName,Becenév
 account.profile.notSet,Nincs megadva
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.personalDescription,Tartsa naprakészen az alkalmazásoknak és az adminisztrátoroknak megjelenített profilt.
+account.profile.personalInformation,Személyes adatok
+account.profile.phoneAdd,Telefonszám hozzáadása
+account.profile.phoneChange,Telefonszám módosítása
+account.profile.phoneCode,Hatjegyű ellenőrző kód
+account.profile.phoneCodeInvalid,Adja meg a hatjegyű ellenőrző kódot.
+account.profile.phoneCodeSent,Adja meg a(z) {phoneNumber} számra WhatsApp-on küldött kódot.
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,Másik szám használata
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,Adjon meg egy érvényes telefonszámot E.164 formátumban.
+account.profile.phoneNew,Új telefonszám
+account.profile.phoneNumber,Telefonszám
 account.profile.phoneNumbers,Telefonszámok
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,Kód újraküldése
+account.profile.phoneSaved,Ellenőrzött telefonszáma frissült.
+account.profile.phoneSending,Kód küldése…
+account.profile.phoneVerify,Telefonszám megerősítése
+account.profile.phoneVerifying,Megerősítés…
+account.profile.picture,Profilkép
 account.profile.pictureChange,Profilkép módosítása
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,Képfájl kiválasztása
 account.profile.pictureDropHint,"Húzzon ide egy képet, vagy kattintson a tallózáshoz"
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,"Töltsön fel legfeljebb 512 KiB méretű JPEG, PNG, WebP vagy GIF képet."
 account.profile.picturePreview,Profilkép előnézete
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,Kép eltávolítása
 account.profile.pictureRemoving,Kép eltávolítása folyamatban…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
-account.profile.preferredLanguage,Preferred language
+account.profile.pictureSaved,A profilkép frissült.
+account.profile.pictureTooLarge,Válasszon legfeljebb 512 KiB méretű képet.
+account.profile.pictureTypeInvalid,"Válasszon JPEG, PNG, WebP vagy GIF képet."
+account.profile.pictureUploading,Kép feltöltése…
+account.profile.preferredLanguage,Előnyben részesített nyelv
 account.profile.preferredLanguage.unspecified,Nincs beállítva
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
+account.profile.save,Változások mentése
+account.profile.saved,Profilja mentve.
+account.profile.userName,Felhasználónév
+account.profile.verificationPending,Megerősítés függőben
+account.profile.verified,Megerősítve
 account.recovery.description,"Hozzon létre egyszer használatos tartalékkódokat a bejelentkezéshez arra az esetre, ha a többi módszere nem érhető el."
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
+account.recovery.generate,Új kódok létrehozása
+account.recovery.once,Másolja ki vagy nyomtassa ki ezeket a kódokat most. Később nem jeleníthetők meg újra.
+account.recovery.remaining,{count} fel nem használt kód maradt. Új kódok létrehozása érvényteleníti az előző készletet.
+account.recovery.saveNow,Mentse el helyreállítási kódjait most
+account.recovery.saved,Elmentettem ezeket a kódokat
 account.refreshTokens.active,Aktív
 account.refreshTokens.activeShown,{count} aktív megjelenítve
 account.refreshTokens.countOneShown,{count} alkalmazás megjelenítve
@@ -235,99 +235,99 @@ account.refreshTokens.revokeAll,Minden család visszavonása
 account.refreshTokens.revokeAllConfirm,Visszavonja a fiók összes frissítésitoken-családját?
 account.refreshTokens.revokeConfirm,Visszavonja ezt a frissítésitoken-családot és a hozzáférési tokenjeit?
 account.refreshTokens.revoked,Visszavonva
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,{count} hatókör
 account.refreshTokens.title,Frissítésitoken-családok
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,Hitelesítők
+account.security.identityCount,{count} kapcsolt identitás
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,Többtényezős hitelesítés (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,E-mail-változások
+account.securityHistory.category.impersonation,Megszemélyesítés
+account.securityHistory.category.linkedIdentities,Kapcsolt identitások
+account.securityHistory.category.mfa,Többtényezős hitelesítés
+account.securityHistory.category.passkeys,Passkey-k
+account.securityHistory.category.passwords,Jelszavak
+account.securityHistory.category.refreshTokens,Frissítési tokenek
+account.securityHistory.category.sessions,Munkamenetek
+account.securityHistory.empty,Nincs elérhető biztonsági tevékenység
 account.securityHistory.countOneShown,{count} esemény megjelenítve
 account.securityHistory.countShown,{count} esemény megjelenítve
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
+account.securityHistory.event.accessTokenRevoked,Egy hozzáférési tokent visszavontak
+account.securityHistory.event.emailChangeFailed,Egy e-mail-cím módosítása sikertelen volt
+account.securityHistory.event.emailChangeRequested,E-mail-cím módosítását kérték
+account.securityHistory.event.emailChangeVerified,Egy új e-mail-címet megerősítettek
+account.securityHistory.event.emailChanged,A fiók e-mail-címe megváltozott
+account.securityHistory.event.identityLinked,Egy külső identitást összekapcsoltak
+account.securityHistory.event.identityUnlinked,Egy külső identitás leválasztásra került
+account.securityHistory.event.impersonationEnded,Egy megszemélyesítési munkamenet véget ért
+account.securityHistory.event.impersonationStarted,Egy megszemélyesítési munkamenet elindult
+account.securityHistory.event.mfaCompleted,Egy többtényezős kihívás teljesült
+account.securityHistory.event.mfaFailed,Egy többtényezős kihívás sikertelen volt
+account.securityHistory.event.mfaStarted,Egy többtényezős kihívás elindult
+account.securityHistory.event.passkeyAuthenticationCompleted,Egy passkey-hitelesítés teljesült
+account.securityHistory.event.passkeyAuthenticationStarted,Egy passkey-hitelesítés elindult
+account.securityHistory.event.passkeyCredentialRenamed,Egy passkey átnevezésre került
+account.securityHistory.event.passkeyCredentialRevoked,Egy passkey visszavonásra került
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,Egy passkey-t adminisztrátor vont vissza
+account.securityHistory.event.passkeyCredentialUsed,Egy passkey felhasználásra került
+account.securityHistory.event.passkeyRegistrationCompleted,Egy passkey-regisztráció teljesült
+account.securityHistory.event.passkeyRegistrationStarted,Egy passkey-regisztráció elindult
+account.securityHistory.event.passwordChanged,A jelszó megváltozott
+account.securityHistory.event.passwordEmailVerified,A jelszóhoz tartozó e-mail-címet megerősítették
+account.securityHistory.event.passwordLocked,A jelszavas fiókot zárolták
+account.securityHistory.event.passwordLoginFailed,Egy jelszavas bejelentkezés sikertelen volt
+account.securityHistory.event.passwordLoginSucceeded,Egy jelszavas bejelentkezés sikeres volt
+account.securityHistory.event.passwordRecovered,A jelszót helyreállították
+account.securityHistory.event.passwordRecoveryRequested,Jelszó-helyreállítást kértek
+account.securityHistory.event.passwordUnlocked,A jelszavas fiók zárolását feloldották
+account.securityHistory.event.passwordWhatsappVerified,A WhatsApp-bejelentkezési szám megerősítve
+account.securityHistory.event.recoveryCodeUsed,Egy helyreállítási kód felhasználásra került
+account.securityHistory.event.recoveryCodesGenerated,Helyreállítási kódok készültek
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,A helyreállítási kódokat adminisztrátor érvénytelenítette
+account.securityHistory.event.refreshTokenFamilyRevoked,Egy frissítésitoken-család visszavonásra került
+account.securityHistory.event.sessionCreated,Egy munkamenet létrejött
+account.securityHistory.event.sessionRevoked,Egy munkamenet visszavonásra került
+account.securityHistory.event.sessionRotated,Egy munkamenet megújult
+account.securityHistory.event.sessionsRevoked,Minden munkamenet visszavonásra került
+account.securityHistory.event.totpEnrollmentConfirmed,Egy hitelesítő megerősítve
+account.securityHistory.event.totpEnrollmentStarted,A hitelesítő beállítása elindult
+account.securityHistory.event.totpRemoved,Egy hitelesítő eltávolításra került
+account.securityHistory.event.totpRemovedByAdministrator,Egy hitelesítőt adminisztrátor távolított el
+account.securityHistory.event.totpRenamed,Egy hitelesítő átnevezésre került
+account.securityHistory.event.totpVerified,Egy hitelesítő-kihívás sikeres volt
+account.securityHistory.loadMore,További biztonsági tevékenység betöltése
+account.securityOverview.backupCodeCount,{count} megmaradt tartalékkód
+account.securityOverview.backupCodes,Tartalékkódok
+account.securityOverview.email,E-mail
+account.securityOverview.emailMissing,Nincs megerősített e-mail
+account.securityOverview.emailVerified,{email} megerősítve
+account.securityOverview.passkeyCount,{count} beállított passkey
+account.securityOverview.passkeys,Passkey-k
+account.securityOverview.password,Jelszó
+account.securityOverview.passwordMissing,Nincs beállított jelszó
+account.securityOverview.passwordSet,Jelszó beállítva
+account.securityOverview.phone,Telefon
+account.securityOverview.phoneMissing,Nincs megerősített telefon
+account.securityOverview.phoneVerified,{phone} megerősítve
+account.sessionExpired,A munkamenete lejárt
+account.sessions.current,Aktuális munkamenet
 account.sessions.count,{count} aktív munkamenet
 account.sessions.countOne,{count} aktív munkamenet
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.sessions.description,"Tekintse át azokat az eszközöket, amelyeken be van jelentkezve fiókjába, és vonjon vissza minden ismeretlen munkamenetet."
+account.sessions.empty,Nincsenek aktív munkamenetek
+account.sessions.lastUsed,Utoljára használva: {date}
 account.sessions.manage,Munkamenet ezen: {device}
-account.sessions.revoke,Revoke session
-account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.revoke,Munkamenet visszavonása
+account.sessions.revokeConfirm,Azonnal visszavonja ezt a munkamenetet?
 account.sessions.deviceLabel,{browser} ({os})
 account.sessions.deviceLabelBrowser,{browser}
 account.sessions.deviceLabelOs,{os}
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,Ismeretlen eszköz
+account.status.available,Elérhető
+account.status.configured,Beállítva
+account.status.notConfigured,Nincs beállítva
+account.status.unavailable,Nem érhető el
 account.workspace.devicesTitle,Eszközök és alkalmazások
 admin.common.confirmTitle,Erősítse meg ezt a műveletet
 admin.common.permission,Nincs jogosultsága megtekinteni ezeket az adminisztrációs adatokat.
@@ -414,44 +414,44 @@ admin.events.systemActor,Rendszer
 admin.events.title,Naplózott események
 admin.events.type,Esemény típusa
 admin.events.userSubject,Felhasználói alany
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.activeTitle,Aktív megszemélyesítés
+admin.impersonation.actor,Adminisztrátor
+admin.impersonation.assuranceRequired,Felhasználó megszemélyesítéséhez többtényezős hitelesítés szükséges. A folytatáshoz jelentkezzen be újra egy második tényezővel.
+admin.impersonation.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
+admin.impersonation.auditLink,A megszemélyesítés naplózott eseményeinek megtekintése
+admin.impersonation.bannerLabel,Megszemélyesítés folyamatban
+admin.impersonation.bannerSummary,{actor} {subject} nevében jár el. Ez a munkamenet véget ér: {remaining}.
+admin.impersonation.description,"Járjon el egy másik személy nevében egy rövid, rögzített támogatási munkamenet erejéig. Indok és korlátozott időtartam mindig szükséges."
+admin.impersonation.duration,Időtartam
+admin.impersonation.durationHint,"A megszemélyesítés mindig automatikusan véget ér, legfeljebb tizenöt perc után."
+admin.impersonation.durationInvalid,Válasszon egy másodperc és tizenöt perc közötti időtartamot.
+admin.impersonation.durationMinutes,{count} perc
+admin.impersonation.end,Megszemélyesítés befejezése
+admin.impersonation.endConfirm,Azonnal befejezi {subject} megszemélyesítését?
+admin.impersonation.endedNotice,A megszemélyesítési munkamenet véget ért.
+admin.impersonation.expires,Vége
+admin.impersonation.expiringSoon,Ez a megszemélyesítés egy percen belül véget ér.
+admin.impersonation.nestedRejected,Ön már egy másik felhasználó nevében jár el. Új megszemélyesítés indítása előtt fejezze be a jelenlegit.
+admin.impersonation.nestedRejectedTitle,Beágyazott megszemélyesítés nem engedélyezett
+admin.impersonation.noOrganization,Nincs szervezet
+admin.impersonation.organization,Szervezet
+admin.impersonation.organizationHint,"Választható. Korlátozza a munkamenetet azokra a jogosultságokra, amelyekkel a személy egy szervezetben rendelkezik."
+admin.impersonation.permissionDenied,Nincs jogosultsága felhasználók megszemélyesítésére ebben a tartományban.
 admin.impersonation.permissionDeniedTitle,A hozzáférés nem érhető el
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,Indok
+admin.impersonation.reasonHint,"Rögzül a naplózott események között, és megjelenik annak a személynek, akinek a nevében eljár."
+admin.impersonation.reasonRequired,Adjon meg egy 3 és 256 karakter közötti indokot.
+admin.impersonation.remaining,Hátralévő
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,Nem személyesítheti meg a saját fiókját.
+admin.impersonation.start,Megszemélyesítés indítása
+admin.impersonation.startConfirm,Megszemélyesíti {subject} felhasználót? Minden művelete a saját identitásához lesz rögzítve.
+admin.impersonation.startedAt,Elindítva
+admin.impersonation.startedNotice,Most {subject} felhasználóként jár el.
+admin.impersonation.subject,Eljárás mint
+admin.impersonation.target,Megszemélyesítendő felhasználó
+admin.impersonation.targetRequired,Válassza ki a megszemélyesítendő felhasználót.
+admin.impersonation.title,Megszemélyesítés
 admin.machine.assuranceRequired,"A gépi felhasználók és hitelesítő adataik kezeléséhez erősebb, frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra."
 admin.machine.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
 admin.machine.created,Létrehozva
@@ -523,8 +523,8 @@ admin.machine.users.created,A gépi felhasználó létrejött.
 admin.machine.users.description,"Nem emberi identitások, amelyek ügyfél-hitelesítő adatokkal, tokenekkel vagy API-kulcsokkal hitelesítenek ebben a realmben."
 admin.machine.users.detailTitle,Gépi felhasználó részletei
 admin.machine.users.displayName,Megjelenítendő név
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,Gépi felhasználó szerkesztése
+admin.machine.users.editTitle,Gépi felhasználó szerkesztése
 admin.machine.users.empty,Ebben a realmben még nincs gépi felhasználó.
 admin.machine.users.identifier,Gépi felhasználó azonosítója
 admin.machine.users.invalid,"Adjon meg megjelenítendő nevet és felhasználónevet, és csak érvényes hatóköri értékeket használjon."
@@ -535,23 +535,23 @@ admin.machine.users.scopes,Hatókörök
 admin.machine.users.scopesHint,A hatóköröket szóközzel vagy vesszővel válassza el. A hatókörök pontosan egyeznek.
 admin.machine.users.search,Gépi felhasználók keresése
 admin.machine.users.title,Gépi felhasználók
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,A gépi felhasználó frissítve.
 admin.machine.users.userName,Felhasználónév
 admin.machine.users.userNameHint,Ügyfélazonosítóként használatos az ügyfél-hitelesítő adatok cseréjekor.
-admin.navigation.description,Choose an administration resource
+admin.navigation.description,Válasszon adminisztrációs erőforrást
 admin.navigation.label,Adminisztráció
-admin.navigation.title,Administration navigation
+admin.navigation.title,Adminisztrációs navigáció
 admin.oidc.assuranceRequired,Az OpenID Connect beállítások kezeléséhez erősebb és frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra.
 admin.oidc.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
 admin.oidc.clients.consent,Hozzájárulás
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,Hozzáférési token élettartama (másodperc)
+admin.oidc.clients.accessTokenRoleAssertion,Projektszerepkörök hozzáadása a hozzáférési tokenekhez
+admin.oidc.clients.accessTokenRoleAssertionHint,A kliens beállított projekt- és szervezeti környezetében érvényes szerepköröket használja.
+admin.oidc.clients.additionalOrigins,További böngészőeredetek
+admin.oidc.clients.additionalOriginsHint,Soronként egy pontos eredet. Az átirányítási URI-k eredetei már benne vannak; a helyettesítő karakterek nem támogatottak.
+admin.oidc.clients.application,Alkalmazás
+admin.oidc.clients.applicationNone,Nincs alkalmazás
+admin.oidc.clients.compatibility,Kompatibilitási beállítások
 admin.oidc.clients.consentRequired,Kötelező
 admin.oidc.clients.consentSkipped,Nem kötelező
 admin.oidc.clients.create,Kliens regisztrálása
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,"Regisztráljon egy alkalmazást, amely Ope
 admin.oidc.clients.created,A kliens regisztrálva lett.
 admin.oidc.clients.description,"Alkalmazások, amelyek OpenID Connect használatával hitelesítik az embereket ebben a tartományban."
 admin.oidc.clients.detailTitle,OIDC-kliens részletei
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,Fejlesztői mód
+admin.oidc.clients.devModeHint,Egyszerű http-átirányításokat engedélyez bármely gazdagépen. Csak helyi fejlesztéshez használja.
 admin.oidc.clients.empty,Ebben a tartományban még nincs regisztrált OpenID Connect kliens.
 admin.oidc.clients.emptySearch,Egy kliens sem felel meg ennek a keresésnek.
 admin.oidc.clients.exactMatchHint,"Soronként egy URI. Minden átirányítás pontos egyezéssel kerül összehasonlításra, ezért a helyettesítő karakterek és a végződésbeli eltérések elutasításra kerülnek."
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,Engedélyezési típusok
 admin.oidc.clients.identifier,Ügyfél-azonosító
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,ID-token élettartama (másodperc)
+admin.oidc.clients.idTokenRoleAssertion,Projektszerepkörök hozzáadása az ID-tokenekhez
+admin.oidc.clients.idTokenRoleAssertionHint,A kliens beállított projekt- és szervezeti környezetében érvényes szerepköröket használja.
+admin.oidc.clients.idTokenUserinfoAssertion,Hatókör szerinti UserInfo-igények hozzáadása az ID-tokenekhez
+admin.oidc.clients.idTokenUserinfoAssertionHint,Csak a megadott hatókörök által engedélyezett személyes igényeket használja.
 admin.oidc.clients.invalid,"Adjon meg ügyfélnevet, legalább egy pontos átirányítási URI-t és legalább egy hatókört."
 admin.oidc.clients.lifecycleChanged,A kliens állapota megváltozott.
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,Egész másodperc. Üresen hagyva a kiszolgáló alapértelmezése érvényes.
+admin.oidc.clients.lifetimesInvalid,Az élettartamoknak a megengedett tartományon belüli egész másodperceknek kell lenniük.
 admin.oidc.clients.missingId,Ehhez a célhoz ki kell választani egy OIDC-ügyfelet.
 admin.oidc.clients.name,Kliens neve
 admin.oidc.clients.postLogoutUris,Kijelentkezés utáni átirányítási URI-k
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,Projekt
+admin.oidc.clients.projectNone,Nincs projekt
 admin.oidc.clients.redirectUris,Átirányítási URI-k
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,Frissítési token abszolút élettartama (másodperc)
+admin.oidc.clients.refreshTokenIdleLifetime,Frissítési token tétlenségi élettartama (másodperc)
 admin.oidc.clients.removeConfirm,Eltávolítja ezt az OIDC-ügyfelet? Az azt használó alkalmazások azonnal leállnak.
 admin.oidc.clients.requireConsent,Kérje meg a személyt az alkalmazás jóváhagyására
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,Választípusok
 admin.oidc.clients.saved,A kliens mentve lett.
 admin.oidc.clients.scopes,Engedélyezett hatókörök
 admin.oidc.clients.search,Kliensek keresése
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,Algoritmus
 admin.oidc.keys.create,Kulcs hozzáadása
 admin.oidc.keys.created,Új aláíró kulcs került közzétételre.
 admin.oidc.keys.empty,Ehhez a tartományhoz még nincsenek aláíró kulcsok.
+admin.oidc.keys.expires,Lejár
 admin.oidc.keys.keyId,Kulcsazonosító
 admin.oidc.keys.privateNotice,Csak a nyilvános kulcs metaadatai jelennek meg. A privát kulcs anyaga soha nem kerül elküldésre a böngészőnek.
 admin.oidc.keys.retire,Visszavonás
@@ -682,7 +683,7 @@ admin.organizations.branding.saved,Az arculat mentve.
 admin.organizations.branding.themeMode,Alapértelmezett téma
 admin.organizations.branding.warn,Figyelmeztetés színe
 admin.organizations.detail.created,Létrehozva
-admin.organizations.detail.realm,Realm
+admin.organizations.detail.realm,Tartomány
 admin.organizations.detail.settingsDescription,Szabályozza a szervezet nevét és életciklus-állapotát.
 admin.organizations.detail.settingsTitle,Szervezeti beállítások
 admin.organizations.detail.updated,Utoljára frissítve
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,Eltávolítja a(z) {domain} tartomány
 admin.organizations.domains.removed,A tartomány eltávolítva.
 admin.organizations.domains.unverified,Ellenőrzésre vár
 admin.organizations.domains.verificationRecord,"Adja hozzá ezt a DNS TXT rekordot, majd ellenőrizze."
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,Ellenőrizve
 admin.organizations.domains.verify,Tartomány ellenőrzése
 admin.organizations.domains.verifyDone,A tartomány ellenőrizve.
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,E-mail-cím
 admin.organizations.invitations.emailInvalid,Adjon meg érvényes e-mail-címet.
 admin.organizations.invitations.empty,Ehhez a szervezethez nem küldtek meghívót.
 admin.organizations.invitations.expires,Lejár
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,Felhasználó
 admin.organizations.memberships.userId,Felhasználó-azonosító
 admin.organizations.permissionDenied,Nincs jogosultsága megtekinteni vagy módosítani ezt a szervezetet.
 admin.organizations.permissionDeniedTitle,A hozzáférés nem érhető el
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,Engedélyezett MFA-tényezők
+admin.organizations.policy.allowedFactorsDescription,Csak ezek a tényezők teljesíthetik az MFA-t. A WhatsApp-bejelentkezés és a helyreállítási kódok nem beállítható tényezők.
+admin.organizations.policy.assurance.authenticated,Hitelesített munkamenet
+admin.organizations.policy.assurance.multi_factor,Többtényezős munkamenet
+admin.organizations.policy.assurance.none,Nincs bizonyossági követelmény
 admin.organizations.policy.description,"Válassza ki, mely bejelentkezési módokat használhatják az emberek, és mely beállított szolgáltatók jelenjenek meg."
 admin.organizations.policy.domainDiscovery,A szervezet felismerése e-mail-tartomány alapján
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,Le
+admin.organizations.policy.effectiveValue,Érvényes érték: {value}
 admin.organizations.policy.emailOtp,Egyszeri kód e-mailben
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,A védett szervezeti műveletekhez hitelesített munkamenet szükséges.
+admin.organizations.policy.enforcementMultiFactor,"A védett szervezeti műveletekhez többtényezős munkamenet szükséges, és szükség esetén léptetést kér."
+admin.organizations.policy.enforcementNone,A védett szervezeti műveletek nem adnak hozzá bizonyossági követelményt.
+admin.organizations.policy.enforcementOptional,A bejelentkezés további MFA-tényező nélkül is befejezhető.
+admin.organizations.policy.enforcementRequired,"A bejelentkezés nem fejezhető be, amíg egy engedélyezett MFA-tényező nem sikerül."
+admin.organizations.policy.enforcementTitle,Érvényes kikényszerítés
 admin.organizations.policy.externalIdentity,Külső identitásszolgáltatók
-admin.organizations.policy.factor.emailOtp,Email one-time code
+admin.organizations.policy.factor.emailOtp,Egyszeri kód e-mailben
 admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.recoveryCode,Helyreállítási kód
+admin.organizations.policy.factor.totp,Hitelesítő alkalmazás (TOTP)
 admin.organizations.policy.inherited,A realmből örökölve
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
+admin.organizations.policy.minimumAssurance,Minimális léptetési bizonyosság
+admin.organizations.policy.moveDown,{factor} lejjebb helyezése
+admin.organizations.policy.moveUp,{factor} feljebb helyezése
+admin.organizations.policy.notRequired,Nem kötelező
+admin.organizations.policy.organizationOverrides,Szervezeti felülbírálások
+admin.organizations.policy.organizationValue,Szervezeti felülbírálás
+admin.organizations.policy.overrideRealm,A tartományérték felülbírálása
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Jelszó
 admin.organizations.policy.passwordRecovery,Jelszó-helyreállítás
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,Preferált tényezősorrend
+admin.organizations.policy.preferredOrderDescription,A Fel és Le gombokkal állítsa be a billentyűzettel elérhető tényezőpreferenciát.
+admin.organizations.policy.realmDefaults,Tartomány-alapértelmezések
+admin.organizations.policy.realmValue,Tartományérték
 admin.organizations.policy.registration,Önkiszolgáló regisztráció
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,"Azok a személyek, akik nem rendelkeznek regisztrált engedélyezett tényezővel, kizárás helyett regisztrációra és helyreállításra kerülnek."
+admin.organizations.policy.required,Kötelező
+admin.organizations.policy.requiredMfa,Kötelező MFA
 admin.organizations.policy.saved,A bejelentkezési szabályzat mentve.
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,Jelszószabályzat
+admin.organizations.passwordPolicy.description,Összetettségi és zárolási szabályok a jelszavas bejelentkezéshez a teljes tartományban. A szervezeti bejelentkezések ezeket az értékeket öröklik.
+admin.organizations.passwordPolicy.minimumLength,Minimális hossz
+admin.organizations.passwordPolicy.minimumLengthHint,1 és 72 közötti karakter.
+admin.organizations.passwordPolicy.requireLowercase,Kisbetű megkövetelése
+admin.organizations.passwordPolicy.requireUppercase,Nagybetű megkövetelése
+admin.organizations.passwordPolicy.requireNumber,Szám megkövetelése
+admin.organizations.passwordPolicy.requireSymbol,Szimbólum megkövetelése
+admin.organizations.passwordPolicy.maximumAttempts,Sikertelen próbálkozások zárolás előtt
+admin.organizations.passwordPolicy.maximumAttemptsHint,1 és 100 közötti próbálkozás.
+admin.organizations.passwordPolicy.lockoutMinutes,Zárolási időtartam (perc)
+admin.organizations.passwordPolicy.lockoutMinutesHint,A zárolt fiókok ennyi ideig maradnak zárolva túl sok sikertelen próbálkozás után.
+admin.organizations.passwordPolicy.saved,A jelszószabályzat mentve.
+admin.organizations.passwordPolicy.validation.minimumLength,Adjon meg 1 és 72 karakter közötti minimális hosszt.
+admin.organizations.passwordPolicy.validation.maximumAttempts,Adjon meg 1 és 100 közötti sikertelen próbálkozást zárolás előtt.
+admin.organizations.passwordPolicy.validation.lockout,Adjon meg legalább 1 perces zárolási időtartamot.
+admin.organizations.passwordPolicy.validation.policy,A jelszószabályzat érvénytelen.
+admin.organizations.policy.scopeLabel,Szabályzathatókör
+admin.organizations.policy.securityDescription,Állítsa be a bejelentkezési MFA-t és a védett szervezeti műveletekhez szükséges bizonyosságot.
+admin.organizations.policy.securityTitle,MFA és bizonyosság
 admin.organizations.policy.title,Bejelentkezési szabályzat
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,Fel
+admin.organizations.policy.validation.assuranceWeaker,A szervezeti bizonyossági követelmény nem lehet gyengébb a tartományértékénél.
+admin.organizations.policy.validation.factorNarrowing,A szervezeti tényezőknek a tartománytényező-engedélyezési lista részhalmazának kell lenniük.
+admin.organizations.policy.validation.order,A preferált sorrend csak engedélyezett tényezőket tartalmazhat.
+admin.organizations.policy.validation.requiredFactors,A kötelező MFA-hoz legalább egy engedélyezett tényező szükséges.
+admin.organizations.policy.validation.requiredMfaWeaker,A szervezet nem kapcsolhatja ki a tartomány által megkövetelt MFA-t.
 admin.organizations.providers.allowAccountCreation,Automatikusan hozzon létre fiókot az új személyeknek
 admin.organizations.providers.clientId,Ügyfél-azonosító
 admin.organizations.providers.clientSecret,Ügyféltitok
@@ -821,7 +822,7 @@ admin.organizations.providers.description,"Ehhez a szervezethez beállított Goo
 admin.organizations.providers.disable,Szolgáltató letiltása
 admin.organizations.providers.disableConfirm,Letiltja a következőt: {displayName}? Az emberek többé nem jelentkezhetnek be ezzel a szolgáltatóval.
 admin.organizations.providers.disabled,A szolgáltató letiltva.
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,Megjelenítendő név
 admin.organizations.providers.empty,Még nincs beállítva külső identitásszolgáltató.
 admin.organizations.providers.invalid,"Adjon meg megjelenítendő nevet, ügyfélazonosítót, ügyféltitkot és abszolút átirányítási URI-t."
 admin.organizations.providers.redirectUri,Átirányítási URI
@@ -893,7 +894,7 @@ admin.projects.grants.roleKeys,Megadott szerepkörök
 admin.projects.grants.title,Szervezeti hozzáférések
 admin.projects.lifecycle.activate,Aktiválás
 admin.projects.lifecycle.deactivate,Deaktiválás
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,Eltávolítás
 admin.projects.lifecycle.removeConfirm,Eltávolítja ezt a projektet?
 admin.projects.lifecycle.removeConfirmAccept,Projekt eltávolítása
 admin.projects.lifecycle.removeConfirmTitle,A projekt eltávolítása
@@ -918,7 +919,7 @@ admin.projects.overview.title,Projekt áttekintése
 admin.projects.roles.create,Szerepkör létrehozása
 admin.projects.roles.deleteConfirm,Törli ezt a projekt-szerepet? A rá hivatkozó hozzárendelések elveszítik a szerepet.
 admin.projects.roles.description,"Azok a szerepkörök, amelyeket ez a projekt szervezeteknek és tagjaiknak kioszthat."
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,Megjelenítendő név
 admin.projects.roles.empty,Ez a projekt még nem határoz meg szerepköröket.
 admin.projects.roles.group,Csoport
 admin.projects.roles.invalid,Adjon meg egy szerepkörkulcsot és egy megjelenítendő nevet.
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,{userName} felhasználó törölve.
 admin.userProfile.editProfile,Profil szerkesztése
 admin.userProfile.editProfileTitle,Profil szerkesztése
 admin.userProfile.email,E-mail-cím
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,Ennek a felhasználónak nincs ellenőrizhető e-mail-címe.
 admin.userProfile.emailUnverified,Nincs ellenőrizve
 admin.userProfile.emailVerified,Ellenőrzött
 admin.userProfile.impersonate,Felhasználó megszemélyesítése
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,A szervezeti szerepkör frissítve.
 admin.userProfile.organizationRoleDescription,Válassza ki az elsődleges szerepkört az aktív szervezethez.
 admin.userProfile.organizationRoleTitle,Szervezeti szerepkör
 admin.userProfile.overviewTab,Áttekintés
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,Passkey visszavonása
+admin.userProfile.passkeyRevokeConfirm,Visszavonja {userName} ezen passkey-jét? Azonnal leáll.
+admin.userProfile.passkeyRevoked,A passkey visszavonásra került.
 admin.userProfile.passwordConfirm,Erősítse meg az új jelszót
 admin.userProfile.passwordMismatch,A jelszavak nem egyeznek.
 admin.userProfile.passwordNew,Új jelszó
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,Eltávolítja a(z) {projectName} hoz
 admin.userProfile.projectRolesRemoved,A projekthozzárendelés eltávolítva.
 admin.userProfile.projectRolesSaved,A projekthozzárendelések mentve.
 admin.userProfile.projectRolesTitle,Projektszerepkörök
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,Felhasználói adatok törlése
+admin.userProfile.purgeConfirm,{userName} összes rekordjának végleges törlése? Ez nem vonható vissza.
+admin.userProfile.purgeConfirmTitle,Felhasználó törlése
+admin.userProfile.purgeConfirmType,A megerősítéshez írja be: {userName}.
+admin.userProfile.purgeWarning,"A törlés eltávolítja a felhasználói sort, a munkameneteket, a hitelesítő adatokat és a naplózási előzményeket."
+admin.userProfile.purged,{userName} törölve.
 admin.userProfile.reactivate,Felhasználó újraaktiválása
 admin.userProfile.reactivateConfirm,Újraaktiválja {userName} felhasználót? A felhasználó újra bejelentkezhet.
 admin.userProfile.reactivated,{userName} felhasználó újraaktiválva.
 admin.userProfile.realmAdminBadge,Realm-adminisztrátor
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,Helyreállítási kódok érvénytelenítése
+admin.userProfile.recoveryCodesInvalidateConfirm,Érvényteleníti {userName} helyreállítási kódjait? A meglévő kódok azonnal leállnak.
+admin.userProfile.recoveryCodesInvalidated,A helyreállítási kódok érvénytelenítve.
 admin.userProfile.removeRealmAdmin,Realm-adminisztrátori jog visszavonása
 admin.userProfile.removeRealmAdminConfirm,Visszavonja {userName} felhasználó realm-adminisztrátori jogosultságait?
 admin.userProfile.removeRealmAdminDone,{userName} már nem realm-adminisztrátor.
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,Megerősítő e-mail újraküldése
+admin.userProfile.resendVerificationConfirm,Új megerősítő e-mailt küld {email} címre?
+admin.userProfile.resendVerificationDone,Megerősítő e-mail elküldve ide: {email}.
 admin.userProfile.revokeAll,Összes visszavonása
 admin.userProfile.revokeAllConfirm,Visszavonja {userName} összes munkamenetét? A felhasználó mindenhonnan kijelentkezik.
 admin.userProfile.revokeAllDone,Minden munkamenet visszavonva.
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,Munkamenetek és eszközök
 admin.userProfile.setPassword,Jelszó beállítása
 admin.userProfile.setPasswordDescription,"Cserélje le a bejelentkezési jelszót, és törölje az esetleges zárolást."
 admin.userProfile.setPasswordTitle,Új jelszó beállítása
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,Felhasználó felfüggesztése
+admin.userProfile.suspendConfirm,Felfüggeszti {userName} felhasználót? A felhasználó többé nem tud bejelentkezni.
+admin.userProfile.suspended,{userName} felfüggesztve.
+admin.userProfile.totpRemove,TOTP-regisztráció eltávolítása
+admin.userProfile.totpRemoveConfirm,Eltávolítja {userName} TOTP-regisztrációját? A felhasználónak újra regisztrálnia kell.
+admin.userProfile.totpRemoved,A TOTP-regisztráció eltávolítva.
 admin.userProfile.unlock,Felhasználó feloldása
 admin.userProfile.unlockConfirm,Feloldja {userName} felhasználót? A felhasználó újra bejelentkezhet.
 admin.userProfile.unlocked,{userName} felhasználó feloldva.
 admin.userProfile.username,Felhasználónév
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,{email} nem ellenőrzöttként megjelölve (felülbírálás).
+admin.userProfile.verificationOverrideUnverify,E-mail nem ellenőrzöttként jelölése (felülbírálás)
+admin.userProfile.verificationOverrideUnverifyConfirm,Megjelöli {email} címet nem ellenőrzöttként? A felhasználónak újra ellenőriznie kell.
+admin.userProfile.verificationOverrideVerified,{email} ellenőrzöttként megjelölve (felülbírálás).
+admin.userProfile.verificationOverrideVerify,E-mail ellenőrzöttként jelölése (felülbírálás)
+admin.userProfile.verificationOverrideVerifyConfirm,Megjelöli {email} címet ellenőrzöttként e-mail-kihívás nélkül? Ez felülbírálja a szokásos ellenőrzési folyamatot.
+admin.users.authentication.generated,Létrehozva: {date}
+admin.users.authentication.neverUsed,Még nem használták
+admin.users.authentication.passkeyMetadata,{deviceType} · létrehozva {created} · utoljára használva {lastUsed}
+admin.users.authentication.pending,Megerősítésre vár
+admin.users.authentication.recoveryCodes,Helyreállítási kódok
+admin.users.authentication.recoveryCount,{count} kód maradt
+admin.users.authentication.totpMetadata,{label} · megerősítve {confirmed}
 admin.users.count,{count} felhasználó
 admin.users.create,Felhasználó létrehozása
 admin.users.createDescription,Adjon hozzá egy emberi felhasználót a jelenlegi realmhez.
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,Szolgáltatásfiókok
 admin.users.directoryUser,Felhasználó
 admin.users.directoryUserInvited,Meghívott
 admin.users.directoryUserName,Felhasználónév
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,Megjelenítendő név
+admin.users.displayNameRequired,Adjon meg megjelenítendő nevet.
+admin.users.email,E-mail-cím
+admin.users.firstName,Keresztnév
 admin.users.identifier,Felhasználóazonosító
 admin.users.invalid,Adjon meg érvényes e-mail-címet és felhasználónevet.
 admin.users.inviteEmailInvalid,Adjon meg érvényes e-mail-címet.
@@ -1241,35 +1242,35 @@ admin.users.inviteTokenCopy,Link másolása
 admin.users.inviteTokenDismiss,Elmentettem ezt a linket
 admin.users.inviteTokenOnce,Ez a meghívólink egyszer jelenik meg. Ossza meg a meghívott személlyel.
 admin.users.inviteTokenTitle,Meghívó linkje
-admin.users.lastName,Last name
+admin.users.lastName,Vezetéknév
 admin.users.lifecycle.active,Aktív
 admin.users.lifecycle.deleted,Törölve
 admin.users.lifecycle.inactive,Inaktív
 admin.users.lifecycle.initial,Kezdeti
 admin.users.lifecycle.locked,Zárolva
 admin.users.lifecycle.suspended,Felfüggesztve
-admin.users.nickName,Nickname
+admin.users.nickName,Becenév
 admin.users.serviceAccountCreated,A szolgáltatásfiók létrejött.
 admin.users.serviceAccountInvalid,Adjon meg megjelenítendő nevet és felhasználónevet a szolgáltatásfiókhoz.
 admin.users.sessions.country,Ország
-admin.users.sessions.created,Created
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
+admin.users.sessions.created,Létrehozva
+admin.users.sessions.expires,Lejár
+admin.users.sessions.ipAddress,IP-cím
+admin.users.sessions.lastUsed,Utoljára használva
 admin.users.sessions.location,Hely
-admin.users.sessions.method,Sign-in method
+admin.users.sessions.method,Bejelentkezési mód
 admin.users.sessions.region,Régió
 admin.users.state,Állapot
 admin.users.title,Felhasználók
 admin.users.unverifiedEmail,Nem ellenőrzött e-mail
-admin.users.userName,Username
+admin.users.userName,Felhasználónév
 app.name,Authworks
 app.tagline,Biztonságos identitásszolgáltatások
 common.back,Vissza
 common.cancel,Mégse
 common.close,Bezárás
 common.continue,Folytatás
-common.decline,Decline
+common.decline,Elutasítás
 common.disable,Kikapcsolás
 common.disabled,Kikapcsolva
 common.enable,Bekapcsolás
@@ -1281,7 +1282,7 @@ common.next,Következő
 common.pagination,Lapozás
 common.previous,Vissza
 common.retry,Próbálja újra
-common.revoke,Revoke
+common.revoke,Visszavonás
 common.save,Mentés
 common.signIn,Bejelentkezés
 common.signOut,Kijelentkezés
@@ -1289,28 +1290,28 @@ common.theme.dark,Sötét
 common.theme.light,Világos
 common.theme.system,Rendszer
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,Az Ön címe
+oidc.consent.approve,Jóváhagyás
+oidc.consent.approving,Jóváhagyás…
+oidc.consent.clientId,Ügyfél-azonosító
+oidc.consent.deny,Elutasítás
+oidc.consent.denying,Elutasítás…
+oidc.consent.description,{client} hozzáférést kér a fiókjához.
+oidc.consent.email,Az Ön e-mail-címe
+oidc.consent.expiredDescription,Ez az engedélyezési kérelem már nem érvényes. Kezdje újra az alkalmazásból.
+oidc.consent.expiredTitle,Az engedélyezési kérelem lejárt
+oidc.consent.missingDescription,"Nyissa meg ezt az oldalt abból az alkalmazásból, amely hozzáférést kért."
+oidc.consent.missingTitle,Nincs engedélyezési kérelem
+oidc.consent.offlineAccess,Bejelentkezve maradás offline állapotban is
+oidc.consent.openid,Személyazonosságának igazolása
+oidc.consent.phone,Az Ön telefonszáma
+oidc.consent.profile,Az Ön alapvető profilja
+oidc.consent.redirectDescription,Jóváhagyás után visszakerül ide: {redirectUri}.
+oidc.consent.redirectUri,Átirányítási URI
+oidc.consent.resourceOwner,Az Ön szervezeti tagsága
+oidc.consent.scopeTitle,Kért hozzáférés
+oidc.consent.signInDescription,Jelentkezzen be az engedélyezési kérelem áttekintéséhez.
+oidc.consent.signInTitle,Bejelentkezés szükséges
 ui.authenticated.clearSearch,Keresés törlése
 ui.authenticated.demo.adminBlurb,Admin: tagokat és projekteket és hitelesítő adatokat kezel tulajdonosok nélkül.
 ui.authenticated.demo.chipBlurb,Kompakt jelvények szerephez és állapothoz és projektláthatósághoz.
@@ -1410,7 +1411,7 @@ demo.admin.group.operations.title,Műveletek
 demo.admin.group.organizations.description,"Szervezeti beállítások, személyek, meghívók és ellenőrzött domainek."
 demo.admin.group.organizations.title,Szervezetek
 demo.admin.group.realm.description,"Realm-szintű identitás-, életciklus- és bejelentkezési konfiguráció."
-demo.admin.group.realm.title,Realm
+demo.admin.group.realm.title,Tartomány
 demo.admin.group.users.description,"Emberi identitások, hitelesítő adatok, munkamenetek és védett támogatási műveletek."
 demo.admin.group.users.title,Felhasználók
 demo.admin.realmFixtureName,Northwind ügyfélidentitás
@@ -1943,90 +1944,90 @@ shell.state.loadingDetail,Az oldal és a biztonsági környezet előkészítése
 shell.state.nothingHere,Itt még nincs semmi
 shell.state.pageUnavailable,Ez az oldal nem érhető el
 shell.state.readyDetail,Ez az oldal készen áll a tartalomra.
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,Az alkalmazás hozzáférése jóváhagyva. Folytassa az alkalmazásban.
+demo.consent.clientId,Ügyfél-azonosító
+demo.consent.declined,Az alkalmazás hozzáférése elutasítva.
+demo.consent.error,Az engedélyezési kérelem nem tölthető be.
+demo.consent.expired,Ez az engedélyezési kérelem lejárt. Kezdje újra az alkalmazásból.
+demo.consent.expiredTitle,Az engedélyezési kérelem lejárt
+demo.consent.redirectDescription,Jóváhagyás után visszakerül ide: {redirectUri}.
+demo.consent.redirectUri,Átirányítási URI
+demo.consent.requestDescription,{application} hozzáférést kér a fiókjához.
+demo.consent.scopeTitle,Kért engedélyek
+demo.consent.scenario.description,OpenID Connect alkalmazás-hozzáférési kérelem jóváhagyása vagy elutasítása mintaalapú interakcióval.
+demo.consent.scenario.title,Alkalmazás-hozzájárulás
+demo.hub.consentDescription,Tekintsen át egy OpenID Connect alkalmazás-hozzáférési kérelmet jóváhagyási és elutasítási lehetőségekkel.
+demo.hub.consentOpen,Hozzájárulás megnyitása
+demo.hub.invitationsDescription,"Tekintse át a bejelentkezett fiókhoz címzett meghívókat, és válaszoljon rájuk."
+demo.hub.invitationsOpen,Meghívók megnyitása
+admin.organizations.policy.autoLinking,Külső identitások automatikus összekapcsolása
+admin.organizations.policy.whatsappOtp,Egyszeri kód WhatsApp-on
+admin.organizations.policy.sessionLifetime,Munkamenet élettartama (másodperc)
+admin.organizations.policy.sessionLifetimeHint,"Azt határozza meg, meddig érvényes egy munkamenet. Üresen hagyva az aktuális érték marad."
+admin.organizations.policy.mfaInitSkipLifetime,MFA-kihagyás élettartama (másodperc)
+admin.organizations.policy.secondFactorLifetime,Második tényező ellenőrzésének élettartama (másodperc)
+admin.organizations.policy.multiFactorLifetime,Többtényezős ellenőrzés élettartama (másodperc)
+admin.organizations.policy.lifetimeUnsetHint,Üresen hagyva az érték nincs beállítva.
+admin.organizations.policy.forceMfaLocalOnly,Csak helyi MFA
+admin.organizations.policy.providerAllowlist,Engedélyezett szolgáltatók
+admin.organizations.policy.providerAllowlistDescription,Csak ezek a szolgáltatók teljesíthetik a külső bejelentkezést. Minden szolgáltató kiválasztása mindegyiket engedélyezi.
+admin.organizations.policy.providerAllowlistReset,Minden szolgáltató engedélyezése
+admin.organizations.policy.validation.lifetime,Adjon meg 1 és 31536000 másodperc közötti élettartamot.
+admin.organizations.metadata.title,Szervezeti metaadatok
+admin.organizations.metadata.description,Egyéni kulcs/érték párok ezen a szervezeten tárolva. Legfeljebb 50 bejegyzés.
+admin.organizations.metadata.key,Kulcs
+admin.organizations.metadata.value,Érték
+admin.organizations.metadata.save,Bejegyzés mentése
+admin.organizations.metadata.remove,Eltávolítás
+admin.organizations.metadata.removeConfirm,Eltávolítja a(z) {key} metaadat-bejegyzést?
+admin.organizations.metadata.empty,Még nincsenek metaadat-bejegyzések.
+admin.organizations.metadata.saved,A metaadat-bejegyzés mentve.
+admin.organizations.metadata.removed,A metaadat-bejegyzés eltávolítva.
+admin.organizations.metadata.invalid,Adjon meg egy kulcsot és egy értéket.
+admin.organizations.providers.issuer,Kibocsátó
+admin.organizations.providers.issuerHint,Általános OIDC-szolgáltatók esetén kötelező.
+admin.organizations.providers.scopes,Hatókörök
+admin.organizations.providers.scopesHint,"Vesszővel elválasztott lista, például openid, email, profile."
+admin.organizations.providers.save,Szolgáltató mentése
+common.remove,Eltávolítás
+admin.oidc.clients.backToClients,OIDC-kliensek
+admin.oidc.clients.consentOptions,Lehetőségek
+admin.oidc.clients.serverDefault,Kiszolgáló alapértelmezése
+admin.oidc.clients.tokenLifetimes,Token-élettartamok
+admin.oidc.secret.credentialsLifecycle,Hitelesítő adatok és életciklus
+admin.redesign.actions,Műveletek
+admin.redesign.activeSessions,Aktív munkamenetek
+admin.redesign.administratorId,adminisztrátori azonosító
+admin.redesign.consentTrust,Hozzájárulás és bizalom
+admin.redesign.device,Eszköz
+admin.redesign.documents,dokumentumok
+admin.redesign.events24H,Események · 24 ó
+admin.redesign.from,Ettől
+admin.redesign.grantsScopes,Hozzáférések és hatókörök
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,örökl.
+admin.redesign.inherited,örökölt
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,Élettartamok
+admin.redesign.machineUserId,gépi felhasználói azonosító
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Tartomány-alapértelmezések és szervezeti bejelentkezési felülbírálások kezelése.
+admin.redesign.moreFilters,További szűrők
+admin.redesign.noRecentAuditEvents,Nincsenek legutóbbi naplózási események.
+admin.redesign.noSessionsMatchYourSearch,Egyetlen munkamenet sem felel meg a keresésnek.
+admin.redesign.onThisPage,ezen az oldalon
+admin.redesign.organizations,szervezetek
+admin.redesign.projectId,projekt-azonosító
+admin.redesign.recentAuditEvents,Legutóbbi naplózási események
+admin.redesign.redirectsOrigins,Átirányítások és eredetek
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
-admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,Görgessen vízszintesen az összes eseményrészlet megtekintéséhez.
+admin.redesign.searchSessions,Munkamenetek keresése
+admin.redesign.sessionsOnThisPage,munkamenet ezen az oldalon
+admin.redesign.signInMethods,Bejelentkezési módok
+admin.redesign.to,Eddig
+admin.redesign.tokens,Tokenek
+admin.redesign.userId,felhasználói azonosító
+admin.redesign.viewAll,Összes megtekintése
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Biztonság és audit
 admin.whatsapp.blockedDay,Blokkolva · utolsó 24 óra
