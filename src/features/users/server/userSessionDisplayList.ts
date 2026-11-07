@@ -11,7 +11,7 @@ export function userSessionDisplayList(options: {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly userIds: readonly string[]
-}): Result<{ id: string; displayName: string | null; email: string }[]> {
+}): Result<{ displayName: string | null; email: string; id: string; userName: string }[]> {
   if (options.userIds.length === 0) return resultCreate([])
   try {
     return resultCreate(
@@ -29,7 +29,12 @@ export function userSessionDisplayList(options: {
         )
         .where(and(eq(userTable.realmId, options.realmId), inArray(userTable.id, [...new Set(options.userIds)])))
         .all()
-        .map((user) => ({ id: user.id, displayName: user.displayName?.trim() || user.userName, email: user.email })),
+        .map((user) => ({
+          id: user.id,
+          displayName: user.displayName?.trim() || user.userName,
+          email: user.email,
+          userName: user.userName,
+        })),
     )
   } catch (_error) {
     return resultErrorCodedCreate(

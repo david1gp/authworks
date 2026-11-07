@@ -36,6 +36,8 @@ type AdminPageStateOptions = {
   readonly screen: () => AdminScreen
   /** URL-held audit-event filters, so a filtered list survives reloads and deep links. */
   readonly eventFilterSearch?: () => string
+  /** URL-held session search (?q=), so a filtered session list survives reloads and deep links. */
+  readonly sessionListSearch?: () => string
   readonly userId?: () => string | undefined
 }
 
@@ -52,7 +54,9 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
   const realmSummary = createSignalObject<RealmSummaryResponse | undefined>(undefined)
-  const sessionSearch = createSignalObject("")
+  // Sessions arrive server-filtered by the URL-held ?q= search; the view renders the page as-is.
+  const sessionSearch = (): string => options.sessionListSearch?.() ?? ""
+  const sessionSearchInput = (value: string) => authenticatedUrlSearchParamWrite("q", value)
   const eventMoreFilters = createSignalObject(false)
   // Filters live in the URL; the state parses them on every load so typing stays in the address bar.
   const eventFilters = (): AdminEventFilters => adminEventFiltersParse(options.eventFilterSearch?.() ?? "")
@@ -111,7 +115,11 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       return status.set("signed-in")
     }
     if (options.screen() === "sessions") {
-      const result = await options.adapter.sessionList(query())
+      const trimmedSearch = sessionSearch().trim()
+      const result = await options.adapter.sessionList({
+        ...query(),
+        ...(trimmedSearch.length === 0 ? {} : { search: trimmedSearch }),
+      })
       if (!result.success) return fail(result)
       sessions.set(result.data.items)
       nextPageToken.set(result.data.nextPageToken)
@@ -152,11 +160,24 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     return result.data
   }
 
+  // A new session search always restarts from the first page; otherwise the cursor of the
+  // previous search would page through the new result set.
+  const sessionListSignature = () => sessionSearch()
+  const appliedSessionListSignature = createSignalObject("")
   createEffect(
     on(
       () =>
-        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${options.reloadKey?.() ?? ""}`,
-      () => void load(),
+        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${options.reloadKey?.() ?? ""}`,
+      () => {
+        if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
+          appliedSessionListSignature.set(sessionListSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
+        }
+        void load()
+      },
     ),
   )
 
@@ -211,24 +232,9 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       )
     },
     session: session.get,
-    sessions: (): readonly Session[] => {
-      const search = sessionSearch.get().trim().toLowerCase()
-      return sessions
-        .get()
-        .slice()
-        .sort((a, b) => b.lastUsedAt - a.lastUsedAt)
-        .filter((item) =>
-          [
-            item.subjectDisplayName,
-            item.subjectEmail,
-            item.subjectId,
-            item.device.ipAddress,
-            item.device.region,
-            item.device.countryCode,
-          ].some((value) => value?.toLowerCase().includes(search)),
-        )
-    },
+    sessions: sessions.get,
     sessionSearch,
+    sessionSearchInput,
     eventMoreFilters: eventMoreFilters.get,
     eventMoreFiltersToggle: () => eventMoreFilters.set(!eventMoreFilters.get()),
     realmSummary: realmSummary.get,

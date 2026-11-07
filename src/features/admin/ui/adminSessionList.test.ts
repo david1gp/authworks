@@ -12,10 +12,16 @@ import { adminSessionProductionAdapterCreate } from "./adminSessionProductionAda
 const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
 const solidRuntime = await import(solidRuntimePath)
 mock.module("solid-js", () => solidRuntime)
-const [{ createRoot }, { adminPageStateCreate }] = await Promise.all([
+const [{ createRoot, createSignal }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminPageStateCreate.js"),
 ])
+
+async function solidFlush() {
+  for (let i = 0; i < 10; i++) await Promise.resolve()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  for (let i = 0; i < 10; i++) await Promise.resolve()
+}
 
 describe("administrator session list", () => {
   test.each([
@@ -109,5 +115,91 @@ describe("administrator session list", () => {
     const missingRealm = await adapter.sessionList()
     expect(missingRealm.success).toBe(false)
     expect(requests).toHaveLength(1)
+  })
+
+  test("forwards the URL search to the adapter and renders the loaded page verbatim", async () => {
+    const queries: (ListQuery | undefined)[] = []
+    const reversed = [...adminDemoUserSessionsFixture].reverse()
+    const { page, dispose } = createRoot((dispose) => ({
+      dispose,
+      page: adminPageStateCreate({
+        adapter: {
+          ...adminDemoAdapterCreate(() => "success"),
+          sessionList: async (query) => {
+            queries.push(query)
+            return resultCreate({ items: reversed })
+          },
+        },
+        confirm: () => false,
+        screen: () => "sessions",
+        sessionListSearch: () => "ALEX",
+      }),
+    }))
+    await solidFlush()
+    expect(queries).toEqual([{ pageSize: 20, search: "ALEX" }])
+    // The server already filtered and sorted; the view renders the loaded page as-is.
+    expect(page.sessions()).toEqual(reversed)
+    expect(page.sessionSearch()).toBe("ALEX")
+    dispose()
+  })
+
+  test("restarts from the first page when the URL search changes", async () => {
+    const queries: (ListQuery | undefined)[] = []
+    const firstSession = adminDemoUserSessionsFixture[0]
+    if (firstSession === undefined) throw new Error("The first session fixture is missing.")
+    const [search, setSearch] = createSignal("")
+    const { page, dispose } = createRoot((dispose) => ({
+      dispose,
+      page: adminPageStateCreate({
+        adapter: {
+          ...adminDemoAdapterCreate(() => "success"),
+          sessionList: async (query?) => {
+            queries.push(query)
+            if (query?.search === "alex") return resultCreate({ items: [firstSession] })
+            return resultCreate(
+              query?.pageToken === undefined
+                ? { items: [...adminDemoUserSessionsFixture], nextPageToken: "next-sessions" }
+                : { items: [] },
+            )
+          },
+        },
+        confirm: () => false,
+        pageSize: 2,
+        screen: () => "sessions",
+        sessionListSearch: search,
+      }),
+    }))
+    await solidFlush()
+    expect(queries).toEqual([{ pageSize: 2 }])
+    page.pageNext()
+    await solidFlush()
+    expect(queries).toEqual([{ pageSize: 2 }, { pageSize: 2, pageToken: "next-sessions" }])
+    expect(page.hasPreviousPage()).toBe(true)
+    setSearch("alex")
+    await solidFlush()
+    expect(page.hasPreviousPage()).toBe(false)
+    expect(page.sessions()).toEqual([firstSession])
+    expect(queries.at(-1)).toEqual({ pageSize: 2, search: "alex" })
+    dispose()
+  })
+
+  test("demo adapter filters sessions by the search query", async () => {
+    const adapter = adminDemoAdapterCreate(() => "success")
+    const unfiltered = await adapter.sessionList()
+    expect(unfiltered.success).toBe(true)
+    if (unfiltered.success) expect(unfiltered.data.items).toHaveLength(2)
+    const byName = await adapter.sessionList({ search: "aLeX" })
+    expect(byName.success).toBe(true)
+    if (byName.success)
+      expect(byName.data.items.map((item) => item.id).sort()).toEqual(["session-admin-desktop", "session-admin-mobile"])
+    const byIp = await adapter.sessionList({ search: "192.0.2.10" })
+    expect(byIp.success).toBe(true)
+    if (byIp.success) expect(byIp.data.items.map((item) => item.id)).toEqual(["session-admin-desktop"])
+    const byRegion = await adapter.sessionList({ search: "california" })
+    expect(byRegion.success).toBe(true)
+    if (byRegion.success) expect(byRegion.data.items.map((item) => item.id)).toEqual(["session-admin-mobile"])
+    const noMatch = await adapter.sessionList({ search: "no-such-session" })
+    expect(noMatch.success).toBe(true)
+    if (noMatch.success) expect(noMatch.data.items).toHaveLength(0)
   })
 })
