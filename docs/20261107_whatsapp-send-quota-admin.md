@@ -266,5 +266,29 @@ Phase 2 tasks (delegate one at a time, verify each):
   pre-existing failures against clean main). Then lead: commits, merge, push,
   set env in dev + prod, cleanup.
 
-Phase 2 status: exploration + decisions done; P2-1…P2-4 pending on branch
-`feat/whatsapp-usage-real-codes`.
+Phase 2 status: P2-1 done — `recipient_phone` + `code` columns with ALTER
+migration, `wahaSendAttemptListRecent(limit, since)` (reader passes `since=0`
+until P2-2), `code` port context from all 5 send sites recorded on
+sent/failed/blocked rows, `codeRedactionDisabled` config from
+`AUTHWORKS_WAHA_DISABLE_CODE_REDACTION` (default false) already reaching
+`wahaUsageReaderCreate` via the full configuration object, `.env.example`
+documented. Verified by lead: 36 focused tests pass.
+P2-2 done — `window` query (24h|3d|7d, default 24h), server-side redaction in
+`wahaUsageReaderCreate` via `wahaCodeMask` (full code absent from body when
+redacted, asserted), recent entries carry `recipientPhone` + `code` (null for
+pre-Phase-2 rows), client/AdminAdapter take an optional query object
+(`WhatsappOtpUsageQueryInput`), demo fixture rows have fictional phones +
+redacted codes (relative timestamps + window filtering land in P2-3).
+Verified by lead: 20 focused tests pass.
+P2-3 done — Phone/Code columns (hash-prefix fallback, `—` for missing code),
+URL-held 24h/3d/7d selector (event-filter search pattern, schema-validated,
+signal + URL write for refetch), demo adapter rebases fixture timestamps to
+`Date.now()` and filters by window (24h→5 rows incl. blocked+failed, 7d→7),
+5 new i18n keys ×15 locales (`recipient` key removed). Verified by lead:
+screenshots inspected (full phones, redacted codes, window filtering),
+43 focused tests pass.
+P2-4 done — `bun run check` fully green (2030 tests, build, built-output
+tests; zero fixes needed), targeted e2e 28/28 (machineAdminDemo,
+productionShells, demoHub). Phase 2 complete: commits on
+`feat/whatsapp-usage-real-codes`, merge to `main`, push, set
+`AUTHWORKS_WAHA_DISABLE_CODE_REDACTION=true` in dev + prod envs, cleanup.
