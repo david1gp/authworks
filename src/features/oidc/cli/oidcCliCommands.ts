@@ -631,6 +631,8 @@ const authworksMultisubProductionEnsureCommand = oidcProjectEnsureCommandCreate(
 const authworksMultisubDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("multisub", "development")
 const authworksWorkProductionEnsureCommand = oidcProjectEnsureCommandCreate("work", "production")
 const authworksWorkDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("work", "development")
+const authworksAssetsServiceProductionEnsureCommand = oidcProjectEnsureCommandCreate("assets-service", "production")
+const authworksAssetsServiceDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("assets-service", "development")
 
 function oidcProjectSecretRotateCommandCreate(projectSlug: string, environment: "production" | "development") {
   const project = oidcProjectBoundaryRegistry[projectSlug]
@@ -1299,6 +1301,8 @@ export const oidcCliCommands = buildRouteMap({
     authworksMultisubDevelopmentEnsure: authworksMultisubDevelopmentEnsureCommand,
     authworksWorkProductionEnsure: authworksWorkProductionEnsureCommand,
     authworksWorkDevelopmentEnsure: authworksWorkDevelopmentEnsureCommand,
+    authworksAssetsServiceProductionEnsure: authworksAssetsServiceProductionEnsureCommand,
+    authworksAssetsServiceDevelopmentEnsure: authworksAssetsServiceDevelopmentEnsureCommand,
     authworksArchiveProductionSecretRotate: authworksArchiveProductionSecretRotateCommand,
     authworksArchiveDevelopmentSecretRotate: authworksArchiveDevelopmentSecretRotateCommand,
     leoConvexProductionEnsure: oidcLeoConvexProductionClientEnsureCommand,

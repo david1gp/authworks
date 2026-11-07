@@ -64,6 +64,7 @@ export async function oidcProjectClientEnsure(options: {
 > {
   const op = "oidcProjectClientEnsure"
   const configuration = oidcProjectClientConfigurationGet(options.project, options.environment)
+  const allowedScopes = options.project.allowedScopes ?? oidcProjectAllowedScopes
   const target = await oidcProjectClientFind({
     api: options.api,
     configuration,
@@ -83,7 +84,7 @@ export async function oidcProjectClientEnsure(options: {
 
   if (target.data?.client === undefined) {
     const created = await options.api.oidcClientCreate(options.realmId, {
-      allowedScopes: [...oidcProjectAllowedScopes],
+      allowedScopes: [...allowedScopes],
       clientType: "confidential",
       name: configuration.name,
       postLogoutRedirectUris: [...configuration.postLogoutRedirectUris],
@@ -123,7 +124,7 @@ export async function oidcProjectClientEnsure(options: {
 
   let client = existing
   let changed = false
-  const update = oidcProjectClientUpdateCreate(client, configuration)
+  const update = oidcProjectClientUpdateCreate(client, configuration, allowedScopes)
   if (Object.keys(update).length > 0) {
     const updated = await options.api.oidcClientUpdate(options.realmId, client.id, update)
     if (!updated.success) return updated
@@ -193,7 +194,11 @@ async function oidcProjectClientFind(options: {
   return resultCreate({ adopted: true, client })
 }
 
-function oidcProjectClientUpdateCreate(client: OidcClient, configuration: OidcProjectClientConfiguration) {
+function oidcProjectClientUpdateCreate(
+  client: OidcClient,
+  configuration: OidcProjectClientConfiguration,
+  allowedScopes: readonly string[],
+) {
   return {
     ...(client.name === configuration.name ? {} : { name: configuration.name }),
     ...(oidcProjectClientArraysEqual(client.redirectUris, configuration.redirectUris)
@@ -202,9 +207,7 @@ function oidcProjectClientUpdateCreate(client: OidcClient, configuration: OidcPr
     ...(oidcProjectClientArraysEqual(client.postLogoutRedirectUris, configuration.postLogoutRedirectUris)
       ? {}
       : { postLogoutRedirectUris: [...configuration.postLogoutRedirectUris] }),
-    ...(oidcProjectClientArraysEqual(client.allowedScopes, oidcProjectAllowedScopes)
-      ? {}
-      : { allowedScopes: [...oidcProjectAllowedScopes] }),
+    ...(oidcProjectClientArraysEqual(client.allowedScopes, allowedScopes) ? {} : { allowedScopes: [...allowedScopes] }),
     ...(client.requireConsent === false ? {} : { requireConsent: false }),
     ...(client.trusted === true ? {} : { trusted: true }),
   }

@@ -17,6 +17,10 @@ const migratedDevelopmentHostSuffix = ".wonder1.de"
 const migratedDevelopmentAliasMinimum = 6
 
 const expectedRedirectUris: Record<string, { development: string[]; production: string[] }> = {
+  "assets-service": {
+    development: ["https://assets-service.wonder1.de/api/v1/auth/authworks/callback"],
+    production: ["https://assets-service.contentoren.de/api/v1/auth/authworks/callback"],
+  },
   archive: {
     development: [
       "http://127.0.0.1:3243/api/auth/authworks/callback",
@@ -175,7 +179,7 @@ test("project production and development boundaries register the fixed confident
     const clients = await fixture.oidc.oidcClientList(fixture.realmId, { pageSize: 100 })
     expect(clients.success).toBe(true)
     if (!clients.success) return
-    expect(clients.data.items).toHaveLength(25)
+    expect(clients.data.items).toHaveLength(27)
     for (const slug of Object.keys(expectedRedirectUris).sort()) {
       const expected = expectedRedirectUris[slug]
       if (expected === undefined) throw new Error(`Missing expected redirect URIs for ${slug}.`)
@@ -185,13 +189,14 @@ test("project production and development boundaries register the fixed confident
       const developmentClient = clients.data.items.find((client) => client.name === config?.developmentName)
       expect(productionClient?.redirectUris).toEqual(expected.production)
       expect(productionClient?.postLogoutRedirectUris).toEqual(expectedPostLogout.production)
-      expect(productionClient?.allowedScopes).toEqual([
+      const expectedScopes = config?.allowedScopes ?? [
         "openid",
         "profile",
         "email",
         "offline_access",
         "urn:zitadel:iam:user:resourceowner",
-      ])
+      ]
+      expect(productionClient?.allowedScopes).toEqual([...expectedScopes])
       expect(productionClient?.clientType).toBe("confidential")
       if (expected.development.length > 0) {
         expect(developmentClient?.redirectUris).toEqual(expected.development)

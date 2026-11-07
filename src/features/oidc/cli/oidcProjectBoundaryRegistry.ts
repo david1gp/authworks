@@ -10,6 +10,7 @@ export type OidcProjectBoundaryConfig = {
   readonly productionPostLogoutRedirectUris?: readonly string[]
   readonly developmentPostLogoutRedirectUris?: readonly string[]
   readonly adoptSharedClientByRedirectUri?: true
+  readonly allowedScopes?: readonly string[]
 }
 
 // Development callbacks keep the legacy `leonardomora.de` host next to its
@@ -187,6 +188,17 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
       "https://work.wonder1.de/auth/authworks/callback",
     ],
     developmentRedirectUris: [],
+  },
+  {
+    // No leonardomora.de alias: the legacy host is retired, so development
+    // holds only the live wonder1.de callback.
+    slug: "assets-service",
+    displayName: "Assets Service",
+    productionName: "Assets Service production",
+    developmentName: "Assets Service development",
+    productionRedirectUris: ["https://assets-service.contentoren.de/api/v1/auth/authworks/callback"],
+    developmentRedirectUris: ["https://assets-service.wonder1.de/api/v1/auth/authworks/callback"],
+    allowedScopes: ["openid", "profile", "email", "urn:zitadel:iam:user:resourceowner"],
   },
 ]
 
