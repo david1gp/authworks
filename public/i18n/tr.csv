@@ -6,6 +6,79 @@ admin.activity.empty,Bu bağlamda yakın zamanda yönetim etkinliği yok.
 admin.activity.error,Etkinlik yüklenemedi. Tekrar deneyin.
 admin.activity.organization,Kuruluş
 admin.activity.realm,IAM alanı
+admin.organizations.invitations.invitedBy,Davet eden
+admin.organizations.invitations.team,Takım
+admin.organizations.invitations.teamFixed,Yeni üyeler kabul ettiklerinde {name} takımına katılacak.
+admin.organizations.invitations.teamHint,Yeni üyeler kabul ettiklerinde bu takıma katılacak.
+admin.organizations.invitations.teamNone,Takım yok
+admin.teams.addMember,Üye ekle
+admin.teams.addMemberAction,Ekle
+admin.teams.addMemberEmpty,Bu aramayla eşleşen kimse yok.
+admin.teams.addMemberSearch,Eklenecek kişileri ara
+admin.teams.assigned,"{name}, {team} takımına eklendi."
+admin.teams.backToTeams,Takımlara dön
+admin.teams.changeTeam,Takımı değiştir
+admin.teams.create,Takım oluştur
+admin.teams.createDescription,URL uyumlu bir slug ve bir takım lideriyle takım ekleyin.
+admin.teams.createSubmit,Takım oluştur
+admin.teams.created,{name} takımı oluşturuldu.
+admin.teams.currentTeamHint,Şu anda {team} takımında
+admin.teams.delete,Takımı sil
+admin.teams.deleteConfirm,{name} takımı silinsin mi?
+admin.teams.deleteConfirmDetail,Üyeleri Atanmamış olacak. Kuruluş üyelikleri değişmez.
+admin.teams.deleted,{name} takımı silindi. Üyeleri artık Atanmamış.
+admin.teams.description,Kişileri her birinde bir lider olan takımlar halinde düzenleyin.
+admin.teams.editTitle,Takımı düzenle
+admin.teams.leader,Takım lideri
+admin.teams.leaderBadge,Lider
+admin.teams.leaderConflict,Bu kişi zaten başka bir takımı yönetiyor. Önce liderliğini devredin.
+admin.teams.leaderHint,Lider takımın üyesidir ve üyelerini yönetir.
+admin.teams.leaderRequired,Bir takım lideri seçin.
+admin.teams.leadsTeamHint,{team} takımını yönetiyor
+admin.teams.listEmpty,Bu kuruluşta henüz takım yok.
+admin.teams.listEmptyDetail,Kişileri ve liderlerini düzenlemek için ilk takımı oluşturun.
+admin.teams.memberCount,{count} üye
+admin.teams.memberCountOne,1 üye
+admin.teams.memberListDenied,Yalnızca kuruluş yöneticileri takım üyelerini listeleyebilir. Takımı büyütmek için {name} takımına kişi davet edin.
+admin.teams.members,Üyeler
+admin.teams.membersEmpty,Bu takımın henüz üyesi yok.
+admin.teams.membersEmptyDetail,Aşağıdan kişi ekleyin veya onları bu takıma davet edin.
+admin.teams.name,Takım adı
+admin.teams.nameConflict,Bu ad zaten başka bir takım tarafından kullanılıyor.
+admin.teams.nameRequired,Bir takım adı girin.
+admin.teams.openTeam,{name} takımını aç
+admin.teams.removeLeaderDenied,Takım lideri kaldırılamaz. Önce lideri değiştirin.
+admin.teams.removeMemberConfirm,"{name}, {team} takımından çıkarılsın mı? Atanmamış olacak."
+admin.teams.removedMember,{name} artık Atanmamış.
+admin.teams.scopeNotice,{name} takımını yönetiyorsunuz. Takımı yeniden adlandırabilir ve kişi davet edebilirsiniz.
+admin.teams.selectTeam,Takım
+admin.teams.slug,Slug
+admin.teams.slugConflict,Bu slug zaten başka bir takım tarafından kullanılıyor.
+admin.teams.slugHint,"Küçük harfler, rakamlar ve tek tireler. Yönetim URL'lerinde kullanılır."
+admin.teams.slugInvalid,"Başta veya sonda tire olmadan küçük harfler, rakamlar ve tek tireler kullanın (en fazla 64 karakter)."
+admin.teams.slugReserved,unassigned slug'ı takımsız kişiler için ayrılmıştır.
+admin.teams.title,Takımlar
+admin.teams.unassignedDescription,Bu kuruluşta hiçbir takımda olmayan kişiler.
+admin.teams.unassignedLabel,Atanmamış
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Atanmamış
+admin.teams.updated,{name} takımı güncellendi.
+admin.teams.urlPreview,Yönetim URL'si: {url}
+admin.userProfile.invitedBy,Davet eden
+admin.userProfile.invitedByUnknown,Bilinmiyor
+admin.userProfile.team,Takım
+admin.userProfile.teamDescription,"Bu kişinin ait olduğu takımı değiştirin. Atama, kişiyi mevcut takımından taşır."
+admin.userProfile.teamRemoved,{name} artık Atanmamış.
+admin.userProfile.teamSaved,Takım ataması güncellendi.
+admin.userProfile.teamUnassigned,Atanmamış
+admin.users.directoryEmptySearchTeamDetail,Farklı bir arama deneyin veya rol ve takım filtrelerini temizleyin.
+admin.users.directorySubtitleTeams,{count} takım
+admin.users.directorySubtitleTeamsOne,1 takım
+admin.users.directoryTabTeams,Takımlar
+admin.users.directoryTeamAll,Tüm takımlar
+admin.users.directoryTeamColumn,Takım
+admin.users.directoryTeamFilter,Takım
+admin.users.directoryTeamUnassigned,Atanmamış
 shell.nav.activity,Etkinlik
 account.confirmTitle,Bu işlemi onaylayın
 account.factors.authenticatorName,Kimlik doğrulayıcı adı

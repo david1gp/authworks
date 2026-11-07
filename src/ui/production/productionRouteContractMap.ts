@@ -201,7 +201,7 @@ export const productionRouteContractMap = {
       },
       {
         contracts: ["users.list", "users.create"],
-        guard: { ...organizationAdminGuard, organization: "not-required" },
+        guard: { ...organizationAdminGuard, access: "organization-member", organization: "not-required" },
         key: "users",
         ownsPageHeader: true,
         path: "/admin/users",
@@ -209,7 +209,7 @@ export const productionRouteContractMap = {
       },
       {
         contracts: ["users.get", "users.profile"],
-        guard: { ...organizationAdminGuard, organization: "not-required" },
+        guard: { ...organizationAdminGuard, access: "organization-member", organization: "not-required" },
         key: "user-detail",
         path: "/admin/users/:userId",
         title: "admin.users.detailTitle",

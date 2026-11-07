@@ -84,11 +84,14 @@ const invitationFixture: OrganizationInvitationMeInspectResponse["invitation"] =
   email: "avery@example.com",
   expiresAt: now + 604_800_000,
   id: "invitation-northwind",
+  invitedBy: null,
   organizationId: "northwind",
   organizationName: "Northwind Labs",
   realmId: "customer-identity",
   roles: ["member"],
   status: "pending",
+  team: null,
+  teamId: null,
   updatedAt: now - 86_400_000,
 }
 const effectiveAccessFixtures: AccountEffectiveAccessEntry[] = [

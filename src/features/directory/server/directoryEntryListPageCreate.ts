@@ -88,6 +88,18 @@ export function directoryRoleFilterApply<
   )
 }
 
+export function directoryTeamFilterApply<TEntry extends { readonly team: { readonly id: string } | null }>(
+  entries: readonly TEntry[],
+  team: string | undefined,
+  teams: readonly { readonly id: string; readonly slug: string }[],
+): TEntry[] {
+  if (team === undefined) return [...entries]
+  if (team === "unassigned") return entries.filter((entry) => entry.team === null)
+  const target = teams.find((candidate) => candidate.slug === team)
+  if (target === undefined) return []
+  return entries.filter((entry) => entry.team?.id === target.id)
+}
+
 export function directoryListQueryValidate(query: unknown): Result<DirectoryUserListQuery> {
   const normalized = (query ?? {}) as Record<string, unknown>
   if (typeof normalized.role === "string" && normalized.role.trim().length === 0) {

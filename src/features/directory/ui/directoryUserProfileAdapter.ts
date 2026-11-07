@@ -9,6 +9,10 @@ import type { ProjectUserAssignmentCreateRequest } from "../../projects/public/p
 import type { ProjectUserAssignment } from "../../projects/public/projectUserAssignmentSchema.js"
 import type { ProjectUserAssignmentUpdateRequest } from "../../projects/public/projectUserAssignmentUpdateRequestSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import type { TeamListResponse } from "../../teams/public/teamListResponseSchema.js"
+import type { TeamMemberAssignRequest } from "../../teams/public/teamMemberAssignRequestSchema.js"
+import type { TeamMemberAssignResponse } from "../../teams/public/teamMemberAssignResponseSchema.js"
+import type { TeamMemberUnassignResponse } from "../../teams/public/teamMemberUnassignResponseSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { UserEmailAddressListResponse } from "../../users/public/userEmailAddressListResponseSchema.js"
 import type { UserEmailVerificationResendResponse } from "../../users/public/userEmailVerificationResendResponseSchema.js"
@@ -17,6 +21,7 @@ import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpd
 import type { User } from "../../users/public/userSchema.js"
 import type { UserVerificationRequest } from "../../users/public/userVerificationRequestSchema.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
+import type { DirectoryEntryTeam } from "../public/directoryEntryTeamSchema.js"
 import type { DirectoryProjectAssignment, DirectoryUserAccess } from "../public/directoryUserAccessSchema.js"
 
 /** One user profile with the access payload the security and roles tabs need. */
@@ -66,9 +71,16 @@ export type DirectoryUserProfileAdapter = {
   readonly sessionRevoke: (userId: string, sessionId: string) => Promise<Result<void>>
   readonly sessionRevokeAll: (userId: string) => Promise<Result<void>>
   readonly sessionsList: (userId: string) => Promise<Result<readonly Session[]>>
+  readonly teamList: () => Promise<Result<TeamListResponse>>
+  readonly teamMemberAssign: (
+    teamRef: string,
+    input: TeamMemberAssignRequest,
+  ) => Promise<Result<TeamMemberAssignResponse>>
+  readonly teamMemberUnassign: (teamRef: string, userId: string) => Promise<Result<TeamMemberUnassignResponse>>
   readonly totpRemove: (userId: string) => Promise<Result<void>>
   readonly userAccessGet: (userId: string) => Promise<Result<DirectoryUserAccess>>
   readonly userDelete: (userId: string) => Promise<Result<void>>
+  readonly userTeamGet: (userId: string) => Promise<Result<{ readonly team: DirectoryEntryTeam | null }>>
   readonly userGet: (userId: string) => Promise<Result<DirectoryUserProfile>>
   readonly userLifecycleSet: (userId: string, input: UserLifecycleRequest) => Promise<Result<DirectoryUserProfile>>
   readonly userProfileUpdate: (userId: string, input: UserProfileUpdateRequest) => Promise<Result<DirectoryUserProfile>>

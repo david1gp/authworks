@@ -8,7 +8,7 @@ import { directoryAdminUsersDialogsStateCreate } from "./directoryAdminUsersDial
 export function DirectoryAdminUsersDemoAdapter() {
   const screen = directoryAdminUsersDemoStateCreate()
   const navigate = useNavigate()
-  const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page })
+  const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page, teams: screen.teams })
   const state: DirectoryAdminUsersViewState = {
     basePath: screen.basePath,
     confirmState: screen.confirmState,
@@ -16,6 +16,8 @@ export function DirectoryAdminUsersDemoAdapter() {
     navigateProfile: (userId: string) =>
       navigate(`${screen.basePath}/users/${userId}${window.location.search}`, { replace: false }),
     page: screen.page,
+    teams: screen.teams,
+    teamsDialogs: screen.teamsDialogs,
   }
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">

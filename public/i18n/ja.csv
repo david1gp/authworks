@@ -6,6 +6,79 @@ admin.activity.empty,このコンテキストに最近の管理アクティビ�
 admin.activity.error,アクティビティを読み込めませんでした。もう一度お試しください。
 admin.activity.organization,組織
 admin.activity.realm,IAMレルム
+admin.organizations.invitations.invitedBy,招待者
+admin.organizations.invitations.team,チーム
+admin.organizations.invitations.teamFixed,新しいメンバーは承認すると {name} に参加します。
+admin.organizations.invitations.teamHint,新しいメンバーは承認するとこのチームに参加します。
+admin.organizations.invitations.teamNone,チームなし
+admin.teams.addMember,メンバーを追加
+admin.teams.addMemberAction,追加
+admin.teams.addMemberEmpty,この検索に一致する人がいません。
+admin.teams.addMemberSearch,追加する人を検索
+admin.teams.assigned,{name} を {team} に追加しました。
+admin.teams.backToTeams,チームに戻る
+admin.teams.changeTeam,チームを変更
+admin.teams.create,チームを作成
+admin.teams.createDescription,URLセーフなスラッグと1人のチームリーダーでチームを追加します。
+admin.teams.createSubmit,チームを作成
+admin.teams.created,チーム {name} を作成しました。
+admin.teams.currentTeamHint,現在 {team} に所属
+admin.teams.delete,チームを削除
+admin.teams.deleteConfirm,チーム {name} を削除しますか?
+admin.teams.deleteConfirmDetail,メンバーは未割り当てになります。組織メンバーシップは変更されません。
+admin.teams.deleted,チーム {name} を削除しました。メンバーは未割り当てになりました。
+admin.teams.description,メンバーを1人ずつリーダーを置いてチームに編成します。
+admin.teams.editTitle,チームを編集
+admin.teams.leader,チームリーダー
+admin.teams.leaderBadge,リーダー
+admin.teams.leaderConflict,この人は既に別のチームを率いています。先にリーダーシップを移譲してください。
+admin.teams.leaderHint,リーダーはチームのメンバーであり、メンバーを管理します。
+admin.teams.leaderRequired,チームリーダーを選択してください。
+admin.teams.leadsTeamHint,{team} を率いています
+admin.teams.listEmpty,この組織にはまだチームがありません。
+admin.teams.listEmptyDetail,最初のチームを作成してメンバーとリーダーを編成しましょう。
+admin.teams.memberCount,{count} 人のメンバー
+admin.teams.memberCountOne,1 人のメンバー
+admin.teams.memberListDenied,チームメンバーを一覧できるのは組織管理者のみです。{name} に招待してチームを拡大しましょう。
+admin.teams.members,メンバー
+admin.teams.membersEmpty,このチームにはまだメンバーがいません。
+admin.teams.membersEmptyDetail,下でメンバーを追加するか、このチームに招待してください。
+admin.teams.name,チーム名
+admin.teams.nameConflict,その名前は既に別のチームで使用されています。
+admin.teams.nameRequired,チーム名を入力してください。
+admin.teams.openTeam,チーム {name} を開く
+admin.teams.removeLeaderDenied,チームリーダーは削除できません。先にリーダーを変更してください。
+admin.teams.removeMemberConfirm,{name} を {team} から削除しますか?未割り当てになります。
+admin.teams.removedMember,{name} は未割り当てになりました。
+admin.teams.scopeNotice,{name} を率いています。チーム名を変更したり、メンバーを招待したりできます。
+admin.teams.selectTeam,チーム
+admin.teams.slug,スラッグ
+admin.teams.slugConflict,そのスラッグは既に別のチームで使用されています。
+admin.teams.slugHint,小文字、数字、単一ハイフンのみ。管理URLで使用されます。
+admin.teams.slugInvalid,先頭と末尾にハイフンを付けず、小文字、数字、単一ハイフンを使用してください(最大64文字)。
+admin.teams.slugReserved,スラッグ unassigned はチームに所属しない人用に予約されています。
+admin.teams.title,チーム
+admin.teams.unassignedDescription,この組織でどのチームにも所属していない人。
+admin.teams.unassignedLabel,未割り当て
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,未割り当て
+admin.teams.updated,チーム {name} を更新しました。
+admin.teams.urlPreview,管理URL: {url}
+admin.userProfile.invitedBy,招待者
+admin.userProfile.invitedByUnknown,不明
+admin.userProfile.team,チーム
+admin.userProfile.teamDescription,この人が所属するチームを変更します。割り当てると現在のチームから移動します。
+admin.userProfile.teamRemoved,{name} は未割り当てになりました。
+admin.userProfile.teamSaved,チームの割り当てを更新しました。
+admin.userProfile.teamUnassigned,未割り当て
+admin.users.directoryEmptySearchTeamDetail,別の条件で検索するか、役割とチームの絞り込みを解除してください。
+admin.users.directorySubtitleTeams,{count} チーム
+admin.users.directorySubtitleTeamsOne,1 チーム
+admin.users.directoryTabTeams,チーム
+admin.users.directoryTeamAll,すべてのチーム
+admin.users.directoryTeamColumn,チーム
+admin.users.directoryTeamFilter,チーム
+admin.users.directoryTeamUnassigned,未割り当て
 shell.nav.activity,アクティビティ
 account.confirmTitle,この操作を確認
 account.factors.authenticatorName,認証アプリ名

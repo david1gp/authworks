@@ -10,6 +10,7 @@ import { realmApiClientCreate } from "../../realms/client/realmApiClientCreate.j
 import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCreate.js"
 import { sessionCsrfTokenGet } from "../../sessions/client/sessionCsrfTokenGet.js"
 import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
+import { teamApiClientCreate } from "../../teams/client/teamApiClientCreate.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
 import { directoryApiClientCreate } from "../client/directoryApiClientCreate.js"
 import type { DirectoryUserProfile, DirectoryUserProfileAdapter } from "./directoryUserProfileAdapter.js"
@@ -36,6 +37,7 @@ export function directoryUserProfileProductionAdapterCreate(options: {
   const readClients = () => ({
     directory: directoryApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     organizations: organizationApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
+    teams: teamApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     passwords: passwordApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     projects: projectApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     realms: realmApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
@@ -76,6 +78,7 @@ export function directoryUserProfileProductionAdapterCreate(options: {
     return operation(
       {
         directory: directoryApiClientCreate({ baseUrl: options.baseUrl, csrfToken: csrf.data, fetch: browserFetch }),
+        teams: teamApiClientCreate({ baseUrl: options.baseUrl, csrfToken: csrf.data, fetch: browserFetch }),
         organizations: organizationApiClientCreate({
           baseUrl: options.baseUrl,
           csrfToken: csrf.data,
@@ -200,6 +203,19 @@ export function directoryUserProfileProductionAdapterCreate(options: {
       if (!result.success) return result
       return resultCreate(result.data.items)
     },
+    teamList: async () => readClients().teams.teamList(realm(), organization()),
+    teamMemberAssign: (teamRef, input) =>
+      mutate(async (clients) => {
+        const result = await clients.teams.teamMemberAssign(realm(), organization(), teamRef, input)
+        if (!result.success) return result
+        return resultCreate(result.data)
+      }, "directoryUserProfileProductionTeamMemberAssign"),
+    teamMemberUnassign: (teamRef, userId) =>
+      mutate(async (clients) => {
+        const result = await clients.teams.teamMemberUnassign(realm(), organization(), teamRef, userId)
+        if (!result.success) return result
+        return resultCreate(result.data)
+      }, "directoryUserProfileProductionTeamMemberUnassign"),
     totpRemove: (userId) =>
       mutate(async (_clients, factors) => {
         const result = await factors.mfa.mfaTotpAdministratorRemove(realm(), userId)
@@ -213,6 +229,34 @@ export function directoryUserProfileProductionAdapterCreate(options: {
         if (!result.success) return result
         return resultCreate(undefined)
       }, "directoryUserProfileProductionUserDelete"),
+    userTeamGet: async (userId) => {
+      const userResult = await readClients().users.userTenantGet(realm(), userId)
+      if (!userResult.success) return userResult as unknown as Result<{ readonly team: null }>
+      const listed = await readClients().directory.directoryOrganizationUserList(realm(), organization(), {
+        pageSize: 100,
+        search: userResult.data.user.email,
+      })
+      if (listed.success) {
+        const entry = listed.data.items.find((item) => item.user.id === userId)
+        return resultCreate({ team: entry?.team ?? null })
+      }
+      // Leader-scoped fallback: the unfiltered list needs user.read, so resolve
+      // through the team lists the caller can see (leaders see only their own
+      // teams). Admins never reach here; their unfiltered call succeeds above.
+      const teams = await readClients().teams.teamList(realm(), organization())
+      if (!teams.success) return listed as unknown as Result<{ readonly team: null }>
+      for (const team of teams.data.items) {
+        const scoped = await readClients().directory.directoryOrganizationUserList(realm(), organization(), {
+          pageSize: 100,
+          search: userResult.data.user.email,
+          team: team.slug,
+        })
+        if (!scoped.success) continue
+        const entry = scoped.data.items.find((item) => item.user.id === userId)
+        if (entry?.team !== undefined && entry?.team !== null) return resultCreate({ team: entry.team })
+      }
+      return listed as unknown as Result<{ readonly team: null }>
+    },
     userGet: async (userId) => {
       const [userResult, accessResult] = await Promise.all([
         readClients().users.userTenantGet(realm(), userId),

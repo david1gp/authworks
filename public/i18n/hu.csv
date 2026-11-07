@@ -6,6 +6,79 @@ admin.activity.empty,Nincs legutóbbi adminisztratív tevékenység ebben a kör
 admin.activity.error,A tevékenység nem tölthető be. Próbálja újra.
 admin.activity.organization,Szervezet
 admin.activity.realm,IAM-tartomány
+admin.organizations.invitations.invitedBy,Meghívó
+admin.organizations.invitations.team,Csapat
+admin.organizations.invitations.teamFixed,Az új tagok elfogadást követően csatlakoznak ide: {name}.
+admin.organizations.invitations.teamHint,Az új tagok elfogadást követően csatlakoznak ehhez a csapathoz.
+admin.organizations.invitations.teamNone,Nincs csapat
+admin.teams.addMember,Tag hozzáadása
+admin.teams.addMemberAction,Hozzáadás
+admin.teams.addMemberEmpty,Senki sem felel meg ennek a keresésnek.
+admin.teams.addMemberSearch,Hozzáadandó személyek keresése
+admin.teams.assigned,{name} hozzáadva ide: {team}.
+admin.teams.backToTeams,Vissza a csapatokhoz
+admin.teams.changeTeam,Csapat váltása
+admin.teams.create,Csapat létrehozása
+admin.teams.createDescription,Adjon hozzá egy csapatot URL-biztos slug-gal és egy csapatvezetővel.
+admin.teams.createSubmit,Csapat létrehozása
+admin.teams.created,A(z) {name} csapat létrehozva.
+admin.teams.currentTeamHint,Jelenleg itt: {team}
+admin.teams.delete,Csapat törlése
+admin.teams.deleteConfirm,Törli a(z) {name} csapatot?
+admin.teams.deleteConfirmDetail,Tagjai Hozzárendeletlenek lesznek. A szervezeti tagságok változatlanok.
+admin.teams.deleted,A(z) {name} csapat törölve. Tagjai most Hozzárendeletlenek.
+admin.teams.description,"Szervezze az embereket csapatokba, mindegyikbe egy vezetőt."
+admin.teams.editTitle,Csapat szerkesztése
+admin.teams.leader,Csapatvezető
+admin.teams.leaderBadge,Vezető
+admin.teams.leaderConflict,Ez a személy már egy másik csapatot vezet. Előbb adja át a vezetést.
+admin.teams.leaderHint,"A vezető a csapat tagja, és kezeli a tagokat."
+admin.teams.leaderRequired,Válasszon csapatvezetőt.
+admin.teams.leadsTeamHint,Vezeti: {team}
+admin.teams.listEmpty,Ebben a szervezetben még nincsenek csapatok.
+admin.teams.listEmptyDetail,Hozza létre az első csapatot az emberek és vezetőik szervezéséhez.
+admin.teams.memberCount,{count} tag
+admin.teams.memberCountOne,1 tag
+admin.teams.memberListDenied,Csak a szervezet adminisztrátorai listázhatják a csapattagokat. Hívjon meg embereket ide: {name} a csapat bővítéséhez.
+admin.teams.members,Tagok
+admin.teams.membersEmpty,Ennek a csapatnak még nincsenek tagjai.
+admin.teams.membersEmptyDetail,"Adjon hozzá embereket alább, vagy hívja meg őket ebbe a csapatba."
+admin.teams.name,Csapatnév
+admin.teams.nameConflict,Ezt a nevet már egy másik csapat használja.
+admin.teams.nameRequired,Adjon meg egy csapatnevet.
+admin.teams.openTeam,{name} csapat megnyitása
+admin.teams.removeLeaderDenied,A csapatvezető nem távolítható el. Előbb módosítsa a vezetőt.
+admin.teams.removeMemberConfirm,Eltávolítja {name} személyt innen: {team}? Hozzárendeletlen lesz.
+admin.teams.removedMember,{name} most Hozzárendeletlen.
+admin.teams.scopeNotice,"Ön vezeti: {name}. Átnevezheti a csapatot, és meghívhat embereket."
+admin.teams.selectTeam,Csapat
+admin.teams.slug,Slug
+admin.teams.slugConflict,Ezt a slug-ot már egy másik csapat használja.
+admin.teams.slugHint,"Kisbetűk, számok és egyes kötőjelek. Az adminisztrációs URL-ekben használatos."
+admin.teams.slugInvalid,"Használjon kisbetűket, számokat és egyes kötőjeleket, kezdő és záró kötőjel nélkül (max. 64 karakter)."
+admin.teams.slugReserved,Az unassigned slug a csapathoz nem tartozó személyek számára fenntartott.
+admin.teams.title,Csapatok
+admin.teams.unassignedDescription,"A szervezet azon személyei, akik egyetlen csapathoz sem tartoznak."
+admin.teams.unassignedLabel,Hozzárendeletlen
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Hozzárendeletlen
+admin.teams.updated,A(z) {name} csapat frissítve.
+admin.teams.urlPreview,Adminisztrációs URL: {url}
+admin.userProfile.invitedBy,Meghívó
+admin.userProfile.invitedByUnknown,Ismeretlen
+admin.userProfile.team,Csapat
+admin.userProfile.teamDescription,"Módosítsa, melyik csapathoz tartozik ez a személy. A hozzárendelés kimozdítja a jelenlegi csapatából."
+admin.userProfile.teamRemoved,{name} most Hozzárendeletlen.
+admin.userProfile.teamSaved,A csapathozzárendelés frissítve.
+admin.userProfile.teamUnassigned,Hozzárendeletlen
+admin.users.directoryEmptySearchTeamDetail,"Próbáljon másik keresést, vagy törölje a szerep- és csapatszűrőket."
+admin.users.directorySubtitleTeams,{count} csapat
+admin.users.directorySubtitleTeamsOne,1 csapat
+admin.users.directoryTabTeams,Csapatok
+admin.users.directoryTeamAll,Összes csapat
+admin.users.directoryTeamColumn,Csapat
+admin.users.directoryTeamFilter,Csapat
+admin.users.directoryTeamUnassigned,Hozzárendeletlen
 shell.nav.activity,Tevékenység
 account.confirmTitle,Erősítse meg ezt a műveletet
 account.factors.authenticatorName,Hitelesítő neve

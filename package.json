@@ -181,6 +181,10 @@
       "types": "./dist/library/outputs/library/sessions.d.ts",
       "import": "./dist/library/outputs/library/sessions.js"
     },
+    "./teams": {
+      "types": "./dist/library/outputs/library/teams.d.ts",
+      "import": "./dist/library/outputs/library/teams.js"
+    },
     "./users": {
       "types": "./dist/library/outputs/library/users.d.ts",
       "import": "./dist/library/outputs/library/users.js"

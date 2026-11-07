@@ -29,6 +29,7 @@ import { projectServerAppCreate } from "../features/projects/server/projectServe
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import type { SessionGeoLookupPort } from "../features/sessions/domain/sessionGeoLookupPort.js"
+import { teamServerAppCreate } from "../features/teams/server/teamServerAppCreate.js"
 import { sessionGeoBackfillLifecycleCreate } from "../features/sessions/server/sessionGeoBackfillLifecycleCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userProfilePictureImport } from "../features/users/actions/userProfilePictureImport.js"
@@ -289,6 +290,7 @@ export function serverApplicationCreate(
     }),
   )
   application.route("/", directoryServerAppCreate({ database: database.data, publicOrigin }))
+  application.route("/", teamServerAppCreate({ database: database.data, publicOrigin }))
   application.route(
     "/",
     projectServerAppCreate({ database: database.data, publicOrigin, systemSecret: options.systemSecret }),

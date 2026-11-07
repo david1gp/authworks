@@ -78,10 +78,14 @@ export function directoryRealmUserList(options: DirectoryRealmUserListOptions): 
     items.sort((left, right) => left.organizationId.localeCompare(right.organizationId))
     const userView = directoryUserViewCreate(user)
     if (!userView.success) return userView
-    entries.push({ memberships: items, user: userView.data })
+    // Team membership is organization-scoped while realm entries span organizations,
+    // so a single entry team would be ambiguous: realm scope always reports null.
+    entries.push({ memberships: items, team: null, user: userView.data })
   }
 
   // Realm scope is organization-agnostic: a person matches when they hold the role anywhere.
+  // The team filter is organization-scoped and does not apply here; the realm route accepts
+  // the shared query shape but intentionally leaves entries unfiltered by team.
   const filtered = parsed.output.role === undefined ? entries : directoryRoleFilterApply(entries, parsed.output.role)
   return directoryEntryListPageCreate({
     entries: filtered,

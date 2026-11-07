@@ -6,6 +6,79 @@ admin.activity.empty,لا يوجد نشاط إداري حديث في هذا ال
 admin.activity.error,تعذر تحميل النشاط. حاول مرة أخرى.
 admin.activity.organization,المنظمة
 admin.activity.realm,نطاق IAM
+admin.organizations.invitations.invitedBy,دعاه
+admin.organizations.invitations.team,فريق
+admin.organizations.invitations.teamFixed,سينضم الأعضاء الجدد إلى {name} عند قبولهم.
+admin.organizations.invitations.teamHint,سينضم الأعضاء الجدد إلى هذا الفريق عند قبولهم.
+admin.organizations.invitations.teamNone,لا يوجد فريق
+admin.teams.addMember,إضافة عضو
+admin.teams.addMemberAction,إضافة
+admin.teams.addMemberEmpty,لا يوجد أشخاص يطابقون هذا البحث.
+admin.teams.addMemberSearch,ابحث عن أشخاص لإضافتهم
+admin.teams.assigned,تمت إضافة {name} إلى {team}.
+admin.teams.backToTeams,العودة إلى الفرق
+admin.teams.changeTeam,تغيير الفريق
+admin.teams.create,إنشاء فريق
+admin.teams.createDescription,أضف فريقًا بمعرّف URL آمن وقائد فريق واحد.
+admin.teams.createSubmit,إنشاء الفريق
+admin.teams.created,تم إنشاء الفريق {name}.
+admin.teams.currentTeamHint,حاليًا في {team}
+admin.teams.delete,حذف الفريق
+admin.teams.deleteConfirm,حذف الفريق {name}؟
+admin.teams.deleteConfirmDetail,سيصبح أعضاؤه غير مُسندين. عضويات المنظمة تبقى دون تغيير.
+admin.teams.deleted,تم حذف الفريق {name}. أعضاؤه الآن غير مُسندين.
+admin.teams.description,نظّم الأشخاص في فرق لكل منها قائد واحد.
+admin.teams.editTitle,تعديل الفريق
+admin.teams.leader,قائد الفريق
+admin.teams.leaderBadge,القائد
+admin.teams.leaderConflict,هذا الشخص يقود فريقًا آخر بالفعل. انقل قيادته أولاً.
+admin.teams.leaderHint,القائد عضو في الفريق ويدير أعضاءه.
+admin.teams.leaderRequired,اختر قائد الفريق.
+admin.teams.leadsTeamHint,يقود {team}
+admin.teams.listEmpty,لا توجد فرق في هذه المنظمة بعد.
+admin.teams.listEmptyDetail,أنشئ الفريق الأول لتنظيم الأشخاص وقادتهم.
+admin.teams.memberCount,{count} أعضاء
+admin.teams.memberCountOne,عضو واحد
+admin.teams.memberListDenied,فقط مسؤولو المنظمة يمكنهم عرض أعضاء الفريق. ادعُ أشخاصًا إلى {name} لتكبير الفريق.
+admin.teams.members,الأعضاء
+admin.teams.membersEmpty,لا يوجد أعضاء في هذا الفريق بعد.
+admin.teams.membersEmptyDetail,أضف أشخاصًا أدناه أو ادعهم إلى هذا الفريق.
+admin.teams.name,اسم الفريق
+admin.teams.nameConflict,هذا الاسم مستخدم بالفعل من قبل فريق آخر.
+admin.teams.nameRequired,أدخل اسم الفريق.
+admin.teams.openTeam,فتح الفريق {name}
+admin.teams.removeLeaderDenied,لا يمكن إزالة قائد الفريق. غيّر القائد أولاً.
+admin.teams.removeMemberConfirm,إزالة {name} من {team}؟ سيصبح غير مُسند.
+admin.teams.removedMember,{name} الآن غير مُسند.
+admin.teams.scopeNotice,أنت تقود {name}. يمكنك إعادة تسمية الفريق ودعوة الأشخاص إليه.
+admin.teams.selectTeam,الفريق
+admin.teams.slug,المعرّف
+admin.teams.slugConflict,هذا المعرّف مستخدم بالفعل من قبل فريق آخر.
+admin.teams.slugHint,أحرف صغيرة وأرقام وشرطات مفردة. يُستخدم في روابط الإدارة.
+admin.teams.slugInvalid,استخدم أحرفًا صغيرة وأرقامًا وشرطات مفردة دون شرطات في البداية أو النهاية (بحد أقصى 64 حرفًا).
+admin.teams.slugReserved,المعرّف unassigned محجوز للأشخاص الذين ليس لهم فريق.
+admin.teams.title,الفرق
+admin.teams.unassignedDescription,الأشخاص في هذه المنظمة الذين ليسوا في أي فريق.
+admin.teams.unassignedLabel,غير مُسند
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,غير مُسند
+admin.teams.updated,تم تحديث الفريق {name}.
+admin.teams.urlPreview,رابط الإدارة: {url}
+admin.userProfile.invitedBy,دعاه
+admin.userProfile.invitedByUnknown,غير معروف
+admin.userProfile.team,الفريق
+admin.userProfile.teamDescription,غيّر الفريق الذي ينتمي إليه هذا الشخص. التعيين ينقله خارج فريقه الحالي.
+admin.userProfile.teamRemoved,{name} الآن غير مُسند.
+admin.userProfile.teamSaved,تم تحديث تعيين الفريق.
+admin.userProfile.teamUnassigned,غير مُسند
+admin.users.directoryEmptySearchTeamDetail,جرّب بحثًا مختلفًا أو امسح مرشحات الدور والفريق.
+admin.users.directorySubtitleTeams,{count} فرق
+admin.users.directorySubtitleTeamsOne,فريق واحد
+admin.users.directoryTabTeams,الفرق
+admin.users.directoryTeamAll,كل الفرق
+admin.users.directoryTeamColumn,الفريق
+admin.users.directoryTeamFilter,الفريق
+admin.users.directoryTeamUnassigned,غير مُسند
 shell.nav.activity,النشاط
 account.confirmTitle,تأكيد هذا الإجراء
 account.factors.authenticatorName,اسم تطبيق المصادقة

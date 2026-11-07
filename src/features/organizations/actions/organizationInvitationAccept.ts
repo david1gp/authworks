@@ -7,6 +7,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { teamMembershipInvitationAssign } from "../../teams/server/teamMembershipInvitationAssign.js"
 import { organizationInvitationTokenHashCreate } from "../domain/organizationInvitationTokenHashCreate.js"
 import { organizationMembershipPublicViewCreate } from "../domain/organizationMembershipPublicViewCreate.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
@@ -204,6 +205,21 @@ export function organizationInvitationAccept(
       )
       if (!membershipEvent.success) return membershipEvent
       commandIndex += 1
+    }
+    const invitationTeamId = invitation.data.teamId ?? null
+    if (invitationTeamId !== null) {
+      const teamAssigned = teamMembershipInvitationAssign({
+        actorId: parsed.output.userId,
+        correlationId,
+        database: transaction,
+        occurredAt: acceptedAt,
+        organizationId: invitation.data.organizationId,
+        realmId: invitation.data.realmId,
+        runtime,
+        teamId: invitationTeamId,
+        userId: parsed.output.userId,
+      })
+      if (!teamAssigned.success) return teamAssigned
     }
     const accepted = repository.organizationInvitationUpdate(invitation.data.id, {
       acceptedAt,

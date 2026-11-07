@@ -6,9 +6,9 @@ import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { organizationInvitationPublicViewCreate } from "../domain/organizationInvitationPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationInvitation } from "../public/organizationInvitationSchema.js"
+import { organizationInvitationViewsAssemble } from "../server/organizationInvitationViewsAssemble.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationInvitationListOptions = {
@@ -48,12 +48,13 @@ export function organizationInvitationList(
   if (!authorized.success) return authorized
   const rows = repository.organizationInvitationList(options.organizationId)
   if (!rows.success) return rows
-  const invitations: OrganizationInvitation[] = []
-  for (const row of rows.data) {
-    const view = organizationInvitationPublicViewCreate(row)
-    if (!view.success) return view
-    invitations.push(view.data)
-  }
+  const views = organizationInvitationViewsAssemble({
+    database: options.database,
+    realmId: options.realmId,
+    rows: rows.data,
+  })
+  if (!views.success) return views
+  const invitations: OrganizationInvitation[] = views.data
   const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "email", "status"], "createdAt")
   if (!sortBy.success) return sortBy
   return listRowsPage({

@@ -325,6 +325,8 @@ const identicalWordTranslations = new Set([
   "de/admin.oidc.documents.jwksTitle",
   "de/admin.oidc.status",
   "de/admin.organizations.detail.realm",
+  // "Team" is the natural German word for team; the invitation row reuses it.
+  "de/admin.organizations.invitations.team",
   "de/admin.organizations.policy.factor.passkey",
   "de/admin.organizations.policy.passkey",
   "de/admin.organizations.providers.scopes",
@@ -332,6 +334,14 @@ const identicalWordTranslations = new Set([
   "de/admin.projects.status",
   "de/admin.realm.domains",
   "de/admin.realm.status",
+  // "Team"/"Teams"/"Slug" are the natural German terms for these admin concepts.
+  "de/admin.teams.selectTeam",
+  "de/admin.teams.slug",
+  "de/admin.teams.title",
+  "de/admin.userProfile.team",
+  "de/admin.users.directoryTabTeams",
+  "de/admin.users.directoryTeamColumn",
+  "de/admin.users.directoryTeamFilter",
   "de/admin.users.lifecycle.initial",
   "de/admin.users.sessions.region",
   "de/admin.whatsapp.code",
@@ -350,6 +360,8 @@ const identicalWordTranslations = new Set([
   "es/admin.organizations.memberships.roles",
   "es/admin.projects.detail.rolesTab",
   "es/admin.redesign.tokens",
+  // "Slug" is the standard untranslated technical term in Spanish web UIs.
+  "es/admin.teams.slug",
   "es/admin.userProfile.membershipRoles",
   "es/admin.whatsapp.endpoint",
   "es/demo.admin.group.realm.title",
@@ -368,6 +380,8 @@ const identicalWordTranslations = new Set([
   "fr/admin.projects.detail.applicationsTab",
   "fr/admin.redesign.actions",
   "fr/admin.redesign.documents",
+  // "Slug" is the standard untranslated technical term in French web UIs.
+  "fr/admin.teams.slug",
   "fr/admin.users.directorySubtitleInvitations",
   "fr/admin.users.directorySubtitleInvitationsOne",
   "fr/admin.users.lifecycle.initial",
@@ -384,6 +398,8 @@ const identicalWordTranslations = new Set([
   "hu/admin.oidc.documents.jwksUri",
   "hu/admin.organizations.policy.factor.passkey",
   "hu/admin.organizations.policy.passkey",
+  // "Slug" is the standard untranslated technical term in Hungarian web UIs.
+  "hu/admin.teams.slug",
   "hu/ui.authenticated.demo.avatarTitle",
   "hu/ui.authenticated.demo.profileName",
   "it/account.access.email",
@@ -391,9 +407,20 @@ const identicalWordTranslations = new Set([
   "it/account.securityOverview.password",
   "it/admin.events.payload",
   "it/admin.organizations.detail.realm",
+  // "Team" is the standard Italian term in software UIs; the invitation row reuses it.
+  "it/admin.organizations.invitations.team",
   "it/admin.organizations.policy.factor.passkey",
   "it/admin.organizations.policy.password",
   "it/admin.organizations.providers.type",
+  // "Team leader"/"Leader"/"Team"/"Slug" are standard tech loanwords in Italian admin UIs.
+  "it/admin.teams.leader",
+  "it/admin.teams.leaderBadge",
+  "it/admin.teams.selectTeam",
+  "it/admin.teams.slug",
+  "it/admin.userProfile.team",
+  "it/admin.users.directorySubtitleTeamsOne",
+  "it/admin.users.directoryTeamColumn",
+  "it/admin.users.directoryTeamFilter",
   "it/admin.users.nickName",
   "it/admin.whatsapp.endpoint",
   "it/demo.account.scenario.password.title",
@@ -419,6 +446,8 @@ const identicalWordTranslations = new Set([
   "nl/admin.oidc.documents.jwksTitle",
   "nl/admin.oidc.status",
   "nl/admin.organizations.detail.realm",
+  // "Team" is the natural Dutch word for team; the invitation row reuses it.
+  "nl/admin.organizations.invitations.team",
   "nl/admin.organizations.policy.factor.passkey",
   "nl/admin.organizations.policy.passkey",
   "nl/admin.organizations.providers.scopes",
@@ -427,6 +456,16 @@ const identicalWordTranslations = new Set([
   "nl/admin.projects.status",
   "nl/admin.realm.status",
   "nl/admin.redesign.tokens",
+  // "Team"/"Teams"/"Slug" are the natural Dutch terms for these admin concepts.
+  "nl/admin.teams.selectTeam",
+  "nl/admin.teams.slug",
+  "nl/admin.teams.title",
+  "nl/admin.userProfile.team",
+  "nl/admin.users.directorySubtitleTeams",
+  "nl/admin.users.directorySubtitleTeamsOne",
+  "nl/admin.users.directoryTabTeams",
+  "nl/admin.users.directoryTeamColumn",
+  "nl/admin.users.directoryTeamFilter",
   "nl/admin.whatsapp.code",
   "nl/admin.whatsapp.endpoint",
   "nl/admin.whatsapp.status",
@@ -441,6 +480,8 @@ const identicalWordTranslations = new Set([
   "pl/admin.events.systemActor",
   "pl/admin.impersonation.actor",
   "pl/admin.organizations.detail.realm",
+  // "Slug" is the standard untranslated technical term in Polish web UIs.
+  "pl/admin.teams.slug",
   "pl/admin.users.sessions.region",
   "pl/admin.whatsapp.status",
   "pl/demo.admin.group.realm.title",
@@ -455,16 +496,22 @@ const identicalWordTranslations = new Set([
   "pt/admin.organizations.policy.factor.passkey",
   "pt/admin.organizations.policy.passkey",
   "pt/admin.redesign.tokens",
+  // "Slug" is the standard untranslated technical term in Portuguese web UIs.
+  "pt/admin.teams.slug",
   "pt/admin.whatsapp.endpoint",
   "pt/demo.account.scenario.passkeys.title",
   "pt/demo.admin.group.realm.title",
   "pt/ui.authenticated.demo.avatarTitle",
   "pt/ui.authenticated.demo.profileName",
   "ru/admin.organizations.detail.realm",
+  // "Slug" is the standard untranslated technical term in Turkish web UIs.
+  "tr/admin.teams.slug",
   "tr/ui.authenticated.demo.avatarTitle",
   "tr/ui.authenticated.demo.profileName",
   "uk/admin.organizations.detail.realm",
   "zh/admin.oidc.documents.jwksUri",
+  // "Slug" stays untranslated as the standard technical term in Chinese admin UIs.
+  "zh/admin.teams.slug",
 ])
 
 // Keys introduced with the production shell, guard, confirmation, and fixture-state work.
@@ -746,6 +793,8 @@ const identicalAllowlist: readonly string[] = [
   "admin.whatsapp.noSender",
   // Placeholder-only quota-bar template with no translatable words.
   "admin.whatsapp.quotaBarLabel",
+  // Reserved URL slug value, not prose; identical in every locale.
+  "admin.teams.unassignedSlug",
 ]
 
 test("no catalog cell copies English outside the allowlist and identical-word sets", async () => {

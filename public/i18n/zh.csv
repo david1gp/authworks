@@ -6,6 +6,79 @@ admin.activity.empty,此上下文中没有近期管理活动。
 admin.activity.error,无法加载活动。请重试。
 admin.activity.organization,组织
 admin.activity.realm,IAM 领域
+admin.organizations.invitations.invitedBy,邀请人
+admin.organizations.invitations.team,团队
+admin.organizations.invitations.teamFixed,新成员接受后将加入 {name}。
+admin.organizations.invitations.teamHint,新成员接受后将加入此团队。
+admin.organizations.invitations.teamNone,无团队
+admin.teams.addMember,添加成员
+admin.teams.addMemberAction,添加
+admin.teams.addMemberEmpty,没有与此搜索匹配的人员。
+admin.teams.addMemberSearch,搜索要添加的人员
+admin.teams.assigned,{name} 已加入 {team}。
+admin.teams.backToTeams,返回团队
+admin.teams.changeTeam,更换团队
+admin.teams.create,创建团队
+admin.teams.createDescription,添加具有 URL 安全 Slug 和一名团队负责人的团队。
+admin.teams.createSubmit,创建团队
+admin.teams.created,团队 {name} 已创建。
+admin.teams.currentTeamHint,当前在 {team}
+admin.teams.delete,删除团队
+admin.teams.deleteConfirm,删除团队 {name}?
+admin.teams.deleteConfirmDetail,其成员将变为未分配。组织成员身份保持不变。
+admin.teams.deleted,团队 {name} 已删除。其成员现为未分配。
+admin.teams.description,"将人员组织成团队,每个团队设一名负责人。"
+admin.teams.editTitle,编辑团队
+admin.teams.leader,团队负责人
+admin.teams.leaderBadge,负责人
+admin.teams.leaderConflict,此人已领导另一个团队。请先移交其领导权。
+admin.teams.leaderHint,负责人是团队成员并管理其成员。
+admin.teams.leaderRequired,选择一名团队负责人。
+admin.teams.leadsTeamHint,领导 {team}
+admin.teams.listEmpty,此组织中尚无团队。
+admin.teams.listEmptyDetail,创建第一个团队以组织人员及其负责人。
+admin.teams.memberCount,{count} 名成员
+admin.teams.memberCountOne,1 名成员
+admin.teams.memberListDenied,只有组织管理员可以列出团队成员。邀请人员加入 {name} 以壮大团队。
+admin.teams.members,成员
+admin.teams.membersEmpty,此团队尚无成员。
+admin.teams.membersEmptyDetail,在下方添加人员或邀请他们加入此团队。
+admin.teams.name,团队名称
+admin.teams.nameConflict,该名称已被另一个团队使用。
+admin.teams.nameRequired,输入团队名称。
+admin.teams.openTeam,打开团队 {name}
+admin.teams.removeLeaderDenied,无法移除团队负责人。请先更换负责人。
+admin.teams.removeMemberConfirm,将 {name} 移出 {team}?其将变为未分配。
+admin.teams.removedMember,{name} 现为未分配。
+admin.teams.scopeNotice,您领导 {name}。您可以重命名团队并邀请人员加入。
+admin.teams.selectTeam,团队
+admin.teams.slug,Slug
+admin.teams.slugConflict,该 Slug 已被另一个团队使用。
+admin.teams.slugHint,小写字母、数字和单个连字符。用于管理 URL。
+admin.teams.slugInvalid,"请使用小写字母、数字和单个连字符,首尾不得有连字符(最多 64 个字符)。"
+admin.teams.slugReserved,Slug unassigned 保留给没有团队的人员。
+admin.teams.title,团队
+admin.teams.unassignedDescription,此组织中不属于任何团队的人员。
+admin.teams.unassignedLabel,未分配
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,未分配
+admin.teams.updated,团队 {name} 已更新。
+admin.teams.urlPreview,管理 URL:{url}
+admin.userProfile.invitedBy,邀请人
+admin.userProfile.invitedByUnknown,未知
+admin.userProfile.team,团队
+admin.userProfile.teamDescription,更改此人所属的团队。分配会将其移出当前团队。
+admin.userProfile.teamRemoved,{name} 现为未分配。
+admin.userProfile.teamSaved,团队分配已更新。
+admin.userProfile.teamUnassigned,未分配
+admin.users.directoryEmptySearchTeamDetail,尝试其他搜索或清除角色和团队筛选。
+admin.users.directorySubtitleTeams,{count} 个团队
+admin.users.directorySubtitleTeamsOne,1 个团队
+admin.users.directoryTabTeams,团队
+admin.users.directoryTeamAll,所有团队
+admin.users.directoryTeamColumn,团队
+admin.users.directoryTeamFilter,团队
+admin.users.directoryTeamUnassigned,未分配
 shell.nav.activity,活动
 account.confirmTitle,确认此操作
 account.factors.authenticatorName,身份验证器名称

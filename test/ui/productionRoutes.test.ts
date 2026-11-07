@@ -289,14 +289,22 @@ describe("production route guard state", () => {
     const administrators = productionRouteContractMap.admin.screens.find(
       (screen) => screen.key === "realm-administrators",
     )
-    expect(users?.guard?.access).toBe("organization-admin")
+    // The users surface admits organization members so team leaders reach their
+    // team scope; the view and the server keep them out of admin-only data.
+    expect(users?.guard?.access).toBe("organization-member")
     expect(administrators?.guard?.access).toBe("realm-admin")
 
     const organizationAdmin = (roles: readonly ("owner" | "admin" | "member" | "guest")[]) =>
       authenticatedContext({ access: { organizationRoles: [...roles], realmAdministrator: false } })
-    expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin(["member"]))).toEqual({
-      permission: "organization-admin",
+    expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin([]))).toEqual({
+      permission: "organization-member",
       status: "insufficient-permission",
+    })
+    expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin(["member"]))).toEqual({
+      organizationId: undefined,
+      realmId: "realm-1",
+      status: "authenticated",
+      userId: "user-1",
     })
     expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin(["admin"]))).toEqual({
       organizationId: undefined,

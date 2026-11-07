@@ -1,12 +1,17 @@
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
+import type { DirectoryTeamsPageState } from "./directoryTeamsPageStateCreate.js"
 
 /** Local dialog and form state for the users page; URL params own dialog visibility. */
-export function directoryAdminUsersDialogsStateCreate(options: { readonly page: DirectoryAdminUsersPageState }) {
+export function directoryAdminUsersDialogsStateCreate(options: {
+  readonly page: DirectoryAdminUsersPageState
+  readonly teams?: DirectoryTeamsPageState
+}) {
   const page = options.page
   const inviteEmail = createSignalObject("")
   const inviteRoles = createSignalObject<readonly OrganizationRoleId[]>(["member"])
+  const inviteTeam = createSignalObject("")
   const createEmail = createSignalObject("")
   const createUserName = createSignalObject("")
   const createFirstName = createSignalObject("")
@@ -31,10 +36,20 @@ export function directoryAdminUsersDialogsStateCreate(options: { readonly page: 
   const inviteSubmit = (event: SubmitEvent) => {
     event.preventDefault()
     void (async () => {
-      await page.invitationCreateSubmit({ email: inviteEmail.get(), roles: inviteRoles.get() })
+      const teams = options.teams
+      const teamId =
+        teams === undefined
+          ? undefined
+          : teams.canManageAll()
+            ? inviteTeam.get().length === 0
+              ? undefined
+              : inviteTeam.get()
+            : teams.ledTeams()[0]?.id
+      await page.invitationCreateSubmit({ email: inviteEmail.get(), roles: inviteRoles.get(), teamId })
       if (page.validationMessage() === undefined && page.invitationToken() !== undefined) {
         inviteEmail.set("")
         inviteRoles.set(["member"])
+        inviteTeam.set("")
       }
     })()
   }
@@ -110,6 +125,7 @@ export function directoryAdminUsersDialogsStateCreate(options: { readonly page: 
     inviteRoles,
     inviteRolesToggle,
     inviteSubmit,
+    inviteTeam,
     serviceName,
     serviceScopes,
     serviceSubmit,

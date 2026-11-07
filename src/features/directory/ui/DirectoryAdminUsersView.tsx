@@ -1,5 +1,6 @@
 import { A, useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
+import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
@@ -33,12 +34,15 @@ import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { machineUserStatusTone } from "../../machineUsers/ui/machineUserStatusTone.js"
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
+import type { Team } from "../../teams/public/teamSchema.js"
 import { organizationAdminInvitationStatusTone } from "../../organizations/ui/organizationAdminInvitationStatusTone.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryAdminTab } from "./directoryAdminTabSchema.js"
 import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
 import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialogsStateCreate.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
+import type { DirectoryTeamsDialogsState } from "./directoryTeamsDialogsStateCreate.js"
+import type { DirectoryTeamsPageState } from "./directoryTeamsPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
 import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
 import { directoryRoleDescriptionKeyGet } from "./directoryRoleDescriptionKeyGet.js"
@@ -54,6 +58,8 @@ export type DirectoryAdminUsersViewState = {
   readonly dialogs: DirectoryAdminUsersDialogsState
   readonly navigateProfile: (userId: string) => void
   readonly page: DirectoryAdminUsersPageState
+  readonly teams: DirectoryTeamsPageState
+  readonly teamsDialogs: DirectoryTeamsDialogsState
 }
 
 const roleFilters = ["owner", "admin", "member", "guest"] as const satisfies readonly OrganizationRoleId[]
@@ -81,7 +87,9 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
   }
   const searchSet = (value: string) => authenticatedUrlSearchParamWrite("q", value)
-  const dialogOpenSet = (dialog: "invite" | "create-user" | "create-service-account" | undefined) =>
+  const dialogOpenSet = (
+    dialog: "invite" | "create-user" | "create-service-account" | "create-team" | "edit-team" | undefined,
+  ) =>
     searchParamsSet((params) => {
       if (dialog === undefined) params.delete("dialog")
       else params.set("dialog", dialog)
@@ -91,6 +99,12 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       if (role === undefined) params.delete("role")
       else params.set("role", role)
     })
+  const teamFilterSet = (team: string | undefined) =>
+    searchParamsSet((params) => {
+      if (team === undefined) params.delete("team")
+      else params.set("team", team)
+    })
+  const activeTeamFilter = () => query().team
   const scopeSet = (scope: "organization" | "all") =>
     searchParamsSet((params) => {
       if (scope === "organization") params.delete("scope")
@@ -103,18 +117,35 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     })
 
   const query = () => directoryAdminUsersQueryParse(location.search)
-  const activeTab = (): DirectoryAdminTab => query().tab ?? "people"
+  const activeTab = (): DirectoryAdminTab => page().tab()
   const activeRole = () => query().role
   const activeScope = () => (page().realmAdministrator() ? (query().scope ?? "organization") : "organization")
   const profileHref = (userId: string) => `${state.basePath}/users/${userId}`
   const tabItems = () => {
     const search = location.search
+    const teams = () => state.teams
+    if (!teams().canManageAll()) {
+      return [
+        {
+          href: directoryTabsHref(state.basePath, search, "teams"),
+          icon: directoryTabIconGet("teams"),
+          label: messageTranslate("admin.users.directoryTabTeams"),
+          value: "teams" as const,
+        },
+      ]
+    }
     return [
       {
         href: directoryTabsHref(state.basePath, search, "people"),
         icon: directoryTabIconGet("people"),
         label: messageTranslate("admin.users.directoryTabPeople"),
         value: "people" as const,
+      },
+      {
+        href: directoryTabsHref(state.basePath, search, "teams"),
+        icon: directoryTabIconGet("teams"),
+        label: messageTranslate("admin.users.directoryTabTeams"),
+        value: "teams" as const,
       },
       {
         count: undefined,
@@ -137,11 +168,17 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     if (activeTab() === "people") {
       // The header total must describe the filtered list: with an organization-scoped role
       // filter the matching pill count is the exact total, not the unfiltered people total.
+      const team = activeTeamFilter()
+      if (team !== undefined)
+        return team === "unassigned"
+          ? state.teams.unassignedCount()
+          : (state.teams.teamBySlug(team)?.memberCount ?? page().people().length)
       const role = activeRole()
       if (role !== undefined && activeScope() === "organization" && page().summary() !== undefined)
         return roleCounts()?.[role] ?? 0
       return page().summary() === undefined ? page().people().length : (page().summary()?.total ?? 0)
     }
+    if (activeTab() === "teams") return state.teams.teams().length
     return activeTab() === "service-accounts" ? page().serviceAccounts().length : page().invitations().length
   }
   const subtitle = () => {
@@ -150,16 +187,20 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       return messageTranslate(
         activeTab() === "people"
           ? "admin.users.directorySubtitleOne"
-          : activeTab() === "service-accounts"
-            ? "admin.users.directorySubtitleServiceAccountsOne"
-            : "admin.users.directorySubtitleInvitationsOne",
+          : activeTab() === "teams"
+            ? "admin.users.directorySubtitleTeamsOne"
+            : activeTab() === "service-accounts"
+              ? "admin.users.directorySubtitleServiceAccountsOne"
+              : "admin.users.directorySubtitleInvitationsOne",
       )
     return messageTranslate(
       activeTab() === "people"
         ? "admin.users.directorySubtitle"
-        : activeTab() === "service-accounts"
-          ? "admin.users.directorySubtitleServiceAccounts"
-          : "admin.users.directorySubtitleInvitations",
+        : activeTab() === "teams"
+          ? "admin.users.directorySubtitleTeams"
+          : activeTab() === "service-accounts"
+            ? "admin.users.directorySubtitleServiceAccounts"
+            : "admin.users.directorySubtitleInvitations",
       { count },
     )
   }
@@ -267,6 +308,15 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       key: "role",
     },
     {
+      cell: (entry: DirectoryEntry) => (
+        <span class="truncate text-muted-foreground" title={entry.team?.name ?? undefined}>
+          {entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
+        </span>
+      ),
+      header: messageTranslate("admin.users.directoryTeamColumn"),
+      key: "team",
+    },
+    {
       cell: (entry: DirectoryEntry) => statusCell(entry),
       header: messageTranslate("admin.users.directoryStatus"),
       key: "status",
@@ -300,13 +350,15 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       <AuthenticatedPageHeader
         actions={
           <>
-            <AuthenticatedButton
-              icon={authenticatedIconRegistry.directoryInvite}
-              onClick={() => dialogOpenSet("invite")}
-              variant="filledBlue"
-            >
-              {messageTranslate("admin.users.directoryInvite")}
-            </AuthenticatedButton>
+            <Show when={state.teams.canManageAll() || state.teams.isLeaderScope()}>
+              <AuthenticatedButton
+                icon={authenticatedIconRegistry.directoryInvite}
+                onClick={() => dialogOpenSet("invite")}
+                variant="filledBlue"
+              >
+                {messageTranslate("admin.users.directoryInvite")}
+              </AuthenticatedButton>
+            </Show>
             <Show when={page().realmAdministrator()}>
               <AuthenticatedButton
                 icon={authenticatedIconRegistry.directoryCreateUser}
@@ -356,6 +408,24 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
           label={messageTranslate("admin.users.directoryTabPeople")}
         >
           <AuthenticatedSearchField onInput={searchSet} value={query().q ?? ""} />
+          <span class="grid w-52">
+            <AuthenticatedSelect
+              aria-label={messageTranslate("admin.users.directoryTeamFilter")}
+              getOptions={() => ["", ...state.teams.teams().map((team) => team.slug), "unassigned"]}
+              id="directory-team-filter"
+              valueSignal={{
+                get: () => activeTeamFilter() ?? "",
+                set: (value: string) => teamFilterSet(value === "" ? undefined : value),
+              }}
+              valueText={(value) =>
+                value === ""
+                  ? messageTranslate("admin.users.directoryTeamAll")
+                  : value === "unassigned"
+                    ? messageTranslate("admin.users.directoryTeamUnassigned")
+                    : (state.teams.teamBySlug(value)?.name ?? value)
+              }
+            />
+          </span>
           <fieldset class="flex flex-wrap items-center gap-1.5">
             <legend class="sr-only">{messageTranslate("admin.users.directoryRole")}</legend>
             <AuthenticatedButton
@@ -422,12 +492,17 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               <AuthenticatedSection>
                 <AuthenticatedEmptyState
                   actions={
-                    <Show when={(query().q ?? "").length > 0 || activeRole() !== undefined}>
+                    <Show
+                      when={
+                        (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
+                      }
+                    >
                       <AuthenticatedButton
                         icon={authenticatedIconRegistry.directoryClearFilters}
                         onClick={() => {
                           authenticatedUrlSearchParamWrite("q", "")
                           roleSet(undefined)
+                          teamFilterSet(undefined)
                         }}
                         variant="outline"
                       >
@@ -436,13 +511,15 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                     </Show>
                   }
                   description={
-                    (query().q ?? "").length > 0 || activeRole() !== undefined
-                      ? messageTranslate("admin.users.directoryEmptySearchDetail")
+                    (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
+                      ? activeTeamFilter() !== undefined
+                        ? messageTranslate("admin.users.directoryEmptySearchTeamDetail")
+                        : messageTranslate("admin.users.directoryEmptySearchDetail")
                       : messageTranslate("admin.users.directoryNoPeopleDetail")
                   }
                   icon={directoryTabIconGet("people")}
                   title={
-                    (query().q ?? "").length > 0 || activeRole() !== undefined
+                    (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
                       ? messageTranslate("admin.users.directoryEmptySearch")
                       : messageTranslate("admin.users.directoryNoPeople")
                   }
@@ -473,6 +550,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                         personRoles(entry)
                           .map((role) => messageTranslate(directoryRoleMessageKey(role)))
                           .join(", ") || "—",
+                        entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned"),
                         <AuthenticatedRelativeTime
                           fallback={messageTranslate("admin.users.directoryNever")}
                           value={entry.user.lastSignInAt}
@@ -513,6 +591,10 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
         </Show>
       </Show>
 
+      <Show when={activeTab() === "teams"}>
+        <TeamsSection dialogOpenSet={dialogOpenSet} state={state} />
+      </Show>
+
       <Show when={activeTab() === "service-accounts"}>
         <ServiceAccountsSection dialogOpenSet={dialogOpenSet} state={state} />
       </Show>
@@ -524,13 +606,18 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       <InviteUserDialog state={state} />
       <CreateUserDialog state={state} />
       <ServiceAccountDialog state={state} />
+      <CreateTeamDialog state={state} />
+      <EditTeamDialog state={state} />
     </div>
   )
 }
 
 function DirectoryTabStatePanel(props: {
   readonly onRetry: () => void
-  readonly state: () => DirectoryAdminUsersPageState
+  readonly state: () => {
+    readonly error: () => string | undefined
+    readonly status: () => string
+  }
 }) {
   const page = () => props.state()
   return (
@@ -565,7 +652,7 @@ function DirectoryTabStatePanel(props: {
 }
 
 function ServiceAccountsSection(props: {
-  readonly dialogOpenSet: (dialog: "create-service-account") => void
+  readonly dialogOpenSet: (dialog: "create-team" | "create-service-account") => void
   readonly state: DirectoryAdminUsersViewState
 }) {
   const page = () => props.state.page
@@ -788,6 +875,17 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                       ),
                     },
                     {
+                      label: messageTranslate("admin.organizations.invitations.team"),
+                      value: invitation.team?.name ?? messageTranslate("admin.organizations.invitations.teamNone"),
+                    },
+                    {
+                      label: messageTranslate("admin.organizations.invitations.invitedBy"),
+                      value:
+                        invitation.invitedBy?.displayName ??
+                        invitation.invitedBy?.email ??
+                        messageTranslate("admin.userProfile.invitedByUnknown"),
+                    },
+                    {
                       label: messageTranslate("admin.organizations.invitations.expires"),
                       value: <AuthenticatedRelativeTime value={invitation.expiresAt} />,
                     },
@@ -815,6 +913,12 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                 </TableHead>
                 <TableHead class={authenticatedTableClasses.head}>
                   {messageTranslate("admin.organizations.memberships.roles")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.organizations.invitations.team")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.organizations.invitations.invitedBy")}
                 </TableHead>
                 <TableHead class={authenticatedTableClasses.head}>
                   {messageTranslate("admin.organizations.status")}
@@ -847,6 +951,14 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                           )}
                         </For>
                       </span>
+                    </TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      {invitation.team?.name ?? messageTranslate("admin.organizations.invitations.teamNone")}
+                    </TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      {invitation.invitedBy?.displayName ??
+                        invitation.invitedBy?.email ??
+                        messageTranslate("admin.userProfile.invitedByUnknown")}
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
                       <AuthenticatedStatus
@@ -960,6 +1072,34 @@ function InviteUserDialog(props: { state: DirectoryAdminUsersViewState }) {
               </For>
             </div>
           </fieldset>
+          <Show when={props.state.teams.canManageAll()}>
+            <div class="grid gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="directory-invite-team">
+                {messageTranslate("admin.organizations.invitations.team")}
+              </Label>
+              <AuthenticatedSelect
+                aria-label={messageTranslate("admin.organizations.invitations.team")}
+                getOptions={() => ["", ...props.state.teams.teams().map((team) => team.id)]}
+                id="directory-invite-team"
+                valueSignal={dialogs().inviteTeam}
+                valueText={(value) =>
+                  value === ""
+                    ? messageTranslate("admin.organizations.invitations.teamNone")
+                    : (props.state.teams.teams().find((team) => team.id === value)?.name ?? value)
+                }
+              />
+              <p class="text-xs leading-4 text-muted-foreground">
+                {messageTranslate("admin.organizations.invitations.teamHint")}
+              </p>
+            </div>
+          </Show>
+          <Show when={props.state.teams.isLeaderScope() ? props.state.teams.ledTeams()[0] : undefined}>
+            {(leaderTeam) => (
+              <p class="text-xs leading-4 text-muted-foreground">
+                {messageTranslate("admin.organizations.invitations.teamFixed", { name: leaderTeam().name })}
+              </p>
+            )}
+          </Show>
           <Show when={dialogs().validationMessage()}>
             {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
           </Show>
@@ -1238,6 +1378,1071 @@ function ServiceAccountSecretPanel(props: { state: DirectoryAdminUsersViewState 
           </span>
         </Show>
       </div>
+    </div>
+  )
+}
+
+const teamsHref = (basePath: string, search: string, slug: string | undefined): string => {
+  const params = new URLSearchParams(search)
+  params.set("tab", "teams")
+  if (slug === undefined) params.delete("team")
+  else params.set("team", slug)
+  const encoded = params.toString()
+  return `${basePath}/users${encoded.length === 0 ? "" : `?${encoded}`}`
+}
+
+function TeamsSection(props: {
+  readonly dialogOpenSet: (dialog: "create-team" | "edit-team" | "invite") => void
+  readonly state: DirectoryAdminUsersViewState
+}) {
+  const teams = () => props.state.teams
+  const location = useLocation()
+  const navigate = useNavigate()
+  const teamSelect = (slug: string | undefined) => {
+    const params = new URLSearchParams(location.search)
+    params.set("tab", "teams")
+    if (slug === undefined) params.delete("team")
+    else params.set("team", slug)
+    const encoded = params.toString()
+    navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: false })
+  }
+  const slug = () => teams().selectedSlug()
+  return (
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <Show when={teams().notice()}>{(message) => <AuthenticatedNotice message={message()} />}</Show>
+      <Show when={teams().isLeaderScope() ? teams().ledTeams()[0] : undefined}>
+        {(leaderTeam) => (
+          <AuthenticatedNotice message={messageTranslate("admin.teams.scopeNotice", { name: leaderTeam().name })} />
+        )}
+      </Show>
+      <Show
+        when={teams().status() === "ready"}
+        fallback={
+          <Show
+            when={teams().status() === "loading"}
+            fallback={<DirectoryTabStatePanel onRetry={teams().teamsReload} state={teams} />}
+          >
+            <AuthenticatedSection>
+              <div class="grid gap-2 p-5">
+                <For each={[0, 1, 2]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
+              </div>
+            </AuthenticatedSection>
+          </Show>
+        }
+      >
+        <Show
+          when={slug() === undefined}
+          fallback={<TeamDetail dialogOpenSet={props.dialogOpenSet} onSelect={teamSelect} state={props.state} />}
+        >
+          <AuthenticatedToolbar
+            actions={
+              <Show when={teams().canManageAll()}>
+                <AuthenticatedButton
+                  icon={authenticatedIconRegistry.directoryTeamCreate}
+                  onClick={() => {
+                    props.state.teamsDialogs.createOpen()
+                    props.dialogOpenSet("create-team")
+                  }}
+                  variant="filledBlue"
+                >
+                  {messageTranslate("admin.teams.create")}
+                </AuthenticatedButton>
+              </Show>
+            }
+            label={messageTranslate("admin.teams.title")}
+            summary={messageTranslate("admin.teams.description")}
+          />
+          <Show
+            when={teams().teams().length > 0}
+            fallback={
+              <AuthenticatedSection>
+                <AuthenticatedEmptyState
+                  description={messageTranslate("admin.teams.listEmptyDetail")}
+                  icon={directoryTabIconGet("teams")}
+                  title={messageTranslate("admin.teams.listEmpty")}
+                />
+              </AuthenticatedSection>
+            }
+          >
+            <TeamsList onSelect={teamSelect} state={props.state} />
+          </Show>
+        </Show>
+      </Show>
+    </div>
+  )
+}
+
+function TeamsList(props: {
+  readonly onSelect: (slug: string | undefined) => void
+  readonly state: DirectoryAdminUsersViewState
+}) {
+  const teams = () => props.state.teams
+  const memberCountText = (count: number) =>
+    count === 1
+      ? messageTranslate("admin.teams.memberCountOne")
+      : messageTranslate("admin.teams.memberCount", { count })
+  return (
+    <AuthenticatedSection>
+      <div class="hidden md:block">
+        <Table
+          aria-label={messageTranslate("admin.teams.title")}
+          class={authenticatedTableClasses.tableWide}
+          tabIndex={0}
+        >
+          <TableHeader class={authenticatedTableClasses.header}>
+            <TableRow>
+              <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.teams.name")}</TableHead>
+              <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.teams.slug")}</TableHead>
+              <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.teams.leader")}</TableHead>
+              <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.teams.members")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <For each={teams().teams()}>
+              {(team) => (
+                <TableRow class={authenticatedTableClasses.row}>
+                  <TableCell class={authenticatedTableClasses.cell}>
+                    <A
+                      aria-label={messageTranslate("admin.teams.openTeam", { name: team.name })}
+                      class="font-medium text-accent hover:underline"
+                      href={teamsHref(props.state.basePath, window.location.search, team.slug)}
+                    >
+                      {team.name}
+                    </A>
+                  </TableCell>
+                  <TableCell class={authenticatedTableClasses.cell}>
+                    <span class="font-mono text-xs">{team.slug}</span>
+                  </TableCell>
+                  <TableCell class={authenticatedTableClasses.cell}>
+                    <TeamLeaderCell team={team} />
+                  </TableCell>
+                  <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
+                    {memberCountText(team.memberCount)}
+                  </TableCell>
+                </TableRow>
+              )}
+            </For>
+            <TableRow class={authenticatedTableClasses.row}>
+              <TableCell class={authenticatedTableClasses.cell}>
+                <A
+                  aria-label={messageTranslate("admin.teams.openTeam", {
+                    name: messageTranslate("admin.teams.unassignedTitle"),
+                  })}
+                  class="font-medium text-accent hover:underline"
+                  href={teamsHref(props.state.basePath, window.location.search, "unassigned")}
+                >
+                  {messageTranslate("admin.teams.unassignedTitle")}
+                </A>
+              </TableCell>
+              <TableCell class={authenticatedTableClasses.cell}>
+                <span class="font-mono text-xs">{messageTranslate("admin.teams.unassignedSlug")}</span>
+              </TableCell>
+              <TableCell class={authenticatedTableClasses.cell}>
+                <span class="text-muted-foreground">—</span>
+              </TableCell>
+              <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
+                {memberCountText(teams().unassignedCount())}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+      <AuthenticatedRecordList label={messageTranslate("admin.teams.title")}>
+        <For each={teams().teams()}>
+          {(team) => (
+            <AuthenticatedRecordItem
+              fields={[
+                {
+                  label: messageTranslate("admin.teams.slug"),
+                  value: <span class="font-mono text-xs">{team.slug}</span>,
+                },
+                { label: messageTranslate("admin.teams.leader"), value: <TeamLeaderCell team={team} /> },
+              ]}
+              meta={[memberCountText(team.memberCount)]}
+              title={
+                <A
+                  aria-label={messageTranslate("admin.teams.openTeam", { name: team.name })}
+                  class="truncate text-accent hover:underline"
+                  href={teamsHref(props.state.basePath, window.location.search, team.slug)}
+                >
+                  {team.name}
+                </A>
+              }
+            />
+          )}
+        </For>
+        <AuthenticatedRecordItem
+          fields={[
+            {
+              label: messageTranslate("admin.teams.slug"),
+              value: <span class="font-mono text-xs">{messageTranslate("admin.teams.unassignedSlug")}</span>,
+            },
+          ]}
+          meta={[memberCountText(teams().unassignedCount())]}
+          title={
+            <A
+              class="truncate text-accent hover:underline"
+              href={teamsHref(props.state.basePath, window.location.search, "unassigned")}
+            >
+              {messageTranslate("admin.teams.unassignedTitle")}
+            </A>
+          }
+        />
+      </AuthenticatedRecordList>
+    </AuthenticatedSection>
+  )
+}
+
+function TeamLeaderCell(props: { readonly team: Team }) {
+  const name = () => props.team.leader.displayName ?? props.team.leader.email ?? props.team.leader.userId
+  return (
+    <span class="flex min-w-0 items-center gap-1.5">
+      <AuthenticatedAvatar class="size-6" name={name()} size="sm" />
+      <span class="truncate" title={props.team.leader.email ?? undefined}>
+        {name()}
+      </span>
+    </span>
+  )
+}
+
+function TeamDetail(props: {
+  readonly dialogOpenSet: (dialog: "create-team" | "edit-team" | "invite") => void
+  readonly onSelect: (slug: string | undefined) => void
+  readonly state: DirectoryAdminUsersViewState
+}) {
+  const teams = () => props.state.teams
+  const slug = () => teams().selectedSlug()
+  return (
+    <Show
+      when={slug() === "unassigned"}
+      fallback={<TeamDetailBody dialogOpenSet={props.dialogOpenSet} onSelect={props.onSelect} state={props.state} />}
+    >
+      <UnassignedDetail state={props.state} />
+    </Show>
+  )
+}
+
+function TeamDetailBody(props: {
+  readonly dialogOpenSet: (dialog: "create-team" | "edit-team" | "invite") => void
+  readonly onSelect: (slug: string | undefined) => void
+  readonly state: DirectoryAdminUsersViewState
+}) {
+  const teams = () => props.state.teams
+  const team = () => teams().selectedTeam()
+  const location = useLocation()
+  const backHref = () => {
+    const params = new URLSearchParams(location.search)
+    params.set("tab", "teams")
+    params.delete("team")
+    const encoded = params.toString()
+    return `${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`
+  }
+  return (
+    <Show
+      when={team()}
+      fallback={
+        <AuthenticatedSection>
+          <AuthenticatedEmptyState
+            actions={
+              <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+                {messageTranslate("admin.teams.backToTeams")}
+              </A>
+            }
+            description={messageTranslate("common.error")}
+            icon={directoryTabIconGet("teams")}
+            title={messageTranslate("common.error")}
+          />
+        </AuthenticatedSection>
+      }
+    >
+      {(current) => (
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+          <AuthenticatedSection
+            actions={
+              <>
+                <Show when={teams().canManageAll() || teams().isLeaderScope()}>
+                  <AuthenticatedButton
+                    icon={authenticatedIconRegistry.directoryTeamEdit}
+                    onClick={() => {
+                      props.state.teamsDialogs.editOpen(current())
+                      props.dialogOpenSet("edit-team")
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {messageTranslate("admin.teams.editTitle")}
+                  </AuthenticatedButton>
+                </Show>
+                <Show when={teams().canManageAll()}>
+                  <AuthenticatedButton
+                    disabled={teams().pendingId() !== undefined}
+                    icon={authenticatedIconRegistry.directoryTeamDelete}
+                    onClick={() =>
+                      void teams()
+                        .teamDeleteSubmit(current())
+                        .then((deleted) => {
+                          if (deleted) props.onSelect(undefined)
+                        })
+                    }
+                    size="sm"
+                    variant="outlineRed"
+                  >
+                    {messageTranslate("admin.teams.delete")}
+                  </AuthenticatedButton>
+                </Show>
+              </>
+            }
+            padded
+            title={current().name}
+          >
+            <div class="grid gap-2">
+              <p>
+                <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+                  {`← ${messageTranslate("admin.teams.backToTeams")}`}
+                </A>
+              </p>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <AuthenticatedChip label={current().slug} tone="neutral" />
+                <AuthenticatedChip
+                  icon={authenticatedIconRegistry.directoryTabPeople}
+                  label={messageTranslate(
+                    current().memberCount === 1 ? "admin.teams.memberCountOne" : "admin.teams.memberCount",
+                    { count: current().memberCount },
+                  )}
+                  tone="neutral"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-muted-foreground">{messageTranslate("admin.teams.leader")}</span>
+                <TeamLeaderCell team={current()} />
+                <AuthenticatedChip label={messageTranslate("admin.teams.leaderBadge")} tone="accent" />
+              </div>
+              <Show when={teams().validationMessage()}>
+                {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+              </Show>
+            </div>
+          </AuthenticatedSection>
+          <Show
+            when={teams().membersError() === undefined}
+            fallback={
+              <AuthenticatedSection>
+                <AuthenticatedEmptyState
+                  actions={
+                    <AuthenticatedButton
+                      icon={authenticatedIconRegistry.directoryRetry}
+                      onClick={teams().membersReload}
+                      variant="outline"
+                    >
+                      {messageTranslate("common.retry")}
+                    </AuthenticatedButton>
+                  }
+                  description={teams().membersError() ?? messageTranslate("common.error")}
+                  title={messageTranslate("common.error")}
+                />
+              </AuthenticatedSection>
+            }
+          >
+            <TeamMembersList state={props.state} team={current()} />
+          </Show>
+          <Show when={teams().canManageAll() || teams().isLeaderScope()}>
+            <TeamAddMember state={props.state} team={current()} />
+          </Show>
+        </div>
+      )}
+    </Show>
+  )
+}
+
+function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; readonly team: Team }) {
+  const teams = () => props.state.teams
+  const team = () => props.team
+  const memberName = (entry: { user: { displayName?: string; userName: string } }) =>
+    entry.user.displayName ?? entry.user.userName
+  return (
+    <AuthenticatedSection
+      description={messageTranslate("admin.teams.memberCount", { count: team().memberCount })}
+      title={messageTranslate("admin.teams.members")}
+    >
+      <Show
+        when={teams().members().length > 0}
+        fallback={
+          <AuthenticatedEmptyState
+            description={messageTranslate("admin.teams.membersEmptyDetail")}
+            icon={directoryTabIconGet("teams")}
+            title={messageTranslate("admin.teams.membersEmpty")}
+          />
+        }
+      >
+        <div class="hidden md:block">
+          <Table
+            aria-label={messageTranslate("admin.teams.members")}
+            class={authenticatedTableClasses.tableWide}
+            tabIndex={0}
+          >
+            <TableHeader class={authenticatedTableClasses.header}>
+              <TableRow>
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.users.displayName")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.users.email")}</TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.users.directoryRole")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
+                  <span class="sr-only">{messageTranslate("common.remove")}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <For each={teams().members()}>
+                {(entry) => (
+                  <TableRow class={authenticatedTableClasses.row}>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      <span class="flex min-w-0 items-center gap-2">
+                        <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
+                        <A
+                          class="truncate font-medium text-accent hover:underline"
+                          href={`${props.state.basePath}/users/${entry.user.id}`}
+                        >
+                          {memberName(entry)}
+                        </A>
+                        <Show when={team().leader.userId === entry.user.id}>
+                          <AuthenticatedChip label={messageTranslate("admin.teams.leaderBadge")} tone="accent" />
+                        </Show>
+                      </span>
+                    </TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      <span class="truncate text-muted-foreground">{entry.user.email}</span>
+                    </TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
+                      <span class="flex flex-wrap items-center gap-1">
+                        <For each={entry.memberships[0]?.roles ?? []}>
+                          {(role) => (
+                            <AuthenticatedChip
+                              icon={directoryRoleIconGet(role)}
+                              label={messageTranslate(directoryRoleMessageKey(role))}
+                              tone="neutral"
+                            />
+                          )}
+                        </For>
+                      </span>
+                    </TableCell>
+                    <TableCell class={authenticatedTableClasses.action}>
+                      <Show when={teams().canManageAll() || teams().isLeaderScope()}>
+                        <AuthenticatedButton
+                          disabled={teams().pendingId() !== undefined || team().leader.userId === entry.user.id}
+                          icon={authenticatedIconRegistry.directoryTeamDelete}
+                          onClick={() =>
+                            void teams().teamMemberUnassignSubmit(team(), entry.user.id, memberName(entry))
+                          }
+                          size="sm"
+                          title={
+                            team().leader.userId === entry.user.id
+                              ? messageTranslate("admin.teams.removeLeaderDenied")
+                              : messageTranslate("common.remove")
+                          }
+                          variant="outline"
+                        >
+                          {messageTranslate("common.remove")}
+                        </AuthenticatedButton>
+                      </Show>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </For>
+            </TableBody>
+          </Table>
+        </div>
+        <AuthenticatedRecordList label={messageTranslate("admin.teams.members")}>
+          <For each={teams().members()}>
+            {(entry) => (
+              <AuthenticatedRecordItem
+                actions={
+                  <Show
+                    when={(teams().canManageAll() || teams().isLeaderScope()) && team().leader.userId !== entry.user.id}
+                  >
+                    <AuthenticatedButton
+                      disabled={teams().pendingId() !== undefined}
+                      icon={authenticatedIconRegistry.directoryTeamDelete}
+                      onClick={() => void teams().teamMemberUnassignSubmit(team(), entry.user.id, memberName(entry))}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {messageTranslate("common.remove")}
+                    </AuthenticatedButton>
+                  </Show>
+                }
+                fields={[{ label: messageTranslate("admin.users.email"), value: entry.user.email }]}
+                status={
+                  <Show when={team().leader.userId === entry.user.id}>
+                    <AuthenticatedChip label={messageTranslate("admin.teams.leaderBadge")} tone="accent" />
+                  </Show>
+                }
+                title={
+                  <A
+                    class="truncate text-accent hover:underline"
+                    href={`${props.state.basePath}/users/${entry.user.id}`}
+                  >
+                    {memberName(entry)}
+                  </A>
+                }
+              />
+            )}
+          </For>
+        </AuthenticatedRecordList>
+        <AuthenticatedPagination
+          nextAvailable={teams().memberNextPageAvailable()}
+          onNext={teams().memberPageNext}
+          onPrevious={teams().memberPagePrevious}
+          previousAvailable={teams().memberPreviousPageAvailable()}
+        />
+      </Show>
+    </AuthenticatedSection>
+  )
+}
+
+function TeamAddMember(props: { readonly state: DirectoryAdminUsersViewState; readonly team: Team }) {
+  const teams = () => props.state.teams
+  const dialogs = () => props.state.teamsDialogs
+  const memberName = (entry: { user: { displayName?: string; userName: string } }) =>
+    entry.user.displayName ?? entry.user.userName
+  const submit = (event: SubmitEvent) => {
+    event.preventDefault()
+    void teams().memberCandidateSearch(dialogs().memberSearch.get())
+  }
+  return (
+    <AuthenticatedSection padded title={messageTranslate("admin.teams.addMember")}>
+      <form class="grid gap-3" onSubmit={submit}>
+        <AuthenticatedSearchField
+          onInput={(value) => dialogs().memberSearch.set(value)}
+          value={dialogs().memberSearch.get()}
+        />
+        <Show when={teams().pickerResults().length > 0}>
+          <ul class="grid gap-2">
+            <For each={teams().pickerResults()}>
+              {(entry) => {
+                const leadsOther = () => {
+                  const leadership = teams().teamLeadershipOfGet(entry.user.id)
+                  return leadership !== undefined && leadership.id !== props.team.id ? leadership : undefined
+                }
+                const inThisTeam = () => entry.team?.id === props.team.id
+                return (
+                  <li class="flex flex-wrap items-center justify-between gap-2 rounded-control border border-line-subtle px-3.5 py-2.5">
+                    <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+                      <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
+                      <span class="min-w-0">
+                        <span class="block truncate text-sm font-medium">{memberName(entry)}</span>
+                        <span class="block truncate text-xs text-muted-foreground">{entry.user.email}</span>
+                      </span>
+                      <Show when={entry.team !== null && !inThisTeam()}>
+                        <AuthenticatedChip
+                          label={messageTranslate("admin.teams.currentTeamHint", { team: entry.team?.name ?? "" })}
+                          tone="neutral"
+                        />
+                      </Show>
+                      <Show when={leadsOther()}>
+                        {(leadership) => (
+                          <AuthenticatedChip
+                            label={messageTranslate("admin.teams.leadsTeamHint", { team: leadership().name })}
+                            tone="accent"
+                          />
+                        )}
+                      </Show>
+                    </div>
+                    <Show when={!inThisTeam()}>
+                      <AuthenticatedButton
+                        disabled={teams().pendingId() !== undefined || leadsOther() !== undefined}
+                        icon={authenticatedIconRegistry.directoryTeamCreate}
+                        onClick={() =>
+                          void teams()
+                            .teamMemberAssignSubmit(props.team, entry.user.id, memberName(entry))
+                            .then((assigned) => {
+                              if (assigned) void teams().memberCandidateSearch(dialogs().memberSearch.get())
+                            })
+                        }
+                        size="sm"
+                        title={
+                          leadsOther() === undefined
+                            ? messageTranslate("admin.teams.addMember")
+                            : messageTranslate("admin.teams.leaderConflict")
+                        }
+                        variant="outline"
+                      >
+                        {messageTranslate("admin.teams.addMemberAction")}
+                      </AuthenticatedButton>
+                    </Show>
+                  </li>
+                )
+              }}
+            </For>
+          </ul>
+        </Show>
+      </form>
+    </AuthenticatedSection>
+  )
+}
+
+function UnassignedDetail(props: { readonly state: DirectoryAdminUsersViewState }) {
+  const teams = () => props.state.teams
+  const location = useLocation()
+  const backHref = () => {
+    const params = new URLSearchParams(location.search)
+    params.set("tab", "teams")
+    params.delete("team")
+    const encoded = params.toString()
+    return `${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`
+  }
+  const memberName = (entry: { user: { displayName?: string; userName: string } }) =>
+    entry.user.displayName ?? entry.user.userName
+  return (
+    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+      <AuthenticatedSection
+        description={messageTranslate("admin.teams.unassignedDescription")}
+        padded
+        title={messageTranslate("admin.teams.unassignedTitle")}
+      >
+        <p>
+          <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+            {messageTranslate("admin.teams.backToTeams")}
+          </A>
+        </p>
+        <Show when={teams().validationMessage()}>
+          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+        </Show>
+      </AuthenticatedSection>
+      <Show
+        when={teams().membersError() === undefined}
+        fallback={
+          <AuthenticatedSection>
+            <AuthenticatedEmptyState
+              actions={
+                <AuthenticatedButton
+                  icon={authenticatedIconRegistry.directoryRetry}
+                  onClick={teams().membersReload}
+                  variant="outline"
+                >
+                  {messageTranslate("common.retry")}
+                </AuthenticatedButton>
+              }
+              description={teams().membersError() ?? messageTranslate("common.error")}
+              title={messageTranslate("common.error")}
+            />
+          </AuthenticatedSection>
+        }
+      >
+        <Show
+          when={teams().members().length > 0}
+          fallback={
+            <AuthenticatedSection>
+              <AuthenticatedEmptyState
+                description={messageTranslate("admin.teams.membersEmptyDetail")}
+                icon={directoryTabIconGet("teams")}
+                title={messageTranslate("admin.teams.membersEmpty")}
+              />
+            </AuthenticatedSection>
+          }
+        >
+          <AuthenticatedSection>
+            <div class="hidden md:block">
+              <Table
+                aria-label={messageTranslate("admin.teams.unassignedTitle")}
+                class={authenticatedTableClasses.tableWide}
+                tabIndex={0}
+              >
+                <TableHeader class={authenticatedTableClasses.header}>
+                  <TableRow>
+                    <TableHead class={authenticatedTableClasses.head}>
+                      {messageTranslate("admin.users.displayName")}
+                    </TableHead>
+                    <TableHead class={authenticatedTableClasses.head}>
+                      {messageTranslate("admin.users.email")}
+                    </TableHead>
+                    <TableHead class={authenticatedTableClasses.head}>
+                      {messageTranslate("admin.users.directoryRole")}
+                    </TableHead>
+                    <TableHead class={authenticatedTableClasses.head}>
+                      <span class="sr-only">{messageTranslate("admin.teams.selectTeam")}</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <For each={teams().members()}>
+                    {(entry) => (
+                      <TableRow class={authenticatedTableClasses.row}>
+                        <TableCell class={authenticatedTableClasses.cell}>
+                          <span class="flex min-w-0 items-center gap-2">
+                            <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
+                            <A
+                              class="truncate font-medium text-accent hover:underline"
+                              href={`${props.state.basePath}/users/${entry.user.id}`}
+                            >
+                              {memberName(entry)}
+                            </A>
+                          </span>
+                        </TableCell>
+                        <TableCell class={authenticatedTableClasses.cell}>
+                          <span class="truncate text-muted-foreground">{entry.user.email}</span>
+                        </TableCell>
+                        <TableCell class={authenticatedTableClasses.cell}>
+                          <span class="flex flex-wrap items-center gap-1">
+                            <For each={entry.memberships[0]?.roles ?? []}>
+                              {(role) => (
+                                <AuthenticatedChip
+                                  icon={directoryRoleIconGet(role)}
+                                  label={messageTranslate(directoryRoleMessageKey(role))}
+                                  tone="neutral"
+                                />
+                              )}
+                            </For>
+                          </span>
+                        </TableCell>
+                        <TableCell class={authenticatedTableClasses.action}>
+                          <Show when={teams().canManageAll()}>
+                            <UnassignedAssignControl entryId={entry.user.id} idPrefix="desktop" state={props.state} />
+                          </Show>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </For>
+                </TableBody>
+              </Table>
+            </div>
+            <AuthenticatedRecordList label={messageTranslate("admin.teams.unassignedTitle")}>
+              <For each={teams().members()}>
+                {(entry) => (
+                  <AuthenticatedRecordItem
+                    actions={
+                      <Show when={teams().canManageAll()}>
+                        <UnassignedAssignControl entryId={entry.user.id} idPrefix="mobile" state={props.state} />
+                      </Show>
+                    }
+                    fields={[{ label: messageTranslate("admin.users.email"), value: entry.user.email }]}
+                    title={
+                      <span class="flex items-center gap-2">
+                        <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
+                        <A
+                          class="truncate text-accent hover:underline"
+                          href={`${props.state.basePath}/users/${entry.user.id}`}
+                        >
+                          {memberName(entry)}
+                        </A>
+                      </span>
+                    }
+                  />
+                )}
+              </For>
+            </AuthenticatedRecordList>
+            <AuthenticatedPagination
+              nextAvailable={teams().memberNextPageAvailable()}
+              onNext={teams().memberPageNext}
+              onPrevious={teams().memberPagePrevious}
+              previousAvailable={teams().memberPreviousPageAvailable()}
+            />
+          </AuthenticatedSection>
+        </Show>
+      </Show>
+    </div>
+  )
+}
+
+function UnassignedAssignControl(props: {
+  readonly entryId: string
+  readonly idPrefix: string
+  readonly state: DirectoryAdminUsersViewState
+}) {
+  const teams = () => props.state.teams
+  const selection = createSignalObject("")
+  const memberName = (entry: { user: { displayName?: string; userName: string } }) =>
+    entry.user.displayName ?? entry.user.userName
+  return (
+    <span class="flex flex-wrap items-center gap-1.5">
+      <span class="grid w-44">
+        <AuthenticatedSelect
+          aria-label={messageTranslate("admin.teams.selectTeam")}
+          getOptions={() =>
+            teams()
+              .teams()
+              .map((team) => team.slug)
+          }
+          id={`${props.idPrefix}-unassigned-assign-${props.entryId}`}
+          valueSignal={selection}
+          valueText={(slug) => teams().teamBySlug(slug)?.name ?? slug}
+        />
+      </span>
+      <AuthenticatedButton
+        disabled={selection.get().length === 0 || teams().pendingId() !== undefined}
+        icon={authenticatedIconRegistry.directoryTeamCreate}
+        onClick={() => {
+          const team = teams().teamBySlug(selection.get())
+          const entry = teams()
+            .members()
+            .find((person) => person.user.id === props.entryId)
+          if (team === undefined || entry === undefined) return
+          void teams()
+            .teamMemberAssignSubmit(team, entry.user.id, memberName(entry))
+            .then((assigned) => {
+              if (assigned) selection.set("")
+            })
+        }}
+        size="sm"
+        variant="outline"
+      >
+        {messageTranslate("admin.teams.addMemberAction")}
+      </AuthenticatedButton>
+    </span>
+  )
+}
+
+function CreateTeamDialog(props: { state: DirectoryAdminUsersViewState }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const open = () => directoryAdminUsersQueryParse(location.search).dialog === "create-team"
+  const close = () => {
+    const params = new URLSearchParams(location.search)
+    params.delete("dialog")
+    const encoded = params.toString()
+    navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
+  }
+  const teams = () => props.state.teams
+  const dialogs = () => props.state.teamsDialogs
+  const previewUrl = () =>
+    `${window.location.origin}${props.state.basePath}/users?tab=teams&team=${encodeURIComponent(dialogs().createSlug.get() || "slug")}`
+  const submit = (event: SubmitEvent) => {
+    event.preventDefault()
+    void dialogs()
+      .createSubmit()
+      .then((team) => {
+        if (team === undefined) return
+        close()
+        const params = new URLSearchParams(location.search)
+        params.set("tab", "teams")
+        params.set("team", team.slug)
+        params.delete("dialog")
+        const encoded = params.toString()
+        navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: false })
+      })
+  }
+  return (
+    <AuthenticatedDialog
+      description={messageTranslate("admin.teams.createDescription")}
+      onOpenChange={(next) => {
+        if (!next) close()
+      }}
+      open={open()}
+      title={messageTranslate("admin.teams.create")}
+    >
+      <form class="grid gap-4" onSubmit={submit}>
+        <div class="grid gap-1.5">
+          <Label class="text-[0.8125rem] font-medium" for="directory-team-create-name">
+            {messageTranslate("admin.teams.name")}
+          </Label>
+          <AuthenticatedInput
+            id="directory-team-create-name"
+            onInput={(event) => dialogs().createNameSet(event.currentTarget.value)}
+            value={dialogs().createName.get()}
+          />
+        </div>
+        <div class="grid gap-1.5">
+          <Label class="text-[0.8125rem] font-medium" for="directory-team-create-slug">
+            {messageTranslate("admin.teams.slug")}
+          </Label>
+          <AuthenticatedInput
+            class="font-mono text-xs"
+            id="directory-team-create-slug"
+            onInput={(event) => dialogs().createSlugSet(event.currentTarget.value)}
+            value={dialogs().createSlug.get()}
+          />
+          <p class="text-xs leading-4 text-muted-foreground">{messageTranslate("admin.teams.slugHint")}</p>
+          <p class="break-all font-mono text-xs text-muted-foreground">
+            {messageTranslate("admin.teams.urlPreview", { url: previewUrl() })}
+          </p>
+        </div>
+        <TeamLeaderPicker
+          id="directory-team-create-leader"
+          onSelect={(userId) => dialogs().createLeaderUserId.set(userId)}
+          state={props.state}
+          value={dialogs().createLeaderUserId.get()}
+        />
+        <Show when={dialogs().validationMessage()}>
+          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+        </Show>
+        <div class="flex justify-end gap-2">
+          <AuthenticatedButton
+            disabled={teams().pendingId() !== undefined}
+            icon={authenticatedIconRegistry.directoryTeamCreate}
+            type="submit"
+            variant="filledBlue"
+          >
+            {messageTranslate("admin.teams.createSubmit")}
+          </AuthenticatedButton>
+        </div>
+      </form>
+    </AuthenticatedDialog>
+  )
+}
+
+function EditTeamDialog(props: { state: DirectoryAdminUsersViewState }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const open = () => directoryAdminUsersQueryParse(location.search).dialog === "edit-team"
+  const close = () => {
+    const params = new URLSearchParams(location.search)
+    params.delete("dialog")
+    const encoded = params.toString()
+    navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
+  }
+  const teams = () => props.state.teams
+  const dialogs = () => props.state.teamsDialogs
+  const team = () => teams().selectedTeam()
+  const previewUrl = () =>
+    `${window.location.origin}${props.state.basePath}/users?tab=teams&team=${encodeURIComponent(dialogs().editSlug.get() || "slug")}`
+  const submit = (event: SubmitEvent) => {
+    event.preventDefault()
+    const current = team()
+    if (current === undefined) return
+    void dialogs()
+      .editSubmit(current)
+      .then((updated) => {
+        if (updated === undefined) return
+        close()
+        const params = new URLSearchParams(location.search)
+        params.set("tab", "teams")
+        params.set("team", updated.slug)
+        params.delete("dialog")
+        const encoded = params.toString()
+        navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: false })
+      })
+  }
+  return (
+    <AuthenticatedDialog
+      description={messageTranslate("admin.teams.createDescription")}
+      onOpenChange={(next) => {
+        if (!next) close()
+      }}
+      open={open()}
+      title={messageTranslate("admin.teams.editTitle")}
+    >
+      <Show when={team()} fallback={<AuthenticatedEmptyState title={messageTranslate("common.error")} />}>
+        {(current) => (
+          <form class="grid gap-4" onSubmit={submit}>
+            <div class="grid gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="directory-team-edit-name">
+                {messageTranslate("admin.teams.name")}
+              </Label>
+              <AuthenticatedInput
+                id="directory-team-edit-name"
+                onInput={(event) => dialogs().editNameSet(event.currentTarget.value)}
+                value={dialogs().editName.get()}
+              />
+            </div>
+            <div class="grid gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="directory-team-edit-slug">
+                {messageTranslate("admin.teams.slug")}
+              </Label>
+              <AuthenticatedInput
+                class="font-mono text-xs"
+                id="directory-team-edit-slug"
+                onInput={(event) => dialogs().editSlugSet(event.currentTarget.value)}
+                value={dialogs().editSlug.get()}
+              />
+              <p class="text-xs leading-4 text-muted-foreground">{messageTranslate("admin.teams.slugHint")}</p>
+              <p class="break-all font-mono text-xs text-muted-foreground">
+                {messageTranslate("admin.teams.urlPreview", { url: previewUrl() })}
+              </p>
+            </div>
+            <Show when={teams().canManageAll()}>
+              <TeamLeaderPicker
+                id="directory-team-edit-leader"
+                onSelect={(userId) => dialogs().editLeaderUserId.set(userId)}
+                state={props.state}
+                value={dialogs().editLeaderUserId.get()}
+              />
+            </Show>
+            <Show when={dialogs().validationMessage()}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+            <div class="flex justify-end gap-2">
+              <AuthenticatedButton
+                disabled={teams().pendingId() !== undefined}
+                icon={authenticatedIconRegistry.directoryTeamEdit}
+                type="submit"
+                variant="filledBlue"
+              >
+                {messageTranslate("common.save")}
+              </AuthenticatedButton>
+            </div>
+          </form>
+        )}
+      </Show>
+    </AuthenticatedDialog>
+  )
+}
+
+function TeamLeaderPicker(props: {
+  readonly id: string
+  readonly onSelect: (userId: string) => void
+  readonly state: DirectoryAdminUsersViewState
+  readonly value: string
+}) {
+  const teams = () => props.state.teams
+  const dialogs = () => props.state.teamsDialogs
+  const memberName = (entry: { user: { displayName?: string; userName: string } }) =>
+    entry.user.displayName ?? entry.user.userName
+  const submit = (event: SubmitEvent) => {
+    event.preventDefault()
+    void teams().memberCandidateSearch(dialogs().memberSearch.get())
+  }
+  return (
+    <div class="grid gap-1.5">
+      <Label class="text-[0.8125rem] font-medium" for={props.id}>
+        {messageTranslate("admin.teams.leader")}
+      </Label>
+      <p class="text-xs leading-4 text-muted-foreground">{messageTranslate("admin.teams.leaderHint")}</p>
+      <form class="grid gap-2" onSubmit={submit}>
+        <AuthenticatedSearchField
+          onInput={(value) => dialogs().memberSearch.set(value)}
+          value={dialogs().memberSearch.get()}
+        />
+      </form>
+      <Show when={teams().pickerResults().length > 0}>
+        <div
+          class="grid max-h-56 gap-1 overflow-y-auto"
+          role="radiogroup"
+          aria-label={messageTranslate("admin.teams.leader")}
+        >
+          <For each={teams().pickerResults()}>
+            {(entry) => {
+              const leadsOther = () => teams().teamLeadershipOfGet(entry.user.id)
+              return (
+                <label
+                  class={`flex cursor-pointer items-center gap-2 rounded-control border px-3 py-2 text-[13px] hover:border-line-strong ${props.value === entry.user.id ? "border-accent bg-accent-soft/60" : "border-line bg-surface"}`}
+                >
+                  <input
+                    checked={props.value === entry.user.id}
+                    disabled={leadsOther() !== undefined && props.value !== entry.user.id}
+                    name={props.id}
+                    onChange={() => props.onSelect(entry.user.id)}
+                    type="radio"
+                  />
+                  <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
+                  <span class="grid min-w-0">
+                    <span class="truncate text-sm font-medium">{memberName(entry)}</span>
+                    <span class="truncate text-xs text-muted-foreground">{entry.user.email}</span>
+                  </span>
+                  <Show when={leadsOther()}>
+                    {(leadership) => (
+                      <AuthenticatedChip
+                        label={messageTranslate("admin.teams.leadsTeamHint", { team: leadership().name })}
+                        tone="accent"
+                      />
+                    )}
+                  </Show>
+                </label>
+              )
+            }}
+          </For>
+        </div>
+      </Show>
     </div>
   )
 }

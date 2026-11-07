@@ -32,6 +32,10 @@ export function directoryUserProfileProductionStateCreate(options: { readonly us
     const access = session.guard.access
     return access !== "loading" && access.realmAdministrator
   }
+  const actorUserId = () => {
+    const authentication = session.guard.authentication
+    return typeof authentication === "object" ? authentication.userId : undefined
+  }
   const adapter: DirectoryUserProfileAdapter = directoryUserProfileProductionAdapterCreate({
     baseUrl: typeof window === "undefined" ? "http://localhost" : window.location.origin,
     organizationId,
@@ -45,6 +49,7 @@ export function directoryUserProfileProductionStateCreate(options: { readonly us
   const page = directoryUserProfilePageStateCreate(adapter, {
     actorOrganizationRoles: actorRoles,
     actorRealmAdministrator,
+    actorUserId,
     confirm: confirmState.confirm,
     organizationId,
     realmId,

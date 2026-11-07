@@ -181,6 +181,7 @@ export function directoryRealmAdministratorsDemoAdapterCreate(
         const rows = empty() ? [] : searchableFixtures.filter((person) => personMatchesSearch(person, needle))
         const entries: DirectoryEntry[] = rows.map((person, index) => ({
           memberships: [],
+          team: null,
           user: {
             createdAt: now - index * day,
             displayName: person.displayName,

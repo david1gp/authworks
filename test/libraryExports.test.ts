@@ -17,6 +17,7 @@ import * as passwords from "../src/outputs/library/passwords.js"
 import * as projects from "../src/outputs/library/projects.js"
 import * as realms from "../src/outputs/library/realms.js"
 import * as sessions from "../src/outputs/library/sessions.js"
+import * as teams from "../src/outputs/library/teams.js"
 import * as users from "../src/outputs/library/users.js"
 import * as whatsappOtp from "../src/outputs/library/whatsappOtp.js"
 import * as zitadelMigration from "../src/outputs/library/zitadelMigration.js"
@@ -56,6 +57,7 @@ test("every completed feature has a public library subpath and client", () => {
   expect(passwords.passwordApiClientCreate).toBeFunction()
   expect(projects.projectApiClientCreate).toBeFunction()
   expect(sessions.sessionApiClientCreate).toBeFunction()
+  expect(teams.teamApiClientCreate).toBeFunction()
   expect(users.userApiClientCreate).toBeFunction()
   expect(zitadelMigration.zitadelMigrationRun).toBeFunction()
 })
@@ -213,6 +215,15 @@ test("every API client publishes its complete method set", () => {
     "sessionRevokeAll",
     "sessionMeRevokeAll",
   ])
+  expect(Object.keys(teams.teamApiClientCreate(options))).toEqual([
+    "teamCreate",
+    "teamList",
+    "teamGet",
+    "teamUpdate",
+    "teamDelete",
+    "teamMemberAssign",
+    "teamMemberUnassign",
+  ])
   expect(Object.keys(emailOtp.emailOtpApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(whatsappOtp.whatsappOtpApiClientCreate(options))).toEqual([
     "whatsappOtpAvailabilityGet",
@@ -273,6 +284,7 @@ test("package exports name every library feature boundary", async () => {
     "./realms",
     "./server",
     "./sessions",
+    "./teams",
     "./users",
     "./whatsappOtp",
     "./zitadelMigration",

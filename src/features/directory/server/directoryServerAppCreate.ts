@@ -16,6 +16,8 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import type { DirectoryUserListQuery } from "../public/directoryUserListSchema.js"
 import { directoryUserListQuerySchema } from "../public/directoryUserListSchema.js"
+import { directoryLeaderAccessAuthorize } from "./directoryLeaderAccessAuthorize.js"
+import { directoryLeaderScopeResolve } from "./directoryLeaderScopeResolve.js"
 import { directoryOrganizationUserList } from "./directoryOrganizationUserList.js"
 import { directoryOrganizationUserSummary } from "./directoryOrganizationUserSummary.js"
 import { directoryRealmUserList } from "./directoryRealmUserList.js"
@@ -71,7 +73,23 @@ export function directoryServerAppCreate(options: DirectoryServerAppCreateOption
       repository,
       requiredPermission: "user.read",
     })
-    if (!authorized.success) return directoryErrorResponseCreate(context, authorized)
+    if (!authorized.success) {
+      // Team leaders without user.read may still list their own roster
+      // (team=<own slug>) and add candidates (team=unassigned). Anything else
+      // keeps the denial non-privileged callers get.
+      const fallbackQuery = directoryListQueryRead(context.req.url)
+      if (!fallbackQuery.success) return directoryErrorResponseCreate(context, authorized)
+      const leader = directoryLeaderListAuthorize({
+        actor,
+        database: options.database,
+        membership: membershipLookup,
+        organizationId,
+        realmId,
+        team: fallbackQuery.data.team,
+      })
+      if (!leader.success) return directoryErrorResponseCreate(context, leader)
+      if (!leader.data) return directoryErrorResponseCreate(context, authorized)
+    }
     const query = directoryListQueryRead(context.req.url)
     if (!query.success) return directoryErrorResponseCreate(context, query)
     const administrator = directoryRealmAdministratorCheck(options.database, realmId, actor)
@@ -144,14 +162,36 @@ export function directoryServerAppCreate(options: DirectoryServerAppCreateOption
   app.get("/realms/:realmId/users/:userId/access", protectedMiddleware, (context) => {
     const realmId = context.req.param("realmId")
     const targetUserId = context.req.param("userId")
+    const actor = context.get("authorizationActor")
     const authorized = realmAdministratorContextAuthorize({
-      actor: context.get("authorizationActor"),
+      actor,
       database: options.database,
       permission: authorizationPermissionDefinitions.userRead,
       realmId,
       targetUserId,
     })
-    if (!authorized.success) return directoryErrorResponseCreate(context, authorized)
+    if (!authorized.success) {
+      // A team leader may read access for members of their own team. Anyone
+      // else keeps the denial non-privileged callers get.
+      if (actor.kind !== "user") return directoryErrorResponseCreate(context, authorized)
+      const leader = directoryLeaderAccessAuthorize({
+        actorId: actor.actorId,
+        database: options.database,
+        realmId,
+        targetUserId,
+      })
+      if (!leader.success) return directoryErrorResponseCreate(context, leader)
+      if (!leader.data) return directoryErrorResponseCreate(context, authorized)
+      return directoryResultResponseCreate(
+        context,
+        directoryUserAccess({
+          context: directorySystemContextShape(actor, realmId),
+          database: options.database,
+          realmId,
+          targetUserId,
+        }),
+      )
+    }
     return directoryResultResponseCreate(
       context,
       directoryUserAccess({
@@ -164,6 +204,29 @@ export function directoryServerAppCreate(options: DirectoryServerAppCreateOption
   })
 
   return app
+}
+
+function directoryLeaderListAuthorize(options: {
+  actor: AuthorizationActorContext
+  database: StorageDatabase
+  membership: { readonly userId: string } | null | undefined
+  organizationId: string
+  realmId: string
+  team: string | undefined
+}): Result<boolean> {
+  if (options.actor.kind !== "user" || options.membership === null || options.membership === undefined)
+    return { data: false, success: true }
+  if (options.team === undefined) return { data: false, success: true }
+  const scope = directoryLeaderScopeResolve({
+    actorId: options.actor.actorId,
+    database: options.database,
+    organizationId: options.organizationId,
+    realmId: options.realmId,
+  })
+  if (!scope.success) return scope
+  if (scope.data.length === 0) return { data: false, success: true }
+  if (options.team === "unassigned") return { data: true, success: true }
+  return { data: scope.data.some((team) => team.slug === options.team), success: true }
 }
 
 function directorySystemContextShape(
@@ -194,10 +257,12 @@ function directoryListQueryRead(requestUrl: string): Result<DirectoryUserListQue
   const roleParam = searchParams.get("role")
   const stateParam = searchParams.get("state")
   const emailVerifiedParam = searchParams.get("emailVerified")
+  const teamParam = searchParams.get("team")
   const withoutFilters = new URLSearchParams(searchParams)
   withoutFilters.delete("role")
   withoutFilters.delete("state")
   withoutFilters.delete("emailVerified")
+  withoutFilters.delete("team")
   const parsed = listQueryFromSearchParams(withoutFilters)
   if (!parsed.success)
     return resultErrorCodedCreate("directoryListQueryRead", "The directory list query is invalid.", "directory.invalid")
@@ -217,6 +282,7 @@ function directoryListQueryRead(requestUrl: string): Result<DirectoryUserListQue
     ...(emailVerified === undefined ? {} : { emailVerified }),
     ...(roleParam === null ? {} : { role: roleParam }),
     ...(stateParam === null ? {} : { state: stateParam }),
+    ...(teamParam === null ? {} : { team: teamParam }),
   })
   if (!query.success)
     return resultErrorCodedCreate("directoryListQueryRead", "The directory list query is invalid.", "directory.invalid")

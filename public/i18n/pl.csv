@@ -6,6 +6,79 @@ admin.activity.empty,Brak ostatniej aktywności administracyjnej w tym kontekśc
 admin.activity.error,Nie udało się wczytać aktywności. Spróbuj ponownie.
 admin.activity.organization,Organizacja
 admin.activity.realm,Domena IAM
+admin.organizations.invitations.invitedBy,Zaproszony przez
+admin.organizations.invitations.team,Zespół
+admin.organizations.invitations.teamFixed,Nowi członkowie dołączą do {name} po akceptacji.
+admin.organizations.invitations.teamHint,Nowi członkowie dołączą do tego zespołu po akceptacji.
+admin.organizations.invitations.teamNone,Brak zespołu
+admin.teams.addMember,Dodaj członka
+admin.teams.addMemberAction,Dodaj
+admin.teams.addMemberEmpty,Nikt nie pasuje do tego wyszukiwania.
+admin.teams.addMemberSearch,Szukaj osób do dodania
+admin.teams.assigned,{name} jest teraz w {team}.
+admin.teams.backToTeams,Wróć do zespołów
+admin.teams.changeTeam,Zmień zespół
+admin.teams.create,Utwórz zespół
+admin.teams.createDescription,Dodaj zespół z bezpiecznym slugiem URL i jednym liderem zespołu.
+admin.teams.createSubmit,Utwórz zespół
+admin.teams.created,Zespół {name} został utworzony.
+admin.teams.currentTeamHint,Obecnie w {team}
+admin.teams.delete,Usuń zespół
+admin.teams.deleteConfirm,Usunąć zespół {name}?
+admin.teams.deleteConfirmDetail,Jego członkowie będą bez zespołu. Członkostwa w organizacji pozostaną bez zmian.
+admin.teams.deleted,Zespół {name} został usunięty. Jego członkowie są teraz bez zespołu.
+admin.teams.description,"Organizuj osoby w zespoły, każdy z jednym liderem."
+admin.teams.editTitle,Edytuj zespół
+admin.teams.leader,Lider zespołu
+admin.teams.leaderBadge,Lider
+admin.teams.leaderConflict,Ta osoba prowadzi już inny zespół. Najpierw przekaż jej przywództwo.
+admin.teams.leaderHint,Lider jest członkiem zespołu i zarządza jego członkami.
+admin.teams.leaderRequired,Wybierz lidera zespołu.
+admin.teams.leadsTeamHint,Prowadzi {team}
+admin.teams.listEmpty,W tej organizacji nie ma jeszcze zespołów.
+admin.teams.listEmptyDetail,"Utwórz pierwszy zespół, aby zorganizować osoby i ich liderów."
+admin.teams.memberCount,{count} członków
+admin.teams.memberCountOne,1 członek
+admin.teams.memberListDenied,"Tylko administratorzy organizacji mogą wyświetlać członków zespołu. Zaproś osoby do {name}, aby powiększyć zespół."
+admin.teams.members,Członkowie
+admin.teams.membersEmpty,Ten zespół nie ma jeszcze członków.
+admin.teams.membersEmptyDetail,Dodaj osoby poniżej lub zaproś je do tego zespołu.
+admin.teams.name,Nazwa zespołu
+admin.teams.nameConflict,Ta nazwa jest już używana przez inny zespół.
+admin.teams.nameRequired,Wpisz nazwę zespołu.
+admin.teams.openTeam,Otwórz zespół {name}
+admin.teams.removeLeaderDenied,Lidera zespołu nie można usunąć. Najpierw zmień lidera.
+admin.teams.removeMemberConfirm,Usunąć {name} z {team}? Osoba będzie bez zespołu.
+admin.teams.removedMember,{name} jest teraz bez zespołu.
+admin.teams.scopeNotice,Prowadzisz {name}. Możesz zmienić nazwę zespołu i zapraszać osoby.
+admin.teams.selectTeam,Zespół
+admin.teams.slug,Slug
+admin.teams.slugConflict,Ten slug jest już używany przez inny zespół.
+admin.teams.slugHint,"Małe litery, cyfry i pojedyncze myślniki. Używane w adresach URL administracji."
+admin.teams.slugInvalid,"Użyj małych liter, cyfr i pojedynczych myślników, bez myślników na początku i na końcu (maks. 64 znaki)."
+admin.teams.slugReserved,Slug unassigned jest zarezerwowany dla osób bez zespołu.
+admin.teams.title,Zespoły
+admin.teams.unassignedDescription,"Osoby w tej organizacji, które nie są w żadnym zespole."
+admin.teams.unassignedLabel,Bez zespołu
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Bez zespołu
+admin.teams.updated,Zespół {name} został zaktualizowany.
+admin.teams.urlPreview,Adres URL administracji: {url}
+admin.userProfile.invitedBy,Zaproszony przez
+admin.userProfile.invitedByUnknown,Nieznany
+admin.userProfile.team,Zespół
+admin.userProfile.teamDescription,"Zmień zespół, do którego należy ta osoba. Przypisanie przenosi ją z obecnego zespołu."
+admin.userProfile.teamRemoved,{name} jest teraz bez zespołu.
+admin.userProfile.teamSaved,Przypisanie do zespołu zostało zaktualizowane.
+admin.userProfile.teamUnassigned,Bez zespołu
+admin.users.directoryEmptySearchTeamDetail,Spróbuj innego wyszukiwania lub wyczyść filtry roli i zespołu.
+admin.users.directorySubtitleTeams,{count} zespołów
+admin.users.directorySubtitleTeamsOne,1 zespół
+admin.users.directoryTabTeams,Zespoły
+admin.users.directoryTeamAll,Wszystkie zespoły
+admin.users.directoryTeamColumn,Zespół
+admin.users.directoryTeamFilter,Zespół
+admin.users.directoryTeamUnassigned,Bez zespołu
 shell.nav.activity,Aktywność
 account.confirmTitle,Potwierdź tę czynność
 account.factors.authenticatorName,Nazwa aplikacji uwierzytelniającej

@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { organizationRoleIdSchema } from "../../organizations/public/organizationRoleIdSchema.js"
 import { directoryAdminTabSchema } from "./directoryAdminTabSchema.js"
 
-const dialogSchema = v.picklist(["invite", "create-user", "create-service-account"])
+const dialogSchema = v.picklist(["invite", "create-user", "create-service-account", "create-team", "edit-team"])
 const scopeSchema = v.picklist(["organization", "all"])
 const sortSchema = v.picklist(["lastSignInAt", "userName", "createdAt"])
 const directionSchema = v.picklist(["asc", "desc"])
@@ -15,6 +15,7 @@ export const directoryAdminUsersQuerySchema = v.strictObject({
   scope: v.optional(scopeSchema),
   sort: v.optional(sortSchema),
   tab: v.optional(directoryAdminTabSchema),
+  team: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(64))),
 })
 
 export type DirectoryAdminUsersQuery = v.InferOutput<typeof directoryAdminUsersQuerySchema>
@@ -30,6 +31,7 @@ export function directoryAdminUsersQueryParse(search: string): DirectoryAdminUse
     scope: params.get("scope") ?? undefined,
     sort: params.get("sort") ?? undefined,
     tab: params.get("tab") ?? undefined,
+    team: params.get("team") ?? undefined,
   })
   if (!parsed.success) return {}
   return parsed.output

@@ -6,6 +6,79 @@ admin.activity.empty,Keine aktuellen administrativen Aktivitäten in diesem Kont
 admin.activity.error,Aktivitäten konnten nicht geladen werden. Versuchen Sie es erneut.
 admin.activity.organization,Organisation
 admin.activity.realm,IAM-Realm
+admin.organizations.invitations.invitedBy,Eingeladen von
+admin.organizations.invitations.team,Team
+admin.organizations.invitations.teamFixed,"Neue Mitglieder treten {name} bei, wenn sie annehmen."
+admin.organizations.invitations.teamHint,"Neue Mitglieder treten diesem Team bei, wenn sie annehmen."
+admin.organizations.invitations.teamNone,Kein Team
+admin.teams.addMember,Mitglied hinzufügen
+admin.teams.addMemberAction,Hinzufügen
+admin.teams.addMemberEmpty,Keine Personen passen zu dieser Suche.
+admin.teams.addMemberSearch,Personen zum Hinzufügen suchen
+admin.teams.assigned,{name} wurde zu {team} hinzugefügt.
+admin.teams.backToTeams,Zurück zu den Teams
+admin.teams.changeTeam,Team wechseln
+admin.teams.create,Team erstellen
+admin.teams.createDescription,Fügen Sie ein Team mit URL-sicherem Slug und einer Teamleitung hinzu.
+admin.teams.createSubmit,Team erstellen
+admin.teams.created,Team {name} wurde erstellt.
+admin.teams.currentTeamHint,Derzeit in {team}
+admin.teams.delete,Team löschen
+admin.teams.deleteConfirm,Team {name} löschen?
+admin.teams.deleteConfirmDetail,Seine Mitglieder werden zu Nicht zugewiesen. Organisationsmitgliedschaften bleiben unverändert.
+admin.teams.deleted,Team {name} wurde gelöscht. Seine Mitglieder sind jetzt Nicht zugewiesen.
+admin.teams.description,Organisieren Sie Personen in Teams mit je einer Leitung.
+admin.teams.editTitle,Team bearbeiten
+admin.teams.leader,Teamleitung
+admin.teams.leaderBadge,Leitung
+admin.teams.leaderConflict,Diese Person leitet bereits ein anderes Team. Übertragen Sie zuerst deren Leitung.
+admin.teams.leaderHint,Die Leitung ist Mitglied des Teams und verwaltet dessen Mitglieder.
+admin.teams.leaderRequired,Wählen Sie eine Teamleitung.
+admin.teams.leadsTeamHint,Leitet {team}
+admin.teams.listEmpty,In dieser Organisation gibt es noch keine Teams.
+admin.teams.listEmptyDetail,"Erstellen Sie das erste Team, um Personen und ihre Leitungen zu organisieren."
+admin.teams.memberCount,{count} Mitglieder
+admin.teams.memberCountOne,1 Mitglied
+admin.teams.memberListDenied,"Nur Organisationsadministratoren können Teammitglieder auflisten. Laden Sie Personen in {name} ein, um das Team zu vergrößern."
+admin.teams.members,Mitglieder
+admin.teams.membersEmpty,Dieses Team hat noch keine Mitglieder.
+admin.teams.membersEmptyDetail,Fügen Sie unten Personen hinzu oder laden Sie sie in dieses Team ein.
+admin.teams.name,Teamname
+admin.teams.nameConflict,Dieser Name wird bereits von einem anderen Team verwendet.
+admin.teams.nameRequired,Geben Sie einen Teamnamen ein.
+admin.teams.openTeam,Team {name} öffnen
+admin.teams.removeLeaderDenied,Die Teamleitung kann nicht entfernt werden. Ändern Sie zuerst die Leitung.
+admin.teams.removeMemberConfirm,{name} aus {team} entfernen? Die Person wird zu Nicht zugewiesen.
+admin.teams.removedMember,{name} ist jetzt Nicht zugewiesen.
+admin.teams.scopeNotice,Sie leiten {name}. Sie können das Team umbenennen und Personen dazu einladen.
+admin.teams.selectTeam,Team
+admin.teams.slug,Slug
+admin.teams.slugConflict,Dieser Slug wird bereits von einem anderen Team verwendet.
+admin.teams.slugHint,"Kleinbuchstaben, Ziffern und einzelne Bindestriche. Wird in Admin-URLs verwendet."
+admin.teams.slugInvalid,"Verwenden Sie Kleinbuchstaben, Ziffern und einzelne Bindestriche, ohne führende oder abschließende Bindestriche (max. 64 Zeichen)."
+admin.teams.slugReserved,Der Slug unassigned ist für Personen ohne Team reserviert.
+admin.teams.title,Teams
+admin.teams.unassignedDescription,"Personen in dieser Organisation, die in keinem Team sind."
+admin.teams.unassignedLabel,Nicht zugewiesen
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Nicht zugewiesen
+admin.teams.updated,Team {name} wurde aktualisiert.
+admin.teams.urlPreview,Admin-URL: {url}
+admin.userProfile.invitedBy,Eingeladen von
+admin.userProfile.invitedByUnknown,Unbekannt
+admin.userProfile.team,Team
+admin.userProfile.teamDescription,"Ändern Sie, zu welchem Team diese Person gehört. Durch Zuweisen wird sie aus ihrem aktuellen Team verschoben."
+admin.userProfile.teamRemoved,{name} ist jetzt Nicht zugewiesen.
+admin.userProfile.teamSaved,Die Teamzuweisung wurde aktualisiert.
+admin.userProfile.teamUnassigned,Nicht zugewiesen
+admin.users.directoryEmptySearchTeamDetail,Versuchen Sie eine andere Suche oder entfernen Sie die Rollen- und Teamfilter.
+admin.users.directorySubtitleTeams,{count} Teams
+admin.users.directorySubtitleTeamsOne,1 Team
+admin.users.directoryTabTeams,Teams
+admin.users.directoryTeamAll,Alle Teams
+admin.users.directoryTeamColumn,Team
+admin.users.directoryTeamFilter,Team
+admin.users.directoryTeamUnassigned,Nicht zugewiesen
 shell.nav.activity,Aktivitäten
 account.confirmTitle,Diese Aktion bestätigen
 account.factors.authenticatorName,Authenticator-Name

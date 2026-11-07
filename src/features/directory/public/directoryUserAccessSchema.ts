@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { directoryMembershipSchema } from "./directoryMembershipSchema.js"
 import { directoryProjectAssignmentRoleSchema } from "./directoryProjectAssignmentRoleSchema.js"
+import { directoryUserAccessMembershipSchema } from "./directoryUserAccessMembershipSchema.js"
 
 export const directoryProjectAssignmentSchema = v.strictObject({
   assignmentId: v.pipe(v.string(), v.minLength(1)),
@@ -12,7 +12,7 @@ export const directoryProjectAssignmentSchema = v.strictObject({
 })
 
 export const directoryUserAccessSchema = v.strictObject({
-  memberships: v.array(directoryMembershipSchema),
+  memberships: v.array(directoryUserAccessMembershipSchema),
   projectAssignments: v.array(directoryProjectAssignmentSchema),
   realmAdministrator: v.boolean(),
 })

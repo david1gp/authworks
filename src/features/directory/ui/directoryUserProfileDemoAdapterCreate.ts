@@ -10,6 +10,7 @@ import { demoAdminProjectRoles } from "../../demo/demoAdminProjectRoles.js"
 import { demoAdminProjects } from "../../demo/demoAdminProjects.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
+import { directoryAdminDemoPeople, directoryAdminDemoTeams } from "./directoryAdminDemoDirectoryFixtures.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
 import type { OrganizationMembership } from "../../organizations/public/organizationMembershipSchema.js"
 import type { ProjectListItem } from "../../projects/public/projectListItemSchema.js"
@@ -153,6 +154,32 @@ const demoRoles: ProjectRole[] = [
 ]
 
 const demoRealmAdministrators = new Set<string>([demoUsers[1]?.id ?? ""])
+const demoTeamOverrides = new Map<string, { id: string; name: string; slug: string } | null>()
+const demoInvitedBy = new Map<
+  string,
+  { acceptedAt: null; displayName: string; email: string; invitedAt: number; userId: string }
+>([
+  [
+    demoUsers[0]?.id ?? "",
+    {
+      acceptedAt: null,
+      displayName: "Ada Osei",
+      email: "ada.osei@acme.example",
+      invitedAt: demoNow - 60 * 86_400_000,
+      userId: "01900000-0000-7000-8000-000000000101",
+    },
+  ],
+  [
+    demoUsers[2]?.id ?? "",
+    {
+      acceptedAt: null,
+      displayName: "Cleo Marchetti",
+      email: "cleo.marchetti@acme.example",
+      invitedAt: demoNow - 20 * 86_400_000,
+      userId: "01900000-0000-7000-8000-000000000103",
+    },
+  ],
+])
 const demoTotpRemoved = new Set<string>()
 const demoRecoveryInvalidated = new Set<string>()
 const demoPasskeysRevoked = new Set<string>()
@@ -200,6 +227,7 @@ export function directoryUserProfileDemoAdapterCreate(
       .filter((membership) => membership.userId === userId)
       .map((membership) => ({
         createdAt: membership.createdAt,
+        invitedBy: membership.organizationId === activeOrganizationId ? (demoInvitedBy.get(userId) ?? null) : null,
         membershipId: membership.id,
         organizationId: membership.organizationId,
         organizationName:
@@ -480,6 +508,81 @@ export function directoryUserProfileDemoAdapterCreate(
         if (!result.success) return result
         return resultCreate(result.data.access ?? accessOf(userId))
       }),
+    teamList: () =>
+      gate("directoryUserProfileDemoTeamList", () =>
+        resultCreate({
+          items: (fixtureState() === "empty" ? [] : directoryAdminDemoTeams).map((team) => ({
+            createdAt: demoNow - 30 * 86_400_000,
+            id: team.id,
+            leader: (() => {
+              const leader = directoryAdminDemoPeople.find((person) => person.user.id === team.leaderUserId)
+              return {
+                displayName: leader?.user.displayName ?? null,
+                email: leader?.user.email ?? null,
+                userId: team.leaderUserId,
+              }
+            })(),
+            memberCount: directoryAdminDemoPeople.filter((person) => person.team?.id === team.id).length,
+            name: team.name,
+            organizationId: activeOrganizationId,
+            realmId: demoRealmId,
+            slug: team.slug,
+            updatedAt: demoNow,
+          })),
+          unassignedCount: directoryAdminDemoPeople.filter((person) => person.team === null).length,
+        }),
+      ),
+    teamMemberAssign: (teamRef, input) =>
+      gate("directoryUserProfileDemoTeamMemberAssign", () => {
+        if (!mayManage(input.userId)) return forbidden("directoryUserProfileDemoTeamMemberAssign")
+        const team =
+          directoryAdminDemoTeams.find((candidate) => candidate.id === teamRef) ??
+          directoryAdminDemoTeams.find((candidate) => candidate.slug === teamRef)
+        if (team === undefined)
+          return resultErrorCodedCreate(
+            "directoryUserProfileDemoTeamMemberAssign",
+            "The team was not found.",
+            "teams.not-found",
+          )
+        if (team.leaderUserId !== input.userId) {
+          const leads = directoryAdminDemoTeams.find((candidate) => candidate.leaderUserId === input.userId)
+          if (leads !== undefined)
+            return resultErrorCodedCreate(
+              "directoryUserProfileDemoTeamMemberAssign",
+              "That person already leads another team.",
+              "teams.leader-conflict",
+            )
+        }
+        demoTeamOverrides.set(input.userId, { id: team.id, name: team.name, slug: team.slug })
+        return resultCreate({
+          team: {
+            createdAt: demoNow,
+            id: team.id,
+            leader: { displayName: null, email: null, userId: team.leaderUserId },
+            memberCount: 0,
+            name: team.name,
+            organizationId: activeOrganizationId,
+            realmId: demoRealmId,
+            slug: team.slug,
+            updatedAt: demoNow,
+          },
+        })
+      }),
+    teamMemberUnassign: (teamRef, userId) =>
+      gate("directoryUserProfileDemoTeamMemberUnassign", () => {
+        if (!mayManage(userId)) return forbidden("directoryUserProfileDemoTeamMemberUnassign")
+        const team =
+          directoryAdminDemoTeams.find((candidate) => candidate.id === teamRef) ??
+          directoryAdminDemoTeams.find((candidate) => candidate.slug === teamRef)
+        if (team !== undefined && team.leaderUserId === userId)
+          return resultErrorCodedCreate(
+            "directoryUserProfileDemoTeamMemberUnassign",
+            "The team leader cannot be removed without transferring leadership first.",
+            "teams.leader-conflict",
+          )
+        demoTeamOverrides.set(userId, null)
+        return resultCreate({ unassigned: true as const })
+      }),
     totpRemove: (userId) =>
       gate("directoryUserProfileDemoTotpRemove", () => {
         if (!mayManage(userId)) return forbidden("directoryUserProfileDemoTotpRemove")
@@ -492,6 +595,12 @@ export function directoryUserProfileDemoAdapterCreate(
         return resultCreate(undefined)
       }),
     userGet: (userId) => gate("directoryUserProfileDemoUserGet", () => profileOf(userId)),
+    userTeamGet: (userId) =>
+      gate("directoryUserProfileDemoUserTeamGet", () => {
+        if (demoTeamOverrides.has(userId)) return resultCreate({ team: demoTeamOverrides.get(userId) ?? null })
+        const person = directoryAdminDemoPeople.find((entry) => entry.user.id === userId)
+        return resultCreate({ team: person?.team ?? null })
+      }),
     userLifecycleSet: (userId, input) =>
       gate("directoryUserProfileDemoUserLifecycleSet", () => {
         if (!mayManage(userId)) return forbidden("directoryUserProfileDemoUserLifecycleSet")
