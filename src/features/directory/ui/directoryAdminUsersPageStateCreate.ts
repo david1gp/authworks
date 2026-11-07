@@ -45,6 +45,8 @@ export type DirectoryAdminUsersPageStateCreateOptions = {
   readonly adapter: DirectoryAdminAdapter
   /** Renders in-app destructive confirmations; without one the revoke guard declines. */
   readonly confirm: (message: string) => boolean | Promise<boolean>
+  /** Forces the active tab (leader-scoped actors are restricted to the Teams tab). */
+  readonly tabForce?: () => DirectoryAdminTab | undefined
   /** Reactive tenant context; the list reloads when the active realm, organization, or access changes. */
   readonly realmId: () => string
   readonly organizationId: () => string
@@ -120,7 +122,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   const invitationPageTokens = createSignalObject<readonly string[]>([])
 
   const query = () => directoryAdminUsersQueryParse(options.search())
-  const tab = (): DirectoryAdminTab => query().tab ?? "people"
+  const tab = (): DirectoryAdminTab => options.tabForce?.() ?? query().tab ?? "people"
   const scope = (): DirectoryAdminScope => {
     if (!options.realmAdministrator()) return "organization"
     return query().scope ?? "organization"
@@ -140,6 +142,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       ...(pageTokens.get().at(-1) === undefined ? {} : { pageToken: pageTokens.get().at(-1) as string }),
       ...(parsed.q !== undefined && parsed.q.length > 0 ? { search: parsed.q } : {}),
       ...(parsed.role !== undefined ? { role: parsed.role } : {}),
+      ...(parsed.team !== undefined ? { team: parsed.team } : {}),
       sortBy: parsed.sort ?? "lastSignInAt",
       sortDirection: parsed.dir ?? (parsed.sort === "userName" ? "asc" : "desc"),
     }
@@ -216,7 +219,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const peopleFilterKey = () =>
-    `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
+    `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
   let lastPeopleFilterKey: string | undefined
   let lastEffectKey: string | undefined
   let lastContextKey = `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
@@ -250,7 +253,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const effectKeyGet = () =>
-    `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
+    `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
 
   createEffect(
     on(effectKeyGet, (effectKey) => {
@@ -289,7 +292,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   return {
     createdUser: createdUser.get,
     error: error.get,
-    invitationCreateSubmit: async (input: { email: string; roles: readonly OrganizationRoleId[] }) => {
+    invitationCreateSubmit: async (input: { email: string; roles: readonly OrganizationRoleId[]; teamId?: string }) => {
       validationMessage.set(undefined)
       const email = input.email.trim()
       if (email.length < 3 || !email.includes("@")) {
@@ -301,7 +304,11 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
         return
       }
       const created = await mutate("invitation:create", () =>
-        adapter.invitationCreate({ email, roles: [...input.roles] }),
+        adapter.invitationCreate({
+          email,
+          roles: [...input.roles],
+          ...(input.teamId === undefined ? {} : { teamId: input.teamId }),
+        }),
       )
       if (created === undefined) {
         // The page-level error is invisible inside the dialog; mirror it into the dialog channel.

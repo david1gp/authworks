@@ -6,6 +6,79 @@ admin.activity.empty,No hay actividad administrativa reciente en este contexto.
 admin.activity.error,No se pudo cargar la actividad. Inténtalo de nuevo.
 admin.activity.organization,Organización
 admin.activity.realm,Ámbito de IAM
+admin.organizations.invitations.invitedBy,Invitado por
+admin.organizations.invitations.team,Equipo
+admin.organizations.invitations.teamFixed,Los nuevos miembros se unirán a {name} cuando acepten.
+admin.organizations.invitations.teamHint,Los nuevos miembros se unirán a este equipo cuando acepten.
+admin.organizations.invitations.teamNone,Ningún equipo
+admin.teams.addMember,Añadir miembro
+admin.teams.addMemberAction,Añadir
+admin.teams.addMemberEmpty,Ninguna persona coincide con esta búsqueda.
+admin.teams.addMemberSearch,Buscar personas para añadir
+admin.teams.assigned,{name} se ha unido a {team}.
+admin.teams.backToTeams,Volver a los equipos
+admin.teams.changeTeam,Cambiar de equipo
+admin.teams.create,Crear equipo
+admin.teams.createDescription,Añada un equipo con un slug compatible con URL y un líder de equipo.
+admin.teams.createSubmit,Crear equipo
+admin.teams.created,El equipo {name} se ha creado.
+admin.teams.currentTeamHint,Actualmente en {team}
+admin.teams.delete,Eliminar equipo
+admin.teams.deleteConfirm,¿Eliminar el equipo {name}?
+admin.teams.deleteConfirmDetail,Sus miembros quedarán sin asignar. Las membresías de la organización no cambian.
+admin.teams.deleted,El equipo {name} se ha eliminado. Sus miembros están ahora sin asignar.
+admin.teams.description,Organice a las personas en equipos con un líder cada uno.
+admin.teams.editTitle,Editar equipo
+admin.teams.leader,Líder del equipo
+admin.teams.leaderBadge,Líder
+admin.teams.leaderConflict,Esa persona ya lidera otro equipo. Transfiera antes su liderazgo.
+admin.teams.leaderHint,El líder es miembro del equipo y gestiona a sus miembros.
+admin.teams.leaderRequired,Elija un líder de equipo.
+admin.teams.leadsTeamHint,Lidera {team}
+admin.teams.listEmpty,Aún no hay equipos en esta organización.
+admin.teams.listEmptyDetail,Cree el primer equipo para organizar a las personas y sus líderes.
+admin.teams.memberCount,{count} miembros
+admin.teams.memberCountOne,1 miembro
+admin.teams.memberListDenied,Solo los administradores de la organización pueden ver los miembros del equipo. Invite a personas a {name} para hacer crecer el equipo.
+admin.teams.members,Miembros
+admin.teams.membersEmpty,Este equipo aún no tiene miembros.
+admin.teams.membersEmptyDetail,Añada personas abajo o invítelas a este equipo.
+admin.teams.name,Nombre del equipo
+admin.teams.nameConflict,Ese nombre ya lo usa otro equipo.
+admin.teams.nameRequired,Introduzca un nombre de equipo.
+admin.teams.openTeam,Abrir el equipo {name}
+admin.teams.removeLeaderDenied,El líder del equipo no se puede eliminar. Cambie antes el líder.
+admin.teams.removeMemberConfirm,¿Quitar a {name} de {team}? Quedará sin asignar.
+admin.teams.removedMember,{name} está ahora sin asignar.
+admin.teams.scopeNotice,Usted lidera {name}. Puede cambiar el nombre del equipo e invitar a personas.
+admin.teams.selectTeam,Equipo
+admin.teams.slug,Slug
+admin.teams.slugConflict,Ese slug ya lo usa otro equipo.
+admin.teams.slugHint,"Letras minúsculas, dígitos y guiones simples. Se usa en las URL de administración."
+admin.teams.slugInvalid,"Use letras minúsculas, dígitos y guiones simples, sin guiones al principio ni al final (máx. 64 caracteres)."
+admin.teams.slugReserved,El slug unassigned está reservado para las personas sin equipo.
+admin.teams.title,Equipos
+admin.teams.unassignedDescription,Personas de esta organización que no están en ningún equipo.
+admin.teams.unassignedLabel,Sin asignar
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Sin asignar
+admin.teams.updated,El equipo {name} se ha actualizado.
+admin.teams.urlPreview,URL de administración: {url}
+admin.userProfile.invitedBy,Invitado por
+admin.userProfile.invitedByUnknown,Desconocido
+admin.userProfile.team,Equipo
+admin.userProfile.teamDescription,"Cambie a qué equipo pertenece esta persona. Al asignarla, sale de su equipo actual."
+admin.userProfile.teamRemoved,{name} está ahora sin asignar.
+admin.userProfile.teamSaved,La asignación de equipo se ha actualizado.
+admin.userProfile.teamUnassigned,Sin asignar
+admin.users.directoryEmptySearchTeamDetail,Pruebe otra búsqueda o borre los filtros de rol y equipo.
+admin.users.directorySubtitleTeams,{count} equipos
+admin.users.directorySubtitleTeamsOne,1 equipo
+admin.users.directoryTabTeams,Equipos
+admin.users.directoryTeamAll,Todos los equipos
+admin.users.directoryTeamColumn,Equipo
+admin.users.directoryTeamFilter,Equipo
+admin.users.directoryTeamUnassigned,Sin asignar
 shell.nav.activity,Actividad
 account.confirmTitle,Confirmar esta acción
 account.factors.authenticatorName,Nombre del autenticador

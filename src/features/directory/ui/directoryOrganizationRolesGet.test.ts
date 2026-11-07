@@ -29,6 +29,7 @@ const membership = (
 describe("directory organization roles resolution", () => {
   test("returns only the active organization roles when the user belongs to several organizations", () => {
     const entry: DirectoryEntry = {
+      team: null,
       memberships: [
         membership("org-a", "Acme Corporation", ["owner"]),
         membership("org-b", "Globex Corporation", ["owner"]),
@@ -40,6 +41,7 @@ describe("directory organization roles resolution", () => {
   })
   test("ignores roles from other organizations instead of merging them into the active scope", () => {
     const entry: DirectoryEntry = {
+      team: null,
       memberships: [
         membership("org-a", "Acme Corporation", ["admin"]),
         membership("org-b", "Globex Corporation", ["member"]),
@@ -50,6 +52,7 @@ describe("directory organization roles resolution", () => {
   })
   test("returns no roles when the user has no membership in the active organization", () => {
     const entry: DirectoryEntry = {
+      team: null,
       memberships: [membership("org-b", "Globex Corporation", ["owner"])],
       user: { ...user },
     }
@@ -57,6 +60,7 @@ describe("directory organization roles resolution", () => {
   })
   test("deduplicates repeated roles inside the active organization", () => {
     const entry: DirectoryEntry = {
+      team: null,
       memberships: [
         membership("org-a", "Acme Corporation", ["owner"]),
         { ...membership("org-a", "Acme Corporation", ["owner", "admin"]), membershipId: "membership-org-a-2" },

@@ -6,13 +6,15 @@ import { directoryAdminUsersProductionStateCreate } from "./directoryAdminUsersP
 /** Production mount for the users screen: session-bound adapter, dialogs, and shared view. */
 export function DirectoryAdminUsersProductionAdapter() {
   const screen = directoryAdminUsersProductionStateCreate()
-  const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page })
+  const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page, teams: screen.teams })
   const state: DirectoryAdminUsersViewState = {
     basePath: screen.basePath,
     confirmState: screen.confirmState,
     dialogs,
     navigateProfile: (userId: string) => screen.navigate(`${screen.basePath}/users/${userId}`),
     page: screen.page,
+    teams: screen.teams,
+    teamsDialogs: screen.teamsDialogs,
   }
   return <DirectoryAdminUsersView state={state} />
 }

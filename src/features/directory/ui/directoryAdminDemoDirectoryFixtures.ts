@@ -209,10 +209,60 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
 
 const createdAtFor = (index: number) => now - (180 - index * 7) * day
 
+export type DirectoryAdminDemoTeamFixture = {
+  readonly id: string
+  readonly leaderUserId: string
+  readonly memberUserIds: readonly string[]
+  readonly name: string
+  readonly slug: string
+}
+
+const teamFixtures: readonly DirectoryAdminDemoTeamFixture[] = [
+  {
+    id: "01900000-0000-7000-8000-000000000161",
+    leaderUserId: "01900000-0000-7000-8000-000000000103",
+    memberUserIds: [
+      "01900000-0000-7000-8000-000000000103",
+      "01900000-0000-7000-8000-000000000104",
+      "01900000-0000-7000-8000-000000000106",
+      "01900000-0000-7000-8000-000000000107",
+    ],
+    name: "Platform",
+    slug: "platform",
+  },
+  {
+    id: "01900000-0000-7000-8000-000000000162",
+    leaderUserId: "01900000-0000-7000-8000-000000000113",
+    memberUserIds: [
+      "01900000-0000-7000-8000-000000000113",
+      "01900000-0000-7000-8000-000000000109",
+      "01900000-0000-7000-8000-000000000111",
+    ],
+    name: "Growth",
+    slug: "growth",
+  },
+  {
+    id: "01900000-0000-7000-8000-000000000163",
+    leaderUserId: "01900000-0000-7000-8000-000000000105",
+    memberUserIds: ["01900000-0000-7000-8000-000000000105", "01900000-0000-7000-8000-000000000112"],
+    name: "Design",
+    slug: "design",
+  },
+]
+
+/** The demo organization teams: leaders, members, and everyone else unassigned. */
+export const directoryAdminDemoTeams: readonly DirectoryAdminDemoTeamFixture[] = teamFixtures
+
+const demoTeamOfGet = (userId: string): { id: string; name: string; slug: string } | null => {
+  const team = teamFixtures.find((candidate) => candidate.memberUserIds.includes(userId))
+  return team === undefined ? null : { id: team.id, name: team.name, slug: team.slug }
+}
+
 /** Deterministic people fixtures for the demo users page; states stay parseable as `DirectoryEntry`. */
 export const directoryAdminDemoPeople: DirectoryEntry[] = personFixtures.map((person, index) => {
   const createdAt = createdAtFor(index)
   return {
+    team: demoTeamOfGet(person.id),
     memberships: [
       {
         createdAt,
@@ -278,10 +328,17 @@ export const directoryAdminDemoInvitations: OrganizationInvitation[] = [
     email: "rowan@example.com",
     expiresAt: now + 5 * day,
     id: "01900000-0000-7000-8000-000000000151",
+    invitedBy: {
+      displayName: "Cleo Marchetti",
+      email: "cleo.marchetti@acme.example",
+      userId: "01900000-0000-7000-8000-000000000103",
+    },
     organizationId: demoOrganizationId,
     realmId: demoRealmId,
     roles: ["member"],
     status: "pending",
+    team: { name: "Platform", slug: "platform" },
+    teamId: "01900000-0000-7000-8000-000000000161",
     updatedAt: now - 2 * day,
   },
   {
@@ -290,10 +347,17 @@ export const directoryAdminDemoInvitations: OrganizationInvitation[] = [
     email: "sam@example.com",
     expiresAt: now - 2 * day,
     id: "01900000-0000-7000-8000-000000000152",
+    invitedBy: {
+      displayName: "Ada Osei",
+      email: "ada.osei@acme.example",
+      userId: "01900000-0000-7000-8000-000000000101",
+    },
     organizationId: demoOrganizationId,
     realmId: demoRealmId,
     roles: ["admin", "member"],
     status: "expired",
+    team: null,
+    teamId: null,
     updatedAt: now - 2 * day,
   },
 ]

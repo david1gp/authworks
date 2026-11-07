@@ -1,4 +1,4 @@
-export type ProductionRouteAccess = "organization-admin" | "realm-admin"
+export type ProductionRouteAccess = "organization-admin" | "organization-member" | "realm-admin"
 
 export type ProductionRouteGuardRequirement = {
   readonly access?: ProductionRouteAccess | null

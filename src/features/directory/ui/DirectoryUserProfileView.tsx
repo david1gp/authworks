@@ -497,6 +497,11 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
         </Show>
       </AuthenticatedSection>
 
+      <Show when={membership()}>
+        <ProfileTeamSection state={props.state} />
+        <ProfileInvitedBySection state={props.state} />
+      </Show>
+
       <Show when={page().actorGet().realmAdministrator}>
         <AuthenticatedSection padded title={messageTranslate("admin.userProfile.membershipsTitle")}>
           <Show
@@ -1410,5 +1415,76 @@ function AssignRolesDialog(props: { readonly state: DirectoryUserProfileViewStat
         </div>
       </div>
     </AuthenticatedDialog>
+  )
+}
+
+function ProfileTeamSection(props: { readonly state: DirectoryUserProfileViewState }) {
+  const page = () => props.state.page
+  const scope = () => page().teamScopeGet()
+  const current = () => page().userTeamGet()
+  const options = () => (scope() === "admin" ? page().teamsGet() : scope() === "leader" ? page().leaderTeamsGet() : [])
+  return (
+    <AuthenticatedSection
+      description={messageTranslate("admin.userProfile.teamDescription")}
+      padded
+      title={messageTranslate("admin.userProfile.team")}
+    >
+      <div class="grid gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <Show
+            when={current() ?? undefined}
+            fallback={<AuthenticatedChip label={messageTranslate("admin.userProfile.teamUnassigned")} tone="neutral" />}
+          >
+            {(team) => <AuthenticatedChip label={team().name} tone="accent" />}
+          </Show>
+        </div>
+        <Show when={scope() !== "none"}>
+          <span class="grid max-w-72">
+            <AuthenticatedSelect
+              aria-label={messageTranslate("admin.teams.changeTeam")}
+              disabled={page().pendingIdGet() !== undefined}
+              getOptions={() => ["", ...options().map((team) => team.id)]}
+              id="profile-team-select"
+              valueSignal={{
+                get: () => current()?.id ?? "",
+                set: (value: string) => {
+                  void page().teamAssignSubmit(value === "" ? null : value)
+                },
+              }}
+              valueText={(value) =>
+                value === ""
+                  ? messageTranslate("admin.userProfile.teamUnassigned")
+                  : (options().find((team) => team.id === value)?.name ?? value)
+              }
+            />
+          </span>
+        </Show>
+      </div>
+    </AuthenticatedSection>
+  )
+}
+
+function ProfileInvitedBySection(props: { readonly state: DirectoryUserProfileViewState }) {
+  const page = () => props.state.page
+  const invitedBy = () => page().invitedByGet()
+  return (
+    <AuthenticatedSection padded title={messageTranslate("admin.userProfile.invitedBy")}>
+      <Show
+        when={invitedBy() ?? undefined}
+        fallback={<p class="text-sm text-muted-foreground">{messageTranslate("admin.userProfile.invitedByUnknown")}</p>}
+      >
+        {(inviter) => (
+          <p class="text-sm">
+            <span class="font-medium">{inviter().displayName ?? inviter().email ?? inviter().userId}</span>
+            <Show when={inviter().displayName !== undefined && inviter().email !== undefined}>
+              <span class="text-muted-foreground"> {inviter().email}</span>
+            </Show>{" "}
+            <span class="text-muted-foreground">
+              <AuthenticatedRelativeTime value={inviter().invitedAt} />
+            </span>
+          </p>
+        )}
+      </Show>
+    </AuthenticatedSection>
   )
 }

@@ -119,7 +119,8 @@ export function productionAuthenticatedShellStateCreate(
     const visible: ProductionNavigationGroup[] = scopeFiltered
       .map((group) => ({ ...group, items: groupItemsVisible(group) }))
       .filter((group) => group.items.length > 0)
-    // Members without admin access see no admin navigation at all.
+    // Members without admin access only see the member-open destinations (the users
+    // surface, scoped by the view and the server).
     if (kind() === "admin" && session.guard.access !== "loading") {
       const anyVisible = visible.some((group) => group.items.length > 0)
       if (!anyVisible) return []

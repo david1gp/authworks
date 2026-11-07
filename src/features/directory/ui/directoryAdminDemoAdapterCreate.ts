@@ -18,12 +18,9 @@ import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryUserListQuery } from "../public/directoryUserListSchema.js"
 import { directoryUserListQuerySchema } from "../public/directoryUserListSchema.js"
 import type { DirectoryAdminAdapter } from "./directoryAdminAdapter.js"
-import {
-  directoryAdminDemoInvitations,
-  directoryAdminDemoPeople,
-  directoryAdminDemoServiceAccounts,
-  directoryAdminDemoSummary,
-} from "./directoryAdminDemoDirectoryFixtures.js"
+import { directoryAdminDemoSummary } from "./directoryAdminDemoDirectoryFixtures.js"
+import type { DirectoryAdminDemoDirectoryStore } from "./directoryAdminDemoDirectoryStoreCreate.js"
+import { directoryAdminDemoDirectoryStoreCreate } from "./directoryAdminDemoDirectoryStoreCreate.js"
 
 const demoOrganizationId = "01900000-0000-7000-8000-000000000011"
 const now = 1_755_782_400_000
@@ -55,19 +52,11 @@ const pageTokenDecode = (pageToken: string | undefined, length: number): number 
 export function directoryAdminDemoAdapterCreate(
   fixtureState: () => DemoFixtureState,
   demoAccess: () => "owner" | "admin" | "realm-admin",
+  store: DirectoryAdminDemoDirectoryStore = directoryAdminDemoDirectoryStoreCreate(),
 ): DirectoryAdminAdapter {
-  const people: DirectoryEntry[] = directoryAdminDemoPeople.map((entry) => ({
-    memberships: entry.memberships.map((membership) => ({ ...membership, roles: [...membership.roles] })),
-    user: { ...entry.user },
-  }))
-  const serviceAccounts: MachineUser[] = directoryAdminDemoServiceAccounts.map((account) => ({
-    ...account,
-    scopes: [...account.scopes],
-  }))
-  const invitations: OrganizationInvitation[] = directoryAdminDemoInvitations.map((invitation) => ({
-    ...invitation,
-    roles: [...invitation.roles],
-  }))
+  const people: DirectoryEntry[] = store.people
+  const serviceAccounts: MachineUser[] = store.serviceAccounts
+  const invitations: OrganizationInvitation[] = store.invitations
 
   const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
   const denied = <T>(op: string): Result<T> => {
@@ -115,6 +104,11 @@ export function directoryAdminDemoAdapterCreate(
             membership.roles.includes(role),
         ),
       )
+    if (input.team !== undefined)
+      rows =
+        input.team === "unassigned"
+          ? rows.filter((entry) => entry.team === null)
+          : rows.filter((entry) => entry.team?.slug === input.team)
     const sortBy = input.sortBy ?? "lastSignInAt"
     const direction = input.sortDirection ?? (sortBy === "userName" ? "asc" : "desc")
     rows.sort((left, right) => {
@@ -182,6 +176,7 @@ export function directoryAdminDemoAdapterCreate(
               roles: ["member"],
             },
           ],
+          team: null,
           user: {
             createdAt: user.createdAt,
             ...(user.profile.displayName === undefined ? {} : { displayName: user.profile.displayName }),
@@ -204,16 +199,27 @@ export function directoryAdminDemoAdapterCreate(
             "The invitation request is invalid.",
             "organizations.invalid",
           )
+        const teamId = parsed.output.teamId
+        const teamRecord = teamId === undefined ? undefined : store.teams.find((team) => team.id === teamId)
+        if (teamId !== undefined && teamRecord === undefined)
+          return resultErrorCodedCreate(
+            "directoryAdminDemoInvitationCreate",
+            "The invitation team was not found.",
+            "teams.not-found",
+          )
         const invitation: OrganizationInvitation = {
           acceptedAt: null,
           createdAt: now,
           email: parsed.output.email,
           expiresAt: now + 604_800_000,
           id: demoResourceIdGenerate(),
+          invitedBy: null,
           organizationId: demoOrganizationId,
           realmId: demoRealmId,
           roles: [...parsed.output.roles],
           status: "pending",
+          team: teamRecord === undefined ? null : { name: teamRecord.name, slug: teamRecord.slug },
+          teamId: teamRecord?.id ?? null,
           updatedAt: now,
         }
         invitations.unshift(invitation)

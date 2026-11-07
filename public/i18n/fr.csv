@@ -6,6 +6,79 @@ admin.activity.empty,Aucune activité administrative récente dans ce contexte.
 admin.activity.error,Impossible de charger l’activité. Réessayez.
 admin.activity.organization,Organisation
 admin.activity.realm,Domaine IAM
+admin.organizations.invitations.invitedBy,Invité par
+admin.organizations.invitations.team,Équipe
+admin.organizations.invitations.teamFixed,Les nouveaux membres rejoindront {name} quand ils accepteront.
+admin.organizations.invitations.teamHint,Les nouveaux membres rejoindront cette équipe quand ils accepteront.
+admin.organizations.invitations.teamNone,Aucune équipe
+admin.teams.addMember,Ajouter un membre
+admin.teams.addMemberAction,Ajouter
+admin.teams.addMemberEmpty,Aucune personne ne correspond à cette recherche.
+admin.teams.addMemberSearch,Rechercher des personnes à ajouter
+admin.teams.assigned,{name} fait désormais partie de {team}.
+admin.teams.backToTeams,Retour aux équipes
+admin.teams.changeTeam,Changer d'équipe
+admin.teams.create,Créer une équipe
+admin.teams.createDescription,Ajoutez une équipe avec un slug compatible URL et un responsable d'équipe.
+admin.teams.createSubmit,Créer l'équipe
+admin.teams.created,L'équipe {name} a été créée.
+admin.teams.currentTeamHint,Actuellement dans {team}
+admin.teams.delete,Supprimer l'équipe
+admin.teams.deleteConfirm,Supprimer l'équipe {name} ?
+admin.teams.deleteConfirmDetail,Ses membres deviennent sans équipe. Les appartenances à l'organisation sont inchangées.
+admin.teams.deleted,L'équipe {name} a été supprimée. Ses membres sont désormais sans équipe.
+admin.teams.description,Organisez les personnes en équipes avec un responsable chacune.
+admin.teams.editTitle,Modifier l'équipe
+admin.teams.leader,Responsable d'équipe
+admin.teams.leaderBadge,Responsable
+admin.teams.leaderConflict,Cette personne dirige déjà une autre équipe. Transférez d'abord sa responsabilité.
+admin.teams.leaderHint,Le responsable est membre de l'équipe et gère ses membres.
+admin.teams.leaderRequired,Choisissez un responsable d'équipe.
+admin.teams.leadsTeamHint,Dirige {team}
+admin.teams.listEmpty,Aucune équipe n'existe encore dans cette organisation.
+admin.teams.listEmptyDetail,Créez la première équipe pour organiser les personnes et leurs responsables.
+admin.teams.memberCount,{count} membres
+admin.teams.memberCountOne,1 membre
+admin.teams.memberListDenied,Seuls les administrateurs de l'organisation peuvent lister les membres de l'équipe. Invitez des personnes dans {name} pour agrandir l'équipe.
+admin.teams.members,Membres
+admin.teams.membersEmpty,Cette équipe n'a pas encore de membres.
+admin.teams.membersEmptyDetail,Ajoutez des personnes ci-dessous ou invitez-les dans cette équipe.
+admin.teams.name,Nom de l'équipe
+admin.teams.nameConflict,Ce nom est déjà utilisé par une autre équipe.
+admin.teams.nameRequired,Saisissez un nom d'équipe.
+admin.teams.openTeam,Ouvrir l'équipe {name}
+admin.teams.removeLeaderDenied,Le responsable de l'équipe ne peut pas être retiré. Changez d'abord de responsable.
+admin.teams.removeMemberConfirm,Retirer {name} de {team} ? Cette personne devient sans équipe.
+admin.teams.removedMember,{name} est désormais sans équipe.
+admin.teams.scopeNotice,Vous dirigez {name}. Vous pouvez renommer l'équipe et y inviter des personnes.
+admin.teams.selectTeam,Équipe
+admin.teams.slug,Slug
+admin.teams.slugConflict,Ce slug est déjà utilisé par une autre équipe.
+admin.teams.slugHint,"Lettres minuscules, chiffres et traits d'union simples. Utilisé dans les URL d'administration."
+admin.teams.slugInvalid,"Utilisez des lettres minuscules, des chiffres et des traits d'union simples, sans trait d'union au début ou à la fin (64 caractères max.)."
+admin.teams.slugReserved,Le slug unassigned est réservé aux personnes sans équipe.
+admin.teams.title,Équipes
+admin.teams.unassignedDescription,Personnes de cette organisation qui ne sont dans aucune équipe.
+admin.teams.unassignedLabel,Sans équipe
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Sans équipe
+admin.teams.updated,L'équipe {name} a été mise à jour.
+admin.teams.urlPreview,URL d'administration : {url}
+admin.userProfile.invitedBy,Invité par
+admin.userProfile.invitedByUnknown,Inconnu
+admin.userProfile.team,Équipe
+admin.userProfile.teamDescription,Changez l'équipe à laquelle cette personne appartient. L'assignation la déplace hors de son équipe actuelle.
+admin.userProfile.teamRemoved,{name} est désormais sans équipe.
+admin.userProfile.teamSaved,L'assignation d'équipe a été mise à jour.
+admin.userProfile.teamUnassigned,Sans équipe
+admin.users.directoryEmptySearchTeamDetail,Essayez une autre recherche ou effacez les filtres de rôle et d'équipe.
+admin.users.directorySubtitleTeams,{count} équipes
+admin.users.directorySubtitleTeamsOne,1 équipe
+admin.users.directoryTabTeams,Équipes
+admin.users.directoryTeamAll,Toutes les équipes
+admin.users.directoryTeamColumn,Équipe
+admin.users.directoryTeamFilter,Équipe
+admin.users.directoryTeamUnassigned,Sans équipe
 shell.nav.activity,Activité
 account.confirmTitle,Confirmer cette action
 account.factors.authenticatorName,Nom de l’application d’authentification

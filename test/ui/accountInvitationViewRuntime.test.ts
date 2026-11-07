@@ -125,11 +125,14 @@ test("renders the invited organization name and falls back to its ID for older r
     email: "user@example.com",
     expiresAt: 100000,
     id: "invite-1",
+    invitedBy: null,
     organizationId: "organization-id",
     organizationName: "Northwind Labs",
     realmId: "realm-1",
     roles: ["member" as const],
     status: "pending" as const,
+    team: null,
+    teamId: null,
     updatedAt: 1,
   }
   const props = { invitation, onAccept: () => {}, onDecline: () => {}, onRetry: () => {}, status: "ready" as const }

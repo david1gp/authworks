@@ -6,6 +6,79 @@ admin.activity.empty,Nenhuma atividade administrativa recente neste contexto.
 admin.activity.error,Não foi possível carregar a atividade. Tente novamente.
 admin.activity.organization,Organização
 admin.activity.realm,Domínio IAM
+admin.organizations.invitations.invitedBy,Convidado por
+admin.organizations.invitations.team,Equipa
+admin.organizations.invitations.teamFixed,Os novos membros juntam-se a {name} quando aceitarem.
+admin.organizations.invitations.teamHint,Os novos membros juntam-se a esta equipa quando aceitarem.
+admin.organizations.invitations.teamNone,Nenhuma equipa
+admin.teams.addMember,Adicionar membro
+admin.teams.addMemberAction,Adicionar
+admin.teams.addMemberEmpty,Nenhuma pessoa corresponde a esta pesquisa.
+admin.teams.addMemberSearch,Pesquisar pessoas para adicionar
+admin.teams.assigned,{name} passou a fazer parte de {team}.
+admin.teams.backToTeams,Voltar às equipas
+admin.teams.changeTeam,Mudar de equipa
+admin.teams.create,Criar equipa
+admin.teams.createDescription,Adicione uma equipa com um slug compatível com URL e um líder de equipa.
+admin.teams.createSubmit,Criar equipa
+admin.teams.created,A equipa {name} foi criada.
+admin.teams.currentTeamHint,Atualmente em {team}
+admin.teams.delete,Eliminar equipa
+admin.teams.deleteConfirm,Eliminar a equipa {name}?
+admin.teams.deleteConfirmDetail,Os seus membros ficam por atribuir. As membresias da organização não mudam.
+admin.teams.deleted,A equipa {name} foi eliminada. Os seus membros estão agora por atribuir.
+admin.teams.description,Organize as pessoas em equipas com um líder cada.
+admin.teams.editTitle,Editar equipa
+admin.teams.leader,Líder de equipa
+admin.teams.leaderBadge,Líder
+admin.teams.leaderConflict,Essa pessoa já lidera outra equipa. Transfira primeiro a sua liderança.
+admin.teams.leaderHint,O líder é membro da equipa e gere os seus membros.
+admin.teams.leaderRequired,Escolha um líder de equipa.
+admin.teams.leadsTeamHint,Lidera {team}
+admin.teams.listEmpty,Ainda não há equipas nesta organização.
+admin.teams.listEmptyDetail,Crie a primeira equipa para organizar as pessoas e os seus líderes.
+admin.teams.memberCount,{count} membros
+admin.teams.memberCountOne,1 membro
+admin.teams.memberListDenied,Só os administradores da organização podem ver os membros da equipa. Convide pessoas para {name} para fazer crescer a equipa.
+admin.teams.members,Membros
+admin.teams.membersEmpty,Esta equipa ainda não tem membros.
+admin.teams.membersEmptyDetail,Adicione pessoas abaixo ou convide-as para esta equipa.
+admin.teams.name,Nome da equipa
+admin.teams.nameConflict,Esse nome já é usado por outra equipa.
+admin.teams.nameRequired,Introduza um nome de equipa.
+admin.teams.openTeam,Abrir a equipa {name}
+admin.teams.removeLeaderDenied,O líder da equipa não pode ser removido. Mude primeiro o líder.
+admin.teams.removeMemberConfirm,Remover {name} de {team}? A pessoa fica por atribuir.
+admin.teams.removedMember,{name} está agora por atribuir.
+admin.teams.scopeNotice,Lidera {name}. Pode mudar o nome da equipa e convidar pessoas.
+admin.teams.selectTeam,Equipa
+admin.teams.slug,Slug
+admin.teams.slugConflict,Esse slug já é usado por outra equipa.
+admin.teams.slugHint,"Letras minúsculas, dígitos e hífenes simples. Usado nos URL de administração."
+admin.teams.slugInvalid,"Use letras minúsculas, dígitos e hífenes simples, sem hífenes no início ou no fim (máx. 64 caracteres)."
+admin.teams.slugReserved,O slug unassigned está reservado para pessoas sem equipa.
+admin.teams.title,Equipas
+admin.teams.unassignedDescription,Pessoas desta organização que não estão em nenhuma equipa.
+admin.teams.unassignedLabel,Por atribuir
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Por atribuir
+admin.teams.updated,A equipa {name} foi atualizada.
+admin.teams.urlPreview,URL de administração: {url}
+admin.userProfile.invitedBy,Convidado por
+admin.userProfile.invitedByUnknown,Desconhecido
+admin.userProfile.team,Equipa
+admin.userProfile.teamDescription,"Mude a equipa a que esta pessoa pertence. Ao atribuir, sai da equipa atual."
+admin.userProfile.teamRemoved,{name} está agora por atribuir.
+admin.userProfile.teamSaved,A atribuição de equipa foi atualizada.
+admin.userProfile.teamUnassigned,Por atribuir
+admin.users.directoryEmptySearchTeamDetail,Tente outra pesquisa ou limpe os filtros de função e equipa.
+admin.users.directorySubtitleTeams,{count} equipas
+admin.users.directorySubtitleTeamsOne,1 equipa
+admin.users.directoryTabTeams,Equipas
+admin.users.directoryTeamAll,Todas as equipas
+admin.users.directoryTeamColumn,Equipa
+admin.users.directoryTeamFilter,Equipa
+admin.users.directoryTeamUnassigned,Por atribuir
 shell.nav.activity,Atividade
 account.confirmTitle,Confirmar esta ação
 account.factors.authenticatorName,Nome do autenticador

@@ -18,6 +18,7 @@ const [{ createRoot, createSignal }, { directoryAdminUsersPageStateCreate }] = a
 ])
 
 const entryFixture: DirectoryEntry = {
+  team: null,
   memberships: [
     {
       createdAt: 1_755_782_400_000,
@@ -155,6 +156,7 @@ test("invitation creation exposes an encoded redemption link until acknowledged"
 
 describe("directory admin users organization context", () => {
   const orgEntry = (organizationId: string, userName: string): DirectoryEntry => ({
+    team: null,
     memberships: [
       {
         createdAt: 1_755_782_400_000,

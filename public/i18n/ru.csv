@@ -6,6 +6,79 @@ admin.activity.empty,В этом контексте нет недавней ад
 admin.activity.error,Не удалось загрузить активность. Повторите попытку.
 admin.activity.organization,Организация
 admin.activity.realm,Область IAM
+admin.organizations.invitations.invitedBy,Пригласил(а)
+admin.organizations.invitations.team,Команда
+admin.organizations.invitations.teamFixed,Новые участники присоединятся к {name} после принятия.
+admin.organizations.invitations.teamHint,Новые участники присоединятся к этой команде после принятия.
+admin.organizations.invitations.teamNone,Без команды
+admin.teams.addMember,Добавить участника
+admin.teams.addMemberAction,Добавить
+admin.teams.addMemberEmpty,Никто не соответствует этому поиску.
+admin.teams.addMemberSearch,Найти людей для добавления
+admin.teams.assigned,{name} теперь в команде {team}.
+admin.teams.backToTeams,Назад к командам
+admin.teams.changeTeam,Сменить команду
+admin.teams.create,Создать команду
+admin.teams.createDescription,Добавьте команду с URL-совместимым слагом и одним руководителем.
+admin.teams.createSubmit,Создать команду
+admin.teams.created,Команда {name} создана.
+admin.teams.currentTeamHint,Сейчас в {team}
+admin.teams.delete,Удалить команду
+admin.teams.deleteConfirm,Удалить команду {name}?
+admin.teams.deleteConfirmDetail,Её участники станут без команды. Членство в организации не изменится.
+admin.teams.deleted,Команда {name} удалена. Её участники теперь без команды.
+admin.teams.description,Объединяйте людей в команды с одним руководителем в каждой.
+admin.teams.editTitle,Редактировать команду
+admin.teams.leader,Руководитель команды
+admin.teams.leaderBadge,Руководитель
+admin.teams.leaderConflict,Этот человек уже руководит другой командой. Сначала передайте руководство.
+admin.teams.leaderHint,Руководитель — участник команды и управляет её участниками.
+admin.teams.leaderRequired,Выберите руководителя команды.
+admin.teams.leadsTeamHint,Руководит {team}
+admin.teams.listEmpty,В этой организации пока нет команд.
+admin.teams.listEmptyDetail,"Создайте первую команду, чтобы организовать людей и их руководителей."
+admin.teams.memberCount,{count} участников
+admin.teams.memberCountOne,1 участник
+admin.teams.memberListDenied,"Только администраторы организации могут просматривать участников команды. Приглашайте людей в {name}, чтобы команда росла."
+admin.teams.members,Участники
+admin.teams.membersEmpty,В этой команде пока нет участников.
+admin.teams.membersEmptyDetail,Добавьте людей ниже или пригласите их в эту команду.
+admin.teams.name,Название команды
+admin.teams.nameConflict,Это название уже используется другой командой.
+admin.teams.nameRequired,Введите название команды.
+admin.teams.openTeam,Открыть команду {name}
+admin.teams.removeLeaderDenied,Руководителя команды нельзя удалить. Сначала смените руководителя.
+admin.teams.removeMemberConfirm,Удалить {name} из {team}? Этот человек станет без команды.
+admin.teams.removedMember,{name} теперь без команды.
+admin.teams.scopeNotice,Вы руководите {name}. Вы можете переименовать команду и приглашать в неё людей.
+admin.teams.selectTeam,Команда
+admin.teams.slug,Слаг
+admin.teams.slugConflict,Этот слаг уже используется другой командой.
+admin.teams.slugHint,"Строчные буквы, цифры и одиночные дефисы. Используется в URL администрирования."
+admin.teams.slugInvalid,"Используйте строчные буквы, цифры и одиночные дефисы без дефисов в начале и в конце (макс. 64 символа)."
+admin.teams.slugReserved,Слаг unassigned зарезервирован для людей без команды.
+admin.teams.title,Команды
+admin.teams.unassignedDescription,"Люди в этой организации, которые не состоят ни в одной команде."
+admin.teams.unassignedLabel,Без команды
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Без команды
+admin.teams.updated,Команда {name} обновлена.
+admin.teams.urlPreview,URL администрирования: {url}
+admin.userProfile.invitedBy,Пригласил(а)
+admin.userProfile.invitedByUnknown,Неизвестно
+admin.userProfile.team,Команда
+admin.userProfile.teamDescription,Измените команду этого человека. Назначение перемещает его из текущей команды.
+admin.userProfile.teamRemoved,{name} теперь без команды.
+admin.userProfile.teamSaved,Назначение в команду обновлено.
+admin.userProfile.teamUnassigned,Без команды
+admin.users.directoryEmptySearchTeamDetail,Попробуйте другой поиск или сбросьте фильтры роли и команды.
+admin.users.directorySubtitleTeams,{count} команд
+admin.users.directorySubtitleTeamsOne,1 команда
+admin.users.directoryTabTeams,Команды
+admin.users.directoryTeamAll,Все команды
+admin.users.directoryTeamColumn,Команда
+admin.users.directoryTeamFilter,Команда
+admin.users.directoryTeamUnassigned,Без команды
 shell.nav.activity,Активность
 account.confirmTitle,Подтвердите это действие
 account.factors.authenticatorName,Имя аутентификатора

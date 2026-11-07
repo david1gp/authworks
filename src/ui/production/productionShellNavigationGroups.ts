@@ -29,7 +29,7 @@ export const productionShellNavigationGroups = {
       scope: "organization",
       items: [
         {
-          access: "organization-admin",
+          access: "organization-member",
           href: "/admin/users",
           icon: mdiAccountMultipleOutline,
           label: "shell.nav.users",

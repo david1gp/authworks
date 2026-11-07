@@ -34,6 +34,7 @@ export function directoryUserProfileDemoStateCreate() {
   const page = directoryUserProfilePageStateCreate(adapter, {
     actorOrganizationRoles: () => (access() === "owner" ? ["owner"] : access() === "admin" ? ["admin"] : []),
     actorRealmAdministrator: () => access() === "realm-admin",
+    actorUserId: () => undefined,
     confirm: confirmState.confirm,
     organizationId,
     realmId: () => "01900000-0000-7000-8000-000000000001",

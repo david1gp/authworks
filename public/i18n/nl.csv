@@ -6,6 +6,79 @@ admin.activity.empty,Geen recente administratieve activiteit in deze context.
 admin.activity.error,Activiteit kon niet worden geladen. Probeer het opnieuw.
 admin.activity.organization,Organisatie
 admin.activity.realm,IAM-domein
+admin.organizations.invitations.invitedBy,Uitgenodigd door
+admin.organizations.invitations.team,Team
+admin.organizations.invitations.teamFixed,Nieuwe leden worden lid van {name} wanneer ze accepteren.
+admin.organizations.invitations.teamHint,Nieuwe leden worden lid van dit team wanneer ze accepteren.
+admin.organizations.invitations.teamNone,Geen team
+admin.teams.addMember,Lid toevoegen
+admin.teams.addMemberAction,Toevoegen
+admin.teams.addMemberEmpty,Niemand komt overeen met deze zoekopdracht.
+admin.teams.addMemberSearch,Zoek mensen om toe te voegen
+admin.teams.assigned,{name} is toegevoegd aan {team}.
+admin.teams.backToTeams,Terug naar teams
+admin.teams.changeTeam,Van team wisselen
+admin.teams.create,Team aanmaken
+admin.teams.createDescription,Voeg een team toe met een URL-veilige slug en één teamleider.
+admin.teams.createSubmit,Team aanmaken
+admin.teams.created,Team {name} is aangemaakt.
+admin.teams.currentTeamHint,Momenteel in {team}
+admin.teams.delete,Team verwijderen
+admin.teams.deleteConfirm,Team {name} verwijderen?
+admin.teams.deleteConfirmDetail,De leden worden Niet toegewezen. Organisatielidmaatschappen blijven ongewijzigd.
+admin.teams.deleted,Team {name} is verwijderd. De leden zijn nu Niet toegewezen.
+admin.teams.description,Organiseer mensen in teams met elk één leider.
+admin.teams.editTitle,Team bewerken
+admin.teams.leader,Teamleider
+admin.teams.leaderBadge,Leider
+admin.teams.leaderConflict,Deze persoon leidt al een ander team. Draag eerst diens leiderschap over.
+admin.teams.leaderHint,De leider is lid van het team en beheert de leden.
+admin.teams.leaderRequired,Kies een teamleider.
+admin.teams.leadsTeamHint,Leidt {team}
+admin.teams.listEmpty,Er zijn nog geen teams in deze organisatie.
+admin.teams.listEmptyDetail,Maak het eerste team aan om mensen en hun leiders te organiseren.
+admin.teams.memberCount,{count} leden
+admin.teams.memberCountOne,1 lid
+admin.teams.memberListDenied,Alleen organisatiebeheerders kunnen teamleden weergeven. Nodig mensen uit voor {name} om het team te laten groeien.
+admin.teams.members,Leden
+admin.teams.membersEmpty,Dit team heeft nog geen leden.
+admin.teams.membersEmptyDetail,Voeg hieronder mensen toe of nodig ze uit voor dit team.
+admin.teams.name,Teamnaam
+admin.teams.nameConflict,Die naam wordt al door een ander team gebruikt.
+admin.teams.nameRequired,Voer een teamnaam in.
+admin.teams.openTeam,Team {name} openen
+admin.teams.removeLeaderDenied,De teamleider kan niet worden verwijderd. Wijzig eerst de leider.
+admin.teams.removeMemberConfirm,{name} verwijderen uit {team}? Die wordt dan Niet toegewezen.
+admin.teams.removedMember,{name} is nu Niet toegewezen.
+admin.teams.scopeNotice,U leidt {name}. U kunt het team hernoemen en mensen uitnodigen.
+admin.teams.selectTeam,Team
+admin.teams.slug,Slug
+admin.teams.slugConflict,Die slug wordt al door een ander team gebruikt.
+admin.teams.slugHint,"Kleine letters, cijfers en enkele koppeltekens. Gebruikt in beheer-URL's."
+admin.teams.slugInvalid,"Gebruik kleine letters, cijfers en enkele koppeltekens, zonder koppeltekens aan het begin of einde (max. 64 tekens)."
+admin.teams.slugReserved,De slug unassigned is gereserveerd voor mensen zonder team.
+admin.teams.title,Teams
+admin.teams.unassignedDescription,Mensen in deze organisatie die in geen enkel team zitten.
+admin.teams.unassignedLabel,Niet toegewezen
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Niet toegewezen
+admin.teams.updated,Team {name} is bijgewerkt.
+admin.teams.urlPreview,Beheer-URL: {url}
+admin.userProfile.invitedBy,Uitgenodigd door
+admin.userProfile.invitedByUnknown,Onbekend
+admin.userProfile.team,Team
+admin.userProfile.teamDescription,Wijzig bij welk team deze persoon hoort. Door toe te wijzen wordt die uit het huidige team verplaatst.
+admin.userProfile.teamRemoved,{name} is nu Niet toegewezen.
+admin.userProfile.teamSaved,De teamtoewijzing is bijgewerkt.
+admin.userProfile.teamUnassigned,Niet toegewezen
+admin.users.directoryEmptySearchTeamDetail,Probeer een andere zoekopdracht of wis de rol- en teamfilters.
+admin.users.directorySubtitleTeams,{count} teams
+admin.users.directorySubtitleTeamsOne,1 team
+admin.users.directoryTabTeams,Teams
+admin.users.directoryTeamAll,Alle teams
+admin.users.directoryTeamColumn,Team
+admin.users.directoryTeamFilter,Team
+admin.users.directoryTeamUnassigned,Niet toegewezen
 shell.nav.activity,Activiteit
 account.confirmTitle,Bevestig deze actie
 account.factors.authenticatorName,Naam van authenticator

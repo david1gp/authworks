@@ -6,6 +6,79 @@ admin.activity.empty,У цьому контексті немає нещодав�
 admin.activity.error,Не вдалося завантажити активність. Спробуйте ще раз.
 admin.activity.organization,Організація
 admin.activity.realm,Область IAM
+admin.organizations.invitations.invitedBy,Запросив(ла)
+admin.organizations.invitations.team,Команда
+admin.organizations.invitations.teamFixed,Нові учасники приєднаються до {name} після прийняття.
+admin.organizations.invitations.teamHint,Нові учасники приєднаються до цієї команди після прийняття.
+admin.organizations.invitations.teamNone,Без команди
+admin.teams.addMember,Додати учасника
+admin.teams.addMemberAction,Додати
+admin.teams.addMemberEmpty,Ніхто не відповідає цьому пошуку.
+admin.teams.addMemberSearch,Знайти людей для додавання
+admin.teams.assigned,{name} тепер у команді {team}.
+admin.teams.backToTeams,Назад до команд
+admin.teams.changeTeam,Змінити команду
+admin.teams.create,Створити команду
+admin.teams.createDescription,Додайте команду з URL-сумісним слагом і одним керівником.
+admin.teams.createSubmit,Створити команду
+admin.teams.created,Команду {name} створено.
+admin.teams.currentTeamHint,Зараз у {team}
+admin.teams.delete,Видалити команду
+admin.teams.deleteConfirm,Видалити команду {name}?
+admin.teams.deleteConfirmDetail,Її учасники стануть без команди. Членство в організації не зміниться.
+admin.teams.deleted,Команду {name} видалено. Її учасники тепер без команди.
+admin.teams.description,Об'єднуйте людей у команди з одним керівником у кожній.
+admin.teams.editTitle,Редагувати команду
+admin.teams.leader,Керівник команди
+admin.teams.leaderBadge,Керівник
+admin.teams.leaderConflict,Ця людина вже керує іншою командою. Спочатку передайте керівництво.
+admin.teams.leaderHint,Керівник — учасник команди й керує її учасниками.
+admin.teams.leaderRequired,Виберіть керівника команди.
+admin.teams.leadsTeamHint,Керує {team}
+admin.teams.listEmpty,У цій організації поки немає команд.
+admin.teams.listEmptyDetail,"Створіть першу команду, щоб організувати людей та їхніх керівників."
+admin.teams.memberCount,{count} учасників
+admin.teams.memberCountOne,1 учасник
+admin.teams.memberListDenied,"Лише адміністратори організації можуть переглядати учасників команди. Запрошуйте людей до {name}, щоб команда зростала."
+admin.teams.members,Учасники
+admin.teams.membersEmpty,У цій команді поки немає учасників.
+admin.teams.membersEmptyDetail,Додайте людей нижче або запросіть їх до цієї команди.
+admin.teams.name,Назва команди
+admin.teams.nameConflict,Ця назва вже використовується іншою командою.
+admin.teams.nameRequired,Введіть назву команди.
+admin.teams.openTeam,Відкрити команду {name}
+admin.teams.removeLeaderDenied,Керівника команди не можна видалити. Спочатку змініть керівника.
+admin.teams.removeMemberConfirm,Видалити {name} з {team}? Ця людина стане без команди.
+admin.teams.removedMember,{name} тепер без команди.
+admin.teams.scopeNotice,Ви керуєте {name}. Ви можете перейменувати команду й запрошувати до неї людей.
+admin.teams.selectTeam,Команда
+admin.teams.slug,Слаг
+admin.teams.slugConflict,Цей слаг уже використовується іншою командою.
+admin.teams.slugHint,"Малі літери, цифри й одиночні дефіси. Використовується в URL адміністрування."
+admin.teams.slugInvalid,"Використовуйте малі літери, цифри й одиночні дефіси без дефісів на початку та в кінці (макс. 64 символи)."
+admin.teams.slugReserved,Слаг unassigned зарезервовано для людей без команди.
+admin.teams.title,Команди
+admin.teams.unassignedDescription,"Люди в цій організації, які не входять до жодної команди."
+admin.teams.unassignedLabel,Без команди
+admin.teams.unassignedSlug,unassigned
+admin.teams.unassignedTitle,Без команди
+admin.teams.updated,Команду {name} оновлено.
+admin.teams.urlPreview,URL адміністрування: {url}
+admin.userProfile.invitedBy,Запросив(ла)
+admin.userProfile.invitedByUnknown,Невідомо
+admin.userProfile.team,Команда
+admin.userProfile.teamDescription,Змініть команду цієї людини. Призначення переміщує її з поточної команди.
+admin.userProfile.teamRemoved,{name} тепер без команди.
+admin.userProfile.teamSaved,Призначення в команду оновлено.
+admin.userProfile.teamUnassigned,Без команди
+admin.users.directoryEmptySearchTeamDetail,Спробуйте інший пошук або скиньте фільтри ролі й команди.
+admin.users.directorySubtitleTeams,{count} команд
+admin.users.directorySubtitleTeamsOne,1 команда
+admin.users.directoryTabTeams,Команди
+admin.users.directoryTeamAll,Усі команди
+admin.users.directoryTeamColumn,Команда
+admin.users.directoryTeamFilter,Команда
+admin.users.directoryTeamUnassigned,Без команди
 shell.nav.activity,Активність
 account.confirmTitle,Підтвердьте цю дію
 account.factors.authenticatorName,Назва автентифікатора

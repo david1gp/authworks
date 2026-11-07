@@ -160,6 +160,18 @@ function adapterStubCreate(user: ProfileUser) {
         record("sessionsList", args)
         return resultCreate([])
       },
+      teamList: async (...args: unknown[]) => {
+        record("teamList", args)
+        return resultCreate({ items: [], unassignedCount: 0 })
+      },
+      teamMemberAssign: async (...args: unknown[]) => {
+        record("teamMemberAssign", args)
+        return resultErrorCodedCreate("test", "unused", "test.unused")
+      },
+      teamMemberUnassign: async (...args: unknown[]) => {
+        record("teamMemberUnassign", args)
+        return resultErrorCodedCreate("test", "unused", "test.unused")
+      },
       totpRemove: async (...args: unknown[]) => {
         record("totpRemove", args)
         return resultCreate(undefined)
@@ -175,6 +187,10 @@ function adapterStubCreate(user: ProfileUser) {
       userGet: async (...args: unknown[]) => {
         record("userGet", args)
         return resultCreate(profile())
+      },
+      userTeamGet: async (...args: unknown[]) => {
+        record("userTeamGet", args)
+        return resultCreate({ team: null })
       },
       userLifecycleSet: async (_userId: string, input: { state: ProfileUser["state"] }) => {
         record("userLifecycleSet", [input])
@@ -209,6 +225,7 @@ function stateCreate(user: ProfileUser, confirmResult = true) {
   const state = directoryUserProfilePageStateCreate(stub as never, {
     actorOrganizationRoles: () => ["owner"],
     actorRealmAdministrator: () => true,
+    actorUserId: () => "01900000-0000-7000-8000-000000000001",
     confirm: async (request) => {
       confirmed.push({ message: request.message })
       return confirmResult

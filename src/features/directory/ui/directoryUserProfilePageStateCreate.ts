@@ -10,7 +10,10 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { UserState } from "../../users/public/userStateSchema.js"
 import type { UserVerificationState } from "../../users/public/userVerificationStateSchema.js"
+import type { DirectoryEntryTeam } from "../public/directoryEntryTeamSchema.js"
+import type { DirectoryInvitedBy } from "../public/directoryInvitedBySchema.js"
 import type { DirectoryProjectAssignment } from "../public/directoryUserAccessSchema.js"
+import type { Team } from "../../teams/public/teamSchema.js"
 import type { DirectoryUserProfile, DirectoryUserProfileAdapter } from "./directoryUserProfileAdapter.js"
 import { directoryUserProfilePermissionsResolve } from "./directoryUserProfilePermissions.js"
 
@@ -21,6 +24,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 type DirectoryUserProfilePageStateCreateOptions = {
   readonly actorOrganizationRoles: () => readonly OrganizationRoleId[]
   readonly actorRealmAdministrator: () => boolean
+  readonly actorUserId: () => string | undefined
   /** Renders in-app destructive confirmations; without one destructive actions decline. */
   readonly confirm: (request: ConfirmRequest) => boolean | Promise<boolean>
   readonly organizationId: () => string
@@ -58,6 +62,8 @@ export function directoryUserProfilePageStateCreate(
   const projects = createSignalObject<
     readonly { readonly id: string; readonly name: string; readonly owned: boolean }[]
   >([])
+  const teams = createSignalObject<readonly Team[]>([])
+  const userTeam = createSignalObject<DirectoryEntryTeam | null | undefined>(undefined)
   const projectRoles = createSignalObject<readonly ProjectRole[]>([])
   const assignProjectId = createSignalObject("")
   const assignRoleKeys = createSignalObject<readonly string[]>([])
@@ -69,7 +75,10 @@ export function directoryUserProfilePageStateCreate(
   const deleteConfirm = createSignalObject("")
   const purgeConfirm = createSignalObject("")
 
+  let lastErrorCode: string | undefined
+  const errorCodeGet = () => lastErrorCode
   const fail = (failure: FailedResult) => {
+    lastErrorCode = failure.code
     error.set(failure.errorMessage)
     status.set(failureStatusSelect(failure))
   }
@@ -105,13 +114,18 @@ export function directoryUserProfilePageStateCreate(
     }
     status.set("loading")
     error.set(undefined)
-    const [userResult, , sessionsResult] = await Promise.all([
+    userTeam.set(undefined)
+    const [userResult, , sessionsResult, teamResult, teamsResult] = await Promise.all([
       adapter.userGet(userId),
       methodsLoad(),
       adapter.sessionsList(userId),
+      adapter.userTeamGet(userId),
+      adapter.teamList(),
     ])
     if (!userResult.success) return fail(userResult)
     profile.set(userResult.data)
+    if (teamResult.success) userTeam.set(teamResult.data.team)
+    if (teamsResult.success) teams.set([...teamsResult.data.items])
     if (sessionsResult.success) {
       sessions.set(sessionsResult.data.filter((session) => session.revokedAt === null))
       sessionsStatus.set(sessions.get().length === 0 ? "empty" : "ready")
@@ -165,7 +179,78 @@ export function directoryUserProfilePageStateCreate(
     const result = await adapter.userGet(userId)
     if (!result.success) return fail(result)
     profile.set(result.data)
+    const teamResult = await adapter.userTeamGet(userId)
+    if (teamResult.success) userTeam.set(teamResult.data.team)
   }
+
+  const teamScopeGet = (): "admin" | "leader" | "none" => {
+    if (permissions().manageOrganizationRole) return "admin"
+    const actor = options.actorUserId()
+    if (actor === undefined) return "none"
+    const current = userTeam.get()
+    if (current !== undefined && current !== null) {
+      const leading = teams.get().find((team) => team.id === current.id)
+      if (leading !== undefined && leading.leader.userId === actor) return "leader"
+      return "none"
+    }
+    if (teams.get().some((team) => team.leader.userId === actor)) return "leader"
+    return "none"
+  }
+
+  const invitedByGet = (): DirectoryInvitedBy | null | undefined => {
+    const memberships = profile.get()?.access?.memberships ?? []
+    const membership = memberships.find((item) => item.organizationId === options.organizationId())
+    return membership?.invitedBy
+  }
+
+  const teamAssignSubmit = async (teamId: string | null): Promise<boolean> => {
+    const userId = options.userId()
+    const user = profile.get()?.user
+    if (userId === undefined || user === undefined) return false
+    formError.set(undefined)
+    const current = userTeam.get()
+    if (teamId === null) {
+      if (current === undefined || current === null) return true
+      const leading = teams.get().find((team) => team.id === current.id)
+      if (leading !== undefined && leading.leader.userId === userId) {
+        formError.set(messageTranslate("admin.teams.removeLeaderDenied"))
+        return false
+      }
+      const unassigned = await mutate(`team:unassign:${current.id}:${userId}`, () =>
+        adapter.teamMemberUnassign(current.id, userId),
+      )
+      if (unassigned === undefined) {
+        formError.set(
+          (error.get() ?? "").length > 0 && errorCodeGet() === "teams.leader-conflict"
+            ? messageTranslate("admin.teams.removeLeaderDenied")
+            : (error.get() ?? messageTranslate("common.error")),
+        )
+        return false
+      }
+      userTeam.set(null)
+      notice.set(messageTranslate("admin.userProfile.teamRemoved", { name: user.userName }))
+      return true
+    }
+    const assigned = await mutate(`team:assign:${teamId}:${userId}`, () => adapter.teamMemberAssign(teamId, { userId }))
+    if (assigned === undefined) {
+      formError.set(
+        errorCodeGet() === "teams.leader-conflict"
+          ? messageTranslate("admin.teams.leaderConflict")
+          : (error.get() ?? messageTranslate("common.error")),
+      )
+      return false
+    }
+    const assignedTeam = teams.get().find((team) => team.id === teamId)
+    userTeam.set(
+      assignedTeam === undefined
+        ? { id: teamId, name: assigned.team.name, slug: assigned.team.slug }
+        : { id: assignedTeam.id, name: assignedTeam.name, slug: assignedTeam.slug },
+    )
+    notice.set(messageTranslate("admin.userProfile.teamSaved"))
+    return true
+  }
+
+  const permissions = () => directoryUserProfilePermissionsResolve(actor(), permissionTarget())
 
   const targetRoles = (): readonly OrganizationRoleId[] | undefined => {
     const memberships = profile.get()?.access?.memberships ?? []
@@ -537,7 +622,17 @@ export function directoryUserProfilePageStateCreate(
       notice.set(messageTranslate("admin.userProfile.revokeAllDone"))
     },
     statusGet: status.get,
+    invitedByGet,
     targetRolesGet: targetRoles,
+    leaderTeamsGet: (): readonly Team[] => {
+      const actor = options.actorUserId()
+      if (actor === undefined) return []
+      return teams.get().filter((team) => team.leader.userId === actor)
+    },
+    teamAssignSubmit,
+    teamScopeGet,
+    teamsGet: teams.get,
+    userTeamGet: userTeam.get,
     verificationOverrideSet: async (state: UserVerificationState) => {
       const userId = options.userId()
       const user = profile.get()?.user
