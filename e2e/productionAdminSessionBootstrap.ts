@@ -11,7 +11,9 @@ export async function productionAdminSessionBootstrap(
   options: ProductionAdminSessionBootstrapOptions,
 ): Promise<void> {
   const { organizationId, organizationName, realmId } = options
-  await page.route("**/organization-discovery", (route) =>
+  // Trailing wildcard: newer Playwright route globs match the query string, so the
+  // host-based rediscovery call (/organization-discovery?domain=...) must match too.
+  await page.route("**/organization-discovery*", (route) =>
     route.fulfill({
       json: {
         branding: {

@@ -79,10 +79,13 @@ const invitation = {
   email: "invited@example.com",
   expiresAt: 1_800_000_000_000,
   id: invitationId,
+  invitedBy: null,
   organizationId,
   realmId,
   roles: ["member"],
   status: "pending",
+  team: null,
+  teamId: null,
   updatedAt: 1_700_000_000_000,
 }
 
@@ -112,6 +115,7 @@ const directoryEntry = {
       roles: ["member"],
     },
   ],
+  team: null,
   user: {
     createdAt: 1_700_000_000_000,
     displayName: "Alex Morgan",
