@@ -99,7 +99,7 @@ export function adminDemoAdapterCreate(
       if (failed !== undefined) return failed
       return resultCreate({ realm })
     },
-    whatsappOtpUsageGet: async () => {
+    whatsappOtpUsageGet: async (query) => {
       if (fixtureState() === "loading") return pending()
       const failed = readFailure("adminDemoWhatsappOtpUsageGet")
       if (failed !== undefined) return failed
@@ -116,7 +116,19 @@ export function adminDemoAdapterCreate(
           senders: [],
           totals: { sentLastDay: 0, sentLastHour: 0 },
         })
-      return resultCreate(structuredClone(adminDemoWhatsappUsageFixture))
+      // The fixture pins rows to a fixed reference instant; rebase them onto now so the window
+      // selector filters against live ages. Totals and tiles stay fixture constants.
+      const dayMs = 86_400_000
+      const windowMs = query?.window === "7d" ? 7 * dayMs : query?.window === "3d" ? 3 * dayMs : dayMs
+      const fixture = structuredClone(adminDemoWhatsappUsageFixture)
+      const newestCreatedAt = Math.max(...fixture.recent.map((row) => row.createdAt))
+      const now = Date.now()
+      return resultCreate({
+        ...fixture,
+        recent: fixture.recent
+          .map((row) => ({ ...row, createdAt: row.createdAt + (now - newestCreatedAt) }))
+          .filter((row) => row.createdAt >= now - windowMs),
+      })
     },
     realmUpdate: async (input) => {
       const failed = writeFailure("adminDemoRealmUpdate")

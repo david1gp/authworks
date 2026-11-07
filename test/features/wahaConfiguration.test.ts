@@ -39,6 +39,7 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
       ],
       freshnessTtlMs: 90_000,
       refreshIntervalMs: 30_000,
+      codeRedactionDisabled: false,
       senderDailyLimit: 100,
       senderHourlyLimit: 20,
     },
@@ -87,6 +88,26 @@ test("WAHA sender quota limits reject non-positive integers", () => {
     if (invalid.success) continue
     expect(invalid.errorMessage).toContain("AUTHWORKS_WAHA_SENDER_")
     expect(invalid.errorMessage).not.toContain("waha.example.test")
+  }
+})
+
+test("WAHA code redaction stays enabled unless explicitly disabled with a 1/true/yes value", () => {
+  const base = {
+    AUTHWORKS_WAHA_ENABLED: "true",
+    AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([{ baseUrl: "https://waha.example.test", id: "primary" }]),
+  }
+  expect(wahaConfigurationParse(base)).toMatchObject({ data: { codeRedactionDisabled: false }, success: true })
+  for (const value of ["1", "true", "TRUE", "yes", "YES", "Yes"]) {
+    expect(wahaConfigurationParse({ ...base, AUTHWORKS_WAHA_DISABLE_CODE_REDACTION: value })).toMatchObject({
+      data: { codeRedactionDisabled: true },
+      success: true,
+    })
+  }
+  for (const value of ["0", "false", "no", "", "banana"]) {
+    expect(wahaConfigurationParse({ ...base, AUTHWORKS_WAHA_DISABLE_CODE_REDACTION: value })).toMatchObject({
+      data: { codeRedactionDisabled: false },
+      success: true,
+    })
   }
 })
 
@@ -145,6 +166,7 @@ test("WAHA configuration accepts explicit refresh and freshness values only when
       endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
       freshnessTtlMs: 15_000,
       refreshIntervalMs: 5_000,
+      codeRedactionDisabled: false,
       senderDailyLimit: 100,
       senderHourlyLimit: 20,
     },
@@ -273,6 +295,7 @@ test("server composition rejects enabled WhatsApp registration without a rate-li
         endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
         freshnessTtlMs: 90_000,
         refreshIntervalMs: 30_000,
+        codeRedactionDisabled: false,
         senderDailyLimit: 100,
         senderHourlyLimit: 20,
       },

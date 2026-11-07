@@ -52,10 +52,16 @@ export function wahaSendAttemptRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    wahaSendAttemptListRecent(limit: number): Result<WahaSendAttemptRow[]> {
+    wahaSendAttemptListRecent(limit: number, since: number): Result<WahaSendAttemptRow[]> {
       try {
         return resultCreate(
-          database.select().from(wahaSendAttemptTable).orderBy(desc(wahaSendAttemptTable.createdAt)).limit(limit).all(),
+          database
+            .select()
+            .from(wahaSendAttemptTable)
+            .where(gte(wahaSendAttemptTable.createdAt, since))
+            .orderBy(desc(wahaSendAttemptTable.createdAt))
+            .limit(limit)
+            .all(),
         )
       } catch (_error) {
         return resultErrorCodedCreate(

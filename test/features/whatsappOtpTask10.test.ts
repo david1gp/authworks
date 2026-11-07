@@ -1653,6 +1653,7 @@ test("unknown, disabled, and stale cached availability fail consistently without
       endpoints: [{ client: { baseUrl: "https://waha-task10.example.test" }, id: "primary" }],
       freshnessTtlMs: 60_000,
       refreshIntervalMs: 30_000,
+      codeRedactionDisabled: false,
       senderDailyLimit: 100,
       senderHourlyLimit: 20,
     }
@@ -1983,6 +1984,7 @@ test("enabled composition refreshes once at startup and mutations use cached hea
         endpoints: [{ client: { baseUrl: "https://waha-composition-task10.example.test" }, id: "primary" }],
         freshnessTtlMs: 60_000,
         refreshIntervalMs: 30_000,
+        codeRedactionDisabled: false,
         senderDailyLimit: 100,
         senderHourlyLimit: 20,
       },

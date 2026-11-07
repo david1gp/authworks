@@ -27,6 +27,7 @@ const configuration: WahaConfiguration = {
   ],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  codeRedactionDisabled: false,
   senderDailyLimit: 100,
   senderHourlyLimit: 20,
 }

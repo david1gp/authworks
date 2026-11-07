@@ -654,6 +654,7 @@ function passwordWhatsappDeliveryInvoke(
   try {
     void deliveryPort
       .sendText({
+        code: delivery.code,
         phoneNumber: delivery.phoneNumber,
         purpose: "registration",
         realmId: delivery.realmId,

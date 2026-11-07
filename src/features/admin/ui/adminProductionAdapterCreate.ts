@@ -24,7 +24,7 @@ export function adminProductionAdapterCreate(options: {
     realmSummaryGet: () => realmRequired("adminRealmSummaryGet", (realmId) => api.realmSummaryGet(realmId)),
     realmGet: () => realmRequired("adminRealmGet", (realmId) => api.realmGet(realmId)),
     realmUpdate: (input) => realmRequired("adminRealmUpdate", (realmId) => api.realmUpdate(realmId, input)),
-    whatsappOtpUsageGet: (limit) =>
-      realmRequired("adminWhatsappOtpUsageGet", (realmId) => api.whatsappOtpUsageGet(realmId, limit)),
+    whatsappOtpUsageGet: (query) =>
+      realmRequired("adminWhatsappOtpUsageGet", (realmId) => api.whatsappOtpUsageGet(realmId, query)),
   }
 }

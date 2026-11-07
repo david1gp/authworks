@@ -2031,6 +2031,7 @@ admin.redesign.viewAll,Переглянути все
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Безпека та аудит
 admin.whatsapp.blockedDay,Заблоковано · останні 24 години
+admin.whatsapp.code,Код
 admin.whatsapp.dayWindow,Останні 24 години
 admin.whatsapp.empty,WhatsApp ще не налаштовано — немає відправників і зареєстрованих надсилань.
 admin.whatsapp.endpoint,Кінцева точка
@@ -2038,12 +2039,12 @@ admin.whatsapp.failedDay,Невдалі · останні 24 години
 admin.whatsapp.healthy,Справний
 admin.whatsapp.hourWindow,Остання година
 admin.whatsapp.noSender,—
+admin.whatsapp.phone,Телефон
 admin.whatsapp.purpose,Призначення
 admin.whatsapp.purposes,Надсилання за призначенням · останні 24 години
 admin.whatsapp.quotaBarLabel,{sender} · {window}
 admin.whatsapp.quotaLine,{sent} надіслано · залишилося {left} з {limit}
 admin.whatsapp.recent,Остання активність
-admin.whatsapp.recipient,Хеш отримувача
 admin.whatsapp.remainingHint,Залишилося {count} надсилань у найбільш завантаженого відправника
 admin.whatsapp.requestsDay,OTP-запити · останні 24 години
 admin.whatsapp.requestsHour,OTP-запити · остання година
@@ -2058,6 +2059,9 @@ admin.whatsapp.statusSent,Надіслано
 admin.whatsapp.time,Час
 admin.whatsapp.title,Використання WhatsApp
 admin.whatsapp.unhealthy,Несправний
+admin.whatsapp.window3d,Останні 3 дні
+admin.whatsapp.window7d,Останні 7 днів
+admin.whatsapp.windowLabel,Вікно останньої активності
 demo.admin.scenario.whatsapp_usage.description,Переглядайте квоти відправників і кількість запитів та останніх надсилань.
 demo.admin.scenario.whatsapp_usage.title,Використання WhatsApp
 shell.nav.whatsapp,WhatsApp

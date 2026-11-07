@@ -365,8 +365,18 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS waha_health_candidates_fresh_idx ON waha_health_candidates (status, expires_at)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS waha_send_attempts (id TEXT PRIMARY KEY NOT NULL, endpoint_id TEXT NOT NULL, session_name TEXT, purpose TEXT NOT NULL, realm_id TEXT, recipient_phone_hash TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('sent', 'failed', 'blocked')), created_at INTEGER NOT NULL CHECK (created_at >= 0))",
+      "CREATE TABLE IF NOT EXISTS waha_send_attempts (id TEXT PRIMARY KEY NOT NULL, endpoint_id TEXT NOT NULL, session_name TEXT, purpose TEXT NOT NULL, realm_id TEXT, recipient_phone TEXT, recipient_phone_hash TEXT NOT NULL, code TEXT, status TEXT NOT NULL CHECK (status IN ('sent', 'failed', 'blocked')), created_at INTEGER NOT NULL CHECK (created_at >= 0))",
     )
+    try {
+      database.run("ALTER TABLE waha_send_attempts ADD COLUMN recipient_phone TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "recipient_phone")) throw error
+    }
+    try {
+      database.run("ALTER TABLE waha_send_attempts ADD COLUMN code TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "code")) throw error
+    }
     database.run(
       "CREATE INDEX IF NOT EXISTS waha_send_attempts_sender_idx ON waha_send_attempts (endpoint_id, session_name, created_at)",
     )

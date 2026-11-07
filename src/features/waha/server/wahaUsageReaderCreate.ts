@@ -6,6 +6,7 @@ import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsapp
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import { wahaSendAttemptRepositoryCreate } from "../persistence/wahaSendAttemptRepositoryCreate.js"
 import type { WahaConfiguration } from "./wahaConfiguration.js"
+import { wahaCodeMask } from "./wahaCodeMask.js"
 import { wahaConfigurationDefaults } from "./wahaConfigurationDefaults.js"
 
 type WahaUsageReaderCreateOptions = {
@@ -28,16 +29,28 @@ const wahaUsageHourMs = 3_600_000
 const wahaUsageDayMs = 24 * 3_600_000
 const wahaUsageRecentCap = 200
 const wahaUsageHashPrefixLength = 8
+const wahaUsageWindowMs = {
+  "24h": 86_400_000,
+  "3d": 3 * 86_400_000,
+  "7d": 7 * 86_400_000,
+} as const
 
 export function wahaUsageReaderCreate(options: WahaUsageReaderCreateOptions) {
   return {
     // Implements the whatsappOtp usage port structurally; the composition call
     // site typechecks the shape so the features stay decoupled.
-    whatsappOtpUsageGet(input: { readonly limit: number; readonly realmId: string }): Result<WhatsappOtpUsageResponse> {
+    whatsappOtpUsageGet(input: {
+      readonly limit: number
+      readonly realmId: string
+      readonly window: keyof typeof wahaUsageWindowMs
+    }): Result<WhatsappOtpUsageResponse> {
       const op = "whatsappOtpUsageGet"
       const now = (options.runtime ?? runtimeCreate()).now()
       if (!Number.isSafeInteger(now) || now < 0)
         return resultErrorCodedCreate(op, "The WhatsApp usage timestamp is invalid.", "waha.invalid")
+      const windowMs = wahaUsageWindowMs[input.window]
+      if (windowMs === undefined)
+        return resultErrorCodedCreate(op, "The WhatsApp usage window is invalid.", "waha.invalid")
       const limits = {
         dailyPerSender: options.configuration?.senderDailyLimit ?? wahaConfigurationDefaults.senderDailyLimit,
         hourlyPerSender: options.configuration?.senderHourlyLimit ?? wahaConfigurationDefaults.senderHourlyLimit,
@@ -56,9 +69,11 @@ export function wahaUsageReaderCreate(options: WahaUsageReaderCreateOptions) {
       if (!attempts.success) return attempts
       const recent = options.sendAttempts.wahaSendAttemptListRecent(
         Math.max(0, Math.min(wahaUsageRecentCap, Math.floor(input.limit))),
+        now - windowMs,
       )
       if (!recent.success)
         return resultErrorCodedCreate(op, "The WhatsApp usage could not be read.", "waha.read-failed")
+      const redactionDisabled = options.configuration?.codeRedactionDisabled ?? false
       return resultCreate({
         attempts: attempts.data,
         limits,
@@ -68,6 +83,8 @@ export function wahaUsageReaderCreate(options: WahaUsageReaderCreateOptions) {
           purpose: row.purpose,
           ...(row.realmId === null ? { realmId: null } : { realmId: row.realmId }),
           recipientHashPrefix: row.recipientPhoneHash.slice(0, wahaUsageHashPrefixLength),
+          recipientPhone: row.recipientPhone,
+          code: row.code === null ? null : redactionDisabled ? row.code : wahaCodeMask(row.code),
           ...(row.sessionName === null ? { sessionName: null } : { sessionName: row.sessionName }),
           status: row.status,
         })),

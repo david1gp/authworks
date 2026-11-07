@@ -4,11 +4,13 @@ import type { WahaSendAttemptStatus } from "../domain/wahaSendAttemptStatusSchem
 export const wahaSendAttemptTable = sqliteTable(
   "waha_send_attempts",
   {
+    code: text("code"),
     createdAt: integer("created_at").notNull(),
     endpointId: text("endpoint_id").notNull(),
     id: text("id").primaryKey(),
     purpose: text("purpose").notNull(),
     realmId: text("realm_id"),
+    recipientPhone: text("recipient_phone"),
     recipientPhoneHash: text("recipient_phone_hash").notNull(),
     sessionName: text("session_name"),
     status: text("status").$type<WahaSendAttemptStatus>().notNull(),

@@ -9,6 +9,7 @@ import type { RealmUpdateRequest } from "../../realms/public/realmUpdateRequestS
 import type { SessionListResponse } from "../../sessions/public/sessionListResponseSchema.js"
 import type { SessionRevocationResponse } from "../../sessions/public/sessionRevocationResponseSchema.js"
 import type { SessionSubjectType } from "../../sessions/public/sessionSubjectTypeSchema.js"
+import type { WhatsappOtpUsageQueryInput } from "../../whatsappOtp/public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 
 /** Administrator session as the shared administration views need to render it. */
@@ -34,5 +35,5 @@ export type AdminAdapter = {
   readonly realmSummaryGet: () => Promise<Result<RealmSummaryResponse>>
   readonly realmGet: () => Promise<Result<RealmResponse>>
   readonly realmUpdate: (input: RealmUpdateRequest) => Promise<Result<RealmResponse>>
-  readonly whatsappOtpUsageGet: (limit?: number) => Promise<Result<WhatsappOtpUsageResponse>>
+  readonly whatsappOtpUsageGet: (query?: WhatsappOtpUsageQueryInput) => Promise<Result<WhatsappOtpUsageResponse>>
 }

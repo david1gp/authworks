@@ -193,3 +193,102 @@ proof (same failure on clean `main`). Then hand back for commits/merge.
 - Done: 4 commits on `feat/whatsapp-send-quota`, merged to `main`, pushed,
   worktree + branch removed. Work happens in worktree branch
   `feat/whatsapp-send-quota`; merge to `main` after Task 5 passes.
+
+## Phase 2 — real phones + codes, env redaction, recent-activity window
+
+User decisions (2026-11-07, do not re-ask):
+
+- Recent activity shows **real phone numbers (always in full)** and **real OTP
+  codes**. Codes are **redacted by default** as first char + `***` + last char
+  (6-digit code `123456` → `1***6`).
+- Redaction is disabled via env **`AUTHWORKS_WAHA_DISABLE_CODE_REDACTION=true`**
+  (boolean style of `AUTHWORKS_WAHA_ENABLED`: `1|true|yes`). Default: redacted.
+  After merge, the lead sets it to `true` in dev and production envs.
+- Recent activity **window selector: 24h (default) / 3d / 7d**, recent list
+  only. Tiles and quota bars keep fixed 1h/24h windows.
+
+Fixed design choices:
+
+- **Capture at the existing choke point**: extend the three structurally
+  identical ports (`WahaTextDeliveryPort`, `WhatsappOtpDeliveryPort`,
+  `PasswordWhatsappDeliveryPort`) with optional `code?: string`; the 5 send
+  call sites pass `delivery.code`. `wahaTextDeliveryCreate` records new
+  nullable columns `recipient_phone` (plaintext phoneNumber) and `code`
+  (plaintext, `input.code ?? null`) on every attempt row incl. blocked.
+  Existing `recipient_phone_hash` stays (quota keys unchanged).
+- **Migration**: fresh-DB `CREATE TABLE` gains the columns; existing DBs get
+  them via the `try { ALTER TABLE … ADD COLUMN } catch (duplicate → ignore)`
+  precedent in `storageSchemaCreate.ts` (`storageSchemaDuplicateColumnIsExpected`).
+  Old rows have null phone/code.
+- **Redaction is server-side** in `wahaUsageReaderCreate` (waha owns usage):
+  config field on `WahaConfiguration` (e.g. `codeRedactionDisabled`), parsed
+  in `wahaConfigurationParse`, default in `wahaConfigurationDefaults`,
+  threaded through the existing `configuration` composition path. Small
+  subject-first mask helper in the waha feature: length ≤ 2 → `***`, else
+  first + `***` + last. When redaction is on, the full code must never appear
+  in the serialized API response (tests assert this).
+- **API**: usage query gains `window` enum `24h|3d|7d` (default `24h`);
+  `wahaSendAttemptListRecent` gains a `since` filter (reader computes
+  `now - windowMs` from the injectable runtime). Recent entries gain
+  `recipientPhone: string | null` and `code: string | null` (post-redaction);
+  `recipientHashPrefix` stays as fallback display for pre-Phase-2 rows.
+  Client/AdminAdapter signatures carry the window alongside `limit`.
+- **UI**: recent table columns Time | Sender | Endpoint | Purpose | Status |
+  Phone | Code. Phone cell: `recipientPhone ?? recipientHashPrefix`; code
+  cell: `code ?? —`. Window selector (24h/3d/7d) URL-held following the
+  event-filters search-param pattern in `adminPageStateCreate`; switching
+  refetches usage. Demo fixture: fictional numbers (`+49170000000x`), codes
+  in redacted form, `createdAt` generated relative to `Date.now()` in the
+  demo adapter with rows at <24h, ~2d and ~6d so the selector visibly
+  filters; demo adapter applies the window filter. New `admin.whatsapp.*`
+  i18n keys in all 15 locales. Security note: plaintext codes now persist in
+  the DB (they expire after 10 min; display window ≤ 7d) — accepted by user.
+
+Phase 2 tasks (delegate one at a time, verify each):
+
+- **P2-1 Persistence + capture + config**: columns + migration + repo
+  `since` filter, port `code` context from 5 call sites, recording in
+  `wahaTextDeliveryCreate`, env parse + config threading to reader (no API/UI
+  change yet). Update the hash-only assertions in `wahaTextDeliveryQuota.test.ts`
+  (intentional behavior change). Tests: repo test (columns, since filter,
+  migration against a pre-Phase-2-shaped DB), delivery quota test (phone+code
+  recorded incl. blocked), config parse test (new file; defaults + true/false).
+- **P2-2 API**: query `window`, response fields, server-side redaction in
+  reader (mask helper), route/client/AdminAdapter plumbing, demo adapter
+  returns updated shape (fixtures may be minimal until P2-3). Tests: usage
+  route (redacted default + full code absent from body; disabled → full code;
+  window filters older rows out; old row → nulls).
+- **P2-3 UI**: columns, selector + URL state + refetch, demo fixtures with
+  relative timestamps + window filtering, i18n keys ×15, realm tile untouched.
+  Browser screenshot verification (Playwright, repo vite on free port, save
+  screenshot to `/home/david/whatsapp-usage-admin.png`, kill server after).
+- **P2-4 Final**: `bun run check` fully green (fix only Phase-2 fallout, prove
+  pre-existing failures against clean main). Then lead: commits, merge, push,
+  set env in dev + prod, cleanup.
+
+Phase 2 status: P2-1 done — `recipient_phone` + `code` columns with ALTER
+migration, `wahaSendAttemptListRecent(limit, since)` (reader passes `since=0`
+until P2-2), `code` port context from all 5 send sites recorded on
+sent/failed/blocked rows, `codeRedactionDisabled` config from
+`AUTHWORKS_WAHA_DISABLE_CODE_REDACTION` (default false) already reaching
+`wahaUsageReaderCreate` via the full configuration object, `.env.example`
+documented. Verified by lead: 36 focused tests pass.
+P2-2 done — `window` query (24h|3d|7d, default 24h), server-side redaction in
+`wahaUsageReaderCreate` via `wahaCodeMask` (full code absent from body when
+redacted, asserted), recent entries carry `recipientPhone` + `code` (null for
+pre-Phase-2 rows), client/AdminAdapter take an optional query object
+(`WhatsappOtpUsageQueryInput`), demo fixture rows have fictional phones +
+redacted codes (relative timestamps + window filtering land in P2-3).
+Verified by lead: 20 focused tests pass.
+P2-3 done — Phone/Code columns (hash-prefix fallback, `—` for missing code),
+URL-held 24h/3d/7d selector (event-filter search pattern, schema-validated,
+signal + URL write for refetch), demo adapter rebases fixture timestamps to
+`Date.now()` and filters by window (24h→5 rows incl. blocked+failed, 7d→7),
+5 new i18n keys ×15 locales (`recipient` key removed). Verified by lead:
+screenshots inspected (full phones, redacted codes, window filtering),
+43 focused tests pass.
+P2-4 done — `bun run check` fully green (2030 tests, build, built-output
+tests; zero fixes needed), targeted e2e 28/28 (machineAdminDemo,
+productionShells, demoHub). Phase 2 complete: commits on
+`feat/whatsapp-usage-real-codes`, merge to `main`, push, set
+`AUTHWORKS_WAHA_DISABLE_CODE_REDACTION=true` in dev + prod envs, cleanup.

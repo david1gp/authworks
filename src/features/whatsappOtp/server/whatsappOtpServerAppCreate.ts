@@ -112,8 +112,13 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
       realmId,
     })
     if (!authorized.success) return whatsappOtpErrorResponseCreate(context, authorized)
-    const limitParam = new URL(context.req.url).searchParams.get("limit")
-    const query = v.safeParse(whatsappOtpUsageQuerySchema, limitParam === null ? {} : { limit: Number(limitParam) })
+    const searchParams = new URL(context.req.url).searchParams
+    const limitParam = searchParams.get("limit")
+    const windowParam = searchParams.get("window")
+    const query = v.safeParse(whatsappOtpUsageQuerySchema, {
+      ...(limitParam === null ? {} : { limit: Number(limitParam) }),
+      ...(windowParam === null ? {} : { window: windowParam }),
+    })
     if (!query.success)
       return whatsappOtpErrorResponseCreate(
         context,
@@ -121,7 +126,11 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
       )
     return whatsappOtpResultResponseCreate(
       context,
-      (options.usage ?? whatsappOtpUsageEmptyPort).whatsappOtpUsageGet({ limit: query.output.limit, realmId }),
+      (options.usage ?? whatsappOtpUsageEmptyPort).whatsappOtpUsageGet({
+        limit: query.output.limit,
+        realmId,
+        window: query.output.window,
+      }),
     )
   })
 

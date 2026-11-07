@@ -2031,6 +2031,7 @@ admin.redesign.viewAll,查看全部
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,安全与审计
 admin.whatsapp.blockedDay,已阻止 · 最近24小时
+admin.whatsapp.code,验证码
 admin.whatsapp.dayWindow,最近24小时
 admin.whatsapp.empty,WhatsApp尚未配置 — 没有发送方，也没有发送记录。
 admin.whatsapp.endpoint,端点
@@ -2038,12 +2039,12 @@ admin.whatsapp.failedDay,失败 · 最近24小时
 admin.whatsapp.healthy,正常
 admin.whatsapp.hourWindow,最近1小时
 admin.whatsapp.noSender,—
+admin.whatsapp.phone,电话
 admin.whatsapp.purpose,用途
 admin.whatsapp.purposes,按用途统计发送 · 最近24小时
 admin.whatsapp.quotaBarLabel,{sender} · {window}
 admin.whatsapp.quotaLine,已发送{sent} · 剩余{left}（共{limit}）
 admin.whatsapp.recent,最近动态
-admin.whatsapp.recipient,接收方哈希
 admin.whatsapp.remainingHint,最紧张的发送方还剩{count}次发送额度
 admin.whatsapp.requestsDay,OTP请求 · 最近24小时
 admin.whatsapp.requestsHour,OTP请求 · 最近1小时
@@ -2058,6 +2059,9 @@ admin.whatsapp.statusSent,已发送
 admin.whatsapp.time,时间
 admin.whatsapp.title,WhatsApp使用情况
 admin.whatsapp.unhealthy,异常
+admin.whatsapp.window3d,最近3天
+admin.whatsapp.window7d,最近7天
+admin.whatsapp.windowLabel,最近动态时间范围
 demo.admin.scenario.whatsapp_usage.description,查看各发送方配额和请求计数与最近发送记录。
 demo.admin.scenario.whatsapp_usage.title,WhatsApp使用情况
 shell.nav.whatsapp,WhatsApp
