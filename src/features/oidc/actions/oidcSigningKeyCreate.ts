@@ -14,6 +14,7 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcKeyMaterialCreate } from "../domain/oidcKeyMaterialCreate.js"
 import { oidcSigningKeyPublicViewCreate } from "../domain/oidcSigningKeyPublicViewCreate.js"
+import { oidcSigningKeyValidityMs } from "../public/oidcSigningKeyValidityMs.js"
 import { oidcValueEncrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcSigningKeyCreatedEventPayloadSchema } from "../events/oidcSigningKeyCreatedEventPayloadSchema.js"
@@ -93,6 +94,7 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
       algorithm: "RS256",
       createdAt,
       encryptedPrivateKey: encrypted.data,
+      expiresAt: createdAt + oidcSigningKeyValidityMs,
       id: keyId,
       realmId: options.realmId,
       publicJwk: JSON.stringify(publicJwk),

@@ -44,6 +44,7 @@ export function adminDemoStateCreate(screen: () => AdminScreen) {
     // Every guarded administration action is answered by the same visible, cancelable dialog.
     confirm: confirmState.confirm,
     eventFilterSearch: () => location.search,
+    sessionListSearch: () => new URLSearchParams(location.search).get("q") ?? "",
     reloadKey: () => `${fixtureState()}:${i18nStore.language.get()}`,
     screen,
     userId: () => params.userId,

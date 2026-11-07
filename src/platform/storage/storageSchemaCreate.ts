@@ -709,8 +709,20 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE UNIQUE INDEX IF NOT EXISTS oidc_clients_realm_application_idx ON oidc_clients (realm_id, application_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS oidc_signing_keys (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, algorithm TEXT NOT NULL CHECK (algorithm = 'RS256'), public_jwk TEXT NOT NULL CHECK (json_valid(public_jwk)), encrypted_private_key TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'retired')), created_at INTEGER NOT NULL CHECK (created_at >= 0), retired_at INTEGER CHECK (retired_at IS NULL OR retired_at >= 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS oidc_signing_keys (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, algorithm TEXT NOT NULL CHECK (algorithm = 'RS256'), public_jwk TEXT NOT NULL CHECK (json_valid(public_jwk)), encrypted_private_key TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'retired')), created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER CHECK (expires_at IS NULL OR expires_at >= 0), retired_at INTEGER CHECK (retired_at IS NULL OR retired_at >= 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run(
+        "ALTER TABLE oidc_signing_keys ADD COLUMN expires_at INTEGER CHECK (expires_at IS NULL OR expires_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "expires_at")) throw error
+    }
+    // Keys created before expiry scheduling keep NULL until this backfill stamps
+    // created_at + 365 days (31_536_000_000 ms, the oidcSigningKeyValidityMs duration
+    // documented next to the key material; DDL states the literal because SQL cannot
+    // import it). The statement is idempotent: stamped rows are never rewritten.
+    database.run("UPDATE oidc_signing_keys SET expires_at = created_at + 31536000000 WHERE expires_at IS NULL")
     database.run(
       "CREATE INDEX IF NOT EXISTS oidc_signing_keys_realm_status_idx ON oidc_signing_keys (realm_id, status)",
     )

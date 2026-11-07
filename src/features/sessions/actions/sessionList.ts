@@ -38,26 +38,56 @@ export function sessionList(options: SessionListOptions): Result<SessionListResp
   const views = sessions.data.map((session) =>
     sessionPublicViewCreate(session, session.id === options.currentSessionId),
   )
+  // Display names and emails are resolved before pagination so a search matches the whole
+  // realm, not only the sessions that happen to land on the current page.
+  const users = userSessionDisplayList({
+    database: options.database,
+    realmId: options.realmId,
+    userIds: views.flatMap((session) => (session.subjectType === "user" ? [session.subjectId] : [])),
+  })
+  if (!users.success) return users
+  const usersById = new Map(users.data.map((user) => [user.id, user]))
+  const enriched = views.map((session) => {
+    const user = session.subjectType === "user" ? usersById.get(session.subjectId) : undefined
+    return {
+      session: { ...session, subjectDisplayName: user?.displayName ?? null, subjectEmail: user?.email ?? null },
+      userName: user?.userName,
+    }
+  })
+  const search = options.query?.search?.trim()
+  const rows =
+    search !== undefined && search.length > 0
+      ? enriched
+          .filter(({ session, userName }) => sessionRecordMatchesSearch(session, userName, search))
+          .map(({ session }) => session)
+      : enriched.map(({ session }) => session)
   const page = listRowsPage({
     idGet: (session) => session.id,
     query: options.query ?? (options.limit === undefined ? undefined : { pageSize: options.limit }),
-    rows: views,
+    rows,
     sortDirection: "desc",
     sortValueGet: (session) => session.lastUsedAt,
   })
   if (!page.success) return page
-  const users = userSessionDisplayList({
-    database: options.database,
-    realmId: options.realmId,
-    userIds: page.data.items.flatMap((session) => (session.subjectType === "user" ? [session.subjectId] : [])),
-  })
-  if (!users.success) return users
-  const usersById = new Map(users.data.map((user) => [user.id, user]))
-  return resultCreate({
-    ...page.data,
-    items: page.data.items.map((session) => {
-      const user = session.subjectType === "user" ? usersById.get(session.subjectId) : undefined
-      return { ...session, subjectDisplayName: user?.displayName ?? null, subjectEmail: user?.email ?? null }
-    }),
-  })
+  return resultCreate({ ...page.data, items: page.data.items })
+}
+
+function sessionRecordMatchesSearch(
+  session: SessionListResponse["items"][number],
+  userName: string | undefined,
+  search: string,
+): boolean {
+  const needle = search.toLowerCase()
+  return (
+    [
+      session.id,
+      userName,
+      session.subjectDisplayName,
+      session.subjectEmail,
+      session.subjectId,
+      session.device.ipAddress,
+      session.device.region,
+      session.device.countryCode,
+    ].some((value) => value?.toLowerCase().includes(needle)) === true
+  )
 }

@@ -116,31 +116,70 @@ export function OrganizationConfigurationGeneralSection(props: {
                     </p>
                   }
                 >
-                  <ul class="divide-y divide-line-subtle rounded-control border border-line-subtle">
+                  <div class="grid gap-2">
+                    <div
+                      aria-hidden="true"
+                      class="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 px-3 sm:grid"
+                    >
+                      <p class="text-[0.8125rem] font-medium">{messageTranslate("admin.organizations.metadata.key")}</p>
+                      <p class="text-[0.8125rem] font-medium">
+                        {messageTranslate("admin.organizations.metadata.value")}
+                      </p>
+                      <span />
+                    </div>
                     <For each={props.page.metadata()}>
-                      {(entry) => (
-                        <li class="grid min-w-0 items-center gap-2 px-3 py-1.5 sm:grid-cols-[minmax(0,1fr)_auto]">
-                          <div class="grid min-w-0 gap-1 sm:grid-cols-2">
+                      {(entry) => {
+                        const draft = () => props.screen.form.metadataEdits.get()[entry.key]
+                        const dirty = () => draft() !== undefined && draft() !== entry.value
+                        const busy = () => props.page.pendingId() === `metadata:${entry.key}`
+                        return (
+                          <form
+                            class="grid min-w-0 items-center gap-2 rounded-control border border-line-subtle px-3 py-1.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+                            onSubmit={(event) => {
+                              event.preventDefault()
+                              props.screen.metadataEditSubmit(entry.key, entry.value)
+                            }}
+                          >
                             <p class="min-w-0 truncate font-mono text-[0.8125rem] font-medium" title={entry.key}>
                               {entry.key}
                             </p>
-                            <p class="min-w-0 break-all text-xs text-muted-foreground">{entry.value}</p>
-                          </div>
-                          <Show when={props.canEdit}>
-                            <AuthenticatedButton
-                              disabled={props.page.pendingId() !== undefined}
-                              icon={mdiDelete}
-                              onClick={() => props.screen.metadataRemove(entry.key)}
-                              size="sm"
-                              variant="outlineRed"
-                            >
-                              {messageTranslate("admin.organizations.metadata.remove")}
-                            </AuthenticatedButton>
-                          </Show>
-                        </li>
-                      )}
+                            <AuthenticatedInput
+                              disabled={!props.canEdit}
+                              id={`configuration-metadata-${entry.key}`}
+                              onInput={(event) => props.screen.metadataEditInput(entry.key, event.currentTarget.value)}
+                              value={draft() ?? entry.value}
+                            />
+                            <Show when={props.canEdit}>
+                              <div class="flex gap-2">
+                                <AuthenticatedButton
+                                  disabled={!dirty() || busy()}
+                                  icon={mdiContentSave}
+                                  size="sm"
+                                  type="submit"
+                                  variant="filledBlue"
+                                >
+                                  {messageTranslate("common.save")}
+                                </AuthenticatedButton>
+                                <AuthenticatedButton
+                                  disabled={busy()}
+                                  icon={mdiDelete}
+                                  onClick={() => props.screen.metadataRemove(entry.key)}
+                                  size="sm"
+                                  type="button"
+                                  variant="outlineRed"
+                                >
+                                  {messageTranslate("admin.organizations.metadata.remove")}
+                                </AuthenticatedButton>
+                              </div>
+                            </Show>
+                          </form>
+                        )
+                      }}
                     </For>
-                  </ul>
+                  </div>
+                </Show>
+                <Show when={props.screen.form.validationMessage.get()}>
+                  {(validationMessage) => <AuthenticatedNotice message={validationMessage()} tone="danger" />}
                 </Show>
                 <Show when={props.canEdit}>
                   <form

@@ -327,9 +327,24 @@ export function organizationAdminScreenStateCreate(options: {
         form.providerEditClear(provider.id)
       })()
     },
+    metadataEditInput: (key: string, value: string) => form.metadataEditInput(key, value),
+    metadataEditSubmit: (key: string, currentValue: string) => {
+      const request = form.metadataEditRequest(key)
+      if (request === undefined || request.value === currentValue) return
+      if (!form.validateMetadataEdit(request.value)) return
+      void (async () => {
+        const saved = await options.page.metadataSet(key, request.value)
+        if (!saved) return
+        form.metadataEditClear(key)
+      })()
+    },
     metadataKeySet: (value: string) => form.metadataKey.set(value),
     metadataRemove: (key: string) => {
-      void options.page.metadataRemove(key)
+      void (async () => {
+        const removed = await options.page.metadataRemove(key)
+        if (!removed) return
+        form.metadataEditClear(key)
+      })()
     },
     metadataSubmit: (event: SubmitEvent) => {
       event.preventDefault()

@@ -92,6 +92,8 @@ function signingKeyIsValid(key: OidcSigningKey, realmId: string): boolean {
     key.realmId === realmId &&
     key.status === "active" &&
     key.algorithm === "RS256" &&
+    Number.isSafeInteger(key.expiresAt) &&
+    key.expiresAt >= 0 &&
     key.retiredAt === null &&
     key.id === key.publicJwk.kid &&
     key.publicJwk.alg === "RS256" &&
@@ -106,6 +108,7 @@ function signingKeysMatch(expected: OidcSigningKey, actual: OidcSigningKey): boo
   return (
     expected.id === actual.id &&
     expected.createdAt === actual.createdAt &&
+    expected.expiresAt === actual.expiresAt &&
     expected.publicJwk.alg === actual.publicJwk.alg &&
     expected.publicJwk.e === actual.publicJwk.e &&
     expected.publicJwk.kid === actual.publicJwk.kid &&

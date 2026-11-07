@@ -317,7 +317,7 @@ export function organizationAdminPageStateCreate(options: {
     memberships: memberships.get,
     metadata: metadataItems.get,
     metadataSet: async (key: string, value: string) => {
-      const saved = await mutate("metadata:set", () =>
+      const saved = await mutate(`metadata:${key}`, () =>
         options.adapter.metadataSet(options.organizationId(), key, { value }),
       )
       if (saved === undefined) return false
@@ -330,13 +330,14 @@ export function organizationAdminPageStateCreate(options: {
       return true
     },
     metadataRemove: async (key: string) => {
-      if (!(await confirmed(messageTranslate("admin.organizations.metadata.removeConfirm", { key })))) return
+      if (!(await confirmed(messageTranslate("admin.organizations.metadata.removeConfirm", { key })))) return false
       const removed = await mutate(`metadata:${key}`, () =>
         options.adapter.metadataRemove(options.organizationId(), key),
       )
-      if (removed === undefined) return
+      if (removed === undefined) return false
       metadataItems.set(metadataItems.get().filter((item) => item.key !== key))
       notice.set("metadata-removed")
+      return true
     },
     membershipAdd: async (userId: string, membershipRoles: readonly OrganizationRoleId[]) => {
       const created = await mutate("membership:create", () =>

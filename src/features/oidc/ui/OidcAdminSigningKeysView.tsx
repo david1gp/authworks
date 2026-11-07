@@ -87,6 +87,10 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                       label: messageTranslate("admin.oidc.created"),
                       value: <AuthenticatedRelativeTime value={key.createdAt} />,
                     },
+                    {
+                      label: messageTranslate("admin.oidc.keys.expires"),
+                      value: <AuthenticatedRelativeTime value={key.expiresAt} />,
+                    },
                     { label: messageTranslate("admin.oidc.keys.retiredAt"), value: retiredAt(key) },
                   ]}
                   status={
@@ -121,6 +125,9 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                 <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.status")}</TableHead>
                 <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.oidc.created")}</TableHead>
                 <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.oidc.keys.expires")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
                   {messageTranslate("admin.oidc.keys.retiredAt")}
                 </TableHead>
                 <TableHead class={authenticatedTableClasses.head}>
@@ -149,6 +156,9 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
                       <AuthenticatedRelativeTime value={key.createdAt} />
+                    </TableCell>
+                    <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
+                      <AuthenticatedRelativeTime value={key.expiresAt} />
                     </TableCell>
                     <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
                       {retiredAt(key)}

@@ -7,217 +7,217 @@ admin.activity.error,No se pudo cargar la actividad. Inténtalo de nuevo.
 admin.activity.organization,Organización
 admin.activity.realm,Ámbito de IAM
 shell.nav.activity,Actividad
-account.confirmTitle,Confirm this action
-account.factors.authenticatorName,Authenticator name
-account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
-account.securityHistory.description,Review recent security-sensitive activity on this account.
-account.access.accepted,Invitation accepted
+account.confirmTitle,Confirmar esta acción
+account.factors.authenticatorName,Nombre del autenticador
+account.factors.stepUpDescription,Verifica con autenticación multifactor y se reintentará la eliminación del autenticador.
+account.securityHistory.description,Revisa la actividad reciente sensible para la seguridad de esta cuenta.
+account.access.accepted,Invitación aceptada
 account.access.acceptedDetail,Ahora es miembro de esta organización.
-account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
+account.access.active,Organización activa
+account.access.consentDescription,Aplicaciones que pueden acceder a la información de tu cuenta.
 account.access.consentCount,{count} autorizaciones de aplicaciones
 account.access.consentCountOne,{count} autorización de aplicación
 account.access.consentManage,Autorización de aplicación: {clientId}
 account.access.consentTitle,Autorizaciones de aplicaciones
 account.access.consentUpdated,Actualizado el {date}
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevokeConfirm,Revoke access for {clientId}?
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
-account.access.declined,Invitation declined
+account.access.consentEmpty,Ninguna aplicación tiene acceso a esta cuenta.
+account.access.consentRevokeConfirm,¿Revocar el acceso de {clientId}?
+account.access.consentRevoked,Se revocó el acceso de la aplicación.
+account.access.created,Concedido el {date}
+account.access.declined,Invitación rechazada
 account.access.declinedDetail,Ha rechazado esta invitación.
 account.access.effectiveDescription,Consulta los roles y permisos de proyecto disponibles para esta cuenta en esta organización.
 account.access.effectiveDescription,Consulta los roles y permisos de proyecto disponibles para esta cuenta en esta organización.
 account.access.effectiveEmpty,No se indica acceso a proyectos para esta organización.
 account.access.effectiveEmpty,No se indica acceso a proyectos para esta organización.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveSource,Access source: {source}
+account.access.effectiveMembership,Roles de membresía: {roles}
+account.access.effectiveMembership,Roles de membresía: {roles}
+account.access.effectivePermissions,Permisos: {permissions}
+account.access.effectivePermissions,Permisos: {permissions}
+account.access.effectiveSource,Origen del acceso: {source}
+account.access.effectiveSource,Origen del acceso: {source}
 account.access.effectiveTitle,Acceso efectivo a proyectos
 account.access.effectiveTitle,Acceso efectivo a proyectos
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.email,Correo electrónico
+account.access.error,No se pudo cargar la información de esta cuenta.
+account.access.expired,Esta invitación ha caducado.
 account.access.invitationDeclineConfirm,¿Rechazar esta invitación?
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationDescription,Revisa la organización y los roles antes de responder.
+account.access.invitationEmpty,No hay invitaciones pendientes para esta cuenta.
+account.access.invitationFor,Invitación para {email}
+account.access.invitationMissing,Abre el enlace completo de la invitación para continuar.
 account.access.invitationOpen,Abrir invitación
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.loadMore,Load more access
-account.access.loadMore,Load more access
-account.access.membership,Membership roles
-account.access.organizationAccess,Organization access
-account.access.organizationAccess,Organization access
+account.access.invitationReplay,Esta invitación ya se usó o ya no está disponible.
+account.access.loadMore,Cargar más accesos
+account.access.loadMore,Cargar más accesos
+account.access.membership,Roles de membresía
+account.access.organizationAccess,Acceso a la organización
+account.access.organizationAccess,Acceso a la organización
 account.access.organizationCount,{count} organizaciones
 account.access.organizationCountOne,{count} organización
 account.access.organizationDescription,Selecciona una organización para ver tu membresía y acceso. Ver una organización no cambia tu organización activa.
-account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationEmpty,Esta cuenta no pertenece a ninguna organización.
 account.access.organizationSelector,Organización que se va a ver
-account.access.permission,You do not have permission to perform this action.
+account.access.permission,No tienes permiso para realizar esta acción.
 account.access.permissionsToggle,Mostrar {count} permisos concedidos por {source}
 account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
+account.access.scopes,Permisos: {scopes}
+account.delete.confirmLabel,Introduce {email} para confirmar
+account.delete.dangerZone,Zona de peligro
 account.delete.dangerZoneToggle,Mostrar las opciones de eliminación de la cuenta
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.export.description,"Download a JSON copy of your profile, emails, memberships, and sign-in methods for your own records."
-account.export.download,Download export
-account.export.downloading,Preparing download…
-account.export.title,Download your data
-account.export.unavailable,The data export is unavailable right now.
-account.factors.addTotp,Add authenticator
+account.delete.deletedDetail,Tu cuenta y tu acceso se eliminaron definitivamente.
+account.delete.deletedTitle,Cuenta eliminada
+account.delete.emailMismatch,La dirección de correo electrónico no coincide.
+account.delete.submit,Eliminar cuenta definitivamente
+account.delete.title,Eliminar esta cuenta definitivamente
+account.delete.warning,Esta acción no se puede deshacer. Tus sesiones y tu acceso dejarán de funcionar.
+account.export.description,"Descarga una copia JSON de tu perfil, correos electrónicos, membresías y métodos de inicio de sesión para tus registros."
+account.export.download,Descargar exportación
+account.export.downloading,Preparando la descarga…
+account.export.title,Descargar tus datos
+account.export.unavailable,La exportación de datos no está disponible en este momento.
+account.factors.addTotp,Añadir autenticador
 account.factors.authenticator,Autenticador
 account.factors.configured,Autenticador configurado
 account.factors.count,{count} autenticadores
 account.factors.missing,Autenticador sin configurar
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.alreadyLinked,This external account is already linked.
-account.identities.confirm,Confirm link
-account.identities.confirmDescription,Confirm linking your {provider} account to continue.
-account.identities.confirmTitle,Confirm external account
+account.factors.confirm,Confirmar
+account.factors.description,Revisa los métodos de autenticación disponibles para tu cuenta y gestiona tu aplicación de autenticación.
+account.factors.emailOtp,Código por correo
+account.factors.finishTotp,Terminar la configuración del autenticador
+account.factors.passkeyCount,{count} claves de acceso
+account.factors.passkeys,Claves de acceso
+account.factors.removeTotp,Eliminar autenticador
+account.factors.totp,Aplicación de autenticación
+account.factors.totpSecretOnce,Añade este secreto a tu autenticador e introduce su código de seis dígitos. Este secreto de configuración solo se muestra ahora.
+account.factors.verificationCode,Código de verificación
+account.identities.alreadyLinked,Esta cuenta externa ya está vinculada.
+account.identities.confirm,Confirmar vinculación
+account.identities.confirmDescription,Confirma la vinculación de tu cuenta de {provider} para continuar.
+account.identities.confirmTitle,Confirmar cuenta externa
 account.identities.connecting,Continúa en la ventana del proveedor y vuelve aquí para confirmar la vinculación.
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.externalAccount,external account
-account.identities.linkDescription,Connect another provider to use it as an authentication method.
-account.identities.linkIncomplete,The provider window closed before linking finished. Try again.
-account.identities.linkTitle,Link an external account
+account.identities.description,Cuentas externas vinculadas a tu identidad de Authworks. Desvincula las cuentas que ya no uses.
+account.identities.empty,No hay identidades externas vinculadas
+account.identities.externalAccount,cuenta externa
+account.identities.linkDescription,Conecta otro proveedor para usarlo como método de autenticación.
+account.identities.linkIncomplete,La ventana del proveedor se cerró antes de terminar la vinculación. Inténtalo de nuevo.
+account.identities.linkTitle,Vincular una cuenta externa
 account.identities.manage,Gestionar la cuenta de {provider} ({account})
-account.identities.popupBlocked,Allow pop-ups to connect an external account.
-account.identities.recentAuthRequired,"For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
-account.identities.signInAgain,Sign in again
-account.identities.stepUpDescription,"Verify with multi-factor authentication, then the external account action will be retried."
-account.identities.unlink,Unlink
+account.identities.popupBlocked,Permite las ventanas emergentes para conectar una cuenta externa.
+account.identities.recentAuthRequired,"Por seguridad, verifica que eres tú antes de vincular una cuenta externa. Completa la verificación multifactor o inicia sesión de nuevo y reinténtalo."
+account.identities.signInAgain,Iniciar sesión de nuevo
+account.identities.stepUpDescription,Verifica con autenticación multifactor y se reintentará la acción de la cuenta externa.
+account.identities.unlink,Desvincular
 account.identities.unlinkConfirm,¿Desvincular esta cuenta externa?
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
+account.passkeys.add,Añadir clave de acceso
+account.passkeys.created,Creada el {date}
+account.passkeys.description,Las claves de acceso usan el bloqueo de pantalla de tu dispositivo o una llave de seguridad para un inicio de sesión seguro.
+account.passkeys.deviceBound,Clave de acceso vinculada al dispositivo
+account.passkeys.empty,No hay claves de acceso registradas
 account.passkeys.manage,Administrar {kind} ({id})
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.currentOptionalHint,Leave blank if no password is set yet.
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.set,Your password was set.
-account.password.setSubmit,Set password
-account.password.setTitle,Set password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
+account.passkeys.remove,Eliminar
+account.passkeys.synced,Clave de acceso sincronizada
+account.password.changed,Se cambió tu contraseña.
+account.password.confirm,Confirma la nueva contraseña
+account.password.current,Contraseña actual
+account.password.currentOptionalHint,Déjalo en blanco si aún no hay una contraseña configurada.
+account.password.description,Usa una contraseña única que no uses en otros servicios.
+account.password.mismatch,Las nuevas contraseñas no coinciden.
+account.password.new,Nueva contraseña
+account.password.set,Se configuró tu contraseña.
+account.password.setSubmit,Configurar contraseña
+account.password.setTitle,Configurar contraseña
+account.password.submit,Cambiar contraseña
+account.password.title,Cambiar contraseña
+account.password.tooShort,La nueva contraseña debe contener al menos 8 caracteres.
+account.profile.displayName,Nombre visible
 account.profile.copy,Copiar {field}
 account.profile.copied,Se copió {field}.
 account.profile.copyFailed,No se pudo copiar {field}. Selecciona el valor y cópialo manualmente.
 account.profile.cancel,Cancelar
 account.profile.edit,Editar perfil
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
+account.profile.displayNameRequired,Introduce un nombre visible.
+account.profile.email,Dirección de correo electrónico
 account.profile.emailMissing,Correo electrónico no configurado
-account.profile.emailAdd,Add email address
-account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
-account.profile.emailAddTitle,Add email address
-account.profile.emailAddresses,Email addresses
-account.profile.emailAddressesEmpty,No email addresses are available.
-account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailAdd,Añadir dirección de correo electrónico
+account.profile.emailAddDescription,Añade otra dirección a tu cuenta. Estará disponible después de verificarla.
+account.profile.emailAddTitle,Añadir dirección de correo electrónico
+account.profile.emailAddresses,Direcciones de correo electrónico
+account.profile.emailAddressesEmpty,No hay direcciones de correo electrónico disponibles.
+account.profile.emailAddressesSaved,Se actualizaron tus direcciones de correo electrónico.
 account.profile.emailDescription,Consulta y administra las direcciones vinculadas a tu cuenta.
-account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
-account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDifferent,Use a different address
-account.profile.emailInvalid,Enter a valid email address.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailNew,New email address
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailResend,Resend verification email
-account.profile.emailSending,Sending verification email…
-account.profile.emailToken,Verification token
-account.profile.emailTokenInvalid,Enter the verification token from the email.
-account.profile.emailUpdating,Updating…
-account.profile.emailVerify,Verify email address
-account.profile.emailVerifying,Verifying…
-account.profile.firstName,First name
-account.profile.gender,Gender
-account.profile.gender.man,Man
-account.profile.gender.nonBinary,Non-binary
-account.profile.gender.unspecified,Unspecified
-account.profile.gender.woman,Woman
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
+account.profile.emailCodeSent,Abre el enlace de verificación enviado a {email} o pega su token a continuación.
+account.profile.emailCodeSentGeneric,Abre el enlace de verificación enviado a tu nueva dirección o pega su token a continuación.
+account.profile.emailDifferent,Usar una dirección diferente
+account.profile.emailInvalid,Introduce una dirección de correo electrónico válida.
+account.profile.emailMakePrimary,Hacer principal
+account.profile.emailNew,Nueva dirección de correo electrónico
+account.profile.emailPrimary,Principal
+account.profile.emailPrimaryRemoveBlocked,La dirección de correo electrónico principal no se puede eliminar.
+account.profile.emailRefresh,Actualizar direcciones
+account.profile.emailRemove,Eliminar
+account.profile.emailRemoving,Eliminando…
+account.profile.emailResend,Reenviar correo de verificación
+account.profile.emailSending,Enviando correo de verificación…
+account.profile.emailToken,Token de verificación
+account.profile.emailTokenInvalid,Introduce el token de verificación del correo electrónico.
+account.profile.emailUpdating,Actualizando…
+account.profile.emailVerify,Verificar dirección de correo electrónico
+account.profile.emailVerifying,Verificando…
+account.profile.firstName,Nombre
+account.profile.gender,Género
+account.profile.gender.man,Hombre
+account.profile.gender.nonBinary,No binario
+account.profile.gender.unspecified,Sin especificar
+account.profile.gender.woman,Mujer
+account.profile.lastName,Apellidos
+account.profile.nickName,Apodo
 account.profile.notSet,No establecido
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.phoneAdd,Add phone number
-account.profile.phoneChange,Change phone number
-account.profile.phoneCode,Six-digit verification code
-account.profile.phoneCodeInvalid,Enter the six-digit verification code.
-account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.personalDescription,Mantén actualizado el perfil que se muestra a las aplicaciones y a los administradores.
+account.profile.personalInformation,Información personal
+account.profile.phoneAdd,Añadir número de teléfono
+account.profile.phoneChange,Cambiar número de teléfono
+account.profile.phoneCode,Código de verificación de seis dígitos
+account.profile.phoneCodeInvalid,Introduce el código de verificación de seis dígitos.
+account.profile.phoneCodeSent,Introduce el código enviado a {phoneNumber} por WhatsApp.
 account.profile.phoneDescription,Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified.
-account.profile.phoneDifferent,Use a different number
+account.profile.phoneDifferent,Usar un número diferente
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
-account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
-account.profile.phoneNew,New phone number
-account.profile.phoneNumber,Phone number
+account.profile.phoneInvalid,Introduce un número de teléfono válido en formato E.164.
+account.profile.phoneNew,Nuevo número de teléfono
+account.profile.phoneNumber,Número de teléfono
 account.profile.phoneNumbers,Números de teléfono
 account.profile.phonePlaceholder,+14155552671
-account.profile.phoneResend,Resend code
-account.profile.phoneSaved,Your verified phone number was updated.
-account.profile.phoneSending,Sending code…
-account.profile.phoneVerify,Verify phone number
-account.profile.phoneVerifying,Verifying…
-account.profile.picture,Profile picture
+account.profile.phoneResend,Reenviar código
+account.profile.phoneSaved,Se actualizó tu número de teléfono verificado.
+account.profile.phoneSending,Enviando código…
+account.profile.phoneVerify,Verificar número de teléfono
+account.profile.phoneVerifying,Verificando…
+account.profile.picture,Foto de perfil
 account.profile.pictureChange,Cambiar foto de perfil
-account.profile.pictureChoose,Choose a picture file
+account.profile.pictureChoose,Elige un archivo de imagen
 account.profile.pictureDropHint,"Arrastra y suelta una imagen aquí, o haz clic para explorar"
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureHint,"Sube una imagen JPEG, PNG, WebP o GIF de como máximo 512 KiB."
 account.profile.picturePreview,Vista previa de la foto de perfil
-account.profile.pictureRemove,Remove picture
+account.profile.pictureRemove,Eliminar foto
 account.profile.pictureRemoving,Eliminando la imagen…
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
-account.profile.preferredLanguage,Preferred language
+account.profile.pictureSaved,Foto de perfil actualizada.
+account.profile.pictureTooLarge,Elige una imagen de como máximo 512 KiB.
+account.profile.pictureTypeInvalid,"Elige una imagen JPEG, PNG, WebP o GIF."
+account.profile.pictureUploading,Subiendo la imagen…
+account.profile.preferredLanguage,Idioma preferido
 account.profile.preferredLanguage.unspecified,No establecido
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
+account.profile.save,Guardar cambios
+account.profile.saved,Se guardó tu perfil.
+account.profile.userName,Nombre de usuario
+account.profile.verificationPending,Verificación pendiente
+account.profile.verified,Verificado
 account.recovery.description,"Genere códigos de respaldo de un solo uso para iniciar sesión cuando sus otros métodos no estén disponibles."
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
+account.recovery.generate,Generar códigos nuevos
+account.recovery.once,Copia o imprime estos códigos ahora. No se pueden mostrar de nuevo.
+account.recovery.remaining,Quedan {count} códigos sin usar. Generar códigos nuevos invalida el conjunto anterior.
+account.recovery.saveNow,Guarda tus códigos de recuperación ahora
+account.recovery.saved,Guardé estos códigos
 account.refreshTokens.active,Activo
 account.refreshTokens.activeShown,{count} activas mostradas
 account.refreshTokens.countOneShown,{count} aplicación mostrada
@@ -235,99 +235,99 @@ account.refreshTokens.revokeAll,Revocar todas las familias
 account.refreshTokens.revokeAllConfirm,¿Revocar todas las familias de tokens de actualización de esta cuenta?
 account.refreshTokens.revokeConfirm,¿Revocar esta familia de tokens de actualización y sus tokens de acceso?
 account.refreshTokens.revoked,Revocado
-account.refreshTokens.scopeCount,{count} scopes
+account.refreshTokens.scopeCount,{count} ámbitos
 account.refreshTokens.title,Familias de tokens de actualización
-account.security.authenticators,Authenticators
-account.security.identityCount,{count} linked identities
+account.security.authenticators,Autenticadores
+account.security.identityCount,{count} identidades vinculadas
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.security.recoveryMfa,Autenticación multifactor (MFA)
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.empty,No security activity is available
+account.securityHistory.category.emailChanges,Cambios de correo electrónico
+account.securityHistory.category.impersonation,Suplantación de identidad
+account.securityHistory.category.linkedIdentities,Identidades vinculadas
+account.securityHistory.category.mfa,Autenticación multifactor
+account.securityHistory.category.passkeys,Claves de acceso
+account.securityHistory.category.passwords,Contraseñas
+account.securityHistory.category.refreshTokens,Tokens de actualización
+account.securityHistory.category.sessions,Sesiones
+account.securityHistory.empty,No hay actividad de seguridad disponible
 account.securityHistory.countOneShown,{count} evento mostrado
 account.securityHistory.countShown,{count} eventos mostrados
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRenamed,A passkey was renamed
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialRevokedByAdministrator,A passkey was revoked by an administrator
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Recovery codes were invalidated by an administrator
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpRemovedByAdministrator,An authenticator was removed by an administrator
-account.securityHistory.event.totpRenamed,An authenticator was renamed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-account.securityOverview.backupCodeCount,{count} backup codes remaining
-account.securityOverview.backupCodes,Backup codes
-account.securityOverview.email,Email
-account.securityOverview.emailMissing,No verified email
-account.securityOverview.emailVerified,{email} verified
-account.securityOverview.passkeyCount,{count} passkeys configured
-account.securityOverview.passkeys,Passkeys
-account.securityOverview.password,Password
-account.securityOverview.passwordMissing,No password set
-account.securityOverview.passwordSet,Password set
-account.securityOverview.phone,Phone
-account.securityOverview.phoneMissing,No verified phone
-account.securityOverview.phoneVerified,{phone} verified
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
+account.securityHistory.event.accessTokenRevoked,Se revocó un token de acceso
+account.securityHistory.event.emailChangeFailed,Falló un cambio de dirección de correo electrónico
+account.securityHistory.event.emailChangeRequested,Se solicitó un cambio de dirección de correo electrónico
+account.securityHistory.event.emailChangeVerified,Se verificó una nueva dirección de correo electrónico
+account.securityHistory.event.emailChanged,Cambió la dirección de correo electrónico de la cuenta
+account.securityHistory.event.identityLinked,Se vinculó una identidad externa
+account.securityHistory.event.identityUnlinked,Se desvinculó una identidad externa
+account.securityHistory.event.impersonationEnded,Terminó una sesión de suplantación
+account.securityHistory.event.impersonationStarted,Se inició una sesión de suplantación
+account.securityHistory.event.mfaCompleted,Se completó un desafío multifactor
+account.securityHistory.event.mfaFailed,Falló un desafío multifactor
+account.securityHistory.event.mfaStarted,Se inició un desafío multifactor
+account.securityHistory.event.passkeyAuthenticationCompleted,Se completó una autenticación con clave de acceso
+account.securityHistory.event.passkeyAuthenticationStarted,Se inició una autenticación con clave de acceso
+account.securityHistory.event.passkeyCredentialRenamed,Se cambió el nombre de una clave de acceso
+account.securityHistory.event.passkeyCredentialRevoked,Se revocó una clave de acceso
+account.securityHistory.event.passkeyCredentialRevokedByAdministrator,Un administrador revocó una clave de acceso
+account.securityHistory.event.passkeyCredentialUsed,Se usó una clave de acceso
+account.securityHistory.event.passkeyRegistrationCompleted,Se completó un registro de clave de acceso
+account.securityHistory.event.passkeyRegistrationStarted,Se inició un registro de clave de acceso
+account.securityHistory.event.passwordChanged,Se cambió la contraseña
+account.securityHistory.event.passwordEmailVerified,Se verificó la dirección de correo electrónico de la contraseña
+account.securityHistory.event.passwordLocked,Se bloqueó la cuenta de contraseña
+account.securityHistory.event.passwordLoginFailed,Falló un inicio de sesión con contraseña
+account.securityHistory.event.passwordLoginSucceeded,Un inicio de sesión con contraseña se realizó correctamente
+account.securityHistory.event.passwordRecovered,Se recuperó la contraseña
+account.securityHistory.event.passwordRecoveryRequested,Se solicitó la recuperación de la contraseña
+account.securityHistory.event.passwordUnlocked,Se desbloqueó la cuenta de contraseña
+account.securityHistory.event.passwordWhatsappVerified,Se verificó el número de WhatsApp para inicio de sesión
+account.securityHistory.event.recoveryCodeUsed,Se usó un código de recuperación
+account.securityHistory.event.recoveryCodesGenerated,Se generaron códigos de recuperación
+account.securityHistory.event.recoveryCodesInvalidatedByAdministrator,Un administrador invalidó los códigos de recuperación
+account.securityHistory.event.refreshTokenFamilyRevoked,Se revocó una familia de tokens de actualización
+account.securityHistory.event.sessionCreated,Se creó una sesión
+account.securityHistory.event.sessionRevoked,Se revocó una sesión
+account.securityHistory.event.sessionRotated,Se renovó una sesión
+account.securityHistory.event.sessionsRevoked,Se revocaron todas las sesiones
+account.securityHistory.event.totpEnrollmentConfirmed,Se confirmó un autenticador
+account.securityHistory.event.totpEnrollmentStarted,Se inició la configuración del autenticador
+account.securityHistory.event.totpRemoved,Se eliminó un autenticador
+account.securityHistory.event.totpRemovedByAdministrator,Un administrador eliminó un autenticador
+account.securityHistory.event.totpRenamed,Se cambió el nombre de un autenticador
+account.securityHistory.event.totpVerified,Un desafío de autenticador se realizó correctamente
+account.securityHistory.loadMore,Cargar más actividad de seguridad
+account.securityOverview.backupCodeCount,Quedan {count} códigos de respaldo
+account.securityOverview.backupCodes,Códigos de respaldo
+account.securityOverview.email,Correo electrónico
+account.securityOverview.emailMissing,Ningún correo verificado
+account.securityOverview.emailVerified,{email} verificado
+account.securityOverview.passkeyCount,{count} claves de acceso configuradas
+account.securityOverview.passkeys,Claves de acceso
+account.securityOverview.password,Contraseña
+account.securityOverview.passwordMissing,Ninguna contraseña configurada
+account.securityOverview.passwordSet,Contraseña configurada
+account.securityOverview.phone,Teléfono
+account.securityOverview.phoneMissing,Ningún teléfono verificado
+account.securityOverview.phoneVerified,{phone} verificado
+account.sessionExpired,Tu sesión ha caducado
+account.sessions.current,Sesión actual
 account.sessions.count,{count} sesiones activas
 account.sessions.countOne,{count} sesión activa
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.sessions.description,Revisa los dispositivos donde tu cuenta tiene la sesión iniciada y revoca cualquier sesión que no reconozcas.
+account.sessions.empty,No hay sesiones activas
+account.sessions.lastUsed,Último uso {date}
 account.sessions.manage,Sesión en {device}
-account.sessions.revoke,Revoke session
-account.sessions.revokeConfirm,Revoke this session immediately?
+account.sessions.revoke,Revocar sesión
+account.sessions.revokeConfirm,¿Revocar esta sesión inmediatamente?
 account.sessions.deviceLabel,{browser} en {os}
 account.sessions.deviceLabelBrowser,{browser}
 account.sessions.deviceLabelOs,{os}
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,Dispositivo desconocido
+account.status.available,Disponible
+account.status.configured,Configurado
+account.status.notConfigured,Sin configurar
+account.status.unavailable,No disponible
 account.workspace.devicesTitle,Dispositivos y aplicaciones
 admin.common.confirmTitle,Confirmar esta acción
 admin.common.permission,No tienes permiso para ver estos datos de administración.
@@ -414,44 +414,44 @@ admin.events.systemActor,Sistema
 admin.events.title,Eventos de auditoría
 admin.events.type,Tipo de evento
 admin.events.userSubject,Sujeto de usuario
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.activeTitle,Suplantación activa
+admin.impersonation.actor,Administrador
+admin.impersonation.assuranceRequired,Suplantar a un usuario requiere autenticación multifactor. Inicia sesión de nuevo con un segundo factor para continuar.
+admin.impersonation.assuranceRequiredTitle,Se requiere un inicio de sesión más seguro
+admin.impersonation.auditLink,Ver los eventos de auditoría de esta suplantación
+admin.impersonation.bannerLabel,Suplantación en curso
+admin.impersonation.bannerSummary,{actor} está actuando como {subject}. Esta sesión termina en {remaining}.
+admin.impersonation.description,Actúa como otra persona en una sesión breve de soporte registrada. Siempre se requieren un motivo y una duración limitada.
+admin.impersonation.duration,Duración
+admin.impersonation.durationHint,"La suplantación siempre termina automáticamente, como máximo al cabo de quince minutos."
+admin.impersonation.durationInvalid,Elige una duración de entre un segundo y quince minutos.
+admin.impersonation.durationMinutes,{count} minutos
+admin.impersonation.end,Terminar suplantación
+admin.impersonation.endConfirm,¿Terminar ahora la suplantación de {subject}?
+admin.impersonation.endedNotice,La sesión de suplantación terminó.
+admin.impersonation.expires,Termina
+admin.impersonation.expiringSoon,Esta suplantación termina en menos de un minuto.
+admin.impersonation.nestedRejected,Ya estás actuando como otro usuario. Termina la suplantación actual antes de iniciar una nueva.
+admin.impersonation.nestedRejectedTitle,No se permite la suplantación anidada
+admin.impersonation.noOrganization,Ninguna organización
+admin.impersonation.organization,Organización
+admin.impersonation.organizationHint,Opcional. Limita la sesión a los permisos que la persona tiene en una organización.
+admin.impersonation.permissionDenied,No tienes permiso para suplantar usuarios en este realm.
 admin.impersonation.permissionDeniedTitle,Acceso no disponible
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
+admin.impersonation.reason,Motivo
+admin.impersonation.reasonHint,Se registra en la auditoría y se muestra a la persona por la que actúas.
+admin.impersonation.reasonRequired,Introduce un motivo de entre 3 y 256 caracteres.
+admin.impersonation.remaining,Restante
 admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedAt,Started
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
+admin.impersonation.selfRejected,No puedes suplantar tu propia cuenta.
+admin.impersonation.start,Iniciar suplantación
+admin.impersonation.startConfirm,¿Empezar a actuar como {subject}? Todo lo que hagas quedará registrado a tu nombre.
+admin.impersonation.startedAt,Inicio
+admin.impersonation.startedNotice,Ahora estás actuando como {subject}.
+admin.impersonation.subject,Actuando como
+admin.impersonation.target,Usuario a suplantar
+admin.impersonation.targetRequired,Elige el usuario al que quieres suplantar.
+admin.impersonation.title,Suplantación
 admin.machine.assuranceRequired,Gestionar usuarios de máquina y sus credenciales requiere un inicio de sesión más fuerte y reciente. Vuelva a iniciar sesión para continuar.
 admin.machine.assuranceRequiredTitle,Se requiere un inicio de sesión más fuerte
 admin.machine.created,Creado
@@ -523,8 +523,8 @@ admin.machine.users.created,El usuario de máquina fue creado.
 admin.machine.users.description,"Identidades no humanas que se autentican con credenciales de cliente, tokens o claves de API en este realm."
 admin.machine.users.detailTitle,Detalle del usuario máquina
 admin.machine.users.displayName,Nombre visible
-admin.machine.users.edit,Edit machine user
-admin.machine.users.editTitle,Edit machine user
+admin.machine.users.edit,Editar usuario de máquina
+admin.machine.users.editTitle,Editar usuario de máquina
 admin.machine.users.empty,Todavía no existe ningún usuario de máquina en este realm.
 admin.machine.users.identifier,Identificador de usuario de máquina
 admin.machine.users.invalid,"Introduzca un nombre visible y un nombre de usuario, y utilice solo valores de ámbito válidos."
@@ -535,23 +535,23 @@ admin.machine.users.scopes,Ámbitos
 admin.machine.users.scopesHint,Separe los ámbitos con espacios o comas. Los ámbitos se comparan de forma exacta.
 admin.machine.users.search,Buscar usuarios de máquina
 admin.machine.users.title,Usuarios de máquina
-admin.machine.users.updated,The machine user was updated.
+admin.machine.users.updated,El usuario de máquina se actualizó.
 admin.machine.users.userName,Nombre de usuario
 admin.machine.users.userNameHint,Se usa como ID de cliente al intercambiar credenciales de cliente.
-admin.navigation.description,Choose an administration resource
+admin.navigation.description,Elige un recurso de administración
 admin.navigation.label,Administración
-admin.navigation.title,Administration navigation
+admin.navigation.title,Navegación de administración
 admin.oidc.assuranceRequired,Administrar la configuración de OpenID Connect requiere un inicio de sesión más fuerte y reciente. Vuelva a iniciar sesión para continuar.
 admin.oidc.assuranceRequiredTitle,Se requiere un inicio de sesión más fuerte
 admin.oidc.clients.consent,Consentimiento
-admin.oidc.clients.accessTokenLifetime,Access token lifetime (seconds)
-admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
-admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.additionalOrigins,Additional browser origins
-admin.oidc.clients.additionalOriginsHint,One exact origin per line. Redirect URI origins are already included; wildcards are not supported.
-admin.oidc.clients.application,Application
-admin.oidc.clients.applicationNone,No application
-admin.oidc.clients.compatibility,Compatibility settings
+admin.oidc.clients.accessTokenLifetime,Duración del token de acceso (segundos)
+admin.oidc.clients.accessTokenRoleAssertion,Añadir roles de proyecto a los tokens de acceso
+admin.oidc.clients.accessTokenRoleAssertionHint,Usa los roles efectivos del proyecto y la organización configurados del cliente.
+admin.oidc.clients.additionalOrigins,Orígenes adicionales del navegador
+admin.oidc.clients.additionalOriginsHint,Un origen exacto por línea. Los orígenes de URI de redirección ya están incluidos; no se admiten comodines.
+admin.oidc.clients.application,Aplicación
+admin.oidc.clients.applicationNone,Sin aplicación
+admin.oidc.clients.compatibility,Ajustes de compatibilidad
 admin.oidc.clients.consentRequired,Obligatorio
 admin.oidc.clients.consentSkipped,No obligatorio
 admin.oidc.clients.create,Registrar cliente
@@ -559,33 +559,33 @@ admin.oidc.clients.createDescription,Registre una aplicación que inicie sesión
 admin.oidc.clients.created,El cliente se registró.
 admin.oidc.clients.description,Aplicaciones que autentican a las personas mediante OpenID Connect en este dominio.
 admin.oidc.clients.detailTitle,Detalle del cliente OIDC
-admin.oidc.clients.devMode,Development mode
-admin.oidc.clients.devModeHint,Allows plain-http redirects on any host. Only use for local development.
+admin.oidc.clients.devMode,Modo de desarrollo
+admin.oidc.clients.devModeHint,Permite redirecciones http sin TLS en cualquier host. Úsalo solo para desarrollo local.
 admin.oidc.clients.empty,Todavía no hay clientes de OpenID Connect registrados en este dominio.
 admin.oidc.clients.emptySearch,Ningún cliente coincide con esta búsqueda.
 admin.oidc.clients.exactMatchHint,"Una URI por línea. Cada redirección se compara de forma exacta, por lo que se rechazan los comodines y las diferencias finales."
-admin.oidc.clients.grantTypes,Grant types
+admin.oidc.clients.grantTypes,Tipos de concesión
 admin.oidc.clients.identifier,Identificador del cliente
-admin.oidc.clients.idTokenLifetime,ID token lifetime (seconds)
-admin.oidc.clients.idTokenRoleAssertion,Add project roles to ID tokens
-admin.oidc.clients.idTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
-admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
-admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
+admin.oidc.clients.idTokenLifetime,Duración del token de ID (segundos)
+admin.oidc.clients.idTokenRoleAssertion,Añadir roles de proyecto a los tokens de ID
+admin.oidc.clients.idTokenRoleAssertionHint,Usa los roles efectivos del proyecto y la organización configurados del cliente.
+admin.oidc.clients.idTokenUserinfoAssertion,Añadir reclamaciones UserInfo con ámbito a los tokens de ID
+admin.oidc.clients.idTokenUserinfoAssertionHint,Usa solo las reclamaciones personales permitidas por los ámbitos concedidos.
 admin.oidc.clients.invalid,"Introduzca un nombre de cliente, al menos un URI de redirección exacto y al menos un ámbito."
 admin.oidc.clients.lifecycleChanged,Se cambió el estado del cliente.
-admin.oidc.clients.lifetimeHint,Whole seconds. Leave empty to use the server default.
-admin.oidc.clients.lifetimesInvalid,Lifetimes must be whole seconds within the allowed range.
+admin.oidc.clients.lifetimeHint,Segundos enteros. Déjalo vacío para usar el valor predeterminado del servidor.
+admin.oidc.clients.lifetimesInvalid,Las duraciones deben ser segundos enteros dentro del intervalo permitido.
 admin.oidc.clients.missingId,Debe seleccionarse un cliente OIDC para este destino.
 admin.oidc.clients.name,Nombre del cliente
 admin.oidc.clients.postLogoutUris,URI de redirección tras el cierre de sesión
-admin.oidc.clients.project,Project
-admin.oidc.clients.projectNone,No project
+admin.oidc.clients.project,Proyecto
+admin.oidc.clients.projectNone,Sin proyecto
 admin.oidc.clients.redirectUris,URI de redirección
-admin.oidc.clients.refreshTokenAbsoluteLifetime,Absolute refresh token lifetime (seconds)
-admin.oidc.clients.refreshTokenIdleLifetime,Idle refresh token lifetime (seconds)
+admin.oidc.clients.refreshTokenAbsoluteLifetime,Duración absoluta del token de actualización (segundos)
+admin.oidc.clients.refreshTokenIdleLifetime,Duración en inactividad del token de actualización (segundos)
 admin.oidc.clients.removeConfirm,¿Eliminar este cliente OIDC? Las aplicaciones que lo usan dejan de funcionar inmediatamente.
 admin.oidc.clients.requireConsent,Pedir a la persona que apruebe esta aplicación
-admin.oidc.clients.responseTypes,Response types
+admin.oidc.clients.responseTypes,Tipos de respuesta
 admin.oidc.clients.saved,El cliente se guardó.
 admin.oidc.clients.scopes,Ámbitos permitidos
 admin.oidc.clients.search,Buscar clientes
@@ -635,6 +635,7 @@ admin.oidc.keys.algorithm,Algoritmo
 admin.oidc.keys.create,Añadir clave
 admin.oidc.keys.created,Se publicó una nueva clave de firma.
 admin.oidc.keys.empty,Todavía no existen claves de firma para este dominio.
+admin.oidc.keys.expires,Vence
 admin.oidc.keys.keyId,ID de clave
 admin.oidc.keys.privateNotice,Solo se muestran los metadatos de la clave pública. El material de la clave privada nunca se envía al navegador.
 admin.oidc.keys.retire,Retirar
@@ -699,10 +700,10 @@ admin.organizations.domains.removeConfirm,¿Eliminar el dominio {domain}? El des
 admin.organizations.domains.removed,El dominio se ha eliminado.
 admin.organizations.domains.unverified,Pendiente de verificación
 admin.organizations.domains.verificationRecord,Añade este registro DNS TXT y luego verifica.
-admin.organizations.domains.verified,Verified
+admin.organizations.domains.verified,Verificado
 admin.organizations.domains.verify,Verificar dominio
 admin.organizations.domains.verifyDone,El dominio se ha verificado.
-admin.organizations.invitations.email,Email address
+admin.organizations.invitations.email,Correo electrónico
 admin.organizations.invitations.emailInvalid,Introduzca una dirección de correo electrónico válida.
 admin.organizations.invitations.empty,No se ha enviado ninguna invitación para esta organización.
 admin.organizations.invitations.expires,Caduca
@@ -744,74 +745,74 @@ admin.organizations.memberships.user,Usuario
 admin.organizations.memberships.userId,ID de usuario
 admin.organizations.permissionDenied,No tienes permiso para ver o cambiar esta organización.
 admin.organizations.permissionDeniedTitle,Acceso no disponible
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
+admin.organizations.policy.allowedFactors,Factores MFA permitidos
+admin.organizations.policy.allowedFactorsDescription,Solo estos factores pueden completar el MFA. El inicio de sesión con WhatsApp y los códigos de recuperación no son factores configurables.
+admin.organizations.policy.assurance.authenticated,Sesión autenticada
+admin.organizations.policy.assurance.multi_factor,Sesión multifactor
+admin.organizations.policy.assurance.none,Sin requisito de garantía
 admin.organizations.policy.description,Elige qué métodos de inicio de sesión pueden usar las personas y qué proveedores configurados aparecen.
 admin.organizations.policy.domainDiscovery,Detectar la organización a partir de un dominio de correo
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
+admin.organizations.policy.down,Bajar
+admin.organizations.policy.effectiveValue,Valor efectivo: {value}
 admin.organizations.policy.emailOtp,Código de un solo uso por correo
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
+admin.organizations.policy.enforcementAuthenticated,Las operaciones protegidas de la organización requieren una sesión autenticada.
+admin.organizations.policy.enforcementMultiFactor,Las operaciones protegidas de la organización requieren una sesión multifactor y solicitan verificación adicional cuando es necesario.
+admin.organizations.policy.enforcementNone,Las operaciones protegidas de la organización no añaden ningún requisito de garantía.
+admin.organizations.policy.enforcementOptional,El inicio de sesión puede completarse sin un factor MFA adicional.
+admin.organizations.policy.enforcementRequired,El inicio de sesión no puede completarse hasta que un factor MFA permitido tenga éxito.
+admin.organizations.policy.enforcementTitle,Aplicación efectiva
 admin.organizations.policy.externalIdentity,Proveedores de identidad externos
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.recoveryCode,Recovery code
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
+admin.organizations.policy.factor.emailOtp,Código de un solo uso por correo
+admin.organizations.policy.factor.passkey,Clave de acceso
+admin.organizations.policy.factor.recoveryCode,Código de recuperación
+admin.organizations.policy.factor.totp,Aplicación de autenticación (TOTP)
 admin.organizations.policy.inherited,Heredado del realm
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.minimumAssurance,Garantía mínima para step-up
+admin.organizations.policy.moveDown,Bajar {factor}
+admin.organizations.policy.moveUp,Subir {factor}
+admin.organizations.policy.notRequired,No requerido
+admin.organizations.policy.organizationOverrides,Excepciones de la organización
+admin.organizations.policy.organizationValue,Excepción de la organización
+admin.organizations.policy.overrideRealm,Sustituir el valor del realm
+admin.organizations.policy.passkey,Claves de acceso
 admin.organizations.policy.password,Contraseña
 admin.organizations.policy.passwordRecovery,Recuperación de contraseña
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
+admin.organizations.policy.preferredOrder,Orden de factores preferido
+admin.organizations.policy.preferredOrderDescription,Usa los botones Subir y Bajar para definir la preferencia de factores accesible por teclado.
+admin.organizations.policy.realmDefaults,Valores predeterminados del realm
+admin.organizations.policy.realmValue,Valor del realm
 admin.organizations.policy.registration,Registro de autoservicio
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
+admin.organizations.policy.remediation,Las personas sin un factor permitido registrado son enviadas a la inscripción y subsanación en lugar de quedar bloqueadas.
+admin.organizations.policy.required,Requerido
+admin.organizations.policy.requiredMfa,MFA requerido
 admin.organizations.policy.saved,La política de inicio de sesión se ha guardado.
-admin.organizations.passwordPolicy.title,Password policy
-admin.organizations.passwordPolicy.description,Complexity and lockout rules for password sign-in across the realm. Organization logins inherit these values.
-admin.organizations.passwordPolicy.minimumLength,Minimum length
-admin.organizations.passwordPolicy.minimumLengthHint,Between 1 and 72 characters.
-admin.organizations.passwordPolicy.requireLowercase,Require a lowercase letter
-admin.organizations.passwordPolicy.requireUppercase,Require an uppercase letter
-admin.organizations.passwordPolicy.requireNumber,Require a number
-admin.organizations.passwordPolicy.requireSymbol,Require a symbol
-admin.organizations.passwordPolicy.maximumAttempts,Failed attempts before lockout
-admin.organizations.passwordPolicy.maximumAttemptsHint,Between 1 and 100 attempts.
-admin.organizations.passwordPolicy.lockoutMinutes,Lockout duration (minutes)
-admin.organizations.passwordPolicy.lockoutMinutesHint,Locked accounts stay locked for this long after too many failed attempts.
-admin.organizations.passwordPolicy.saved,The password policy was saved.
-admin.organizations.passwordPolicy.validation.minimumLength,Enter a minimum length between 1 and 72 characters.
-admin.organizations.passwordPolicy.validation.maximumAttempts,Enter 1 to 100 failed attempts before lockout.
-admin.organizations.passwordPolicy.validation.lockout,Enter a lockout duration of at least 1 minute.
-admin.organizations.passwordPolicy.validation.policy,The password policy is invalid.
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
+admin.organizations.passwordPolicy.title,Política de contraseñas
+admin.organizations.passwordPolicy.description,Reglas de complejidad y bloqueo para el inicio de sesión con contraseña en todo el realm. Los inicios de sesión de la organización heredan estos valores.
+admin.organizations.passwordPolicy.minimumLength,Longitud mínima
+admin.organizations.passwordPolicy.minimumLengthHint,Entre 1 y 72 caracteres.
+admin.organizations.passwordPolicy.requireLowercase,Requerir una letra minúscula
+admin.organizations.passwordPolicy.requireUppercase,Requerir una letra mayúscula
+admin.organizations.passwordPolicy.requireNumber,Requerir un número
+admin.organizations.passwordPolicy.requireSymbol,Requerir un símbolo
+admin.organizations.passwordPolicy.maximumAttempts,Intentos fallidos antes del bloqueo
+admin.organizations.passwordPolicy.maximumAttemptsHint,Entre 1 y 100 intentos.
+admin.organizations.passwordPolicy.lockoutMinutes,Duración del bloqueo (minutos)
+admin.organizations.passwordPolicy.lockoutMinutesHint,Las cuentas bloqueadas permanecen bloqueadas durante este tiempo tras demasiados intentos fallidos.
+admin.organizations.passwordPolicy.saved,La política de contraseñas se guardó.
+admin.organizations.passwordPolicy.validation.minimumLength,Introduce una longitud mínima de entre 1 y 72 caracteres.
+admin.organizations.passwordPolicy.validation.maximumAttempts,Introduce de 1 a 100 intentos fallidos antes del bloqueo.
+admin.organizations.passwordPolicy.validation.lockout,Introduce una duración de bloqueo de al menos 1 minuto.
+admin.organizations.passwordPolicy.validation.policy,La política de contraseñas no es válida.
+admin.organizations.policy.scopeLabel,Ámbito de la política
+admin.organizations.policy.securityDescription,Configura el MFA de inicio de sesión y la garantía requerida para las operaciones protegidas de la organización.
+admin.organizations.policy.securityTitle,MFA y garantía
 admin.organizations.policy.title,Política de inicio de sesión
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
+admin.organizations.policy.up,Subir
+admin.organizations.policy.validation.assuranceWeaker,El requisito de garantía de la organización no puede ser más débil que el valor del realm.
+admin.organizations.policy.validation.factorNarrowing,Los factores de la organización deben ser un subconjunto de la lista de factores permitidos del realm.
+admin.organizations.policy.validation.order,El orden preferido solo puede contener factores permitidos.
+admin.organizations.policy.validation.requiredFactors,El MFA requerido necesita al menos un factor permitido.
+admin.organizations.policy.validation.requiredMfaWeaker,La organización no puede desactivar el MFA requerido por el realm.
 admin.organizations.providers.allowAccountCreation,Crear cuentas automáticamente para nuevas personas
 admin.organizations.providers.clientId,ID de cliente
 admin.organizations.providers.clientSecret,Secreto de cliente
@@ -821,7 +822,7 @@ admin.organizations.providers.description,"Proveedores de Google, GitHub y Micro
 admin.organizations.providers.disable,Deshabilitar proveedor
 admin.organizations.providers.disableConfirm,¿Desactivar {displayName}? Las personas ya no podrán iniciar sesión con este proveedor.
 admin.organizations.providers.disabled,El proveedor se ha deshabilitado.
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,Nombre visible
 admin.organizations.providers.empty,Todavía no hay ningún proveedor de identidad externo configurado.
 admin.organizations.providers.invalid,"Introduzca un nombre visible, un ID de cliente, un secreto de cliente y un URI de redirección absoluto."
 admin.organizations.providers.redirectUri,URI de redirección
@@ -893,7 +894,7 @@ admin.projects.grants.roleKeys,Roles concedidos
 admin.projects.grants.title,Concesiones de organización
 admin.projects.lifecycle.activate,Activar
 admin.projects.lifecycle.deactivate,Desactivar
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,Eliminar
 admin.projects.lifecycle.removeConfirm,¿Eliminar este proyecto?
 admin.projects.lifecycle.removeConfirmAccept,Quitar proyecto
 admin.projects.lifecycle.removeConfirmTitle,Quitar este proyecto
@@ -918,7 +919,7 @@ admin.projects.overview.title,Resumen del proyecto
 admin.projects.roles.create,Crear rol
 admin.projects.roles.deleteConfirm,¿Eliminar este rol de proyecto? Las concesiones que lo referencian pierden el rol.
 admin.projects.roles.description,Los roles que este proyecto puede asignar a las organizaciones y a sus miembros.
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,Nombre visible
 admin.projects.roles.empty,Este proyecto todavía no define roles.
 admin.projects.roles.group,Grupo
 admin.projects.roles.invalid,Introduzca una clave de rol y un nombre visible.
@@ -1068,7 +1069,7 @@ admin.userProfile.deleted,{userName} fue eliminado.
 admin.userProfile.editProfile,Editar perfil
 admin.userProfile.editProfileTitle,Editar perfil
 admin.userProfile.email,Correo electrónico
-admin.userProfile.emailMissing,This user has no email address to verify.
+admin.userProfile.emailMissing,Este usuario no tiene una dirección de correo electrónico que verificar.
 admin.userProfile.emailUnverified,Sin verificar
 admin.userProfile.emailVerified,Verificado
 admin.userProfile.impersonate,Actuar como usuario
@@ -1090,9 +1091,9 @@ admin.userProfile.organizationRoleChanged,El rol de organización se actualizó.
 admin.userProfile.organizationRoleDescription,Elige el rol principal para la organización activa.
 admin.userProfile.organizationRoleTitle,Rol de organización
 admin.userProfile.overviewTab,Resumen
-admin.userProfile.passkeyRevoke,Revoke passkey
-admin.userProfile.passkeyRevokeConfirm,Revoke this passkey of {userName}? It stops working immediately.
-admin.userProfile.passkeyRevoked,The passkey was revoked.
+admin.userProfile.passkeyRevoke,Revocar clave de acceso
+admin.userProfile.passkeyRevokeConfirm,¿Revocar esta clave de acceso de {userName}? Dejará de funcionar inmediatamente.
+admin.userProfile.passkeyRevoked,La clave de acceso se revocó.
 admin.userProfile.passwordConfirm,Confirma la nueva contraseña
 admin.userProfile.passwordMismatch,Las contraseñas no coinciden.
 admin.userProfile.passwordNew,Nueva contraseña
@@ -1108,25 +1109,25 @@ admin.userProfile.projectRolesRemoveConfirm,¿Quitar la asignación de {projectN
 admin.userProfile.projectRolesRemoved,La asignación de proyecto se quitó.
 admin.userProfile.projectRolesSaved,Las asignaciones de proyecto se guardaron.
 admin.userProfile.projectRolesTitle,Roles de proyecto
-admin.userProfile.purge,Purge user data
-admin.userProfile.purgeConfirm,Permanently purge every record of {userName}? This cannot be undone.
-admin.userProfile.purgeConfirmTitle,Purge this user
-admin.userProfile.purgeConfirmType,Type {userName} to confirm.
-admin.userProfile.purgeWarning,"Purging removes the user row, sessions, credentials, and audit history."
-admin.userProfile.purged,{userName} was purged.
+admin.userProfile.purge,Purgar datos del usuario
+admin.userProfile.purgeConfirm,¿Purgar definitivamente todos los registros de {userName}? Esto no se puede deshacer.
+admin.userProfile.purgeConfirmTitle,Purgar este usuario
+admin.userProfile.purgeConfirmType,Escribe {userName} para confirmar.
+admin.userProfile.purgeWarning,"La purga elimina la fila del usuario, las sesiones, las credenciales y el historial de auditoría."
+admin.userProfile.purged,{userName} fue purgado.
 admin.userProfile.reactivate,Reactivar usuario
 admin.userProfile.reactivateConfirm,¿Reactivar a {userName}? El usuario podrá iniciar sesión de nuevo.
 admin.userProfile.reactivated,{userName} fue reactivado.
 admin.userProfile.realmAdminBadge,Administrador del realm
-admin.userProfile.recoveryCodesInvalidate,Invalidate recovery codes
-admin.userProfile.recoveryCodesInvalidateConfirm,Invalidate the recovery codes of {userName}? Existing codes stop working at once.
-admin.userProfile.recoveryCodesInvalidated,The recovery codes were invalidated.
+admin.userProfile.recoveryCodesInvalidate,Invalidar códigos de recuperación
+admin.userProfile.recoveryCodesInvalidateConfirm,¿Invalidar los códigos de recuperación de {userName}? Los códigos existentes dejan de funcionar de inmediato.
+admin.userProfile.recoveryCodesInvalidated,Los códigos de recuperación se invalidaron.
 admin.userProfile.removeRealmAdmin,Quitar administrador del realm
 admin.userProfile.removeRealmAdminConfirm,¿Quitar a {userName} los privilegios de administrador del realm?
 admin.userProfile.removeRealmAdminDone,{userName} ya no es administrador del realm.
-admin.userProfile.resendVerification,Resend verification email
-admin.userProfile.resendVerificationConfirm,Send a new verification email to {email}?
-admin.userProfile.resendVerificationDone,A verification email was sent to {email}.
+admin.userProfile.resendVerification,Reenviar correo de verificación
+admin.userProfile.resendVerificationConfirm,¿Enviar un nuevo correo de verificación a {email}?
+admin.userProfile.resendVerificationDone,Se envió un correo de verificación a {email}.
 admin.userProfile.revokeAll,Revocar todo
 admin.userProfile.revokeAllConfirm,¿Revocar todas las sesiones de {userName}? El usuario cierra sesión en todas partes.
 admin.userProfile.revokeAllDone,Todas las sesiones fueron revocadas.
@@ -1141,29 +1142,29 @@ admin.userProfile.sessionsTitle,Sesiones y dispositivos
 admin.userProfile.setPassword,Definir contraseña
 admin.userProfile.setPasswordDescription,Sustituye la contraseña de inicio de sesión y elimina cualquier bloqueo.
 admin.userProfile.setPasswordTitle,Definir una nueva contraseña
-admin.userProfile.suspend,Suspend user
-admin.userProfile.suspendConfirm,Suspend {userName}? The user can no longer sign in.
-admin.userProfile.suspended,{userName} was suspended.
-admin.userProfile.totpRemove,Remove TOTP enrollment
-admin.userProfile.totpRemoveConfirm,Remove the TOTP enrollment of {userName}? The user must enroll again.
-admin.userProfile.totpRemoved,The TOTP enrollment was removed.
+admin.userProfile.suspend,Suspender usuario
+admin.userProfile.suspendConfirm,¿Suspender a {userName}? El usuario ya no podrá iniciar sesión.
+admin.userProfile.suspended,{userName} fue suspendido.
+admin.userProfile.totpRemove,Eliminar inscripción TOTP
+admin.userProfile.totpRemoveConfirm,¿Eliminar la inscripción TOTP de {userName}? El usuario deberá inscribirse de nuevo.
+admin.userProfile.totpRemoved,La inscripción TOTP se eliminó.
 admin.userProfile.unlock,Desbloquear usuario
 admin.userProfile.unlockConfirm,¿Desbloquear a {userName}? El usuario podrá iniciar sesión de nuevo.
 admin.userProfile.unlocked,{userName} fue desbloqueado.
 admin.userProfile.username,Nombre de usuario
-admin.userProfile.verificationOverrideUnverified,{email} was marked as unverified (override).
-admin.userProfile.verificationOverrideUnverify,Mark email unverified (override)
-admin.userProfile.verificationOverrideUnverifyConfirm,Mark {email} as unverified? The user must verify again.
-admin.userProfile.verificationOverrideVerified,{email} was marked as verified (override).
-admin.userProfile.verificationOverrideVerify,Mark email verified (override)
-admin.userProfile.verificationOverrideVerifyConfirm,Mark {email} as verified without an email challenge? This overrides the normal verification flow.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.userProfile.verificationOverrideUnverified,{email} se marcó como no verificado (excepción).
+admin.userProfile.verificationOverrideUnverify,Marcar correo como no verificado (excepción)
+admin.userProfile.verificationOverrideUnverifyConfirm,¿Marcar {email} como no verificado? El usuario deberá verificarse de nuevo.
+admin.userProfile.verificationOverrideVerified,{email} se marcó como verificado (excepción).
+admin.userProfile.verificationOverrideVerify,Marcar correo como verificado (excepción)
+admin.userProfile.verificationOverrideVerifyConfirm,¿Marcar {email} como verificado sin un reto por correo? Esto omite el flujo normal de verificación.
+admin.users.authentication.generated,Generado el {date}
+admin.users.authentication.neverUsed,Nunca usado
+admin.users.authentication.passkeyMetadata,{deviceType} · creada {created} · último uso {lastUsed}
+admin.users.authentication.pending,Pendiente de confirmación
+admin.users.authentication.recoveryCodes,Códigos de recuperación
+admin.users.authentication.recoveryCount,{count} códigos restantes
+admin.users.authentication.totpMetadata,{label} · confirmado {confirmed}
 admin.users.count,{count} usuarios
 admin.users.create,Crear usuario
 admin.users.createDescription,Añade un usuario humano al realm actual.
@@ -1225,10 +1226,10 @@ admin.users.directoryTabServiceAccounts,Cuentas de servicio
 admin.users.directoryUser,Usuario
 admin.users.directoryUserInvited,Invitado
 admin.users.directoryUserName,Nombre de usuario
-admin.users.displayName,Display name
-admin.users.displayNameRequired,Enter a display name.
-admin.users.email,Email address
-admin.users.firstName,First name
+admin.users.displayName,Nombre visible
+admin.users.displayNameRequired,Introduce un nombre visible.
+admin.users.email,Correo electrónico
+admin.users.firstName,Nombre
 admin.users.identifier,Identificador de usuario
 admin.users.invalid,Introduce una dirección de correo y un nombre de usuario válidos.
 admin.users.inviteEmailInvalid,Escribe una dirección de correo válida.
@@ -1241,35 +1242,35 @@ admin.users.inviteTokenCopy,Copiar enlace
 admin.users.inviteTokenDismiss,Ya guardé este enlace
 admin.users.inviteTokenOnce,Este enlace de invitación se muestra una sola vez. Compártelo con la persona invitada.
 admin.users.inviteTokenTitle,Enlace de invitación
-admin.users.lastName,Last name
+admin.users.lastName,Apellidos
 admin.users.lifecycle.active,Activo
 admin.users.lifecycle.deleted,Eliminado
 admin.users.lifecycle.inactive,Inactivo
 admin.users.lifecycle.initial,Inicial
 admin.users.lifecycle.locked,Bloqueado
 admin.users.lifecycle.suspended,Suspendido
-admin.users.nickName,Nickname
+admin.users.nickName,Apodo
 admin.users.serviceAccountCreated,La cuenta de servicio fue creada.
 admin.users.serviceAccountInvalid,Escribe un nombre visible y un nombre de usuario para la cuenta de servicio.
 admin.users.sessions.country,País
-admin.users.sessions.created,Created
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
+admin.users.sessions.created,Creada
+admin.users.sessions.expires,Vence
+admin.users.sessions.ipAddress,Dirección IP
+admin.users.sessions.lastUsed,Último uso
 admin.users.sessions.location,Ubicación
-admin.users.sessions.method,Sign-in method
+admin.users.sessions.method,Método de inicio de sesión
 admin.users.sessions.region,Región
 admin.users.state,Estado
 admin.users.title,Usuarios
 admin.users.unverifiedEmail,Correo sin verificar
-admin.users.userName,Username
+admin.users.userName,Nombre de usuario
 app.name,Authworks
 app.tagline,Servicios de identidad seguros
 common.back,Atrás
 common.cancel,Cancelar
 common.close,Cerrar
 common.continue,Continuar
-common.decline,Decline
+common.decline,Rechazar
 common.disable,Desactivar
 common.disabled,Desactivado
 common.enable,Activar
@@ -1281,7 +1282,7 @@ common.next,Siguiente
 common.pagination,Paginación
 common.previous,Anterior
 common.retry,Intentar de nuevo
-common.revoke,Revoke
+common.revoke,Revocar
 common.save,Guardar
 common.signIn,Iniciar sesión
 common.signOut,Cerrar sesión
@@ -1289,28 +1290,28 @@ common.theme.dark,Oscuro
 common.theme.light,Claro
 common.theme.system,Sistema
 common.urlPlaceholder,https://
-oidc.consent.address,Your address
-oidc.consent.approve,Approve
-oidc.consent.approving,Approving…
-oidc.consent.clientId,Client ID
-oidc.consent.deny,Deny
-oidc.consent.denying,Denying…
-oidc.consent.description,{client} is requesting access to your account.
-oidc.consent.email,Your email address
-oidc.consent.expiredDescription,This authorization request is no longer valid. Start again from the application.
-oidc.consent.expiredTitle,Authorization request expired
-oidc.consent.missingDescription,Open this page from the application that requested access.
-oidc.consent.missingTitle,No authorization request
-oidc.consent.offlineAccess,Stay signed in when you are offline
-oidc.consent.openid,Verify your identity
-oidc.consent.phone,Your phone number
-oidc.consent.profile,Your basic profile
-oidc.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-oidc.consent.redirectUri,Redirect URI
-oidc.consent.resourceOwner,Your organization membership
-oidc.consent.scopeTitle,Requested access
-oidc.consent.signInDescription,Sign in to review this authorization request.
-oidc.consent.signInTitle,Sign-in required
+oidc.consent.address,Tu dirección
+oidc.consent.approve,Aprobar
+oidc.consent.approving,Aprobando…
+oidc.consent.clientId,ID de cliente
+oidc.consent.deny,Denegar
+oidc.consent.denying,Denegando…
+oidc.consent.description,{client} está solicitando acceso a tu cuenta.
+oidc.consent.email,Tu dirección de correo electrónico
+oidc.consent.expiredDescription,Esta solicitud de autorización ya no es válida. Empieza de nuevo desde la aplicación.
+oidc.consent.expiredTitle,Solicitud de autorización caducada
+oidc.consent.missingDescription,Abre esta página desde la aplicación que solicitó el acceso.
+oidc.consent.missingTitle,Sin solicitud de autorización
+oidc.consent.offlineAccess,Permanecer con la sesión iniciada cuando estés sin conexión
+oidc.consent.openid,Verificar tu identidad
+oidc.consent.phone,Tu número de teléfono
+oidc.consent.profile,Tu perfil básico
+oidc.consent.redirectDescription,"Tras la aprobación, volverás a {redirectUri}."
+oidc.consent.redirectUri,URI de redirección
+oidc.consent.resourceOwner,Tu pertenencia a la organización
+oidc.consent.scopeTitle,Acceso solicitado
+oidc.consent.signInDescription,Inicia sesión para revisar esta solicitud de autorización.
+oidc.consent.signInTitle,Inicio de sesión requerido
 ui.authenticated.clearSearch,Borrar búsqueda
 ui.authenticated.demo.adminBlurb,Administración: gestiona miembros y proyectos y credenciales sin propietarios.
 ui.authenticated.demo.chipBlurb,Distintivos compactos de rol y estado y visibilidad del proyecto.
@@ -1943,89 +1944,89 @@ shell.state.loadingDetail,Preparando esta página y su contexto de seguridad.
 shell.state.nothingHere,Nada por aquí todavía
 shell.state.pageUnavailable,Esta página no está disponible
 shell.state.readyDetail,Esta página está lista para su contenido.
-demo.consent.approved,Application access was approved. Continue in the application.
-demo.consent.clientId,Client ID
-demo.consent.declined,Application access was declined.
-demo.consent.error,The authorization request could not be loaded.
-demo.consent.expired,This authorization request has expired. Start again from the application.
-demo.consent.expiredTitle,Authorization request expired
-demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
-demo.consent.redirectUri,Redirect URI
-demo.consent.requestDescription,{application} is requesting access to your account.
-demo.consent.scopeTitle,Requested permissions
-demo.consent.scenario.description,Approve or decline an OpenID Connect application access request using a fixture-backed interaction.
-demo.consent.scenario.title,Application consent
-demo.hub.consentDescription,Review an OpenID Connect application access request with approve and decline outcomes.
-demo.hub.consentOpen,Open consent
-demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
-demo.hub.invitationsOpen,Open invitations
-admin.organizations.policy.autoLinking,Link external identities automatically
-admin.organizations.policy.whatsappOtp,WhatsApp one-time code
-admin.organizations.policy.sessionLifetime,Session lifetime (seconds)
-admin.organizations.policy.sessionLifetimeHint,How long a session stays valid. Empty keeps the current value.
-admin.organizations.policy.mfaInitSkipLifetime,MFA skip lifetime (seconds)
-admin.organizations.policy.secondFactorLifetime,Second-factor check lifetime (seconds)
-admin.organizations.policy.multiFactorLifetime,Multi-factor check lifetime (seconds)
-admin.organizations.policy.lifetimeUnsetHint,Empty leaves the value unset.
-admin.organizations.policy.forceMfaLocalOnly,Local MFA only
-admin.organizations.policy.providerAllowlist,Allowed providers
-admin.organizations.policy.providerAllowlistDescription,Only these providers may complete external sign-in. Selecting every provider allows all of them.
-admin.organizations.policy.providerAllowlistReset,Allow all providers
-admin.organizations.policy.validation.lifetime,Enter a lifetime between 1 and 31536000 seconds.
-admin.organizations.metadata.title,Organization metadata
-admin.organizations.metadata.description,Custom key/value pairs stored on this organization. At most 50 entries.
-admin.organizations.metadata.key,Key
-admin.organizations.metadata.value,Value
-admin.organizations.metadata.save,Save entry
-admin.organizations.metadata.remove,Remove
-admin.organizations.metadata.removeConfirm,Remove the {key} metadata entry?
-admin.organizations.metadata.empty,No metadata entries yet.
-admin.organizations.metadata.saved,The metadata entry was saved.
-admin.organizations.metadata.removed,The metadata entry was removed.
-admin.organizations.metadata.invalid,Enter a key and a value.
-admin.organizations.providers.issuer,Issuer
-admin.organizations.providers.issuerHint,Required for generic OIDC providers.
-admin.organizations.providers.scopes,Scopes
-admin.organizations.providers.scopesHint,"Comma-separated list, for example openid, email, profile."
-admin.organizations.providers.save,Save provider
-common.remove,Remove
-admin.oidc.clients.backToClients,OIDC clients
-admin.oidc.clients.consentOptions,Options
-admin.oidc.clients.serverDefault,Server default
-admin.oidc.clients.tokenLifetimes,Token lifetimes
-admin.oidc.secret.credentialsLifecycle,Credentials & lifecycle
-admin.redesign.actions,Actions
-admin.redesign.activeSessions,Active sessions
-admin.redesign.administratorId,administrator ID
-admin.redesign.consentTrust,Consent & trust
-admin.redesign.device,Device
-admin.redesign.documents,documents
-admin.redesign.events24H,Events · 24 h
-admin.redesign.from,From
-admin.redesign.grantsScopes,Grants & scopes
+demo.consent.approved,El acceso de la aplicación fue aprobado. Continúa en la aplicación.
+demo.consent.clientId,ID de cliente
+demo.consent.declined,El acceso de la aplicación fue rechazado.
+demo.consent.error,No se pudo cargar la solicitud de autorización.
+demo.consent.expired,Esta solicitud de autorización ha caducado. Empieza de nuevo desde la aplicación.
+demo.consent.expiredTitle,Solicitud de autorización caducada
+demo.consent.redirectDescription,"Tras la aprobación, volverás a {redirectUri}."
+demo.consent.redirectUri,URI de redirección
+demo.consent.requestDescription,{application} está solicitando acceso a tu cuenta.
+demo.consent.scopeTitle,Permisos solicitados
+demo.consent.scenario.description,Aprueba o rechaza una solicitud de acceso de una aplicación OpenID Connect usando una interacción de prueba.
+demo.consent.scenario.title,Consentimiento de la aplicación
+demo.hub.consentDescription,Revisa una solicitud de acceso de una aplicación OpenID Connect con resultados de aprobación y rechazo.
+demo.hub.consentOpen,Abrir consentimiento
+demo.hub.invitationsDescription,Revisa y responde a las invitaciones dirigidas a la cuenta con la que iniciaste sesión.
+demo.hub.invitationsOpen,Abrir invitaciones
+admin.organizations.policy.autoLinking,Vincular identidades externas automáticamente
+admin.organizations.policy.whatsappOtp,Código de un solo uso por WhatsApp
+admin.organizations.policy.sessionLifetime,Duración de la sesión (segundos)
+admin.organizations.policy.sessionLifetimeHint,"Cuánto tiempo permanece válida una sesión. Si se deja vacío, se mantiene el valor actual."
+admin.organizations.policy.mfaInitSkipLifetime,Duración de omisión de MFA (segundos)
+admin.organizations.policy.secondFactorLifetime,Duración de la comprobación de segundo factor (segundos)
+admin.organizations.policy.multiFactorLifetime,Duración de la comprobación multifactor (segundos)
+admin.organizations.policy.lifetimeUnsetHint,"Si se deja vacío, el valor queda sin definir."
+admin.organizations.policy.forceMfaLocalOnly,Solo MFA local
+admin.organizations.policy.providerAllowlist,Proveedores permitidos
+admin.organizations.policy.providerAllowlistDescription,"Solo estos proveedores pueden completar el inicio de sesión externo. Si se seleccionan todos, se permiten todos."
+admin.organizations.policy.providerAllowlistReset,Permitir todos los proveedores
+admin.organizations.policy.validation.lifetime,Introduce una duración de entre 1 y 31536000 segundos.
+admin.organizations.metadata.title,Metadatos de la organización
+admin.organizations.metadata.description,Pares personalizados de clave/valor guardados en esta organización. Máximo 50 entradas.
+admin.organizations.metadata.key,Clave
+admin.organizations.metadata.value,Valor
+admin.organizations.metadata.save,Guardar entrada
+admin.organizations.metadata.remove,Eliminar
+admin.organizations.metadata.removeConfirm,¿Eliminar la entrada de metadatos {key}?
+admin.organizations.metadata.empty,Todavía no hay entradas de metadatos.
+admin.organizations.metadata.saved,La entrada de metadatos se guardó.
+admin.organizations.metadata.removed,La entrada de metadatos se eliminó.
+admin.organizations.metadata.invalid,Introduce una clave y un valor.
+admin.organizations.providers.issuer,Emisor
+admin.organizations.providers.issuerHint,Requerido para proveedores OIDC genéricos.
+admin.organizations.providers.scopes,Ámbitos
+admin.organizations.providers.scopesHint,"Lista separada por comas, por ejemplo openid, email, profile."
+admin.organizations.providers.save,Guardar proveedor
+common.remove,Eliminar
+admin.oidc.clients.backToClients,Clientes OIDC
+admin.oidc.clients.consentOptions,Opciones
+admin.oidc.clients.serverDefault,Valor predeterminado del servidor
+admin.oidc.clients.tokenLifetimes,Duraciones de tokens
+admin.oidc.secret.credentialsLifecycle,Credenciales y ciclo de vida
+admin.redesign.actions,Acciones
+admin.redesign.activeSessions,Sesiones activas
+admin.redesign.administratorId,ID de administrador
+admin.redesign.consentTrust,Consentimiento y confianza
+admin.redesign.device,Dispositivo
+admin.redesign.documents,documentos
+admin.redesign.events24H,Eventos · 24 h
+admin.redesign.from,Desde
+admin.redesign.grantsScopes,Concesiones y ámbitos
 admin.redesign.id,ID
-admin.redesign.inh,inh.
-admin.redesign.inherited,inherited
+admin.redesign.inh,her.
+admin.redesign.inherited,heredado
 admin.redesign.ip,IP
-admin.redesign.lifetimes,Lifetimes
-admin.redesign.machineUserId,machine user ID
-admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Manage realm defaults and organization sign-in overrides.
-admin.redesign.moreFilters,More filters
-admin.redesign.noRecentAuditEvents,No recent audit events.
-admin.redesign.noSessionsMatchYourSearch,No sessions match your search.
-admin.redesign.onThisPage,on this page
-admin.redesign.organizations,organizations
-admin.redesign.projectId,project ID
-admin.redesign.recentAuditEvents,Recent audit events
-admin.redesign.redirectsOrigins,Redirects & origins
+admin.redesign.lifetimes,Duraciones
+admin.redesign.machineUserId,ID de usuario de máquina
+admin.redesign.manageRealmDefaultsAndOrganizationSignInOverrides,Gestiona los valores predeterminados del realm y las excepciones de inicio de sesión de la organización.
+admin.redesign.moreFilters,Más filtros
+admin.redesign.noRecentAuditEvents,No hay eventos de auditoría recientes.
+admin.redesign.noSessionsMatchYourSearch,Ninguna sesión coincide con tu búsqueda.
+admin.redesign.onThisPage,en esta página
+admin.redesign.organizations,organizaciones
+admin.redesign.projectId,ID de proyecto
+admin.redesign.recentAuditEvents,Eventos de auditoría recientes
+admin.redesign.redirectsOrigins,Redirecciones y orígenes
 admin.redesign.s,s
-admin.redesign.scrollHorizontallyToSeeAllEventDetails,Scroll horizontally to see all event details.
-admin.redesign.searchSessions,Search sessions
-admin.redesign.sessionsOnThisPage,sessions on this page
-admin.redesign.signInMethods,Sign-in methods
-admin.redesign.to,To
+admin.redesign.scrollHorizontallyToSeeAllEventDetails,Desplázate horizontalmente para ver todos los detalles del evento.
+admin.redesign.searchSessions,Buscar sesiones
+admin.redesign.sessionsOnThisPage,sesiones en esta página
+admin.redesign.signInMethods,Métodos de inicio de sesión
+admin.redesign.to,Hasta
 admin.redesign.tokens,Tokens
-admin.redesign.userId,user ID
-admin.redesign.viewAll,View all
+admin.redesign.userId,ID de usuario
+admin.redesign.viewAll,Ver todo
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Seguridad y auditoría

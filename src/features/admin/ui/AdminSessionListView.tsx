@@ -29,8 +29,8 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
           aria-label={messageTranslate("admin.redesign.searchSessions")}
           type="search"
           placeholder={messageTranslate("admin.redesign.searchSessions")}
-          value={props.state.sessionSearch.get()}
-          onInput={(event) => props.state.sessionSearch.set(event.currentTarget.value)}
+          value={props.state.sessionSearch()}
+          onInput={(event) => props.state.sessionSearchInput(event.currentTarget.value)}
         />
       </div>
       <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
@@ -45,7 +45,13 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
             }
             onRetry={props.state.status() === "error" ? props.state.reload : undefined}
             state={adminViewStatusPanelState(props.state.status())}
-            title={props.state.status() === "empty" ? messageTranslate("account.sessions.empty") : undefined}
+            title={
+              props.state.status() === "empty"
+                ? props.state.sessionSearch().trim().length > 0
+                  ? messageTranslate("admin.redesign.noSessionsMatchYourSearch")
+                  : messageTranslate("account.sessions.empty")
+                : undefined
+            }
           />
         }
       >
@@ -122,11 +128,6 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
               </TableBody>
             </Table>
           </div>
-          <Show when={props.state.sessions().length === 0}>
-            <p class="px-4 py-3 text-xs text-muted-foreground">
-              {messageTranslate("admin.redesign.noSessionsMatchYourSearch")}
-            </p>
-          </Show>
           <AuthenticatedPagination
             nextAvailable={props.state.hasNextPage()}
             onNext={props.state.pageNext}
