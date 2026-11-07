@@ -216,6 +216,7 @@ test("every API client publishes its complete method set", () => {
   expect(Object.keys(emailOtp.emailOtpApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(whatsappOtp.whatsappOtpApiClientCreate(options))).toEqual([
     "whatsappOtpAvailabilityGet",
+    "whatsappOtpUsageGet",
     "whatsappOtpStart",
     "whatsappOtpResend",
     "whatsappOtpVerify",

@@ -26,6 +26,8 @@ import type { WhatsappOtpStartRequest } from "../public/whatsappOtpStartRequestS
 import { whatsappOtpStartRequestSchema } from "../public/whatsappOtpStartRequestSchema.js"
 import type { WhatsappOtpStartResponse } from "../public/whatsappOtpStartResponseSchema.js"
 import { whatsappOtpStartResponseSchema } from "../public/whatsappOtpStartResponseSchema.js"
+import type { WhatsappOtpUsageResponse } from "../public/whatsappOtpUsageResponseSchema.js"
+import { whatsappOtpUsageResponseSchema } from "../public/whatsappOtpUsageResponseSchema.js"
 import type { WhatsappOtpVerifyRequest } from "../public/whatsappOtpVerifyRequestSchema.js"
 import { whatsappOtpVerifyRequestSchema } from "../public/whatsappOtpVerifyRequestSchema.js"
 import type { WhatsappOtpVerifyResponse } from "../public/whatsappOtpVerifyResponseSchema.js"
@@ -88,6 +90,22 @@ export function whatsappOtpApiClientCreate(options: WhatsappOtpApiClientCreateOp
         `/realms/${encodeURIComponent(realmId)}/whatsapp-otp/availability${query}`,
         { method: "GET" },
         whatsappOtpAvailabilityResponseSchema,
+      )
+    },
+    whatsappOtpUsageGet(realmId: string, limit?: number): Promise<Result<WhatsappOtpUsageResponse>> {
+      if (realmId.length === 0)
+        return Promise.resolve(
+          resultErrorCreate("whatsappOtpApiClientUsageGet", "The realm ID is invalid.", "whatsapp-otp.invalid"),
+        )
+      if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 200))
+        return Promise.resolve(
+          resultErrorCreate("whatsappOtpApiClientUsageGet", "The usage limit is invalid.", "whatsapp-otp.invalid"),
+        )
+      const query = limit === undefined ? "" : `?limit=${encodeURIComponent(String(limit))}`
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/whatsapp-otp/usage${query}`,
+        { credentials: "include", method: "GET" },
+        whatsappOtpUsageResponseSchema,
       )
     },
     whatsappOtpStart(realmId: string, input: WhatsappOtpStartRequest): Promise<Result<WhatsappOtpStartResponse>> {

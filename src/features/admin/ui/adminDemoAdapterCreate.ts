@@ -5,6 +5,7 @@ import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import { adminDemoEventFixtures } from "./adminDemoEventFixtures.js"
+import { adminDemoWhatsappUsageFixture } from "./adminDemoWhatsappUsageFixture.js"
 import { adminDemoRealmFixtureCreate } from "./adminDemoRealmFixtureCreate.js"
 import { adminDemoUserFixtures } from "./adminDemoUserFixtures.js"
 import { adminSessionDemoAdapterCreate } from "./adminSessionDemoAdapterCreate.js"
@@ -97,6 +98,25 @@ export function adminDemoAdapterCreate(
       const failed = readFailure("adminDemoRealmGet")
       if (failed !== undefined) return failed
       return resultCreate({ realm })
+    },
+    whatsappOtpUsageGet: async () => {
+      if (fixtureState() === "loading") return pending()
+      const failed = readFailure("adminDemoWhatsappOtpUsageGet")
+      if (failed !== undefined) return failed
+      if (fixtureState() === "empty")
+        return resultCreate({
+          attempts: {
+            byPurposeLastDay: {},
+            byStatusLastDay: { blocked: 0, failed: 0, sent: 0 },
+            byStatusLastHour: { blocked: 0, failed: 0, sent: 0 },
+          },
+          limits: { dailyPerSender: 100, hourlyPerSender: 20 },
+          recent: [],
+          requests: { otpRequestedLastDay: 0, otpRequestedLastHour: 0 },
+          senders: [],
+          totals: { sentLastDay: 0, sentLastHour: 0 },
+        })
+      return resultCreate(structuredClone(adminDemoWhatsappUsageFixture))
     },
     realmUpdate: async (input) => {
       const failed = writeFailure("adminDemoRealmUpdate")

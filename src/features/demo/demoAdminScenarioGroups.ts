@@ -240,6 +240,14 @@ export const demoAdminScenarioGroups: DemoFixtureScenarioGroup[] = [
         availability: "available",
         states: [...collectionStates, "permission-denied", "expired"],
       },
+      {
+        key: "whatsapp-usage",
+        title: "WhatsApp usage",
+        description: "Review per-sender quotas, request counts, and recent sends.",
+        path: "/demo/admin/whatsapp",
+        availability: "available",
+        states: [...collectionStates, "permission-denied", "expired"],
+      },
     ],
   },
 ]

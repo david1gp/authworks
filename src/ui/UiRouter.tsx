@@ -85,6 +85,7 @@ export function UiRouter(props: {
           <Route path="/machine-credentials" component={() => <MachineAdminDemoRoute screen="machine-credentials" />} />
           <Route path="/sessions" component={() => <AdminDemoAdapter screen="sessions" />} />
           <Route path="/events" component={() => <AdminDemoAdapter screen="audit-events" />} />
+          <Route path="/whatsapp" component={() => <AdminDemoAdapter screen="whatsapp" />} />
           <Route path="/ui-kit" component={AuthenticatedUiKitDemo} />
           <Route path="/*adminPath" component={AdminDemoPlaceholder} />
         </Route>

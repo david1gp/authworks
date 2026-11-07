@@ -2030,3 +2030,34 @@ admin.redesign.userId,felhasználói azonosító
 admin.redesign.viewAll,Összes megtekintése
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Biztonság és audit
+admin.whatsapp.blockedDay,Blokkolva · utolsó 24 óra
+admin.whatsapp.dayWindow,Utolsó 24 óra
+admin.whatsapp.empty,A WhatsApp még nincs beállítva — nincsenek feladók és nincsenek rögzített küldések.
+admin.whatsapp.endpoint,Végpont
+admin.whatsapp.failedDay,Sikertelen · utolsó 24 óra
+admin.whatsapp.healthy,Működőképes
+admin.whatsapp.hourWindow,Utolsó óra
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Cél
+admin.whatsapp.purposes,Küldések cél szerint · utolsó 24 óra
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} elküldve · {left} maradt {limit} közül
+admin.whatsapp.recent,Legutóbbi tevékenység
+admin.whatsapp.recipient,Címzett-hash
+admin.whatsapp.remainingHint,{count} küldés maradt a legszűkösebb feladónál
+admin.whatsapp.requestsDay,OTP-kérések · utolsó 24 óra
+admin.whatsapp.requestsHour,OTP-kérések · utolsó óra
+admin.whatsapp.sender,Feladó
+admin.whatsapp.senders,Feladók
+admin.whatsapp.sentDay,Elküldött üzenetek · utolsó 24 óra
+admin.whatsapp.sentHour,Elküldött üzenetek · utolsó óra
+admin.whatsapp.status,Állapot
+admin.whatsapp.statusBlocked,Blokkolva
+admin.whatsapp.statusFailed,Sikertelen
+admin.whatsapp.statusSent,Elküldve
+admin.whatsapp.time,Idő
+admin.whatsapp.title,WhatsApp-használat
+admin.whatsapp.unhealthy,Nem működik
+demo.admin.scenario.whatsapp_usage.description,Tekintse át a feladónkénti kvótákat és a kérések és küldések számát.
+demo.admin.scenario.whatsapp_usage.title,WhatsApp-használat
+shell.nav.whatsapp,WhatsApp

@@ -2030,3 +2030,34 @@ admin.redesign.userId,ID utilisateur
 admin.redesign.viewAll,Tout afficher
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Sécurité et audit
+admin.whatsapp.blockedDay,Bloqués · dernières 24 heures
+admin.whatsapp.dayWindow,Dernières 24 heures
+admin.whatsapp.empty,WhatsApp n'est pas encore configuré — aucun expéditeur ni envoi enregistré.
+admin.whatsapp.endpoint,Point de terminaison
+admin.whatsapp.failedDay,Échoués · dernières 24 heures
+admin.whatsapp.healthy,Opérationnel
+admin.whatsapp.hourWindow,Dernière heure
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Motif
+admin.whatsapp.purposes,Envois par motif · dernières 24 heures
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} envoyés · {left} restants sur {limit}
+admin.whatsapp.recent,Activité récente
+admin.whatsapp.recipient,Hash du destinataire
+admin.whatsapp.remainingHint,{count} envois restants sur l'expéditeur le plus limite
+admin.whatsapp.requestsDay,Demandes OTP · dernières 24 heures
+admin.whatsapp.requestsHour,Demandes OTP · dernière heure
+admin.whatsapp.sender,Expéditeur
+admin.whatsapp.senders,Expéditeurs
+admin.whatsapp.sentDay,Messages envoyés · dernières 24 heures
+admin.whatsapp.sentHour,Messages envoyés · dernière heure
+admin.whatsapp.status,Statut
+admin.whatsapp.statusBlocked,Bloqué
+admin.whatsapp.statusFailed,Échoué
+admin.whatsapp.statusSent,Envoyé
+admin.whatsapp.time,Heure
+admin.whatsapp.title,Utilisation de WhatsApp
+admin.whatsapp.unhealthy,Non opérationnel
+demo.admin.scenario.whatsapp_usage.description,Examinez les quotas par expéditeur et les volumes de demandes et envois récents.
+demo.admin.scenario.whatsapp_usage.title,Utilisation de WhatsApp
+shell.nav.whatsapp,WhatsApp

@@ -2030,3 +2030,34 @@ admin.redesign.userId,gebruikers-ID
 admin.redesign.viewAll,Alles weergeven
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Beveiliging en audit
+admin.whatsapp.blockedDay,Geblokkeerd · afgelopen 24 uur
+admin.whatsapp.dayWindow,Afgelopen 24 uur
+admin.whatsapp.empty,WhatsApp is nog niet geconfigureerd — geen afzenders en geen geregistreerde verzendingen.
+admin.whatsapp.endpoint,Endpoint
+admin.whatsapp.failedDay,Mislukt · afgelopen 24 uur
+admin.whatsapp.healthy,Operationeel
+admin.whatsapp.hourWindow,Afgelopen uur
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Doel
+admin.whatsapp.purposes,Verzendingen per doel · afgelopen 24 uur
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} verzonden · {left} over van {limit}
+admin.whatsapp.recent,Recente activiteit
+admin.whatsapp.recipient,Hash van ontvanger
+admin.whatsapp.remainingHint,Nog {count} verzendingen over op de krapste afzender
+admin.whatsapp.requestsDay,OTP-aanvragen · afgelopen 24 uur
+admin.whatsapp.requestsHour,OTP-aanvragen · afgelopen uur
+admin.whatsapp.sender,Afzender
+admin.whatsapp.senders,Afzenders
+admin.whatsapp.sentDay,Verzonden berichten · afgelopen 24 uur
+admin.whatsapp.sentHour,Verzonden berichten · afgelopen uur
+admin.whatsapp.status,Status
+admin.whatsapp.statusBlocked,Geblokkeerd
+admin.whatsapp.statusFailed,Mislukt
+admin.whatsapp.statusSent,Verzonden
+admin.whatsapp.time,Tijd
+admin.whatsapp.title,WhatsApp-gebruik
+admin.whatsapp.unhealthy,Niet operationeel
+demo.admin.scenario.whatsapp_usage.description,Bekijk quota per afzender en aantallen aanvragen en recente verzendingen.
+demo.admin.scenario.whatsapp_usage.title,WhatsApp-gebruik
+shell.nav.whatsapp,WhatsApp

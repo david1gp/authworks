@@ -23,6 +23,8 @@ function adminDemoScenarioKeyResolve(screen: AdminScreen, _pathname: string): st
       return "sessions"
     case "audit-events":
       return "audit-events"
+    case "whatsapp":
+      return "whatsapp-usage"
   }
 }
 

@@ -655,6 +655,8 @@ function passwordWhatsappDeliveryInvoke(
     void deliveryPort
       .sendText({
         phoneNumber: delivery.phoneNumber,
+        purpose: "registration",
+        realmId: delivery.realmId,
         text: `Your Authworks registration verification code is ${delivery.code}.`,
       })
       .catch(() => undefined)

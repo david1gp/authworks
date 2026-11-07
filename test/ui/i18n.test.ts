@@ -296,6 +296,7 @@ test("duplicate English catalog values resolve by the intended key rather than a
 // standard tech loanword, acronym, or proper noun in that language.
 const identicalWordTranslations = new Set([
   ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.oidcGroup`),
+  ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.whatsapp`),
   "de/common.theme.system",
   "pl/common.theme.system",
   "es/demo.fixture.error",
@@ -333,6 +334,7 @@ const identicalWordTranslations = new Set([
   "de/admin.realm.status",
   "de/admin.users.lifecycle.initial",
   "de/admin.users.sessions.region",
+  "de/admin.whatsapp.status",
   "de/demo.account.scenario.passkeys.title",
   "de/demo.admin.group.realm.title",
   "de/demo.admin.scenario.branding.title",
@@ -348,6 +350,7 @@ const identicalWordTranslations = new Set([
   "es/admin.projects.detail.rolesTab",
   "es/admin.redesign.tokens",
   "es/admin.userProfile.membershipRoles",
+  "es/admin.whatsapp.endpoint",
   "es/demo.admin.group.realm.title",
   "es/ui.authenticated.demo.avatarTitle",
   "es/ui.authenticated.demo.profileName",
@@ -390,6 +393,7 @@ const identicalWordTranslations = new Set([
   "it/admin.organizations.policy.password",
   "it/admin.organizations.providers.type",
   "it/admin.users.nickName",
+  "it/admin.whatsapp.endpoint",
   "it/demo.account.scenario.password.title",
   "it/demo.admin.group.realm.title",
   "it/demo.nav.account",
@@ -421,6 +425,8 @@ const identicalWordTranslations = new Set([
   "nl/admin.projects.status",
   "nl/admin.realm.status",
   "nl/admin.redesign.tokens",
+  "nl/admin.whatsapp.endpoint",
+  "nl/admin.whatsapp.status",
   "nl/demo.account.scenario.passkeys.title",
   "nl/demo.admin.group.realm.title",
   "nl/demo.nav.account",
@@ -433,6 +439,7 @@ const identicalWordTranslations = new Set([
   "pl/admin.impersonation.actor",
   "pl/admin.organizations.detail.realm",
   "pl/admin.users.sessions.region",
+  "pl/admin.whatsapp.status",
   "pl/demo.admin.group.realm.title",
   "pl/demo.admin.scenario.branding.title",
   "pl/ui.authenticated.demo.profileName",
@@ -445,6 +452,7 @@ const identicalWordTranslations = new Set([
   "pt/admin.organizations.policy.factor.passkey",
   "pt/admin.organizations.policy.passkey",
   "pt/admin.redesign.tokens",
+  "pt/admin.whatsapp.endpoint",
   "pt/demo.account.scenario.passkeys.title",
   "pt/demo.admin.group.realm.title",
   "pt/ui.authenticated.demo.avatarTitle",
@@ -731,6 +739,10 @@ const identicalAllowlist: readonly string[] = [
   "admin.organizations.domains.placeholder",
   // URL scheme prefix, not prose.
   "common.urlPlaceholder",
+  // Em-dash placeholder for a missing sender, not prose; identical in every locale.
+  "admin.whatsapp.noSender",
+  // Placeholder-only quota-bar template with no translatable words.
+  "admin.whatsapp.quotaBarLabel",
 ]
 
 test("no catalog cell copies English outside the allowlist and identical-word sets", async () => {

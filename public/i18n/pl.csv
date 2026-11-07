@@ -2030,3 +2030,34 @@ admin.redesign.userId,identyfikator użytkownika
 admin.redesign.viewAll,Zobacz wszystko
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Bezpieczeństwo i audyt
+admin.whatsapp.blockedDay,Zablokowane · ostatnie 24 godziny
+admin.whatsapp.dayWindow,Ostatnie 24 godziny
+admin.whatsapp.empty,WhatsApp nie jest jeszcze skonfigurowany — brak nadawców i zarejestrowanych wysyłek.
+admin.whatsapp.endpoint,Punkt końcowy
+admin.whatsapp.failedDay,Nieudane · ostatnie 24 godziny
+admin.whatsapp.healthy,Sprawny
+admin.whatsapp.hourWindow,Ostatnia godzina
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Cel
+admin.whatsapp.purposes,Wysyłki według celu · ostatnie 24 godziny
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} wysłano · pozostało {left} z {limit}
+admin.whatsapp.recent,Ostatnia aktywność
+admin.whatsapp.recipient,Hash odbiorcy
+admin.whatsapp.remainingHint,Pozostało {count} wysyłek u najbardziej obciążonego nadawcy
+admin.whatsapp.requestsDay,Żądania OTP · ostatnie 24 godziny
+admin.whatsapp.requestsHour,Żądania OTP · ostatnia godzina
+admin.whatsapp.sender,Nadawca
+admin.whatsapp.senders,Nadawcy
+admin.whatsapp.sentDay,Wysłane wiadomości · ostatnie 24 godziny
+admin.whatsapp.sentHour,Wysłane wiadomości · ostatnia godzina
+admin.whatsapp.status,Status
+admin.whatsapp.statusBlocked,Zablokowano
+admin.whatsapp.statusFailed,Nieudane
+admin.whatsapp.statusSent,Wysłano
+admin.whatsapp.time,Czas
+admin.whatsapp.title,Użycie WhatsApp
+admin.whatsapp.unhealthy,Niesprawny
+demo.admin.scenario.whatsapp_usage.description,Przeglądaj limity nadawców oraz liczbę żądań i ostatnich wysyłek.
+demo.admin.scenario.whatsapp_usage.title,Użycie WhatsApp
+shell.nav.whatsapp,WhatsApp

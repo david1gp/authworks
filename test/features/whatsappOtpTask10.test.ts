@@ -1653,6 +1653,8 @@ test("unknown, disabled, and stale cached availability fail consistently without
       endpoints: [{ client: { baseUrl: "https://waha-task10.example.test" }, id: "primary" }],
       freshnessTtlMs: 60_000,
       refreshIntervalMs: 30_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     }
     const repository = wahaHealthCandidateRepositoryCreate(database.db)
     const reader = wahaHealthCandidateReaderCreate({ repository })
@@ -1981,6 +1983,8 @@ test("enabled composition refreshes once at startup and mutations use cached hea
         endpoints: [{ client: { baseUrl: "https://waha-composition-task10.example.test" }, id: "primary" }],
         freshnessTtlMs: 60_000,
         refreshIntervalMs: 30_000,
+        senderDailyLimit: 100,
+        senderHourlyLimit: 20,
       },
       whatsappDelivery: { sendText: async () => ({ data: undefined, success: true }) },
     })

@@ -54,6 +54,7 @@ import { userProfilePictureCleanupTable } from "../../features/users/persistence
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
+import { wahaSendAttemptTable } from "../../features/waha/persistence/wahaSendAttemptTable.js"
 import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistence/whatsappOtpChallengeTable.js"
 import { zitadelMigrationSourceRecordTable } from "../../features/zitadelMigration/persistence/zitadelMigrationSourceRecordTable.js"
 import { otpLockoutTable } from "../lockout/otpLockoutTable.js"
@@ -115,6 +116,7 @@ export const storageSchema = {
   userProfileTable,
   userTable,
   wahaHealthCandidateTable,
+  wahaSendAttemptTable,
   whatsappOtpChallengeTable,
   otpLockoutTable,
   rateLimitTable,

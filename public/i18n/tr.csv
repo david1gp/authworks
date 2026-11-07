@@ -2030,3 +2030,34 @@ admin.redesign.userId,kullanıcı kimliği
 admin.redesign.viewAll,Tümünü görüntüle
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Güvenlik ve denetim
+admin.whatsapp.blockedDay,Engellenen · son 24 saat
+admin.whatsapp.dayWindow,Son 24 saat
+admin.whatsapp.empty,WhatsApp henüz yapılandırılmadı — kayıtlı gönderici ve gönderim yok.
+admin.whatsapp.endpoint,Uç nokta
+admin.whatsapp.failedDay,Başarısız · son 24 saat
+admin.whatsapp.healthy,Sağlıklı
+admin.whatsapp.hourWindow,Son saat
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Amaç
+admin.whatsapp.purposes,Amaca göre gönderimler · son 24 saat
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} gönderildi · {limit} adetten {left} kaldı
+admin.whatsapp.recent,Son etkinlikler
+admin.whatsapp.recipient,Alıcı hash'i
+admin.whatsapp.remainingHint,En dolu göndericide {count} gönderim kaldı
+admin.whatsapp.requestsDay,OTP istekleri · son 24 saat
+admin.whatsapp.requestsHour,OTP istekleri · son saat
+admin.whatsapp.sender,Gönderici
+admin.whatsapp.senders,Göndericiler
+admin.whatsapp.sentDay,Gönderilen iletiler · son 24 saat
+admin.whatsapp.sentHour,Gönderilen iletiler · son saat
+admin.whatsapp.status,Durum
+admin.whatsapp.statusBlocked,Engellendi
+admin.whatsapp.statusFailed,Başarısız
+admin.whatsapp.statusSent,Gönderildi
+admin.whatsapp.time,Zaman
+admin.whatsapp.title,WhatsApp kullanımı
+admin.whatsapp.unhealthy,Sağlıksız
+demo.admin.scenario.whatsapp_usage.description,Gönderici başına kotaları ve istek ve gönderim sayılarını inceleyin.
+demo.admin.scenario.whatsapp_usage.title,WhatsApp kullanımı
+shell.nav.whatsapp,WhatsApp

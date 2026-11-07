@@ -49,7 +49,7 @@ export function whatsappOtpAvailabilityCreate(
       if (!Number.isSafeInteger(now) || now < 0)
         return resultErrorCodedCreate(op, "The WhatsApp OTP availability timestamp is invalid.", "whatsapp-otp.invalid")
 
-      const candidates = options.reader.wahaHealthCandidateFreshHealthyList(now)
+      const candidates = options.reader.wahaHealthCandidateFreshHealthyUnderQuotaList(now)
       if (!candidates.success)
         return resultErrorCodedCreate(
           op,

@@ -9,6 +9,7 @@ import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
 import type { RealmSummaryResponse } from "../../realms/public/realmSummaryResponseSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
 import { adminEventExportDownload } from "./adminEventExportDownload.js"
 import {
@@ -54,6 +55,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
   const realmSummary = createSignalObject<RealmSummaryResponse | undefined>(undefined)
+  const whatsappUsage = createSignalObject<WhatsappOtpUsageResponse | undefined>(undefined)
   // Sessions arrive server-filtered by the URL-held ?q= search; the view renders the page as-is.
   const sessionSearch = (): string => options.sessionListSearch?.() ?? ""
   const sessionSearchInput = (value: string) => authenticatedUrlSearchParamWrite("q", value)
@@ -136,6 +138,8 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       realmSummary.set(summary.success ? summary.data : undefined)
       const recent = await options.adapter.eventList({ pageSize: 8 })
       events.set(recent.success ? recent.data.items : [])
+      const usage = await options.adapter.whatsappOtpUsageGet()
+      whatsappUsage.set(usage.success ? usage.data : undefined)
       return status.set("ready")
     }
     if (options.screen() === "audit-events") {
@@ -144,6 +148,13 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       events.set(result.data.items)
       nextPageToken.set(result.data.nextPageToken)
       return status.set(result.data.items.length === 0 ? "empty" : "ready")
+    }
+    if (options.screen() === "whatsapp") {
+      const result = await options.adapter.whatsappOtpUsageGet()
+      if (!result.success) return fail(result)
+      whatsappUsage.set(result.data)
+      const empty = result.data.senders.length === 0 && result.data.recent.length === 0
+      return status.set(empty ? "empty" : "ready")
     }
     return failWithKey("admin.common.permission")
   }
@@ -238,6 +249,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     eventMoreFilters: eventMoreFilters.get,
     eventMoreFiltersToggle: () => eventMoreFilters.set(!eventMoreFilters.get()),
     realmSummary: realmSummary.get,
+    whatsappUsage: whatsappUsage.get,
     signInSecret,
     error: error.get,
     // Events arrive server-filtered; the view renders the loaded page as-is.

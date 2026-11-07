@@ -2030,3 +2030,34 @@ admin.redesign.userId,ID do utilizador
 admin.redesign.viewAll,Ver tudo
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Segurança e auditoria
+admin.whatsapp.blockedDay,Bloqueados · últimas 24 horas
+admin.whatsapp.dayWindow,Últimas 24 horas
+admin.whatsapp.empty,O WhatsApp ainda não está configurado — sem remetentes e sem envios registados.
+admin.whatsapp.endpoint,Endpoint
+admin.whatsapp.failedDay,Com falha · últimas 24 horas
+admin.whatsapp.healthy,Operacional
+admin.whatsapp.hourWindow,Última hora
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Finalidade
+admin.whatsapp.purposes,Envios por finalidade · últimas 24 horas
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} enviadas · {left} restantes de {limit}
+admin.whatsapp.recent,Atividade recente
+admin.whatsapp.recipient,Hash do destinatário
+admin.whatsapp.remainingHint,Restam {count} envios no remetente mais próximo do limite
+admin.whatsapp.requestsDay,Pedidos OTP · últimas 24 horas
+admin.whatsapp.requestsHour,Pedidos OTP · última hora
+admin.whatsapp.sender,Remetente
+admin.whatsapp.senders,Remetentes
+admin.whatsapp.sentDay,Mensagens enviadas · últimas 24 horas
+admin.whatsapp.sentHour,Mensagens enviadas · última hora
+admin.whatsapp.status,Estado
+admin.whatsapp.statusBlocked,Bloqueado
+admin.whatsapp.statusFailed,Com falha
+admin.whatsapp.statusSent,Enviada
+admin.whatsapp.time,Hora
+admin.whatsapp.title,Uso do WhatsApp
+admin.whatsapp.unhealthy,Não operacional
+demo.admin.scenario.whatsapp_usage.description,Reveja as quotas por remetente e as contagens de pedidos e envios recentes.
+demo.admin.scenario.whatsapp_usage.title,Uso do WhatsApp
+shell.nav.whatsapp,WhatsApp

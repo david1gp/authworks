@@ -363,6 +363,13 @@ export const productionRouteContractMap = {
         path: "/admin/events",
         title: "shell.nav.auditEvents",
       },
+      {
+        contracts: ["events.list"],
+        guard: { ...realmAdminGuard },
+        key: "whatsapp",
+        path: "/admin/whatsapp",
+        title: "shell.nav.whatsapp",
+      },
     ],
   },
 } as const satisfies Readonly<Record<string, ProductionRouteContract>>

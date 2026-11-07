@@ -267,6 +267,8 @@ function whatsappOtpPhoneChangePortInvoke(
     void Promise.resolve(
       port.sendText({
         phoneNumber: delivery.phoneNumber,
+        purpose: delivery.purpose,
+        realmId: delivery.realmId,
         text: `Your Authworks WhatsApp account phone-change code is ${delivery.code}.`,
       }),
     ).catch(() => undefined)

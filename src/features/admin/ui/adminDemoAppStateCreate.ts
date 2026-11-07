@@ -12,6 +12,7 @@ import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutl
 import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
 import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
 import { mdiTuneVariant } from "@adaptive-ds/mdi/mdiTuneVariant.js"
+import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
 import { useLocation } from "@solidjs/router"
 import * as v from "valibot"
 import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.jsx"
@@ -124,6 +125,7 @@ const demoNavigationGroups: readonly AdminDemoNavGroup[] = [
     items: [
       { access: "realm-admin", href: "/demo/admin/sessions", icon: mdiMonitorCellphone, label: "Sessions" },
       { access: "realm-admin", href: "/demo/admin/events", icon: mdiClipboardTextOutline, label: "Events" },
+      { access: "realm-admin", href: "/demo/admin/whatsapp", icon: mdiWhatsapp, label: "WhatsApp" },
     ],
   },
 ]
@@ -169,6 +171,8 @@ const demoNavLabelTranslate = (label: string): string => {
       return messageTranslate("shell.nav.sessions")
     case "Events":
       return messageTranslate("shell.nav.auditEvents")
+    case "WhatsApp":
+      return messageTranslate("shell.nav.whatsapp")
     default:
       return label
   }

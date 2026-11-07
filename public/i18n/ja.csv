@@ -2030,3 +2030,34 @@ admin.redesign.userId,ユーザー ID
 admin.redesign.viewAll,すべて表示
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,セキュリティと監査
+admin.whatsapp.blockedDay,ブロック · 直近24時間
+admin.whatsapp.dayWindow,直近24時間
+admin.whatsapp.empty,WhatsAppはまだ設定されていません — 送信者も送信記録もありません。
+admin.whatsapp.endpoint,エンドポイント
+admin.whatsapp.failedDay,失敗 · 直近24時間
+admin.whatsapp.healthy,正常
+admin.whatsapp.hourWindow,直近1時間
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,目的
+admin.whatsapp.purposes,目的別送信数 · 直近24時間
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent}件送信済み · 残り{left}件（上限{limit}件）
+admin.whatsapp.recent,最近のアクティビティ
+admin.whatsapp.recipient,受信者ハッシュ
+admin.whatsapp.remainingHint,最も余裕の少ない送信者の残りは{count}件
+admin.whatsapp.requestsDay,OTPリクエスト · 直近24時間
+admin.whatsapp.requestsHour,OTPリクエスト · 直近1時間
+admin.whatsapp.sender,送信者
+admin.whatsapp.senders,送信者
+admin.whatsapp.sentDay,送信済みメッセージ · 直近24時間
+admin.whatsapp.sentHour,送信済みメッセージ · 直近1時間
+admin.whatsapp.status,ステータス
+admin.whatsapp.statusBlocked,ブロック
+admin.whatsapp.statusFailed,失敗
+admin.whatsapp.statusSent,送信済み
+admin.whatsapp.time,時刻
+admin.whatsapp.title,WhatsAppの使用状況
+admin.whatsapp.unhealthy,異常
+demo.admin.scenario.whatsapp_usage.description,送信者ごとのクォータとリクエスト数と最近の送信を確認します。
+demo.admin.scenario.whatsapp_usage.title,WhatsAppの使用状況
+shell.nav.whatsapp,WhatsApp

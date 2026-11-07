@@ -153,5 +153,43 @@ proof (same failure on clean `main`). Then hand back for commits/merge.
 
 - Exploration: done (delegated research, 2026-11-07).
 - Decisions: done (user, 2026-11-07).
-- Tasks 1–5: pending. Work happens in worktree branch
+- Task 1: done — `waha_send_attempts` table + `wahaSendAttemptRepositoryCreate`
+  (record / sent-count / recent-list / counts by status, purpose, sender),
+  registered in `storageSchema` + `storageSchemaCreate` DDL; 5 tests pass.
+  Note: `endpoint_id` is NOT NULL — Task 2 must give blocked rows an endpoint
+  or relax that column.
+- Task 2: done — env limits (20/h, 100/d defaults), quota-filtered sender
+  selection in `wahaTextDeliveryCreate` via `wahaSenderQuotaCreate`, one
+  `sent`/`failed` row per WAHA attempt + `blocked` row when none eligible
+  (first configured endpoint id, null session), HMAC recipient hash
+  (`wahaRecipientHashCreate`), purpose/realmId port context from all 5 call
+  sites (`registration` for passwordRegister), availability requires an
+  under-quota candidate (waha-side reader). Verified: 38 focused tests pass
+  on lead re-run. Known soft-limit race: concurrent sends can overshoot by
+  the in-flight count.
+- Task 3: done — `GET /realms/:realmId/whatsapp-otp/usage` (cookie session +
+  `eventRead` guard), public schema (`whatsappOtpUsageResponseSchema`:
+  limits / senders+remaining / totals / realm OTP requests / attempts by
+  status+purpose / recent with 8-char hash prefix), usage port implemented by
+  `wahaUsageReaderCreate`, realm request counts via events server surface
+  (`eventRealmTypeCount`), client method + AdminAdapter (demo returns empty
+  usage until Task 4 fixtures). Verified: 6 route tests pass on lead re-run.
+  Type consumed by Task 4: `WhatsappOtpUsageResponse` from whatsappOtp public.
+- Task 4: done — `whatsapp` admin screen (`/admin/whatsapp`, demo
+  `/demo/admin/whatsapp`): request/sent/blocked/failed tiles, per-sender
+  hour+day progress bars with sent/left, purpose breakdown, recent activity
+  table, realm-dashboard WhatsApp tile, demo fixtures, 31 i18n keys × 15
+  locales. Verified by lead: screenshots inspected, 32/32 focused tests pass
+  with repo test flags (`--conditions=browser --isolate`; without `--isolate`
+  solid-js `createRoot` breaks across files — pre-existing harness quirk,
+  also affects older test files). One claimed pre-existing failure
+  (`productionRouteAppStateCreate.test.ts`) to be proven in Task 5.
+- Task 5: done — `bun run check` fully green (1995 tests, build, built-output
+  tests). Two Task 1–4 fallout fixes: library-exports expectation for
+  `whatsappOtpUsageGet`; waha-owned error codes in `wahaUsageReaderCreate`.
+  Suspected `productionRouteAppStateCreate` failure did not reproduce.
+- E2E: 55/55 admin-shell/demo specs pass (Playwright, dedicated port; default
+  port 5174 on this machine is occupied by a foreign app — environmental).
+- Done: 4 commits on `feat/whatsapp-send-quota`, merged to `main`, pushed,
+  worktree + branch removed. Work happens in worktree branch
   `feat/whatsapp-send-quota`; merge to `main` after Task 5 passes.

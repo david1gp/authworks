@@ -20,6 +20,8 @@ const configuration: WahaConfiguration = {
   endpoints: [{ client, id: "primary" }],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  senderDailyLimit: 100,
+  senderHourlyLimit: 20,
 }
 
 const multiEndpointConfiguration: WahaConfiguration = {
@@ -35,6 +37,8 @@ const multiEndpointConfiguration: WahaConfiguration = {
   ],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  senderDailyLimit: 100,
+  senderHourlyLimit: 20,
 }
 
 test("WAHA health adapter checks server health before listing sessions", async () => {
@@ -122,6 +126,8 @@ test("WAHA health refresh immediately expires persisted candidates when health o
       ],
       freshnessTtlMs: 60_000,
       refreshIntervalMs: 30_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     }
     const repository = wahaHealthCandidateRepositoryCreate(database.db)
     for (const endpointId of ["health-failure", "list-failure"]) {

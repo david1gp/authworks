@@ -2030,3 +2030,34 @@ admin.redesign.userId,Benutzer-ID
 admin.redesign.viewAll,Alle ansehen
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Sicherheit und Audit
+admin.whatsapp.blockedDay,Blockiert · letzte 24 Stunden
+admin.whatsapp.dayWindow,Letzte 24 Stunden
+admin.whatsapp.empty,WhatsApp ist noch nicht konfiguriert — keine Absender und keine aufgezeichneten Sendungen.
+admin.whatsapp.endpoint,Endpunkt
+admin.whatsapp.failedDay,Fehlgeschlagen · letzte 24 Stunden
+admin.whatsapp.healthy,Funktionsfähig
+admin.whatsapp.hourWindow,Letzte Stunde
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Zweck
+admin.whatsapp.purposes,Sendungen nach Zweck · letzte 24 Stunden
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} gesendet · {left} von {limit} übrig
+admin.whatsapp.recent,Letzte Aktivität
+admin.whatsapp.recipient,Empfänger-Hash
+admin.whatsapp.remainingHint,Noch {count} Sendungen bis zum knappsten Limit
+admin.whatsapp.requestsDay,OTP-Anfragen · letzte 24 Stunden
+admin.whatsapp.requestsHour,OTP-Anfragen · letzte Stunde
+admin.whatsapp.sender,Absender
+admin.whatsapp.senders,Absender
+admin.whatsapp.sentDay,Gesendete Nachrichten · letzte 24 Stunden
+admin.whatsapp.sentHour,Gesendete Nachrichten · letzte Stunde
+admin.whatsapp.status,Status
+admin.whatsapp.statusBlocked,Blockiert
+admin.whatsapp.statusFailed,Fehlgeschlagen
+admin.whatsapp.statusSent,Gesendet
+admin.whatsapp.time,Zeitpunkt
+admin.whatsapp.title,WhatsApp-Nutzung
+admin.whatsapp.unhealthy,Gestört
+demo.admin.scenario.whatsapp_usage.description,Absender-Kontingente und Anfragezahlen sowie aktuelle Sendungen prüfen.
+demo.admin.scenario.whatsapp_usage.title,WhatsApp-Nutzung
+shell.nav.whatsapp,WhatsApp

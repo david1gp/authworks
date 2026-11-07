@@ -365,6 +365,17 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS waha_health_candidates_fresh_idx ON waha_health_candidates (status, expires_at)",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS waha_send_attempts (id TEXT PRIMARY KEY NOT NULL, endpoint_id TEXT NOT NULL, session_name TEXT, purpose TEXT NOT NULL, realm_id TEXT, recipient_phone_hash TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('sent', 'failed', 'blocked')), created_at INTEGER NOT NULL CHECK (created_at >= 0))",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS waha_send_attempts_sender_idx ON waha_send_attempts (endpoint_id, session_name, created_at)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS waha_send_attempts_status_idx ON waha_send_attempts (status, created_at)")
+    database.run(
+      "CREATE INDEX IF NOT EXISTS waha_send_attempts_purpose_idx ON waha_send_attempts (purpose, created_at)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS waha_send_attempts_created_idx ON waha_send_attempts (created_at)")
+    database.run(
       "CREATE TABLE IF NOT EXISTS password_registration_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT, identity_hash TEXT, purpose TEXT NOT NULL CHECK (purpose = 'registration'), code_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run(
