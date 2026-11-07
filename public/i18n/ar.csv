@@ -2029,3 +2029,34 @@ admin.redesign.userId,user ID
 admin.redesign.viewAll,View all
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,الأمان والتدقيق
+admin.whatsapp.blockedDay,محظور · آخر 24 ساعة
+admin.whatsapp.dayWindow,آخر 24 ساعة
+admin.whatsapp.empty,لم يتم إعداد واتساب بعد — لا يوجد مرسلون ولا عمليات إرسال مسجلة.
+admin.whatsapp.endpoint,نقطة النهاية
+admin.whatsapp.failedDay,فاشل · آخر 24 ساعة
+admin.whatsapp.healthy,سليم
+admin.whatsapp.hourWindow,الساعة الأخيرة
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,الغرض
+admin.whatsapp.purposes,عمليات الإرسال حسب الغرض · آخر 24 ساعة
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,تم إرسال {sent} · المتبقي {left} من {limit}
+admin.whatsapp.recent,النشاط الأخير
+admin.whatsapp.recipient,هاش المستلم
+admin.whatsapp.remainingHint,تبقى {count} من عمليات الإرسال لدى المرسل الأكثر استخداما
+admin.whatsapp.requestsDay,طلبات OTP · آخر 24 ساعة
+admin.whatsapp.requestsHour,طلبات OTP · الساعة الأخيرة
+admin.whatsapp.sender,المرسل
+admin.whatsapp.senders,المرسلون
+admin.whatsapp.sentDay,الرسائل المرسلة · آخر 24 ساعة
+admin.whatsapp.sentHour,الرسائل المرسلة · الساعة الأخيرة
+admin.whatsapp.status,الحالة
+admin.whatsapp.statusBlocked,محظور
+admin.whatsapp.statusFailed,فشل
+admin.whatsapp.statusSent,تم الإرسال
+admin.whatsapp.time,الوقت
+admin.whatsapp.title,استخدام واتساب
+admin.whatsapp.unhealthy,غير سليم
+demo.admin.scenario.whatsapp_usage.description,راجع حصص كل مرسل وأعداد الطلبات وعمليات الإرسال الأخيرة.
+demo.admin.scenario.whatsapp_usage.title,استخدام واتساب
+shell.nav.whatsapp,WhatsApp

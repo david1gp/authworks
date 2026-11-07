@@ -8,6 +8,7 @@ import { mdiCogOutline } from "@adaptive-ds/mdi/mdiCogOutline.js"
 import { mdiFileDocumentOutline } from "@adaptive-ds/mdi/mdiFileDocumentOutline.js"
 import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
+import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
 import { mdiShieldCrownOutline } from "@adaptive-ds/mdi/mdiShieldCrownOutline.js"
@@ -118,6 +119,12 @@ export const productionShellNavigationGroups = {
           href: "/admin/events",
           icon: mdiClipboardTextOutline,
           label: "shell.nav.auditEvents",
+        },
+        {
+          access: "realm-admin",
+          href: "/admin/whatsapp",
+          icon: mdiWhatsapp,
+          label: "shell.nav.whatsapp",
         },
       ],
     },

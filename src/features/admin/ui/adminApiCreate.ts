@@ -6,6 +6,7 @@ import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserReque
 import { sessionBootstrapAdminSignInResponseSchema } from "../../sessions/public/sessionBootstrapAdminSignInResponseSchema.js"
 import { sessionRevocationResponseSchema } from "../../sessions/public/sessionRevocationResponseSchema.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
+import { whatsappOtpApiClientCreate } from "../../whatsappOtp/client/whatsappOtpApiClientCreate.js"
 
 type AdminFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -16,6 +17,7 @@ export function adminApiCreate(options: { readonly baseUrl: string; readonly fet
   const realms = realmApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const events = eventApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const sessions = sessionApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
+  const whatsapp = whatsappOtpApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
 
   return {
     // Sign-in runs before any session cookie exists, so it cannot use the CSRF exchange. The
@@ -73,6 +75,7 @@ export function adminApiCreate(options: { readonly baseUrl: string; readonly fet
         schema: sessionRevocationResponseSchema,
       }),
     userSessionsList: sessions.sessionUserList,
+    whatsappOtpUsageGet: whatsapp.whatsappOtpUsageGet,
     userCreate: users.userTenantCreate,
     userDelete: users.userTenantDelete,
     userGet: users.userTenantGet,

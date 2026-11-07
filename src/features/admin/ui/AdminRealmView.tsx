@@ -6,6 +6,7 @@ import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
 import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { mdiPencilOutline } from "@adaptive-ds/mdi/mdiPencilOutline.js"
 import { mdiShieldAccountOutline } from "@adaptive-ds/mdi/mdiShieldAccountOutline.js"
+import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
 import { A, useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -27,6 +28,7 @@ import { AdminEventTable } from "./AdminEventTable.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminRealmQueryParse } from "./adminRealmQuerySchema.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
+import { adminWhatsappViewStateCreate } from "./adminWhatsappViewStateCreate.js"
 
 const dialogQuerySet = (
   pathname: string,
@@ -48,6 +50,7 @@ export function AdminRealmView(props: {
 }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const whatsapp = adminWhatsappViewStateCreate({ usage: () => props.state.whatsappUsage() })
   const dialogOpenSet = (dialog: "edit-realm" | undefined) =>
     dialogQuerySet(location.pathname, location.search, navigate, dialog)
   const dialogOpen = () => adminRealmQueryParse(location.search).dialog === "edit-realm"
@@ -196,6 +199,21 @@ export function AdminRealmView(props: {
                         href={`${props.basePath}/events`}
                       />
                     </div>
+                    <Show when={props.state.whatsappUsage()}>
+                      <div class="relative min-w-0">
+                        <Icon
+                          aria-hidden="true"
+                          class="pointer-events-none absolute right-3 top-3 size-4 text-muted-foreground"
+                          path={mdiWhatsapp}
+                        />
+                        <AuthenticatedStatTile
+                          label={messageTranslate("shell.nav.whatsapp")}
+                          value={props.state.whatsappUsage()?.totals.sentLastDay ?? 0}
+                          hint={whatsapp.remainingHint()}
+                          href={`${props.basePath}/whatsapp`}
+                        />
+                      </div>
+                    </Show>
                   </div>
                 )}
               </Show>

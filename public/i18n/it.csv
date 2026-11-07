@@ -2029,3 +2029,34 @@ admin.redesign.userId,user ID
 admin.redesign.viewAll,View all
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Sicurezza e audit
+admin.whatsapp.blockedDay,Bloccati · ultime 24 ore
+admin.whatsapp.dayWindow,Ultime 24 ore
+admin.whatsapp.empty,WhatsApp non è ancora configurato — nessun mittente e nessun invio registrato.
+admin.whatsapp.endpoint,Endpoint
+admin.whatsapp.failedDay,Non riusciti · ultime 24 ore
+admin.whatsapp.healthy,Operativo
+admin.whatsapp.hourWindow,Ultima ora
+admin.whatsapp.noSender,—
+admin.whatsapp.purpose,Scopo
+admin.whatsapp.purposes,Invii per scopo · ultime 24 ore
+admin.whatsapp.quotaBarLabel,{sender} · {window}
+admin.whatsapp.quotaLine,{sent} inviati · {left} rimanenti di {limit}
+admin.whatsapp.recent,Attività recente
+admin.whatsapp.recipient,Hash del destinatario
+admin.whatsapp.remainingHint,{count} invii rimasti sul mittente più vicino al limite
+admin.whatsapp.requestsDay,Richieste OTP · ultime 24 ore
+admin.whatsapp.requestsHour,Richieste OTP · ultima ora
+admin.whatsapp.sender,Mittente
+admin.whatsapp.senders,Mittenti
+admin.whatsapp.sentDay,Messaggi inviati · ultime 24 ore
+admin.whatsapp.sentHour,Messaggi inviati · ultima ora
+admin.whatsapp.status,Stato
+admin.whatsapp.statusBlocked,Bloccato
+admin.whatsapp.statusFailed,Non riuscito
+admin.whatsapp.statusSent,Inviato
+admin.whatsapp.time,Ora
+admin.whatsapp.title,Utilizzo di WhatsApp
+admin.whatsapp.unhealthy,Non operativo
+demo.admin.scenario.whatsapp_usage.description,Esamina le quote per mittente e i conteggi di richieste e invii recenti.
+demo.admin.scenario.whatsapp_usage.title,Utilizzo di WhatsApp
+shell.nav.whatsapp,WhatsApp

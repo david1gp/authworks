@@ -2,6 +2,7 @@ import { Match, Switch } from "solid-js"
 import { AdminEventListView } from "./AdminEventListView.js"
 import { AdminSessionListView } from "./AdminSessionListView.js"
 import { AdminSignInView } from "./AdminSignInView.js"
+import { AdminWhatsappView } from "./AdminWhatsappView.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
 
@@ -21,6 +22,9 @@ export function AdminScreenView(props: {
       </Match>
       <Match when={props.screen === "audit-events"}>
         <AdminEventListView state={props.state} />
+      </Match>
+      <Match when={props.screen === "whatsapp"}>
+        <AdminWhatsappView state={props.state} />
       </Match>
     </Switch>
   )

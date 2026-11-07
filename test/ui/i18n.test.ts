@@ -294,6 +294,7 @@ test("duplicate English catalog values resolve by the intended key rather than a
 // Locale/key pairs whose correct translation is spelled exactly like the English word.
 const identicalWordTranslations = new Set([
   ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.oidcGroup`),
+  ...languagesSupported.filter((entry) => entry.code !== "en").map((entry) => `${entry.code}/shell.nav.whatsapp`),
   "de/common.theme.system",
   "pl/common.theme.system",
   "es/demo.fixture.error",
