@@ -5,6 +5,7 @@ import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { WahaConfiguration } from "./wahaConfiguration.js"
+import { wahaConfigurationDefaults } from "./wahaConfigurationDefaults.js"
 import type { WahaEndpointConfiguration } from "./wahaEndpointConfiguration.js"
 
 const defaultFreshnessTtlMs = 90_000
@@ -46,11 +47,25 @@ export function wahaConfigurationParse(
       op,
       "WAHA configuration is invalid: freshness TTL must not be shorter than refresh interval.",
     )
+  const senderHourlyLimit = positiveIntegerParse(
+    input.AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT,
+    wahaConfigurationDefaults.senderHourlyLimit,
+    "AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT",
+  )
+  if (!senderHourlyLimit.success) return senderHourlyLimit
+  const senderDailyLimit = positiveIntegerParse(
+    input.AUTHWORKS_WAHA_SENDER_DAILY_LIMIT,
+    wahaConfigurationDefaults.senderDailyLimit,
+    "AUTHWORKS_WAHA_SENDER_DAILY_LIMIT",
+  )
+  if (!senderDailyLimit.success) return senderDailyLimit
 
   return resultCreate({
     endpoints: endpoints.data,
     freshnessTtlMs: freshnessTtlMs.data,
     refreshIntervalMs: refreshIntervalMs.data,
+    senderDailyLimit: senderDailyLimit.data,
+    senderHourlyLimit: senderHourlyLimit.data,
   })
 }
 

@@ -1,33 +1,48 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import { wahaChatIdCreate } from "../domain/wahaChatIdCreate.js"
 import type { WahaDeliveryPort } from "../domain/wahaDeliveryPort.js"
+import type { WahaSendAttemptStatus } from "../domain/wahaSendAttemptStatusSchema.js"
 import type { WahaTextDeliveryPort } from "../domain/wahaTextDeliveryPort.js"
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
+import { wahaSendAttemptRepositoryCreate } from "../persistence/wahaSendAttemptRepositoryCreate.js"
 import type { WahaConfiguration } from "./wahaConfiguration.js"
 import { wahaHealthCandidateSelectorCreate } from "./wahaHealthCandidateSelectorCreate.js"
 import { wahaHealthRegistryCreate } from "./wahaHealthRegistryCreate.js"
+import { wahaRecipientHashCreate } from "./wahaRecipientHashCreate.js"
+import { wahaSenderQuotaCreate } from "./wahaSenderQuotaCreate.js"
 
 type WahaTextDeliveryCreateOptions = {
   readonly configuration: WahaConfiguration
   readonly deliveryPort: WahaDeliveryPort
   readonly healthRegistry: Pick<ReturnType<typeof wahaHealthRegistryCreate>, "markUnhealthy">
+  readonly recipientHashSecret?: Secret | string
   readonly repository: ReturnType<typeof wahaHealthCandidateRepositoryCreate>
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly sendAttempts: ReturnType<typeof wahaSendAttemptRepositoryCreate>
 }
 
 export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
+  const runtime = options.runtime ?? runtimeCreate()
   const selector = wahaHealthCandidateSelectorCreate({
     configuration: options.configuration,
+    quota: wahaSenderQuotaCreate({ configuration: options.configuration, sendAttempts: options.sendAttempts }),
     repository: options.repository,
     runtime: options.runtime,
   })
 
   const delivery: WahaTextDeliveryPort = {
-    sendText(input: { readonly phoneNumber: string; readonly text: string }): Promise<Result<void>> {
+    sendText(input: {
+      readonly phoneNumber: string
+      readonly purpose?: string
+      readonly realmId?: string
+      readonly text: string
+    }): Promise<Result<void>> {
       return wahaTextDeliverySend(input)
     },
   }
@@ -35,21 +50,44 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
 
   async function wahaTextDeliverySend(input: {
     readonly phoneNumber: string
+    readonly purpose?: string
+    readonly realmId?: string
     readonly text: string
   }): Promise<Result<void>> {
     const chatId = wahaChatIdCreate(input.phoneNumber)
     if (!chatId.success) return chatId
+    const now = runtime.now()
+    if (!Number.isSafeInteger(now) || now < 0)
+      return resultErrorCodedCreate("wahaTextDeliverySend", "The WAHA send timestamp is invalid.", "waha.internal")
 
     const selected = selector.select()
     if (!selected.success) return selected
-    if (selected.data === null)
+    if (selected.data === null) {
+      wahaSendAttemptRecordCreate({
+        createdAt: now,
+        phoneNumber: input.phoneNumber,
+        purpose: input.purpose ?? "unknown",
+        realmId: input.realmId ?? null,
+        sessionName: null,
+        status: "blocked",
+      })
       return resultErrorCodedCreate(
         "wahaTextDeliverySend",
         "No fresh healthy WAHA candidate is available.",
         "waha.no-healthy-candidate",
       )
+    }
 
     const firstAttempt = await candidateSend(selected.data, chatId.data, input.text)
+    wahaSendAttemptRecordCreate({
+      createdAt: now,
+      endpointId: selected.data.endpointId,
+      phoneNumber: input.phoneNumber,
+      purpose: input.purpose ?? "unknown",
+      realmId: input.realmId ?? null,
+      sessionName: selected.data.sessionName,
+      status: firstAttempt.success ? "sent" : "failed",
+    })
     if (firstAttempt.success) return firstAttempt
     void candidateMarkUnhealthy(selected.data)
 
@@ -58,9 +96,41 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
     if (retry.data === null) return firstAttempt
 
     const secondAttempt = await candidateSend(retry.data, chatId.data, input.text)
+    wahaSendAttemptRecordCreate({
+      createdAt: now,
+      endpointId: retry.data.endpointId,
+      phoneNumber: input.phoneNumber,
+      purpose: input.purpose ?? "unknown",
+      realmId: input.realmId ?? null,
+      sessionName: retry.data.sessionName,
+      status: secondAttempt.success ? "sent" : "failed",
+    })
     if (secondAttempt.success) return secondAttempt
     void candidateMarkUnhealthy(retry.data)
     return secondAttempt
+  }
+
+  function wahaSendAttemptRecordCreate(input: {
+    readonly createdAt: number
+    readonly endpointId?: string
+    readonly phoneNumber: string
+    readonly purpose: string
+    readonly realmId: string | null
+    readonly sessionName: string | null
+    readonly status: WahaSendAttemptStatus
+  }): void {
+    const endpointId = input.endpointId ?? options.configuration.endpoints[0]?.id
+    if (endpointId === undefined) return
+    options.sendAttempts.wahaSendAttemptRecord({
+      createdAt: input.createdAt,
+      endpointId,
+      id: uuidv7Create(runtime),
+      purpose: input.purpose,
+      realmId: input.realmId,
+      recipientPhoneHash: wahaRecipientHashCreate(options.recipientHashSecret, input.phoneNumber),
+      sessionName: input.sessionName,
+      status: input.status,
+    })
   }
 
   async function candidateSend(candidate: WahaHealthCandidateRow, chatId: string, text: string): Promise<Result<void>> {

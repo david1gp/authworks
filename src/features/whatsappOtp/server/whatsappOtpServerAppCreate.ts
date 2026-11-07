@@ -10,6 +10,8 @@ import { trustedProxyIpResolve } from "../../../platform/http/trustedProxyIpReso
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
@@ -17,6 +19,7 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { wahaConfigurationDefaults } from "../../waha/server/wahaConfigurationDefaults.js"
 import { whatsappOtpPhoneChangeResend } from "../actions/whatsappOtpPhoneChangeResend.js"
 import { whatsappOtpPhoneChangeStart } from "../actions/whatsappOtpPhoneChangeStart.js"
 import { whatsappOtpPhoneChangeVerify } from "../actions/whatsappOtpPhoneChangeVerify.js"
@@ -25,6 +28,7 @@ import { whatsappOtpStart } from "../actions/whatsappOtpStart.js"
 import { whatsappOtpVerify } from "../actions/whatsappOtpVerify.js"
 import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
 import type { WhatsappOtpDeliveryPort } from "../domain/whatsappOtpDeliveryPort.js"
+import type { WhatsappOtpUsagePort } from "../domain/whatsappOtpUsagePort.js"
 import type { WhatsappOtpAvailabilityResponse } from "../public/whatsappOtpAvailabilityResponseSchema.js"
 import type { WhatsappOtpDelivery } from "../public/whatsappOtpDeliverySchema.js"
 import { whatsappOtpPhoneChangeResendRequestSchema } from "../public/whatsappOtpPhoneChangeResendRequestSchema.js"
@@ -32,7 +36,9 @@ import { whatsappOtpPhoneChangeStartRequestSchema } from "../public/whatsappOtpP
 import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
 import { whatsappOtpResendRequestSchema } from "../public/whatsappOtpResendRequestSchema.js"
 import type { WhatsappOtpSecurityNotification } from "../public/whatsappOtpSecurityNotificationSchema.js"
+import type { WhatsappOtpUsageResponse } from "../public/whatsappOtpUsageResponseSchema.js"
 import { whatsappOtpStartRequestSchema } from "../public/whatsappOtpStartRequestSchema.js"
+import { whatsappOtpUsageQuerySchema } from "../public/whatsappOtpUsageQuerySchema.js"
 import { whatsappOtpVerifyRequestSchema } from "../public/whatsappOtpVerifyRequestSchema.js"
 
 type WhatsappOtpRouteContext = {
@@ -58,6 +64,7 @@ type WhatsappOtpServerAppCreateOptions = {
   readonly rateLimitSecret?: Secret | string
   readonly trustedProxyAddresses?: readonly string[]
   readonly availability: WhatsappOtpAvailabilityPort
+  readonly usage?: WhatsappOtpUsagePort
 }
 
 type WhatsappOtpServerEnv = {
@@ -75,6 +82,10 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
     minimumAssurance: "authenticated",
     publicOrigin: options.publicOrigin,
   })
+  const usageAdminMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
 
   app.get("/realms/:realmId/whatsapp-otp/availability", (context) => {
     const tenant = whatsappOtpTenantContextResolve(
@@ -90,6 +101,28 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
       realmId: context.req.param("realmId"),
     })
     return whatsappOtpAvailabilityResponseCreate(context, availability)
+  })
+
+  app.get("/realms/:realmId/whatsapp-otp/usage", usageAdminMiddleware, (context) => {
+    const realmId = context.req.param("realmId")
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.eventRead,
+      realmId,
+    })
+    if (!authorized.success) return whatsappOtpErrorResponseCreate(context, authorized)
+    const limitParam = new URL(context.req.url).searchParams.get("limit")
+    const query = v.safeParse(whatsappOtpUsageQuerySchema, limitParam === null ? {} : { limit: Number(limitParam) })
+    if (!query.success)
+      return whatsappOtpErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("whatsappOtpUsageGet", "The WhatsApp usage query is invalid.", "whatsapp-otp.invalid"),
+      )
+    return whatsappOtpResultResponseCreate(
+      context,
+      (options.usage ?? whatsappOtpUsageEmptyPort).whatsappOtpUsageGet({ limit: query.output.limit, realmId }),
+    )
   })
 
   app.post("/realms/:realmId/me/phone-change/start", authenticatedMiddleware, async (context) => {
@@ -292,6 +325,25 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
   })
 
   return app
+}
+
+const whatsappOtpUsageEmptyPort: WhatsappOtpUsagePort = {
+  whatsappOtpUsageGet: () =>
+    resultCreate<WhatsappOtpUsageResponse>({
+      attempts: {
+        byPurposeLastDay: {},
+        byStatusLastDay: { blocked: 0, failed: 0, sent: 0 },
+        byStatusLastHour: { blocked: 0, failed: 0, sent: 0 },
+      },
+      limits: {
+        dailyPerSender: wahaConfigurationDefaults.senderDailyLimit,
+        hourlyPerSender: wahaConfigurationDefaults.senderHourlyLimit,
+      },
+      recent: [],
+      requests: { otpRequestedLastDay: 0, otpRequestedLastHour: 0 },
+      senders: [],
+      totals: { sentLastDay: 0, sentLastHour: 0 },
+    }),
 }
 
 function whatsappOtpTenantContextResolve(

@@ -328,6 +328,8 @@ function whatsappOtpPortInvoke(port: WhatsappOtpDeliveryPort | undefined, delive
     void Promise.resolve(
       port.sendText({
         phoneNumber: delivery.phoneNumber,
+        purpose: delivery.purpose,
+        realmId: delivery.realmId,
         text: `Your Authworks WhatsApp sign-in code is ${delivery.code}.`,
       }),
     ).catch(() => undefined)

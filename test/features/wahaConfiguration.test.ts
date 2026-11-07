@@ -39,9 +39,55 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
       ],
       freshnessTtlMs: 90_000,
       refreshIntervalMs: 30_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     },
     success: true,
   })
+})
+
+test("WAHA sender quota limits default to 20 per hour and 100 per day", () => {
+  const result = wahaConfigurationParse({
+    AUTHWORKS_WAHA_ENABLED: "true",
+    AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([{ baseUrl: "https://waha.example.test", id: "primary" }]),
+  })
+  expect(result).toMatchObject({
+    data: { senderDailyLimit: 100, senderHourlyLimit: 20 },
+    success: true,
+  })
+})
+
+test("WAHA sender quota limits accept explicit positive integers", () => {
+  const result = wahaConfigurationParse({
+    AUTHWORKS_WAHA_ENABLED: "true",
+    AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([{ baseUrl: "https://waha.example.test", id: "primary" }]),
+    AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "50",
+    AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "5",
+  })
+  expect(result).toMatchObject({
+    data: { senderDailyLimit: 50, senderHourlyLimit: 5 },
+    success: true,
+  })
+})
+
+test("WAHA sender quota limits reject non-positive integers", () => {
+  for (const input of [
+    { AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "50", AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "0" },
+    { AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "50", AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "-1" },
+    { AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "50", AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "many" },
+    { AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "1.5", AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "5" },
+    { AUTHWORKS_WAHA_SENDER_DAILY_LIMIT: "", AUTHWORKS_WAHA_SENDER_HOURLY_LIMIT: "5" },
+  ]) {
+    const invalid = wahaConfigurationParse({
+      AUTHWORKS_WAHA_ENABLED: "true",
+      AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([{ baseUrl: "https://waha.example.test", id: "primary" }]),
+      ...input,
+    })
+    expect(invalid.success).toBe(false)
+    if (invalid.success) continue
+    expect(invalid.errorMessage).toContain("AUTHWORKS_WAHA_SENDER_")
+    expect(invalid.errorMessage).not.toContain("waha.example.test")
+  }
 })
 
 test("WAHA sender session allowlists require nonempty unique names and remain optional", () => {
@@ -99,6 +145,8 @@ test("WAHA configuration accepts explicit refresh and freshness values only when
       endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
       freshnessTtlMs: 15_000,
       refreshIntervalMs: 5_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     },
     success: true,
   })
@@ -225,6 +273,8 @@ test("server composition rejects enabled WhatsApp registration without a rate-li
         endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
         freshnessTtlMs: 90_000,
         refreshIntervalMs: 30_000,
+        senderDailyLimit: 100,
+        senderHourlyLimit: 20,
       },
     })
     expect(created).toMatchObject({

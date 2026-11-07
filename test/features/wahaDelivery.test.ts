@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { wahaChatIdCreate } from "../../src/features/waha/domain/wahaChatIdCreate.js"
 import { wahaHealthCandidateRepositoryCreate } from "../../src/features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
+import { wahaSendAttemptRepositoryCreate } from "../../src/features/waha/persistence/wahaSendAttemptRepositoryCreate.js"
 import type { WahaConfiguration } from "../../src/features/waha/server/wahaConfiguration.js"
 import { wahaDeliveryPortCreate } from "../../src/features/waha/server/wahaDeliveryPortCreate.js"
 import { wahaHealthRegistryCreate } from "../../src/features/waha/server/wahaHealthRegistryCreate.js"
@@ -26,6 +27,8 @@ const configuration: WahaConfiguration = {
   ],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  senderDailyLimit: 100,
+  senderHourlyLimit: 20,
 }
 
 test("WAHA chat IDs require canonical E.164 and append @c.us", () => {
@@ -156,7 +159,8 @@ test("WAHA delivery marks a failed candidate and retries one different candidate
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       expect(await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })).toEqual({
@@ -202,7 +206,8 @@ test("WAHA delivery retries at most once and does not retry a single candidate",
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       const sent = await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })
@@ -268,7 +273,8 @@ test("WAHA delivery retries failure marking after a CAS race that refreshes a ca
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       expect(await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })).toEqual({
@@ -334,7 +340,8 @@ test("WAHA delivery keeps a concurrent unhealthy state and does not mask the fal
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       expect(await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })).toEqual({
@@ -400,7 +407,8 @@ test("WAHA delivery leaves a newer state in place after bounded CAS contention",
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       expect(await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })).toEqual({
@@ -445,7 +453,8 @@ test("WAHA delivery does not replace a failed send with a failure-mark write err
             ),
         },
         repository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       const sent = await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })
@@ -483,7 +492,8 @@ test("WAHA delivery returns the fallback failure when both candidates fail", asy
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       const sent = await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })
@@ -534,7 +544,8 @@ test("WAHA delivery attempts no third candidate after a failed fallback", async 
         deliveryPort: wahaDeliveryPortCreate({ configuration: threeEndpointConfiguration }),
         healthRegistry: registry,
         repository,
-        runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+        sendAttempts: wahaSendAttemptRepositoryCreate(database.db),
+        runtime: { now: () => now, randomBytes: (length) => new Uint8Array(length) },
       })
 
       const sent = await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })

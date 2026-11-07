@@ -17,6 +17,8 @@ const selectionConfiguration: WahaConfiguration = {
   })),
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  senderDailyLimit: 100,
+  senderHourlyLimit: 20,
 }
 
 test("WAHA selection uses only fresh healthy persisted candidates and injected randomness", async () => {
@@ -124,6 +126,8 @@ test("WAHA selection cannot select a session excluded during health refresh", as
       ],
       freshnessTtlMs: 60_000,
       refreshIntervalMs: 30_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     }
     const repository = wahaHealthCandidateRepositoryCreate(database.db)
     expect(
@@ -205,6 +209,8 @@ test("WAHA selection filters persisted candidates against changed configuration 
       ],
       freshnessTtlMs: 60_000,
       refreshIntervalMs: 30_000,
+      senderDailyLimit: 100,
+      senderHourlyLimit: 20,
     }
     const selector = wahaHealthCandidateSelectorCreate({
       configuration: changedConfiguration,

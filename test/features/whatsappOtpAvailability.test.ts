@@ -12,7 +12,9 @@ import { realmSystemContextCreate } from "../../src/features/realms/domain/realm
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import { wahaHealthCandidateRepositoryCreate } from "../../src/features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
+import { wahaSendAttemptRepositoryCreate } from "../../src/features/waha/persistence/wahaSendAttemptRepositoryCreate.js"
 import { wahaHealthCandidateReaderCreate } from "../../src/features/waha/server/wahaHealthCandidateReaderCreate.js"
+import { wahaSenderQuotaCreate } from "../../src/features/waha/server/wahaSenderQuotaCreate.js"
 import type { WahaConfiguration } from "../../src/features/waha/server/wahaConfiguration.js"
 import { wahaHealthRegistryCreate } from "../../src/features/waha/server/wahaHealthRegistryCreate.js"
 import { whatsappOtpResend } from "../../src/features/whatsappOtp/actions/whatsappOtpResend.js"
@@ -32,6 +34,8 @@ const configuration: WahaConfiguration = {
   endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  senderDailyLimit: 100,
+  senderHourlyLimit: 20,
 }
 
 test("WhatsApp availability predicate requires every input", () => {
@@ -658,6 +662,124 @@ test("server composition keeps injected WhatsApp delivery fail-closed without WA
     created.data.stop()
     await rm(directory, { force: true, recursive: true })
   }
+})
+
+test("WhatsApp availability is false when every healthy sender exhausted its hourly quota", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "whatsapp-availability-quota-exhausted.example.com")
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    const sendAttempts = wahaSendAttemptRepositoryCreate(database.db)
+    const quotaConfiguration: WahaConfiguration = { ...configuration, senderDailyLimit: 10, senderHourlyLimit: 1 }
+    const reader = wahaHealthCandidateReaderCreate({
+      quota: wahaSenderQuotaCreate({ configuration: quotaConfiguration, sendAttempts }),
+      repository,
+    })
+    const availability = whatsappOtpAvailabilityCreate({
+      configuration: quotaConfiguration,
+      database,
+      reader,
+      runtime: testkit.runtime,
+    })
+    const now = testkit.runtime.now()
+    for (const sessionName of ["one", "two"])
+      expect(
+        repository.wahaHealthCandidateCreate({
+          checkedAt: now,
+          createdAt: now,
+          endpointId: "primary",
+          expiresAt: now + quotaConfiguration.freshnessTtlMs,
+          failureAt: null,
+          failureCode: null,
+          failureMessage: null,
+          sessionName,
+          status: "healthy",
+          updatedAt: now,
+          version: 1,
+        }),
+      ).toMatchObject({ success: true })
+    expect(
+      sendAttempts.wahaSendAttemptRecord({
+        createdAt: now - 1_000,
+        endpointId: "primary",
+        id: "quota-exhausted-one",
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhoneHash: "seed-hash",
+        sessionName: "one",
+        status: "sent",
+      }),
+    ).toMatchObject({ success: true })
+    expect(
+      sendAttempts.wahaSendAttemptRecord({
+        createdAt: now - 1_000,
+        endpointId: "primary",
+        id: "quota-exhausted-two",
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhoneHash: "seed-hash",
+        sessionName: "two",
+        status: "sent",
+      }),
+    ).toMatchObject({ success: true })
+
+    expect(availability.whatsappOtpAvailabilityGet({ realmId: realm.id })).toEqual({
+      data: { available: false },
+      success: true,
+    })
+  })
+})
+
+test("WhatsApp availability stays true while one healthy sender still has quota room", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "whatsapp-availability-quota-room.example.com")
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    const sendAttempts = wahaSendAttemptRepositoryCreate(database.db)
+    const quotaConfiguration: WahaConfiguration = { ...configuration, senderDailyLimit: 10, senderHourlyLimit: 1 }
+    const reader = wahaHealthCandidateReaderCreate({
+      quota: wahaSenderQuotaCreate({ configuration: quotaConfiguration, sendAttempts }),
+      repository,
+    })
+    const availability = whatsappOtpAvailabilityCreate({
+      configuration: quotaConfiguration,
+      database,
+      reader,
+      runtime: testkit.runtime,
+    })
+    const now = testkit.runtime.now()
+    for (const sessionName of ["one", "two"])
+      expect(
+        repository.wahaHealthCandidateCreate({
+          checkedAt: now,
+          createdAt: now,
+          endpointId: "primary",
+          expiresAt: now + quotaConfiguration.freshnessTtlMs,
+          failureAt: null,
+          failureCode: null,
+          failureMessage: null,
+          sessionName,
+          status: "healthy",
+          updatedAt: now,
+          version: 1,
+        }),
+      ).toMatchObject({ success: true })
+    expect(
+      sendAttempts.wahaSendAttemptRecord({
+        createdAt: now - 1_000,
+        endpointId: "primary",
+        id: "quota-room-one",
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhoneHash: "seed-hash",
+        sessionName: "one",
+        status: "sent",
+      }),
+    ).toMatchObject({ success: true })
+
+    expect(availability.whatsappOtpAvailabilityGet({ realmId: realm.id })).toEqual({
+      data: { available: true },
+      success: true,
+    })
+  })
 })
 
 async function withDatabase<T>(
