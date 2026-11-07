@@ -24,6 +24,7 @@ type OidcProjectClientEnsureApi = {
 type OidcProjectClientConfiguration = {
   readonly name: string
   readonly redirectUris: readonly string[]
+  readonly postLogoutRedirectUris: readonly string[]
 }
 
 function oidcProjectClientConfigurationGet(
@@ -31,8 +32,16 @@ function oidcProjectClientConfigurationGet(
   environment: OidcProjectBoundaryEnvironment,
 ): OidcProjectClientConfiguration {
   return environment === "production"
-    ? { name: project.productionName, redirectUris: project.productionRedirectUris }
-    : { name: project.developmentName, redirectUris: project.developmentRedirectUris }
+    ? {
+        name: project.productionName,
+        redirectUris: project.productionRedirectUris,
+        postLogoutRedirectUris: project.productionPostLogoutRedirectUris ?? [],
+      }
+    : {
+        name: project.developmentName,
+        redirectUris: project.developmentRedirectUris,
+        postLogoutRedirectUris: project.developmentPostLogoutRedirectUris ?? [],
+      }
 }
 
 export async function oidcProjectClientEnsure(options: {
@@ -77,7 +86,7 @@ export async function oidcProjectClientEnsure(options: {
       allowedScopes: [...oidcProjectAllowedScopes],
       clientType: "confidential",
       name: configuration.name,
-      postLogoutRedirectUris: [],
+      postLogoutRedirectUris: [...configuration.postLogoutRedirectUris],
       redirectUris: [...configuration.redirectUris],
       requireConsent: false,
       trusted: true,
@@ -190,7 +199,9 @@ function oidcProjectClientUpdateCreate(client: OidcClient, configuration: OidcPr
     ...(oidcProjectClientArraysEqual(client.redirectUris, configuration.redirectUris)
       ? {}
       : { redirectUris: [...configuration.redirectUris] }),
-    ...(oidcProjectClientArraysEqual(client.postLogoutRedirectUris, []) ? {} : { postLogoutRedirectUris: [] }),
+    ...(oidcProjectClientArraysEqual(client.postLogoutRedirectUris, configuration.postLogoutRedirectUris)
+      ? {}
+      : { postLogoutRedirectUris: [...configuration.postLogoutRedirectUris] }),
     ...(oidcProjectClientArraysEqual(client.allowedScopes, oidcProjectAllowedScopes)
       ? {}
       : { allowedScopes: [...oidcProjectAllowedScopes] }),

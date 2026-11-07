@@ -33,24 +33,28 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     production: ["https://allgroups.chat/login/authworks/callback"],
   },
   akademie: {
-    development: ["https://api.preview.akademie.contentoren.de/api/auth/authworks"],
+    development: ["https://akademie-api.wonder1.de/api/auth/authworks"],
     production: ["https://api.akademie.contentoren.de/api/auth/authworks"],
+  },
+  billing: {
+    development: [],
+    production: ["https://billing.contentoren.de/login/authworks/callback"],
   },
   coachingcompany: {
     development: [
       "http://127.0.0.1:3134/login/authworks/callback",
       "https://coachingcompany.leonardomora.de/login/authworks/callback",
-      "https://coachingcompany.wonder1.de/login/authworks/callback",
       "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
+      "https://coachingcompany.wonder1.de/login/authworks/callback",
     ],
     production: ["https://coachingcompany.contentoren.de/login/authworks/callback"],
   },
   crm: {
-    development: [
-      "http://127.0.0.1:5173/auth/authworks/callback",
-      "https://api.preview.crm.contentoren.de/api/auth/authworks/callback",
+    development: ["http://127.0.0.1:5173/auth/authworks/callback"],
+    production: [
+      "https://crm.contentoren.de/auth/authworks/callback",
+      "https://crm-api.wonder1.de/api/auth/authworks/callback",
     ],
-    production: ["https://crm.contentoren.de/auth/authworks/callback"],
   },
   eventoren: {
     development: [
@@ -63,10 +67,22 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     development: [
       "http://127.0.0.1:3132/login/authworks/callback",
       "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
-      "https://filmschauspielschule.wonder1.de/login/authworks/callback",
       "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
+      "https://preview.filmschauspielschule.wonder1.de/login/authworks/callback",
     ],
     production: ["https://filmschauspielschule.contentoren.de/login/authworks/callback"],
+  },
+  multisub: {
+    development: [
+      "http://localhost:1455/auth/authworks/callback",
+      "https://multisub-dev.leonardomora.de/auth/authworks/callback",
+      "https://multisub-dev.wonder1.de/auth/authworks/callback",
+    ],
+    production: ["https://multisub.contentoren.de/auth/authworks/callback"],
+  },
+  sales: {
+    development: [],
+    production: ["https://api.sales.contentoren.de/login/authworks/callback"],
   },
   semesterkur: {
     development: [
@@ -76,13 +92,35 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     ],
     production: ["https://semesterkur.com/login/authworks/callback"],
   },
+  services: {
+    development: [],
+    production: ["https://services.contentoren.de/login/authworks/callback"],
+  },
+  "site-crawler": {
+    development: [],
+    production: ["https://site-crawler.leonardomora.de/api/auth/authworks/callback"],
+  },
   "solid-convex": {
     development: [
-      "http://127.0.0.1:3016/login/authworks/callback",
-      "https://solid-convex.leonardomora.de/login/authworks/callback",
-      "https://solid-convex.wonder1.de/login/authworks/callback",
+      "https://solid-convex-api.leonardomora.de/api/auth/authworks/callback",
+      "https://solid-convex-api.wonder1.de/api/auth/authworks/callback",
     ],
-    production: ["https://solid-convex.contentoren.de/login/authworks/callback"],
+    production: ["https://solid-convex-api.contentoren.de/api/auth/authworks/callback"],
+  },
+  work: {
+    development: [],
+    production: [
+      "https://work.semesterkur.com/auth/authworks/callback",
+      "https://work.wonder1.de/auth/authworks/callback",
+    ],
+  },
+}
+
+const expectedPostLogoutUris: Record<string, { development: string[]; production: string[] }> = {
+  archive: { development: [], production: ["https://archive.contentoren.de"] },
+  multisub: {
+    development: ["https://multisub-dev.wonder1.de/", "https://multisub-dev.leonardomora.de/"],
+    production: ["https://multisub.contentoren.de/"],
   },
 }
 
@@ -104,17 +142,21 @@ test("project production and development boundaries register the fixed confident
       expect(productionEnvelopes).toHaveLength(1)
       expect(productionEnvelopes[0]).toContain(`"kind":"authworks.${slug}-production-oidc-credential"`)
 
-      const developmentEnvelopes: string[] = []
-      const development = await oidcProjectDevelopmentClientEnsure({
-        credentialEnvelopeWrite: (envelope) => developmentEnvelopes.push(envelope),
-        fetch: fixture.fetch,
-        homeDirectory: fixture.directory,
-        project: slug,
-      })
-      expect(development.success).toBe(true)
-      expect(developmentEnvelopes).toHaveLength(1)
-      expect(developmentEnvelopes[0]).toContain(`"kind":"authworks.${slug}-development-oidc-credential"`)
-      expect(developmentEnvelopes[0]).not.toBe(productionEnvelopes[0])
+      // Slugs without a live development client keep an empty development
+      // list, which the server rejects; only their production client is ensured.
+      if (expected.development.length > 0) {
+        const developmentEnvelopes: string[] = []
+        const development = await oidcProjectDevelopmentClientEnsure({
+          credentialEnvelopeWrite: (envelope) => developmentEnvelopes.push(envelope),
+          fetch: fixture.fetch,
+          homeDirectory: fixture.directory,
+          project: slug,
+        })
+        expect(development.success).toBe(true)
+        expect(developmentEnvelopes).toHaveLength(1)
+        expect(developmentEnvelopes[0]).toContain(`"kind":"authworks.${slug}-development-oidc-credential"`)
+        expect(developmentEnvelopes[0]).not.toBe(productionEnvelopes[0])
+      }
 
       const secondProduction = await oidcProjectProductionClientEnsure({
         credentialEnvelopeWrite: (envelope) => productionEnvelopes.push(envelope),
@@ -130,18 +172,19 @@ test("project production and development boundaries register the fixed confident
       )
     }
 
-    const clients = await fixture.oidc.oidcClientList(fixture.realmId)
+    const clients = await fixture.oidc.oidcClientList(fixture.realmId, { pageSize: 100 })
     expect(clients.success).toBe(true)
     if (!clients.success) return
-    expect(clients.data.items).toHaveLength(18)
+    expect(clients.data.items).toHaveLength(25)
     for (const slug of Object.keys(expectedRedirectUris).sort()) {
       const expected = expectedRedirectUris[slug]
       if (expected === undefined) throw new Error(`Missing expected redirect URIs for ${slug}.`)
+      const expectedPostLogout = expectedPostLogoutUris[slug] ?? { development: [], production: [] }
       const config = oidcProjectBoundaryRegistry[slug]
       const productionClient = clients.data.items.find((client) => client.name === config?.productionName)
       const developmentClient = clients.data.items.find((client) => client.name === config?.developmentName)
       expect(productionClient?.redirectUris).toEqual(expected.production)
-      expect(developmentClient?.redirectUris).toEqual(expected.development)
+      expect(productionClient?.postLogoutRedirectUris).toEqual(expectedPostLogout.production)
       expect(productionClient?.allowedScopes).toEqual([
         "openid",
         "profile",
@@ -149,9 +192,15 @@ test("project production and development boundaries register the fixed confident
         "offline_access",
         "urn:zitadel:iam:user:resourceowner",
       ])
-      expect(developmentClient?.allowedScopes).toEqual(productionClient?.allowedScopes)
       expect(productionClient?.clientType).toBe("confidential")
-      expect(developmentClient?.clientType).toBe("confidential")
+      if (expected.development.length > 0) {
+        expect(developmentClient?.redirectUris).toEqual(expected.development)
+        expect(developmentClient?.postLogoutRedirectUris).toEqual(expectedPostLogout.development)
+        expect(developmentClient?.allowedScopes).toEqual(productionClient?.allowedScopes)
+        expect(developmentClient?.clientType).toBe("confidential")
+      } else {
+        expect(developmentClient).toBeUndefined()
+      }
     }
   } finally {
     await fixture.close()
@@ -159,6 +208,10 @@ test("project production and development boundaries register the fixed confident
 })
 
 test("migrated development callbacks keep their same-prefix wonder1.de alias", () => {
+  // These live production callbacks intentionally run on the wonder1 host.
+  const productionWonder1Exempt = new Set(["crm", "work"])
+  // These live development callbacks intentionally have no same-prefix wonder1.de alias.
+  const legacyWithoutAlias = new Set(["https://filmschauspielschule.leonardomora.de/login/authworks/callback"])
   const entries = Object.values(oidcProjectBoundaryRegistry)
   const migratedAliases = entries.flatMap((entry) =>
     entry.developmentRedirectUris
@@ -168,13 +221,15 @@ test("migrated development callbacks keep their same-prefix wonder1.de alias", (
   expect(migratedAliases.length).toBeGreaterThanOrEqual(migratedDevelopmentAliasMinimum)
   for (const entry of entries) {
     for (const legacy of entry.developmentRedirectUris.filter((uri) => uri.includes(legacyDevelopmentHostSuffix))) {
-      const alias = legacy.replace(legacyDevelopmentHostSuffix, migratedDevelopmentHostSuffix)
       const developmentRedirectUris = oidcProjectBoundaryRegistry[entry.slug]?.developmentRedirectUris ?? []
       expect(developmentRedirectUris).toContain(legacy)
+      if (legacyWithoutAlias.has(legacy)) continue
+      const alias = legacy.replace(legacyDevelopmentHostSuffix, migratedDevelopmentHostSuffix)
       expect(developmentRedirectUris).toContain(alias)
       expect(developmentRedirectUris.indexOf(legacy)).toBeLessThan(developmentRedirectUris.indexOf(alias))
     }
-    expect(entry.productionRedirectUris.some((uri) => uri.includes(migratedDevelopmentHostSuffix))).toBe(false)
+    if (!productionWonder1Exempt.has(entry.slug))
+      expect(entry.productionRedirectUris.some((uri) => uri.includes(migratedDevelopmentHostSuffix))).toBe(false)
   }
 })
 

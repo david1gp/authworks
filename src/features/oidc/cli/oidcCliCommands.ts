@@ -619,6 +619,18 @@ const authworksAkademieProductionEnsureCommand = oidcProjectEnsureCommandCreate(
 const authworksAkademieDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("akademie", "development")
 const authworksArchiveProductionEnsureCommand = oidcProjectEnsureCommandCreate("archive", "production")
 const authworksArchiveDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("archive", "development")
+const authworksSalesProductionEnsureCommand = oidcProjectEnsureCommandCreate("sales", "production")
+const authworksSalesDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("sales", "development")
+const authworksBillingProductionEnsureCommand = oidcProjectEnsureCommandCreate("billing", "production")
+const authworksBillingDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("billing", "development")
+const authworksServicesProductionEnsureCommand = oidcProjectEnsureCommandCreate("services", "production")
+const authworksServicesDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("services", "development")
+const authworksSiteCrawlerProductionEnsureCommand = oidcProjectEnsureCommandCreate("site-crawler", "production")
+const authworksSiteCrawlerDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("site-crawler", "development")
+const authworksMultisubProductionEnsureCommand = oidcProjectEnsureCommandCreate("multisub", "production")
+const authworksMultisubDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("multisub", "development")
+const authworksWorkProductionEnsureCommand = oidcProjectEnsureCommandCreate("work", "production")
+const authworksWorkDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("work", "development")
 
 function oidcProjectSecretRotateCommandCreate(projectSlug: string, environment: "production" | "development") {
   const project = oidcProjectBoundaryRegistry[projectSlug]
@@ -1275,6 +1287,18 @@ export const oidcCliCommands = buildRouteMap({
     authworksAkademieDevelopmentEnsure: authworksAkademieDevelopmentEnsureCommand,
     authworksArchiveProductionEnsure: authworksArchiveProductionEnsureCommand,
     authworksArchiveDevelopmentEnsure: authworksArchiveDevelopmentEnsureCommand,
+    authworksSalesProductionEnsure: authworksSalesProductionEnsureCommand,
+    authworksSalesDevelopmentEnsure: authworksSalesDevelopmentEnsureCommand,
+    authworksBillingProductionEnsure: authworksBillingProductionEnsureCommand,
+    authworksBillingDevelopmentEnsure: authworksBillingDevelopmentEnsureCommand,
+    authworksServicesProductionEnsure: authworksServicesProductionEnsureCommand,
+    authworksServicesDevelopmentEnsure: authworksServicesDevelopmentEnsureCommand,
+    authworksSiteCrawlerProductionEnsure: authworksSiteCrawlerProductionEnsureCommand,
+    authworksSiteCrawlerDevelopmentEnsure: authworksSiteCrawlerDevelopmentEnsureCommand,
+    authworksMultisubProductionEnsure: authworksMultisubProductionEnsureCommand,
+    authworksMultisubDevelopmentEnsure: authworksMultisubDevelopmentEnsureCommand,
+    authworksWorkProductionEnsure: authworksWorkProductionEnsureCommand,
+    authworksWorkDevelopmentEnsure: authworksWorkDevelopmentEnsureCommand,
     authworksArchiveProductionSecretRotate: authworksArchiveProductionSecretRotateCommand,
     authworksArchiveDevelopmentSecretRotate: authworksArchiveDevelopmentSecretRotateCommand,
     leoConvexProductionEnsure: oidcLeoConvexProductionClientEnsureCommand,

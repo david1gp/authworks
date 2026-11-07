@@ -7,6 +7,8 @@ export type OidcProjectBoundaryConfig = {
   readonly developmentName: string
   readonly productionRedirectUris: readonly string[]
   readonly developmentRedirectUris: readonly string[]
+  readonly productionPostLogoutRedirectUris?: readonly string[]
+  readonly developmentPostLogoutRedirectUris?: readonly string[]
   readonly adoptSharedClientByRedirectUri?: true
 }
 
@@ -28,13 +30,12 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
   {
     slug: "solid-convex",
     displayName: "Solid Convex",
-    productionName: "Solid Convex production",
-    developmentName: "Solid Convex development",
-    productionRedirectUris: ["https://solid-convex.contentoren.de/login/authworks/callback"],
+    productionName: "Solid-Convex production",
+    developmentName: "Solid-Convex development",
+    productionRedirectUris: ["https://solid-convex-api.contentoren.de/api/auth/authworks/callback"],
     developmentRedirectUris: [
-      "http://127.0.0.1:3016/login/authworks/callback",
-      "https://solid-convex.leonardomora.de/login/authworks/callback",
-      "https://solid-convex.wonder1.de/login/authworks/callback",
+      "https://solid-convex-api.leonardomora.de/api/auth/authworks/callback",
+      "https://solid-convex-api.wonder1.de/api/auth/authworks/callback",
     ],
   },
   {
@@ -58,8 +59,8 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3134/login/authworks/callback",
       "https://coachingcompany.leonardomora.de/login/authworks/callback",
-      "https://coachingcompany.wonder1.de/login/authworks/callback",
       "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
+      "https://coachingcompany.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -71,8 +72,8 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3132/login/authworks/callback",
       "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
-      "https://filmschauspielschule.wonder1.de/login/authworks/callback",
       "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
+      "https://preview.filmschauspielschule.wonder1.de/login/authworks/callback",
     ],
   },
   {
@@ -84,11 +85,11 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "CRM",
     productionName: "CRM production",
     developmentName: "CRM development",
-    productionRedirectUris: ["https://crm.contentoren.de/auth/authworks/callback"],
-    developmentRedirectUris: [
-      "http://127.0.0.1:5173/auth/authworks/callback",
-      "https://api.preview.crm.contentoren.de/api/auth/authworks/callback",
+    productionRedirectUris: [
+      "https://crm.contentoren.de/auth/authworks/callback",
+      "https://crm-api.wonder1.de/api/auth/authworks/callback",
     ],
+    developmentRedirectUris: ["http://127.0.0.1:5173/auth/authworks/callback"],
     adoptSharedClientByRedirectUri: true,
   },
   {
@@ -108,7 +109,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     productionName: "Akademie production",
     developmentName: "Akademie development",
     productionRedirectUris: ["https://api.akademie.contentoren.de/api/auth/authworks"],
-    developmentRedirectUris: ["https://api.preview.akademie.contentoren.de/api/auth/authworks"],
+    developmentRedirectUris: ["https://akademie-api.wonder1.de/api/auth/authworks"],
   },
   {
     slug: "archive",
@@ -121,6 +122,71 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
       "https://archive-api.leonardomora.de/api/auth/authworks/callback",
       "https://archive-api.wonder1.de/api/auth/authworks/callback",
     ],
+    productionPostLogoutRedirectUris: ["https://archive.contentoren.de"],
+  },
+  {
+    // No live development client exists; the registry type requires both
+    // environments, so development stays an empty list the server would
+    // reject on ensure until a live development callback is known.
+    slug: "sales",
+    displayName: "Sales",
+    productionName: "Sales production",
+    developmentName: "Sales development",
+    productionRedirectUris: ["https://api.sales.contentoren.de/login/authworks/callback"],
+    developmentRedirectUris: [],
+  },
+  {
+    // No live development client exists; see the sales entry.
+    slug: "billing",
+    displayName: "Billing",
+    productionName: "Billing production",
+    developmentName: "Billing development",
+    productionRedirectUris: ["https://billing.contentoren.de/login/authworks/callback"],
+    developmentRedirectUris: [],
+  },
+  {
+    // No live development client exists; see the sales entry.
+    slug: "services",
+    displayName: "Services",
+    productionName: "Services production",
+    developmentName: "Services development",
+    productionRedirectUris: ["https://services.contentoren.de/login/authworks/callback"],
+    developmentRedirectUris: [],
+  },
+  {
+    // No live development client exists; see the sales entry.
+    slug: "site-crawler",
+    displayName: "Site Crawler",
+    productionName: "Site Crawler production",
+    developmentName: "Site Crawler development",
+    productionRedirectUris: ["https://site-crawler.leonardomora.de/api/auth/authworks/callback"],
+    developmentRedirectUris: [],
+  },
+  {
+    slug: "multisub",
+    displayName: "Multisub",
+    productionName: "Multisub production",
+    developmentName: "Multisub development",
+    productionRedirectUris: ["https://multisub.contentoren.de/auth/authworks/callback"],
+    developmentRedirectUris: [
+      "http://localhost:1455/auth/authworks/callback",
+      "https://multisub-dev.leonardomora.de/auth/authworks/callback",
+      "https://multisub-dev.wonder1.de/auth/authworks/callback",
+    ],
+    productionPostLogoutRedirectUris: ["https://multisub.contentoren.de/"],
+    developmentPostLogoutRedirectUris: ["https://multisub-dev.wonder1.de/", "https://multisub-dev.leonardomora.de/"],
+  },
+  {
+    // No live development client exists; see the sales entry.
+    slug: "work",
+    displayName: "Work",
+    productionName: "Work production",
+    developmentName: "Work development",
+    productionRedirectUris: [
+      "https://work.semesterkur.com/auth/authworks/callback",
+      "https://work.wonder1.de/auth/authworks/callback",
+    ],
+    developmentRedirectUris: [],
   },
 ]
 
