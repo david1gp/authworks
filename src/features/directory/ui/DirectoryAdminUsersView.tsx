@@ -245,7 +245,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     {
       cell: (entry: DirectoryEntry) => (
         <span class="flex min-w-0 items-center gap-1.5">
-          <span class="max-w-48 truncate text-muted-foreground" title={entry.user.email}>
+          <span class="truncate text-muted-foreground" title={entry.user.email}>
             {entry.user.email}
           </span>
           <Show when={!entry.user.emailVerified}>
