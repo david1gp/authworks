@@ -36,6 +36,7 @@ const usageConfiguration: WahaConfiguration = {
   ],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  codeRedactionDisabled: false,
   senderDailyLimit: 3,
   senderHourlyLimit: 2,
 }
@@ -105,14 +106,18 @@ async function createUsageSession(database: StorageDatabase, realmId: string, us
   return issued.data.token
 }
 
-function usageReaderCreate(database: StorageDatabase, testkit: ReturnType<typeof platformTestkitCreate>) {
+function usageReaderCreate(
+  database: StorageDatabase,
+  testkit: ReturnType<typeof platformTestkitCreate>,
+  configuration: WahaConfiguration = usageConfiguration,
+) {
   const repository = wahaHealthCandidateRepositoryCreate(database.db)
   const sendAttempts = wahaSendAttemptRepositoryCreate(database.db)
   return {
     repository,
     sendAttempts,
     usage: wahaUsageReaderCreate({
-      configuration: usageConfiguration,
+      configuration,
       repository,
       requestedCountGet: (realmId, since) =>
         eventRealmTypeCount(database, realmId, whatsappOtpEventTypes.requested, since),
@@ -166,12 +171,14 @@ function candidateSeed(
 function attemptSeed(
   sendAttempts: ReturnType<typeof wahaSendAttemptRepositoryCreate>,
   input: {
+    code?: string | null
     createdAt: number
     endpointId: string
     id: string
     phoneNumber: string
     purpose: string
     realmId: string | null
+    recipientPhone?: string | null
     sessionName: string | null
     status: "sent" | "failed" | "blocked"
   },
@@ -186,6 +193,8 @@ function attemptSeed(
     recipientPhoneHash: hash,
     sessionName: input.sessionName,
     status: input.status,
+    ...(input.code === undefined ? {} : { code: input.code }),
+    ...(input.recipientPhone === undefined ? {} : { recipientPhone: input.recipientPhone }),
   })
   expect(recorded.success).toBe(true)
   return hash
@@ -360,13 +369,14 @@ test("WhatsApp usage reports per-sender quota, totals, realm requests, and statu
     expect(body.attempts.byStatusLastHour).toEqual({ blocked: 0, failed: 1, sent: 2 })
     expect(body.attempts.byStatusLastDay).toEqual({ blocked: 1, failed: 1, sent: 3 })
     expect(body.attempts.byPurposeLastDay).toEqual({ registration: 1, sign_in: 3, unknown: 1 })
-    expect(body.recent).toHaveLength(6)
+    // The default 24h recent window excludes the 25h-old sixth seed row.
+    expect(body.recent).toHaveLength(5)
     expect(body.recent.map((row) => row.createdAt)).toEqual(
       [...body.recent.map((row) => row.createdAt)].sort((a, b) => b - a),
     )
     expect(body.recent[0]).toMatchObject({ endpointId: "primary", purpose: "registration", status: "failed" })
     expect(body.recent.map((row) => row.recipientHashPrefix)).toEqual(
-      [hashes[2], hashes[1], hashes[0], hashes[3], hashes[4], hashes[5]].map((hash) => hash.slice(0, 8)),
+      [hashes[2], hashes[1], hashes[0], hashes[3], hashes[4]].map((hash) => hash.slice(0, 8)),
     )
 
     const client = whatsappOtpApiClientCreate({
@@ -423,7 +433,7 @@ test("WhatsApp usage rejects anonymous, non-admin, cross-realm, and invalid-limi
     const crossRealm = await app.request(url, { headers: { cookie: `session=${otherAdminToken}` } })
     expect(crossRealm.status).toBe(401)
 
-    for (const invalid of ["?limit=abc", "?limit=0", "?limit=201"]) {
+    for (const invalid of ["?limit=abc", "?limit=0", "?limit=201", "?window=30d", "?window=hour", "?window="]) {
       const rejected = await app.request(`${url}${invalid}`, { headers: { cookie: `session=${adminToken}` } })
       expect(rejected.status).toBe(400)
       expect(((await rejected.json()) as { error: { code: string } }).error.code).toBe("whatsapp-otp.invalid")
@@ -527,4 +537,188 @@ test("Server composition returns empty WhatsApp usage when WAHA is not configure
     created.data.stop()
     await rm(directory, { force: true, recursive: true })
   }
+})
+
+test("WhatsApp usage recent redacts codes by default while exposing full phone numbers", async () => {
+  await withUsageDatabase(async (database, testkit) => {
+    const realm = await createUsageRealm(database, "whatsapp-usage-redact.example.com")
+    const adminToken = await createUsageSession(database, realm.id, "usage-redact-admin", true)
+    const { sendAttempts, usage } = usageReaderCreate(database, testkit)
+    const now = testkit.runtime.now()
+    attemptSeed(sendAttempts, {
+      code: "123456",
+      createdAt: now - 5 * 60_000,
+      endpointId: "primary",
+      id: "usage-redact-1",
+      phoneNumber: "+15550009901",
+      purpose: "sign_in",
+      realmId: realm.id,
+      recipientPhone: "+15550009901",
+      sessionName: "default",
+      status: "sent",
+    })
+    const app = usageAppCreate(database, testkit, usage)
+
+    const response = await app.request(
+      `https://whatsapp-usage-redact.example.com/realms/${realm.id}/whatsapp-otp/usage`,
+      { headers: { cookie: `session=${adminToken}` } },
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as WhatsappOtpUsageResponse
+    expect(v.safeParse(whatsappOtpUsageResponseSchema, body).success).toBe(true)
+    expect(body.recent).toHaveLength(1)
+    expect(body.recent[0]).toMatchObject({ code: "1***6", recipientPhone: "+15550009901" })
+
+    const serialized = JSON.stringify(body)
+    expect(serialized.includes("123456")).toBe(false)
+    expect(serialized.includes("+15550009901")).toBe(true)
+  })
+})
+
+test("WhatsApp usage recent exposes full codes when redaction is disabled", async () => {
+  await withUsageDatabase(async (database, testkit) => {
+    const realm = await createUsageRealm(database, "whatsapp-usage-unredacted.example.com")
+    const adminToken = await createUsageSession(database, realm.id, "usage-unredacted-admin", true)
+    const { sendAttempts, usage } = usageReaderCreate(database, testkit, {
+      ...usageConfiguration,
+      codeRedactionDisabled: true,
+    })
+    const now = testkit.runtime.now()
+    attemptSeed(sendAttempts, {
+      code: "123456",
+      createdAt: now - 5 * 60_000,
+      endpointId: "primary",
+      id: "usage-unredacted-1",
+      phoneNumber: "+15550009902",
+      purpose: "sign_in",
+      realmId: realm.id,
+      recipientPhone: "+15550009902",
+      sessionName: "default",
+      status: "sent",
+    })
+    const app = usageAppCreate(database, testkit, usage)
+
+    const response = await app.request(
+      `https://whatsapp-usage-unredacted.example.com/realms/${realm.id}/whatsapp-otp/usage`,
+      { headers: { cookie: `session=${adminToken}` } },
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as WhatsappOtpUsageResponse
+    expect(v.safeParse(whatsappOtpUsageResponseSchema, body).success).toBe(true)
+    expect(body.recent).toHaveLength(1)
+    expect(body.recent[0]).toMatchObject({ code: "123456", recipientPhone: "+15550009902" })
+  })
+})
+
+test("WhatsApp usage recent window filters older rows without touching tiles", async () => {
+  await withUsageDatabase(async (database, testkit) => {
+    const realm = await createUsageRealm(database, "whatsapp-usage-window.example.com")
+    const adminToken = await createUsageSession(database, realm.id, "usage-window-admin", true)
+    const { repository, sendAttempts, usage } = usageReaderCreate(database, testkit)
+    const now = testkit.runtime.now()
+    candidateSeed(repository, {
+      checkedAt: now,
+      endpointId: "primary",
+      expiresAt: now + 60_000,
+      sessionName: "default",
+    })
+    const hourMs = 3_600_000
+    const seeds = [
+      { ageMs: 10 * 60_000, code: "111111", id: "usage-window-fresh", phone: "+15550009101" },
+      { ageMs: 25 * hourMs, code: "222222", id: "usage-window-25h", phone: "+15550009102" },
+      { ageMs: 4 * 24 * hourMs, code: "333333", id: "usage-window-4d", phone: "+15550009103" },
+      { ageMs: 8 * 24 * hourMs, code: "444444", id: "usage-window-8d", phone: "+15550009104" },
+    ] as const
+    for (const seed of seeds) {
+      attemptSeed(sendAttempts, {
+        code: seed.code,
+        createdAt: now - seed.ageMs,
+        endpointId: "primary",
+        id: seed.id,
+        phoneNumber: seed.phone,
+        purpose: "sign_in",
+        realmId: realm.id,
+        recipientPhone: seed.phone,
+        sessionName: "default",
+        status: "sent",
+      })
+    }
+    const app = usageAppCreate(database, testkit, usage)
+    const url = `https://whatsapp-usage-window.example.com/realms/${realm.id}/whatsapp-otp/usage`
+
+    const fetchUsage = async (query: string) => {
+      const response = await app.request(`${url}${query}`, { headers: { cookie: `session=${adminToken}` } })
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as WhatsappOtpUsageResponse
+      expect(v.safeParse(whatsappOtpUsageResponseSchema, body).success).toBe(true)
+      return body
+    }
+
+    const day = await fetchUsage("?window=24h")
+    expect(day.recent.map((row) => row.recipientPhone)).toEqual(["+15550009101"])
+    const threeDays = await fetchUsage("?window=3d")
+    expect(threeDays.recent.map((row) => row.recipientPhone)).toEqual(["+15550009101", "+15550009102"])
+    const sevenDays = await fetchUsage("?window=7d")
+    expect(sevenDays.recent.map((row) => row.recipientPhone)).toEqual(["+15550009101", "+15550009102", "+15550009103"])
+    const implicit = await fetchUsage("")
+    expect(implicit.recent.map((row) => row.recipientPhone)).toEqual(["+15550009101"])
+
+    for (const body of [day, threeDays, sevenDays, implicit]) {
+      expect(body.totals).toEqual(day.totals)
+      expect(body.requests).toEqual(day.requests)
+      expect(body.attempts).toEqual(day.attempts)
+      expect(body.senders).toEqual(day.senders)
+      const serialized = JSON.stringify(body)
+      for (const seed of seeds) expect(serialized.includes(seed.code)).toBe(false)
+    }
+    expect(day.totals).toEqual({ sentLastDay: 1, sentLastHour: 1 })
+
+    const client = whatsappOtpApiClientCreate({
+      baseUrl: "https://whatsapp-usage-window.example.com",
+      fetch: async (input, init) =>
+        app.request(input.toString(), { ...init, headers: { cookie: `session=${adminToken}` } }),
+    })
+    const clientResult = await client.whatsappOtpUsageGet(realm.id, { window: "7d" })
+    expect(clientResult.success).toBe(true)
+    if (!clientResult.success) return
+    expect(clientResult.data.recent.map((row) => row.recipientPhone)).toEqual([
+      "+15550009101",
+      "+15550009102",
+      "+15550009103",
+    ])
+  })
+})
+
+test("WhatsApp usage recent reports null phone and code for pre-Phase-2 rows", async () => {
+  await withUsageDatabase(async (database, testkit) => {
+    const realm = await createUsageRealm(database, "whatsapp-usage-legacy.example.com")
+    const adminToken = await createUsageSession(database, realm.id, "usage-legacy-admin", true)
+    const { sendAttempts, usage } = usageReaderCreate(database, testkit)
+    const now = testkit.runtime.now()
+    const hash = attemptSeed(sendAttempts, {
+      createdAt: now - 5 * 60_000,
+      endpointId: "primary",
+      id: "usage-legacy-1",
+      phoneNumber: "+15550009903",
+      purpose: "sign_in",
+      realmId: realm.id,
+      sessionName: "default",
+      status: "sent",
+    })
+    const app = usageAppCreate(database, testkit, usage)
+
+    const response = await app.request(
+      `https://whatsapp-usage-legacy.example.com/realms/${realm.id}/whatsapp-otp/usage`,
+      { headers: { cookie: `session=${adminToken}` } },
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as WhatsappOtpUsageResponse
+    expect(v.safeParse(whatsappOtpUsageResponseSchema, body).success).toBe(true)
+    expect(body.recent).toHaveLength(1)
+    expect(body.recent[0]).toMatchObject({
+      code: null,
+      recipientHashPrefix: hash.slice(0, 8),
+      recipientPhone: null,
+    })
+  })
 })

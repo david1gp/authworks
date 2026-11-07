@@ -1,3 +1,4 @@
+import { Database } from "bun:sqlite"
 import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -134,11 +135,130 @@ test("recent attempts list newest first with a bounded limit", async () => {
       })
       expect(recorded.success).toBe(true)
     }
-    const listed = repository.wahaSendAttemptListRecent(2)
+    const listed = repository.wahaSendAttemptListRecent(2, 0)
     expect(listed.success).toBe(true)
     if (!listed.success) return
     expect(listed.data.map((row) => row.id)).toEqual(["attempt-newest", "attempt-middle"])
   })
+})
+
+test("recent attempts exclude rows created before the since filter", async () => {
+  await withDatabase(async (database, testkit) => {
+    const repository = wahaSendAttemptRepositoryCreate(database.db)
+    const now = testkit.runtime.now()
+    for (const [id, createdAt] of [
+      ["attempt-old", now - 2 * 3_600_000],
+      ["attempt-new", now - 60_000],
+    ] as const) {
+      const recorded = repository.wahaSendAttemptRecord({
+        createdAt,
+        endpointId: "primary",
+        id,
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhoneHash: "hash-abc",
+        sessionName: "default",
+        status: "sent",
+      })
+      expect(recorded.success).toBe(true)
+    }
+    const listed = repository.wahaSendAttemptListRecent(10, now - 3_600_000)
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.map((row) => row.id)).toEqual(["attempt-new"])
+  })
+})
+
+test("a send attempt records the plaintext phone and code alongside the hash", async () => {
+  await withDatabase(async (database, testkit) => {
+    const repository = wahaSendAttemptRepositoryCreate(database.db)
+    const recorded = repository.wahaSendAttemptRecord({
+      code: "123456",
+      createdAt: testkit.runtime.now(),
+      endpointId: "primary",
+      id: "attempt-phone-code",
+      purpose: "sign_in",
+      realmId: "realm-1",
+      recipientPhone: "+14155552671",
+      recipientPhoneHash: "hash-abc",
+      sessionName: "default",
+      status: "sent",
+    })
+    expect(recorded.success).toBe(true)
+    if (!recorded.success) return
+    expect(recorded.data).toMatchObject({
+      code: "123456",
+      recipientPhone: "+14155552671",
+      recipientPhoneHash: "hash-abc",
+    })
+    const listed = repository.wahaSendAttemptListRecent(10, 0)
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data).toHaveLength(1)
+    expect(listed.data[0]).toMatchObject({
+      code: "123456",
+      recipientPhone: "+14155552671",
+      recipientPhoneHash: "hash-abc",
+    })
+  })
+})
+
+test("an existing database without the phone and code columns migrates and keeps old rows", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-waha-send-attempt-migration-"))
+  const databasePath = join(directory, "authworks.sqlite")
+  const legacy = new Database(databasePath)
+  try {
+    legacy.exec(
+      "CREATE TABLE waha_send_attempts (id TEXT PRIMARY KEY NOT NULL, endpoint_id TEXT NOT NULL, session_name TEXT, purpose TEXT NOT NULL, realm_id TEXT, recipient_phone_hash TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('sent', 'failed', 'blocked')), created_at INTEGER NOT NULL CHECK (created_at >= 0))",
+    )
+    legacy.exec(
+      "INSERT INTO waha_send_attempts (id, endpoint_id, session_name, purpose, realm_id, recipient_phone_hash, status, created_at) VALUES ('attempt-legacy', 'primary', 'default', 'sign_in', 'realm-1', 'hash-abc', 'sent', 1_700_000_000_000)",
+    )
+  } finally {
+    legacy.close()
+  }
+  const testkit = platformTestkitCreate()
+  const opened = storageDatabaseOpen(databasePath, testkit.runtime)
+  expect(opened.success).toBe(true)
+  if (!opened.success) {
+    await rm(directory, { force: true, recursive: true })
+    throw new Error(opened.errorMessage)
+  }
+  try {
+    const columns = opened.data.sqlite
+      .query("SELECT name FROM pragma_table_info('waha_send_attempts')")
+      .all() as Array<{ name: string }>
+    expect(columns.map((column) => column.name)).toEqual(expect.arrayContaining(["recipient_phone", "code"]))
+    const repository = wahaSendAttemptRepositoryCreate(opened.data.db)
+    const listed = repository.wahaSendAttemptListRecent(10, 0)
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data).toHaveLength(1)
+    expect(listed.data[0]).toMatchObject({
+      code: null,
+      endpointId: "primary",
+      id: "attempt-legacy",
+      recipientPhone: null,
+      recipientPhoneHash: "hash-abc",
+      status: "sent",
+    })
+    const recorded = repository.wahaSendAttemptRecord({
+      code: "123456",
+      createdAt: testkit.runtime.now(),
+      endpointId: "primary",
+      id: "attempt-after-migration",
+      purpose: "sign_in",
+      realmId: null,
+      recipientPhone: "+14155552671",
+      recipientPhoneHash: "hash-def",
+      sessionName: "default",
+      status: "sent",
+    })
+    expect(recorded.success).toBe(true)
+  } finally {
+    opened.data.close()
+    await rm(directory, { force: true, recursive: true })
+  }
 })
 
 test("attempts count grouped by status and by purpose inside the window", async () => {

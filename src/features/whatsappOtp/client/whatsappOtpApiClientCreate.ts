@@ -26,6 +26,7 @@ import type { WhatsappOtpStartRequest } from "../public/whatsappOtpStartRequestS
 import { whatsappOtpStartRequestSchema } from "../public/whatsappOtpStartRequestSchema.js"
 import type { WhatsappOtpStartResponse } from "../public/whatsappOtpStartResponseSchema.js"
 import { whatsappOtpStartResponseSchema } from "../public/whatsappOtpStartResponseSchema.js"
+import type { WhatsappOtpUsageQueryInput } from "../public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../public/whatsappOtpUsageResponseSchema.js"
 import { whatsappOtpUsageResponseSchema } from "../public/whatsappOtpUsageResponseSchema.js"
 import type { WhatsappOtpVerifyRequest } from "../public/whatsappOtpVerifyRequestSchema.js"
@@ -92,18 +93,28 @@ export function whatsappOtpApiClientCreate(options: WhatsappOtpApiClientCreateOp
         whatsappOtpAvailabilityResponseSchema,
       )
     },
-    whatsappOtpUsageGet(realmId: string, limit?: number): Promise<Result<WhatsappOtpUsageResponse>> {
+    whatsappOtpUsageGet(
+      realmId: string,
+      query?: WhatsappOtpUsageQueryInput,
+    ): Promise<Result<WhatsappOtpUsageResponse>> {
       if (realmId.length === 0)
         return Promise.resolve(
           resultErrorCreate("whatsappOtpApiClientUsageGet", "The realm ID is invalid.", "whatsapp-otp.invalid"),
         )
-      if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 200))
+      if (query?.limit !== undefined && (!Number.isInteger(query.limit) || query.limit < 1 || query.limit > 200))
         return Promise.resolve(
           resultErrorCreate("whatsappOtpApiClientUsageGet", "The usage limit is invalid.", "whatsapp-otp.invalid"),
         )
-      const query = limit === undefined ? "" : `?limit=${encodeURIComponent(String(limit))}`
+      if (query?.window !== undefined && query.window !== "24h" && query.window !== "3d" && query.window !== "7d")
+        return Promise.resolve(
+          resultErrorCreate("whatsappOtpApiClientUsageGet", "The usage window is invalid.", "whatsapp-otp.invalid"),
+        )
+      const params = new URLSearchParams()
+      if (query?.limit !== undefined) params.set("limit", String(query.limit))
+      if (query?.window !== undefined) params.set("window", query.window)
+      const encoded = params.toString()
       return request(
-        `/realms/${encodeURIComponent(realmId)}/whatsapp-otp/usage${query}`,
+        `/realms/${encodeURIComponent(realmId)}/whatsapp-otp/usage${encoded.length === 0 ? "" : `?${encoded}`}`,
         { credentials: "include", method: "GET" },
         whatsappOtpUsageResponseSchema,
       )

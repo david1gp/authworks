@@ -61,6 +61,7 @@ export function wahaConfigurationParse(
   if (!senderDailyLimit.success) return senderDailyLimit
 
   return resultCreate({
+    codeRedactionDisabled: wahaCodeRedactionDisabled(input.AUTHWORKS_WAHA_DISABLE_CODE_REDACTION),
     endpoints: endpoints.data,
     freshnessTtlMs: freshnessTtlMs.data,
     refreshIntervalMs: refreshIntervalMs.data,
@@ -70,6 +71,10 @@ export function wahaConfigurationParse(
 }
 
 function wahaEnabled(value: string | undefined): boolean {
+  return value === "1" || value?.toLowerCase() === "true" || value?.toLowerCase() === "yes"
+}
+
+function wahaCodeRedactionDisabled(value: string | undefined): boolean {
   return value === "1" || value?.toLowerCase() === "true" || value?.toLowerCase() === "yes"
 }
 

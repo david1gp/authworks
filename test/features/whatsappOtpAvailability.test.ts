@@ -34,6 +34,7 @@ const configuration: WahaConfiguration = {
   endpoints: [{ client: { baseUrl: "https://waha.example.test" }, id: "primary" }],
   freshnessTtlMs: 60_000,
   refreshIntervalMs: 30_000,
+  codeRedactionDisabled: false,
   senderDailyLimit: 100,
   senderHourlyLimit: 20,
 }

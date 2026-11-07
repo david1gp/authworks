@@ -46,6 +46,8 @@ export const whatsappOtpUsageResponseSchema = v.strictObject({
       purpose: v.pipe(v.string(), v.minLength(1)),
       realmId: v.nullable(v.pipe(v.string(), v.minLength(1))),
       recipientHashPrefix: v.pipe(v.string(), v.minLength(1)),
+      recipientPhone: v.nullable(v.pipe(v.string(), v.minLength(1))),
+      code: v.nullable(v.pipe(v.string(), v.minLength(1))),
       sessionName: v.nullable(v.pipe(v.string(), v.minLength(1))),
       status: v.picklist(["sent", "failed", "blocked"]),
     }),

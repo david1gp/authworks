@@ -30,6 +30,7 @@ function quotaConfiguration(options?: {
     ],
     freshnessTtlMs: 60_000,
     refreshIntervalMs: 30_000,
+    codeRedactionDisabled: false,
     senderDailyLimit: options?.senderDailyLimit ?? 10,
     senderHourlyLimit: options?.senderHourlyLimit ?? 2,
   }
@@ -139,6 +140,7 @@ test("WAHA delivery skips a sender at its hourly limit and uses the next eligibl
     sentAttemptSeed(sendAttempts, { createdAt: now - 2_000, endpointId: "primary", id: "seed-primary-2" })
 
     const sent = await delivery.sendText({
+      code: "123456",
       phoneNumber: "+14155552671",
       purpose: "sign_in",
       realmId: "realm-1",
@@ -147,21 +149,47 @@ test("WAHA delivery skips a sender at its hourly limit and uses the next eligibl
     expect(sent).toEqual({ data: undefined, success: true })
     expect(fake.calls.map((call) => call.endpointId)).toEqual(["secondary"])
 
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     expect(
       recent.data.map((row) => ({
+        code: row.code,
         endpointId: row.endpointId,
         purpose: row.purpose,
         realmId: row.realmId,
+        recipientPhone: row.recipientPhone,
         sessionName: row.sessionName,
         status: row.status,
       })),
     ).toEqual([
-      { endpointId: "secondary", purpose: "sign_in", realmId: "realm-1", sessionName: "default", status: "sent" },
-      { endpointId: "primary", purpose: "sign_in", realmId: null, sessionName: "default", status: "sent" },
-      { endpointId: "primary", purpose: "sign_in", realmId: null, sessionName: "default", status: "sent" },
+      {
+        code: "123456",
+        endpointId: "secondary",
+        purpose: "sign_in",
+        realmId: "realm-1",
+        recipientPhone: "+14155552671",
+        sessionName: "default",
+        status: "sent",
+      },
+      {
+        code: null,
+        endpointId: "primary",
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhone: null,
+        sessionName: "default",
+        status: "sent",
+      },
+      {
+        code: null,
+        endpointId: "primary",
+        purpose: "sign_in",
+        realmId: null,
+        recipientPhone: null,
+        sessionName: "default",
+        status: "sent",
+      },
     ])
   })
 })
@@ -179,19 +207,25 @@ test("WAHA delivery records one blocked row and skips WAHA when every healthy se
     sentAttemptSeed(sendAttempts, { createdAt: now - 1_000, endpointId: "primary", id: "seed-primary-1" })
     sentAttemptSeed(sendAttempts, { createdAt: now - 1_000, endpointId: "secondary", id: "seed-secondary-1" })
 
-    const sent = await delivery.sendText({ phoneNumber: "+14155552671", text: "Your code is 123456." })
+    const sent = await delivery.sendText({
+      code: "123456",
+      phoneNumber: "+14155552671",
+      text: "Your code is 123456.",
+    })
     expect(sent).toMatchObject({ code: "waha.no-healthy-candidate", success: false })
     expect(fake.calls).toEqual([])
 
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     const blocked = recent.data.filter((row) => row.status === "blocked")
     expect(blocked).toHaveLength(1)
     expect(blocked[0]).toMatchObject({
+      code: "123456",
       endpointId: "primary",
       purpose: "unknown",
       realmId: null,
+      recipientPhone: "+14155552671",
       sessionName: null,
       status: "blocked",
     })
@@ -209,7 +243,7 @@ test("WAHA delivery records one blocked row and skips WAHA when no healthy candi
     expect(sent).toMatchObject({ code: "waha.no-healthy-candidate", success: false })
     expect(fake.calls).toEqual([])
 
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     expect(recent.data).toHaveLength(1)
@@ -223,7 +257,7 @@ test("WAHA delivery records one blocked row and skips WAHA when no healthy candi
   })
 })
 
-test("WAHA delivery records a sent row with purpose, realm id, and a phone hash instead of plaintext", async () => {
+test("WAHA delivery records a sent row with the plaintext phone and code alongside the phone hash", async () => {
   await withQuotaDatabase(async (database, testkit) => {
     const configuration = quotaConfiguration()
     const fake = wahaDeliveryFakeCreate(() => resultCreate(undefined))
@@ -235,6 +269,7 @@ test("WAHA delivery records a sent row with purpose, realm id, and a phone hash 
       })
 
     const sent = await delivery.sendText({
+      code: "123456",
       phoneNumber: "+14155552671",
       purpose: "sign_in",
       realmId: "realm-1",
@@ -242,14 +277,16 @@ test("WAHA delivery records a sent row with purpose, realm id, and a phone hash 
     })
     expect(sent).toEqual({ data: undefined, success: true })
 
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     expect(recent.data).toHaveLength(1)
     expect(recent.data[0]).toMatchObject({
+      code: "123456",
       createdAt: now,
       purpose: "sign_in",
       realmId: "realm-1",
+      recipientPhone: "+14155552671",
       sessionName: "default",
       status: "sent",
     })
@@ -257,7 +294,6 @@ test("WAHA delivery records a sent row with purpose, realm id, and a phone hash 
       wahaRecipientHashCreate("test-recipient-hash-secret", "+14155552671"),
     )
     expect(recent.data[0]?.recipientPhoneHash).not.toContain("+14155552671")
-    expect(JSON.stringify(recent.data)).not.toContain("+14155552671")
   })
 })
 
@@ -289,7 +325,7 @@ test("WAHA delivery records a failed row and still retries on a second candidate
     expect(sent).toEqual({ data: undefined, success: true })
     expect(fake.calls.map((call) => call.endpointId)).toEqual(["primary", "secondary"])
 
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     expect(
@@ -351,7 +387,7 @@ test("WAHA delivery frees the hourly window after an hour while the daily window
 
     const sent = sendAttempts.wahaSendAttemptSentCount("primary", "default", testkit.runtime.now() - 86_400_000)
     expect(sent).toMatchObject({ data: 2, success: true })
-    const recent = sendAttempts.wahaSendAttemptListRecent(10)
+    const recent = sendAttempts.wahaSendAttemptListRecent(10, 0)
     expect(recent.success).toBe(true)
     if (!recent.success) return
     expect(recent.data.map((row) => row.status)).toEqual(["blocked", "sent", "blocked", "sent"])

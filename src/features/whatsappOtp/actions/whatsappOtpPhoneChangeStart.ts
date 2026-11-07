@@ -266,6 +266,7 @@ function whatsappOtpPhoneChangePortInvoke(
   try {
     void Promise.resolve(
       port.sendText({
+        code: delivery.code,
         phoneNumber: delivery.phoneNumber,
         purpose: delivery.purpose,
         realmId: delivery.realmId,

@@ -38,6 +38,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
 
   const delivery: WahaTextDeliveryPort = {
     sendText(input: {
+      readonly code?: string
       readonly phoneNumber: string
       readonly purpose?: string
       readonly realmId?: string
@@ -49,6 +50,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
   return delivery
 
   async function wahaTextDeliverySend(input: {
+    readonly code?: string
     readonly phoneNumber: string
     readonly purpose?: string
     readonly realmId?: string
@@ -64,6 +66,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
     if (!selected.success) return selected
     if (selected.data === null) {
       wahaSendAttemptRecordCreate({
+        code: input.code ?? null,
         createdAt: now,
         phoneNumber: input.phoneNumber,
         purpose: input.purpose ?? "unknown",
@@ -80,6 +83,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
 
     const firstAttempt = await candidateSend(selected.data, chatId.data, input.text)
     wahaSendAttemptRecordCreate({
+      code: input.code ?? null,
       createdAt: now,
       endpointId: selected.data.endpointId,
       phoneNumber: input.phoneNumber,
@@ -97,6 +101,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
 
     const secondAttempt = await candidateSend(retry.data, chatId.data, input.text)
     wahaSendAttemptRecordCreate({
+      code: input.code ?? null,
       createdAt: now,
       endpointId: retry.data.endpointId,
       phoneNumber: input.phoneNumber,
@@ -111,6 +116,7 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
   }
 
   function wahaSendAttemptRecordCreate(input: {
+    readonly code: string | null
     readonly createdAt: number
     readonly endpointId?: string
     readonly phoneNumber: string
@@ -122,11 +128,13 @@ export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
     const endpointId = input.endpointId ?? options.configuration.endpoints[0]?.id
     if (endpointId === undefined) return
     options.sendAttempts.wahaSendAttemptRecord({
+      code: input.code,
       createdAt: input.createdAt,
       endpointId,
       id: uuidv7Create(runtime),
       purpose: input.purpose,
       realmId: input.realmId,
+      recipientPhone: input.phoneNumber,
       recipientPhoneHash: wahaRecipientHashCreate(options.recipientHashSecret, input.phoneNumber),
       sessionName: input.sessionName,
       status: input.status,

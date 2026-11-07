@@ -2,6 +2,7 @@ import type { Result } from "#result"
 
 export type PasswordWhatsappDeliveryPort = {
   readonly sendText: (input: {
+    readonly code?: string
     readonly phoneNumber: string
     readonly purpose?: string
     readonly realmId?: string
