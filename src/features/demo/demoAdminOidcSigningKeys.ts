@@ -1,3 +1,4 @@
+import { oidcSigningKeyValidityMs } from "../oidc/public/index.js"
 import type { OidcSigningKey } from "../oidc/public/oidcSigningKeySchema.js"
 
 /** A deterministic, non-secret RSA modulus placeholder. Signing keys never expose private material. */
@@ -8,6 +9,7 @@ export const demoAdminOidcSigningKeys: OidcSigningKey[] = [
   {
     algorithm: "RS256",
     createdAt: 1_755_782_400_000,
+    expiresAt: 1_755_782_400_000 + oidcSigningKeyValidityMs,
     id: "01900000-0000-7000-8000-000000000061",
     realmId: "01900000-0000-7000-8000-000000000001",
     publicJwk: {
@@ -24,6 +26,7 @@ export const demoAdminOidcSigningKeys: OidcSigningKey[] = [
   {
     algorithm: "RS256",
     createdAt: 1_753_968_000_000,
+    expiresAt: 1_753_968_000_000 + oidcSigningKeyValidityMs,
     id: "01900000-0000-7000-8000-000000000062",
     realmId: "01900000-0000-7000-8000-000000000001",
     publicJwk: {

@@ -1036,6 +1036,7 @@ test("OIDC signing-key create redacts resolved system and connection tokens from
           signingKey: {
             algorithm: "RS256",
             createdAt: 1,
+            expiresAt: 31_536_000_001,
             id: keyId,
             realmId,
             publicJwk: {
@@ -1084,6 +1085,7 @@ test("OIDC signing-key create redacts resolved system and connection tokens from
       signingKey: {
         algorithm: "RS256",
         createdAt: 1,
+        expiresAt: 31_536_000_001,
         id: keyId,
         publicJwk: { alg: "RS256", e: "[REDACTED]", kid: keyId, kty: "RSA", n: "[REDACTED]", use: "sig" },
         realmId,

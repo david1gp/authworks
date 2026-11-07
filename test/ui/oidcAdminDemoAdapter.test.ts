@@ -207,6 +207,17 @@ describe("OIDC administration demo adapter", () => {
     )
   })
 
+  test("new and rotated keys carry a scheduled expiry of createdAt plus 365 days", async () => {
+    const adapter = oidcAdminDemoAdapterCreate(() => "success")
+
+    const rotated = await adapter.signingKeyRotate()
+    expect(rotated.success).toBe(true)
+    if (!rotated.success) return
+
+    expect(rotated.data.expiresAt).toBe(rotated.data.createdAt + 365 * 24 * 60 * 60 * 1_000)
+    for (const key of demoAdminOidcSigningKeys) expect(key.expiresAt).toBe(key.createdAt + 365 * 24 * 60 * 60 * 1_000)
+  })
+
   test("retiring a key stamps a retirement time and keeps its metadata readable", async () => {
     const adapter = oidcAdminDemoAdapterCreate(() => "success")
 
