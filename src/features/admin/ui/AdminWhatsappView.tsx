@@ -1,5 +1,7 @@
 import { For, Show } from "solid-js"
+import { Button } from "#ui/interactive/button/Button.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { classMerge } from "#ui/utils/classMerge.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -80,7 +82,10 @@ function AdminWhatsappSenderCard(props: { readonly card: WhatsappSenderCard }) {
 }
 
 export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
-  const view = adminWhatsappViewStateCreate({ usage: () => props.state.whatsappUsage() })
+  const view = adminWhatsappViewStateCreate({
+    usage: () => props.state.whatsappUsage(),
+    window: () => props.state.whatsappWindow(),
+  })
   return (
     <section aria-label={messageTranslate("admin.whatsapp.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <header class="flex flex-wrap items-center justify-between gap-2">
@@ -127,7 +132,33 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
           </AuthenticatedSection>
         </Show>
 
-        <Show when={(props.state.whatsappUsage()?.recent ?? []).length > 0}>
+        <div
+          aria-label={messageTranslate("admin.whatsapp.windowLabel")}
+          class="flex min-w-0 gap-1.5 overflow-x-auto rounded-panel border border-line bg-muted/60 p-1.5"
+          role="group"
+        >
+          <For each={view.windowOptions()}>
+            {(option) => (
+              <Button
+                aria-pressed={option.selected}
+                class={classMerge(
+                  "shrink-0 gap-2 rounded-control border px-3.5 py-2 text-sm whitespace-nowrap shadow-none focus-visible:ring-accent",
+                  option.selected
+                    ? "border-accent/50 bg-surface text-foreground shadow-sm"
+                    : "border-transparent text-muted-foreground hover:border-line hover:bg-surface/70 hover:text-foreground",
+                )}
+                onClick={() => props.state.whatsappWindowSet(option.value)}
+                size="none"
+                type="button"
+                variant="none"
+              >
+                {option.label}
+              </Button>
+            )}
+          </For>
+        </div>
+
+        <Show when={view.recentRows().length > 0}>
           <AuthenticatedSection title={messageTranslate("admin.whatsapp.recent")}>
             <div class="overflow-x-auto">
               <Table class={authenticatedTableClasses.table}>
@@ -149,12 +180,15 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
                       {messageTranslate("admin.whatsapp.status")}
                     </TableHead>
                     <TableHead class={`${authenticatedTableClasses.head} text-right`}>
-                      {messageTranslate("admin.whatsapp.recipient")}
+                      {messageTranslate("admin.whatsapp.phone")}
+                    </TableHead>
+                    <TableHead class={`${authenticatedTableClasses.head} text-right`}>
+                      {messageTranslate("admin.whatsapp.code")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <For each={props.state.whatsappUsage()?.recent ?? []}>
+                  <For each={view.recentRows()}>
                     {(row) => (
                       <TableRow class={authenticatedTableClasses.row}>
                         <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
@@ -174,7 +208,10 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
                           />
                         </TableCell>
                         <TableCell class={`${authenticatedTableClasses.cell} text-right font-mono text-xs`}>
-                          {row.recipientHashPrefix}
+                          {row.phone}
+                        </TableCell>
+                        <TableCell class={`${authenticatedTableClasses.cell} text-right font-mono text-xs`}>
+                          {row.code}
                         </TableCell>
                       </TableRow>
                     )}

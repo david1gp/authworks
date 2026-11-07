@@ -9,7 +9,7 @@ import { adminDemoWhatsappUsageFixture } from "./adminDemoWhatsappUsageFixture.j
 const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
 const solidRuntime = await import(solidRuntimePath)
 mock.module("solid-js", () => solidRuntime)
-const [{ createRoot }, { adminWhatsappViewStateCreate }, { adminPageStateCreate }] = await Promise.all([
+const [{ createRoot, createSignal }, { adminWhatsappViewStateCreate }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminWhatsappViewStateCreate.js"),
   import("./adminPageStateCreate.js"),
@@ -74,6 +74,71 @@ describe("whatsapp usage view state", () => {
     expect(state.recentStatusGet("failed")).toEqual({ label: "Failed", tone: "danger" })
     expect(state.recentStatusGet("blocked")).toEqual({ label: "Blocked", tone: "warning" })
   })
+
+  test("derives phone and code cells from the recent rows", () => {
+    const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
+    expect(state.recentRows().map((row) => row.phone)).toEqual([
+      "+491700000001",
+      "+491700000002",
+      "+491700000003",
+      "+491700000004",
+      "+491700000005",
+      "+491700000006",
+      "+491700000007",
+    ])
+    expect(state.recentRows().map((row) => row.code)).toEqual([
+      "4***2",
+      "9***1",
+      "2***8",
+      "7***3",
+      "5***9",
+      "1***6",
+      "8***4",
+    ])
+  })
+
+  test("falls back to the hash prefix and the em-dash for pre-Phase-2 rows", () => {
+    const legacy: WhatsappOtpUsageResponse = {
+      ...adminDemoWhatsappUsageFixture,
+      recent: [
+        {
+          code: null,
+          createdAt: adminDemoWhatsappUsageFixture.recent[0]?.createdAt ?? 0,
+          endpointId: "primary",
+          purpose: "sign_in",
+          realmId: null,
+          recipientHashPrefix: "a3f9c2e1",
+          recipientPhone: null,
+          sessionName: null,
+          status: "sent",
+        },
+      ],
+    }
+    const state = adminWhatsappViewStateCreate({ usage: () => legacy })
+    expect(state.recentRows()).toHaveLength(1)
+    expect(state.recentRows()[0]?.phone).toBe("a3f9c2e1")
+    expect(state.recentRows()[0]?.code).toBe("—")
+  })
+
+  test("marks the active window option and defaults to 24h", () => {
+    const day = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "24h" })
+    expect(day.windowOptions()).toEqual([
+      { label: "Last 24 hours", selected: true, value: "24h" },
+      { label: "Last 3 days", selected: false, value: "3d" },
+      { label: "Last 7 days", selected: false, value: "7d" },
+    ])
+    const week = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "7d" })
+    expect(week.windowOptions().filter((option) => option.selected)).toEqual([
+      { label: "Last 7 days", selected: true, value: "7d" },
+    ])
+    const fallback = adminWhatsappViewStateCreate({ usage: () => undefined })
+    expect(
+      fallback
+        .windowOptions()
+        .filter((option) => option.selected)
+        .map((option) => option.value),
+    ).toEqual(["24h"])
+  })
 })
 
 describe("whatsapp usage page state", () => {
@@ -91,7 +156,37 @@ describe("whatsapp usage page state", () => {
     }))
     await flushLoads()
     expect(page.status()).toBe(expectedStatus)
-    if (fixtureState === "success") expect(page.whatsappUsage()).toEqual(adminDemoWhatsappUsageFixture)
+    if (fixtureState === "success") {
+      // The adapter rebases fixture timestamps onto now and the default 24h window keeps the
+      // five recent rows; totals, tiles, and sender cards stay fixture constants.
+      expect(page.whatsappWindow()).toBe("24h")
+      expect(page.whatsappUsage()).toMatchObject({
+        attempts: adminDemoWhatsappUsageFixture.attempts,
+        limits: adminDemoWhatsappUsageFixture.limits,
+        senders: adminDemoWhatsappUsageFixture.senders,
+        totals: adminDemoWhatsappUsageFixture.totals,
+      })
+      const recent = page.whatsappUsage()?.recent ?? []
+      expect(recent).toHaveLength(5)
+      expect(recent.map((row) => row.status)).toEqual(["sent", "failed", "sent", "blocked", "sent"])
+      expect(recent.map((row) => row.recipientPhone)).toEqual([
+        "+491700000001",
+        "+491700000002",
+        "+491700000003",
+        "+491700000004",
+        "+491700000005",
+      ])
+      // Rebased rows land inside the default window, anchored with the newest row at now.
+      for (const row of recent) {
+        expect(row.createdAt).toBeLessThanOrEqual(Date.now())
+        expect(row.createdAt).toBeGreaterThan(Date.now() - 24 * 3_600_000)
+      }
+      // Rebasing preserves the fixture's relative spacing between rows.
+      expect((recent[0]?.createdAt ?? 0) - (recent[1]?.createdAt ?? 0)).toBe(
+        (adminDemoWhatsappUsageFixture.recent[0]?.createdAt ?? 0) -
+          (adminDemoWhatsappUsageFixture.recent[1]?.createdAt ?? 0),
+      )
+    }
     if (fixtureState === "empty") {
       expect(page.whatsappUsage()?.senders).toEqual([])
       expect(page.whatsappUsage()?.recent).toEqual([])
@@ -111,5 +206,83 @@ describe("whatsapp usage page state", () => {
     expect(page.status()).toBe("ready")
     expect(page.whatsappUsage()?.totals.sentLastDay).toBe(105)
     dispose()
+  })
+})
+
+describe("whatsapp usage window", () => {
+  test.each([
+    ["", "24h", 5],
+    ["?window=24h", "24h", 5],
+    ["?window=3d", "3d", 6],
+    ["?window=7d", "7d", 7],
+    ["?window=bogus", "24h", 5],
+  ] as const)("search %s loads window %s with %s rows", async (search, expectedWindow, expectedRows) => {
+    const adapter = adminDemoAdapterCreate((): DemoFixtureState => "success")
+    const { dispose, page } = createRoot((dispose) => ({
+      dispose,
+      page: adminPageStateCreate({
+        adapter,
+        confirm: () => false,
+        screen: () => "whatsapp",
+        whatsappWindowSearch: () => search,
+      }),
+    }))
+    await flushLoads()
+    expect(page.whatsappWindow()).toBe(expectedWindow)
+    expect(page.whatsappUsage()?.recent).toHaveLength(expectedRows)
+    dispose()
+  })
+
+  test("a changed URL search refetches with the wider window", async () => {
+    const adapter = adminDemoAdapterCreate((): DemoFixtureState => "success")
+    const [search, setSearch] = createSignal("")
+    const { dispose, page } = createRoot((dispose) => ({
+      dispose,
+      page: adminPageStateCreate({
+        adapter,
+        confirm: () => false,
+        screen: () => "whatsapp",
+        whatsappWindowSearch: search,
+      }),
+    }))
+    await flushLoads()
+    expect(page.whatsappUsage()?.recent).toHaveLength(5)
+    setSearch("?window=7d")
+    await flushLoads()
+    expect(page.whatsappWindow()).toBe("7d")
+    expect(page.whatsappUsage()?.recent).toHaveLength(7)
+    dispose()
+  })
+
+  test("selecting a window refetches usage and holds it in the URL", async () => {
+    const replaced: string[] = []
+    const windowStub = {
+      location: new URL("http://localhost/demo/admin/whatsapp"),
+      history: {
+        replaceState: (_state: unknown, _unused: string, url: string) => {
+          replaced.push(url)
+        },
+      },
+    }
+    ;(globalThis as { window?: unknown }).window = windowStub
+    try {
+      const adapter = adminDemoAdapterCreate((): DemoFixtureState => "success")
+      const { dispose, page } = createRoot((dispose) => ({
+        dispose,
+        page: adminPageStateCreate({ adapter, confirm: () => false, screen: () => "whatsapp" }),
+      }))
+      await flushLoads()
+      expect(page.whatsappUsage()?.recent).toHaveLength(5)
+      page.whatsappWindowSet("7d")
+      await flushLoads()
+      expect(page.whatsappWindow()).toBe("7d")
+      expect(page.whatsappUsage()?.recent).toHaveLength(7)
+      // The debounced URL write lands after the refetch; the param survives reloads.
+      await new Promise((resolve) => setTimeout(resolve, 350))
+      expect(replaced.at(-1)).toContain("window=7d")
+      dispose()
+    } finally {
+      delete (globalThis as { window?: unknown }).window
+    }
   })
 })

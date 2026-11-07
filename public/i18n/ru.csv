@@ -2031,6 +2031,7 @@ admin.redesign.viewAll,Показать все
 shell.nav.oidcGroup,OIDC
 shell.nav.securityAuditGroup,Безопасность и аудит
 admin.whatsapp.blockedDay,Заблокировано · последние 24 часа
+admin.whatsapp.code,Код
 admin.whatsapp.dayWindow,Последние 24 часа
 admin.whatsapp.empty,WhatsApp пока не настроен — нет отправителей и зарегистрированных отправок.
 admin.whatsapp.endpoint,Конечная точка
@@ -2038,12 +2039,12 @@ admin.whatsapp.failedDay,Неудачные · последние 24 часа
 admin.whatsapp.healthy,Исправен
 admin.whatsapp.hourWindow,Последний час
 admin.whatsapp.noSender,—
+admin.whatsapp.phone,Телефон
 admin.whatsapp.purpose,Назначение
 admin.whatsapp.purposes,Отправки по назначению · последние 24 часа
 admin.whatsapp.quotaBarLabel,{sender} · {window}
 admin.whatsapp.quotaLine,{sent} отправлено · осталось {left} из {limit}
 admin.whatsapp.recent,Последняя активность
-admin.whatsapp.recipient,Хеш получателя
 admin.whatsapp.remainingHint,Осталось {count} отправок у самого загруженного отправителя
 admin.whatsapp.requestsDay,OTP-запросы · последние 24 часа
 admin.whatsapp.requestsHour,OTP-запросы · последний час
@@ -2058,6 +2059,9 @@ admin.whatsapp.statusSent,Отправлено
 admin.whatsapp.time,Время
 admin.whatsapp.title,Использование WhatsApp
 admin.whatsapp.unhealthy,Неисправен
+admin.whatsapp.window3d,Последние 3 дня
+admin.whatsapp.window7d,Последние 7 дней
+admin.whatsapp.windowLabel,Окно последней активности
 demo.admin.scenario.whatsapp_usage.description,Просматривайте квоты отправителей и число запросов и последних отправок.
 demo.admin.scenario.whatsapp_usage.title,Использование WhatsApp
 shell.nav.whatsapp,WhatsApp

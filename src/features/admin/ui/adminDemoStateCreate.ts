@@ -47,6 +47,7 @@ export function adminDemoStateCreate(screen: () => AdminScreen) {
     confirm: confirmState.confirm,
     eventFilterSearch: () => location.search,
     sessionListSearch: () => new URLSearchParams(location.search).get("q") ?? "",
+    whatsappWindowSearch: () => location.search,
     reloadKey: () => `${fixtureState()}:${i18nStore.language.get()}`,
     screen,
     userId: () => params.userId,

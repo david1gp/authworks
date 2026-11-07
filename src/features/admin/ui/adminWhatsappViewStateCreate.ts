@@ -1,5 +1,6 @@
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AuthenticatedStatusTone } from "../../../ui/authenticated/authenticatedStatusTone.js"
+import type { WhatsappOtpUsageQuery } from "../../whatsappOtp/public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 
 type WhatsappQuotaWindow = {
@@ -30,6 +31,23 @@ export type WhatsappPurposeEntry = {
 export type WhatsappRecentStatus = {
   readonly label: string
   readonly tone: AuthenticatedStatusTone
+}
+
+type WhatsappRecentEntry = WhatsappOtpUsageResponse["recent"][number]
+
+export type WhatsappRecentRow = Pick<
+  WhatsappRecentEntry,
+  "createdAt" | "endpointId" | "purpose" | "sessionName" | "status"
+> & {
+  readonly code: string
+  /** Full phone number, with the hash prefix as the pre-Phase-2 fallback display. */
+  readonly phone: string
+}
+
+export type WhatsappWindowOption = {
+  readonly label: string
+  readonly selected: boolean
+  readonly value: WhatsappOtpUsageQuery["window"]
 }
 
 /** Clamps a quota fill ratio to 0–100; an exhausted or missing limit renders full. */
@@ -63,8 +81,33 @@ function whatsappRecentStatusGet(status: "sent" | "failed" | "blocked"): Whatsap
 }
 
 /** Derives every WhatsApp usage presentation value from the loaded usage response. */
-export function adminWhatsappViewStateCreate(options: { readonly usage: () => WhatsappOtpUsageResponse | undefined }) {
+export function adminWhatsappViewStateCreate(options: {
+  readonly usage: () => WhatsappOtpUsageResponse | undefined
+  /** Current recent-activity window; defaults to 24h for callers without a selector (realm tile). */
+  readonly window?: () => WhatsappOtpUsageQuery["window"]
+}) {
   const usage = options.usage
+  const recentWindow = options.window ?? (() => "24h" as const)
+
+  const recentRows = (): readonly WhatsappRecentRow[] =>
+    (usage()?.recent ?? []).map((row) => ({
+      code: row.code ?? messageTranslate("admin.whatsapp.noSender"),
+      createdAt: row.createdAt,
+      endpointId: row.endpointId,
+      phone: row.recipientPhone ?? row.recipientHashPrefix,
+      purpose: row.purpose,
+      sessionName: row.sessionName,
+      status: row.status,
+    }))
+
+  const windowOptions = (): readonly WhatsappWindowOption[] =>
+    (
+      [
+        { label: messageTranslate("admin.whatsapp.dayWindow"), value: "24h" },
+        { label: messageTranslate("admin.whatsapp.window3d"), value: "3d" },
+        { label: messageTranslate("admin.whatsapp.window7d"), value: "7d" },
+      ] as const
+    ).map((option) => ({ ...option, selected: option.value === recentWindow() }))
 
   const senderCards = (): readonly WhatsappSenderCard[] =>
     (usage()?.senders ?? []).map((sender) => ({
@@ -99,7 +142,9 @@ export function adminWhatsappViewStateCreate(options: { readonly usage: () => Wh
 
   return {
     purposeEntries,
+    recentRows,
     recentStatusGet: whatsappRecentStatusGet,
+    windowOptions,
     remainingHint: (): string | undefined => {
       const remaining = tightestRemaining()
       return remaining === undefined

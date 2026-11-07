@@ -1,4 +1,5 @@
 import { createEffect, on } from "solid-js"
+import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
@@ -9,6 +10,10 @@ import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
 import type { RealmSummaryResponse } from "../../realms/public/realmSummaryResponseSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import {
+  type WhatsappOtpUsageQuery,
+  whatsappOtpUsageQuerySchema,
+} from "../../whatsappOtp/public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
 import { adminEventExportDownload } from "./adminEventExportDownload.js"
@@ -39,6 +44,8 @@ type AdminPageStateOptions = {
   readonly eventFilterSearch?: () => string
   /** URL-held session search (?q=), so a filtered session list survives reloads and deep links. */
   readonly sessionListSearch?: () => string
+  /** URL-held WhatsApp recent-activity window (?window=), validated against the public usage query. */
+  readonly whatsappWindowSearch?: () => string
   readonly userId?: () => string | undefined
 }
 
@@ -59,6 +66,24 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   // Sessions arrive server-filtered by the URL-held ?q= search; the view renders the page as-is.
   const sessionSearch = (): string => options.sessionListSearch?.() ?? ""
   const sessionSearchInput = (value: string) => authenticatedUrlSearchParamWrite("q", value)
+  // The recent-activity window is explicit once the operator picks it, so selecting a window
+  // refetches immediately even though external history.replaceState calls stay invisible to the
+  // router; the URL param still carries the selection across reloads and deep links.
+  const whatsappWindowSelected = createSignalObject<WhatsappOtpUsageQuery["window"] | undefined>(undefined)
+  const whatsappWindow = (): WhatsappOtpUsageQuery["window"] => {
+    const selected = whatsappWindowSelected.get()
+    if (selected !== undefined) return selected
+    const raw =
+      options.whatsappWindowSearch === undefined
+        ? undefined
+        : new URLSearchParams(options.whatsappWindowSearch()).get("window")
+    const parsed = v.safeParse(whatsappOtpUsageQuerySchema, raw === null || raw === undefined ? {} : { window: raw })
+    return parsed.success ? parsed.output.window : "24h"
+  }
+  const whatsappWindowSet = (window: WhatsappOtpUsageQuery["window"]): void => {
+    whatsappWindowSelected.set(window)
+    authenticatedUrlSearchParamWrite("window", window)
+  }
   const eventMoreFilters = createSignalObject(false)
   // Filters live in the URL; the state parses them on every load so typing stays in the address bar.
   const eventFilters = (): AdminEventFilters => adminEventFiltersParse(options.eventFilterSearch?.() ?? "")
@@ -150,7 +175,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       return status.set(result.data.items.length === 0 ? "empty" : "ready")
     }
     if (options.screen() === "whatsapp") {
-      const result = await options.adapter.whatsappOtpUsageGet()
+      const result = await options.adapter.whatsappOtpUsageGet({ window: whatsappWindow() })
       if (!result.success) return fail(result)
       whatsappUsage.set(result.data)
       const empty = result.data.senders.length === 0 && result.data.recent.length === 0
@@ -178,7 +203,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   createEffect(
     on(
       () =>
-        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${options.reloadKey?.() ?? ""}`,
+        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${whatsappWindow()}:${options.reloadKey?.() ?? ""}`,
       () => {
         if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
           appliedSessionListSignature.set(sessionListSignature())
@@ -250,6 +275,8 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     eventMoreFiltersToggle: () => eventMoreFilters.set(!eventMoreFilters.get()),
     realmSummary: realmSummary.get,
     whatsappUsage: whatsappUsage.get,
+    whatsappWindow,
+    whatsappWindowSet,
     signInSecret,
     error: error.get,
     // Events arrive server-filtered; the view renders the loaded page as-is.
