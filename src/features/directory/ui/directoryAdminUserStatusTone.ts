@@ -10,7 +10,7 @@ const tones = {
   suspended: "warning",
 } as const satisfies Record<UserState, AuthenticatedChipTone>
 
-/** Maps a user lifecycle state to the compact chip tone shown in the directory table. */
+/** Maps a user lifecycle state to the compact chip tone shown in the directory table. Never throws: unknown states render as neutral. */
 export function directoryAdminUserStatusTone(state: UserState): AuthenticatedChipTone {
-  return tones[state]
+  return (tones as Record<string, AuthenticatedChipTone>)[state] ?? "neutral"
 }

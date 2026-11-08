@@ -15,7 +15,7 @@ import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiShieldOutline } from "@adaptive-ds/mdi/mdiShieldOutline.js"
 import { mdiTwoFactorAuthentication } from "@adaptive-ds/mdi/mdiTwoFactorAuthentication.js"
-import { createEffect, For, Show } from "solid-js"
+import { createEffect, ErrorBoundary, For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
@@ -47,6 +47,7 @@ import { authenticatedTableClasses } from "../../../ui/authenticated/authenticat
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
+import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
@@ -106,7 +107,12 @@ const sessionMethodKeys = {
   recovery_code: "login.mfa.recoveryCode",
   totp: "login.mfa.totp",
   whatsapp_otp: "login.chooser.emailOtpLabel",
-} as const
+} as const satisfies Record<string, string>
+
+/** Resolves the session method label without throwing on unknown future methods. */
+function sessionMethodMessageKeyGet(method: string): MessageKey {
+  return ((sessionMethodKeys as Record<string, MessageKey>)[method] ?? "login.chooser.passwordLabel") as MessageKey
+}
 
 /** The user profile page: header card with action menu, tabs, and shared stateless content. */
 export function DirectoryUserProfileView(props: { readonly state: DirectoryUserProfileViewState }) {
@@ -297,7 +303,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                       <Show when={page().targetRolesGet()?.[0]}>
                         {(role) => (
                           <AuthenticatedChip
-                            icon={organizationRoleIcons[role()]}
+                            icon={directoryRoleIconGet(role())}
                             label={messageTranslate(directoryRoleLabelKeyGet(role()))}
                             tone="accent"
                           />
@@ -358,15 +364,19 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                   label={messageTranslate("admin.users.detailTitle")}
                 />
 
-                <Show when={state.tab() === "overview"}>
-                  <OverviewTab state={state} />
-                </Show>
-                <Show when={state.tab() === "access"}>
-                  <AccessTab state={state} />
-                </Show>
-                <Show when={state.tab() === "security"}>
-                  <SecurityTab state={state} />
-                </Show>
+                <ErrorBoundary
+                  fallback={<ProductionStatePanel detail={page().errorGet()} onRetry={page().reload} state="error" />}
+                >
+                  <Show when={state.tab() === "overview"}>
+                    <OverviewTab state={state} />
+                  </Show>
+                  <Show when={state.tab() === "access"}>
+                    <AccessTab state={state} />
+                  </Show>
+                  <Show when={state.tab() === "security"}>
+                    <SecurityTab state={state} />
+                  </Show>
+                </ErrorBoundary>
 
                 <EditProfileDialog state={state} />
                 <SetPasswordDialog state={state} />
@@ -743,7 +753,7 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
           </Show>
         </div>
         <p class={`${metaClass} mt-1`}>
-          <span>{messageTranslate(sessionMethodKeys[props.session.authenticationMethod])}</span>
+          <span>{messageTranslate(sessionMethodMessageKeyGet(props.session.authenticationMethod))}</span>
           <span>
             {messageTranslate("admin.users.sessions.lastUsed")}:{" "}
             <AuthenticatedRelativeTime value={props.session.lastUsedAt} />

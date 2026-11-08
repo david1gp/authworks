@@ -25,14 +25,14 @@ const lifecycleChipTones: Record<UserState, AuthenticatedChipTone> = {
   suspended: "warning",
 }
 
-/** Maps a user lifecycle state to the compact chip tone shown in the profile header. */
+/** Maps a user lifecycle state to the compact chip tone shown in the profile header. Never throws. */
 export function directoryUserProfileStateTone(state: UserState): AuthenticatedChipTone {
-  return lifecycleChipTones[state]
+  return (lifecycleChipTones as Record<string, AuthenticatedChipTone>)[state] ?? "neutral"
 }
 
-/** Maps a user lifecycle state to the status pill tone shown in the profile header. */
+/** Maps a user lifecycle state to the status pill tone shown in the profile header. Never throws. */
 export function directoryUserProfileStatusTone(state: UserState): AuthenticatedStatusTone {
-  return lifecycleChipTones[state]
+  return (lifecycleChipTones as Record<string, AuthenticatedStatusTone>)[state] ?? "neutral"
 }
 
 const actorManagesOwners = (actor: DirectoryUserProfileActor): boolean =>
