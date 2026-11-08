@@ -291,8 +291,11 @@ test("task 17 composed production account increment consumes captured links and 
     await revokeConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     await expect(sessionTrigger).toHaveCount(0)
 
+    // The users surface is member-open (scoped server-side), so the removed /admin prefix
+    // redirects members to their default organization's users page instead of denying them.
     await page.goto("/admin/users")
-    await expect(page.locator("[data-content-state='inaccessible']")).toBeVisible()
+    await expect(page).toHaveURL(/\/orgs\/[^/]+\/users$/)
+    await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
     for (const secret of [
       accountPassword,
       fixture.member.password,

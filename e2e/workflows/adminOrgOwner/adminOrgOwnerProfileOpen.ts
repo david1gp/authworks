@@ -12,7 +12,7 @@ export async function adminOrgOwnerProfileOpen(setup: AdminOrgOwnerSetup): Promi
   const page = setup.context.page
   await adminOrgOwnerSessionEnsure(setup)
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
-  await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\/.+/, { timeout: 30_000 })
   await expect(page.getByText(`@${setup.memberUserName}`).first()).toBeVisible()
   return page.url()
 }

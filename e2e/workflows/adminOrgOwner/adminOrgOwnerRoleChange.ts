@@ -10,7 +10,7 @@ export async function adminOrgOwnerRoleChange(setup: AdminOrgOwnerSetup): Promis
   const page = setup.context.page
   await adminOrgOwnerSessionEnsure(setup)
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
-  await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\/.+/, { timeout: 30_000 })
   await page.getByRole("link", { name: "Roles and access" }).click()
 
   const adminCard = page.getByRole("radio", { name: "Admin" })

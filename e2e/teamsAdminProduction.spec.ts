@@ -3,7 +3,7 @@ import { expect } from "@playwright/test"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
-// Teams flow against the production /admin/users surface with a route-mocked
+// Teams flow against the production /orgs/{slug}/users surface with a route-mocked
 // backend, following e2e/organizationAdminProduction.spec.ts: the real
 // production UI and API clients run, HTTP is stubbed, and the spec asserts the
 // exact request paths, methods, bodies, and rendered state. A pure
@@ -14,6 +14,16 @@ import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstr
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const organizationId = "018f0000-0000-7000-8000-000000000002"
 const organizationName = "Northwind Labs"
+const organizationSlug = "northwind-labs"
+const organization = {
+  createdAt: 1_700_000_000_000,
+  id: organizationId,
+  name: organizationName,
+  realmId,
+  slug: organizationSlug,
+  status: "active",
+  updatedAt: 1_700_000_000_000,
+}
 const leaderUserId = "018f0000-0000-7000-8000-000000000021"
 const memberUserId = "018f0000-0000-7000-8000-000000000022"
 const outsiderUserId = "018f0000-0000-7000-8000-000000000023"
@@ -135,6 +145,46 @@ async function teamsBackendMock(page: Page, state: TeamsMockState) {
     const url = new URL(request.url())
     const pathname = url.pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
+    // The user session, its owner membership (slug included), and the tenant list that
+    // realm administrators resolve slugs through.
+    if (pathname === `/realms/${realmId}/me/organizations`)
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              membership: {
+                createdAt: 1_700_000_000_000,
+                id: "018f0000-0000-7000-8000-000000000022",
+                organizationId,
+                realmId,
+                roles: ["owner"],
+                updatedAt: 1_700_000_000_000,
+                userId: adminUserId,
+              },
+              organization,
+            },
+          ],
+        },
+      })
+    if (pathname === `/realms/${realmId}/me`)
+      return route.fulfill({
+        json: {
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user: {
+            createdAt: 1_700_000_000_000,
+            email: "admin@customer.example",
+            emailVerified: true,
+            id: adminUserId,
+            profile: { displayName: "Customer admin" },
+            realmId,
+            state: "active",
+            updatedAt: 1_700_000_000_000,
+            userName: "customer-admin",
+            verificationState: "verified",
+          },
+        },
+      })
+    if (pathname === `/realms/${realmId}/organizations`) return route.fulfill({ json: { items: [organization] } })
     if (pathname.endsWith(`/organizations/${organizationId}/teams`) && request.method() === "POST") {
       const body = request.postDataJSON() as { leaderUserId: string; name: string; slug: string }
       state.postedCreateBody = body
@@ -232,41 +282,27 @@ async function teamsBackendMock(page: Page, state: TeamsMockState) {
 
 test.beforeEach(async ({ page }) => {
   await productionAdminSessionBootstrap(page, { organizationId, organizationName, realmId })
-  await page.route(`**/realms/${realmId}/me/organizations`, (route) =>
+  // Organization slug URLs resolve through the session organization list, which is only
+  // populated for user sessions, so the bootstrap session is overridden with a user session
+  // here. The backend mock below serves the matching /me payloads.
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) =>
     route.fulfill({
       json: {
-        items: [
-          {
-            membership: {
-              createdAt: 1_700_000_000_000,
-              id: "018f0000-0000-7000-8000-000000000022",
-              organizationId,
-              realmId,
-              roles: ["owner"],
-              updatedAt: 1_700_000_000_000,
-              userId: adminUserId,
-            },
-            organization: { createdAt: 1_700_000_000_000, id: organizationId, name: organizationName },
-          },
-        ],
-      },
-    }),
-  )
-  await page.route(`**/realms/${realmId}/me`, (route) =>
-    route.fulfill({
-      json: {
-        capabilities: { realmAdministrator: true, realmRead: true },
-        user: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
           createdAt: 1_700_000_000_000,
-          email: "admin@customer.example",
-          emailVerified: true,
-          id: adminUserId,
-          profile: { displayName: "Customer admin" },
+          current: true,
+          device: {},
+          expiresAt: 1_700_000_900_000,
+          id: "01900000-0000-7000-8000-0000000000a1",
+          lastUsedAt: 1_700_000_050_000,
+          organizationId,
           realmId,
-          state: "active",
-          updatedAt: 1_700_000_000_000,
-          userName: "customer-admin",
-          verificationState: "verified",
+          revokedAt: null,
+          subjectId: adminUserId,
+          subjectType: "user",
+          userId: adminUserId,
         },
       },
     }),
@@ -277,7 +313,7 @@ test("creating a team posts name, slug, and leader and opens the team detail", a
   const state = teamsMockStateCreate()
   await teamsBackendMock(page, state)
 
-  await page.goto("/admin/users?tab=teams")
+  await page.goto(`/orgs/${organizationSlug}/users?tab=teams`)
 
   await expect(page.getByText("No teams exist in this organization yet.", { exact: true })).toBeVisible({
     timeout: 30_000,
@@ -315,7 +351,7 @@ test("an invalid slug blocks team creation without a request", async ({ page }) 
   const state = teamsMockStateCreate()
   await teamsBackendMock(page, state)
 
-  await page.goto("/admin/users?tab=teams")
+  await page.goto(`/orgs/${organizationSlug}/users?tab=teams`)
   await expect(page.getByText("No teams exist in this organization yet.", { exact: true })).toBeVisible({
     timeout: 30_000,
   })
@@ -351,7 +387,7 @@ test("assigning a person surfaces them in the team-filtered people list with a t
   }
   state.assignments.set(leader.id, teamId)
 
-  await page.goto(`/admin/users?tab=teams&team=${teamSlug}`)
+  await page.goto(`/orgs/${organizationSlug}/users?tab=teams&team=${teamSlug}`)
   await expect(page.getByRole("heading", { name: teamName }).first()).toBeVisible({ timeout: 30_000 })
 
   const addSection = page.getByRole("region", { name: "Add member", exact: true })
@@ -369,7 +405,7 @@ test("assigning a person surfaces them in the team-filtered people list with a t
   expect(state.postedAssignBody).toEqual({ userId: member.id })
   await expect(page.getByText(`${member.displayName} was added to ${teamName}.`)).toBeVisible()
 
-  await page.goto("/admin/users?tab=people")
+  await page.goto(`/orgs/${organizationSlug}/users?tab=people`)
   const peopleTable = page.getByRole("table", { name: "People" })
   await expect(peopleTable).toBeVisible({ timeout: 30_000 })
   await page.locator("#directory-team-filter").selectOption(teamSlug)
@@ -401,7 +437,7 @@ test("the profile shows the team and the inviter while unassigned lists everyone
   state.assignments.set(member.id, teamId)
 
   // Team and invited-by render on the access tab, gated on the org membership.
-  await page.goto(`/admin/users/${member.id}?tab=access`)
+  await page.goto(`/orgs/${organizationSlug}/users/${member.id}?tab=access`)
   await expect(page.getByText("Customer admin", { exact: true }).first()).toBeVisible({ timeout: 30_000 })
   await expect(page.getByText("admin@customer.example", { exact: true }).first()).toBeVisible()
   await expect(
@@ -411,7 +447,7 @@ test("the profile shows the team and the inviter while unassigned lists everyone
   // The unassigned roster renders in the desktop members table (and the
   // mobile record list below `md`).
   await page.setViewportSize({ height: 800, width: 1280 })
-  await page.goto("/admin/users?tab=teams&team=unassigned")
+  await page.goto(`/orgs/${organizationSlug}/users?tab=teams&team=unassigned`)
   await expect(page.getByText("People in this organization who are in no team.", { exact: true })).toBeVisible({
     timeout: 30_000,
   })

@@ -1,6 +1,10 @@
 import { type ChildProcess, spawn } from "node:child_process"
 import { type Browser, type BrowserContext, expect, type Page } from "@playwright/test"
+import { organizationSlugSuggest } from "../src/features/organizations/domain/organizationSlugSuggest.js"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
+
+// The fixture seeds "E2E Organization" through the API, so the slug is the suggested form.
+const organizationSlug = organizationSlugSuggest("E2E Organization")
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -47,7 +51,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
       responseBodies,
       requestUrls,
     )
-    await passwordSignIn(assurance, fixture.administrator, "/admin/impersonation")
+    await passwordSignIn(assurance, fixture.administrator, `/orgs/${organizationSlug}/impersonation`)
     await expect(assurance.getByRole("heading", { name: "Stronger sign-in required", exact: true })).toBeVisible()
     const assuranceDenied = await impersonationStartRequest(assurance, fixture, fixture.member.id)
     expect(assuranceDenied.status).toBe(403)
@@ -70,10 +74,10 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(permissionDenied.status).toBe(403)
     expect(permissionDenied.body).toContain("not authorized")
     expect(permissionDenied.body).toContain("authorization.forbidden")
-    await permission.goto("/admin/impersonation")
+    await permission.goto(`/orgs/${organizationSlug}/impersonation`)
     await expect(permission.getByRole("heading", { name: "Access unavailable", exact: true })).toBeVisible()
 
-    await page.goto(`/admin/users/${fixture.administrator.id}`)
+    await page.goto(`/orgs/${organizationSlug}/users/${fixture.administrator.id}`)
     await expect(page.getByRole("heading", { name: "E2E Administrator", exact: true })).toBeVisible()
     // The profile actions live behind the "More actions" overflow menu now.
     await page.getByRole("button", { name: "More actions", exact: true }).click()
@@ -139,7 +143,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
       requestUrls,
     )
     await adminSignIn(auditContextPage, fixture.bootstrapAdmin.secret)
-    await auditContextPage.goto(`/admin/events?aggregateId=${encodeURIComponent(impersonationSessionId)}`)
+    await auditContextPage.goto(`/realm/events?aggregateId=${encodeURIComponent(impersonationSessionId)}`)
     // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
     await expect(auditContextPage.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
     await auditContextPage
@@ -190,7 +194,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await expect(auditContextPage.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
     await expect(auditContextPage.getByRole("cell", { name: "impersonation.ended", exact: true })).toBeVisible()
 
-    await auditContextPage.goto(`/admin/impersonation?userId=${fixture.administrator.id}`)
+    await auditContextPage.goto(`/orgs/${organizationSlug}/impersonation?userId=${fixture.administrator.id}`)
     await auditContextPage.getByLabel("Reason", { exact: true }).fill("Ticket IMP-17: verify automatic expiry.")
     await auditContextPage.getByLabel("Duration", { exact: true }).selectOption("300")
     const expiryResponsePromise = auditContextPage.waitForResponse(
@@ -214,7 +218,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await auditContextPage.reload()
     await expect(auditContextPage.locator("[data-impersonation-banner]")).toHaveCount(0)
     await expect(auditContextPage).toHaveURL(
-      `/login?return_to=${encodeURIComponent(`/admin/impersonation?userId=${fixture.administrator.id}`)}`,
+      `/login?return_to=${encodeURIComponent(`/orgs/${organizationSlug}/impersonation?userId=${fixture.administrator.id}`)}`,
     )
     await browserSecretsAssert(
       [page, assurance, permission, auditContextPage],
@@ -288,7 +292,7 @@ async function auxiliaryPageCreate(
 }
 
 async function adminSignIn(page: Page, secret: string): Promise<void> {
-  await page.goto("/admin/sign-in")
+  await page.goto("/realm/sign-in")
   await page.getByLabel("Bootstrap administrator credential", { exact: true }).fill(secret)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Administrator session active", exact: true })).toBeVisible()

@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test"
 import { expect } from "../../harness/e2eExpect.js"
 import type { AdminOrgAdminLimitsSetup } from "./adminOrgAdminLimitsSetupCreate.js"
+import { organizationSlugSuggest } from "../../../src/features/organizations/domain/organizationSlugSuggest.js"
 import { adminOrgAdminLimitsSignIn } from "./adminOrgAdminLimitsSignIn.js"
 
 /**
@@ -39,15 +40,17 @@ export async function adminOrgAdminLimitsOrgSwitch(page: Page, setup: AdminOrgAd
 /**
  * Ensures the page holds an authenticated admin session in the test organization. Orchestrator
  * resume re-runs the spec with a fresh browser profile while skipping completed steps, so UI
- * steps after `sign-in` must re-authenticate when the session is gone. Navigates to
- * `/admin/users`; performs the full sign-in when redirected to login, or switches the session
- * to the test org when the denied panel shows. Leaves the page on `/admin/users`; steps that
- * need a deeper page navigate from there.
+ * steps after `sign-in` must re-authenticate when the session is gone. Navigates to the
+ * removed `/admin/users` deep link (which redirects to `/orgs/{slug}/users`); performs the
+ * full sign-in when redirected to login, or switches the session to the test org when the
+ * slug is not the test organization. The member-open users page renders in any organization
+ * context, so only the test-organization slug counts as settled. Leaves the page on the test
+ * org users page; steps that need a deeper page navigate from there.
  */
 export async function adminOrgAdminLimitsSessionEnsure(setup: AdminOrgAdminLimitsSetup): Promise<void> {
   const page = setup.context.page
   await page.goto("/admin/users")
-  await page.waitForURL(/\/admin\/users|\/login/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users|\/login/, { timeout: 30_000 })
   // The guard bounces to /login asynchronously after the session check resolves, so the
   // URL sampled right after navigation can still be /admin/users on a signed-out page.
   // Wait for a settled marker before branching.
@@ -59,10 +62,11 @@ export async function adminOrgAdminLimitsSessionEnsure(setup: AdminOrgAdminLimit
     await adminOrgAdminLimitsSignIn(page, setup)
     return
   }
-  if ((await page.getByRole("heading", { name: "Access unavailable" }).count()) > 0) {
+  if (new URL(page.url()).pathname.split("/")[2] !== organizationSlugSuggest(setup.organizationName)) {
     await adminOrgAdminLimitsOrgSwitch(page, setup)
     await page.goto("/admin/users")
   }
-  await page.waitForURL(/\/admin\/users/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users/, { timeout: 30_000 })
+  await expect(page).toHaveURL(new RegExp(`/orgs/${organizationSlugSuggest(setup.organizationName)}/users`))
   await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 }

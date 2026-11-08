@@ -37,7 +37,7 @@ export async function adminOrgOwnerUsersListCheck(setup: AdminOrgOwnerSetup): Pr
   await expect(memberHandleRow().first()).toBeVisible({ timeout: 30_000 })
   await expect(page.locator("table tbody tr", { hasText: `@${setup.ownerUserName}` })).toHaveCount(0)
   await search.fill("")
-  await expect(page).toHaveURL(/\/admin\/users(?!.*[?&]q=)/, { timeout: 30_000 })
+  await expect(page).toHaveURL(/\/orgs\/[^/]+\/users(?!.*[?&]q=)/, { timeout: 30_000 })
   await page.reload()
   await expect(page.getByText(setup.ownerUserName).first()).toBeVisible()
 }

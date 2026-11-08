@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test"
 import type { AccountEffectiveAccessEntry } from "../src/features/account/public/accountEffectiveAccessEntrySchema.js"
+import { organizationSlugSuggest } from "../src/features/organizations/domain/organizationSlugSuggest.js"
 import type { OrganizationMe } from "../src/features/organizations/public/organizationMeSchema.js"
 import type { OrganizationRoles } from "../src/features/organizations/public/organizationRolesSchema.js"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
@@ -262,6 +263,7 @@ function organizationItemCreate(
       id,
       name,
       realmId,
+      slug: organizationSlugSuggest(name),
       status: "active",
       updatedAt: 1_700_000_000_000,
     },

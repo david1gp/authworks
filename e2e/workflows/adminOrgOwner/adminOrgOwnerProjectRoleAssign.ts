@@ -10,7 +10,7 @@ export async function adminOrgOwnerProjectRoleAssign(setup: AdminOrgOwnerSetup):
   const page = setup.context.page
   await adminOrgOwnerSessionEnsure(setup)
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
-  await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\/.+/, { timeout: 30_000 })
   await page.getByRole("link", { name: "Roles and access" }).click()
   await page.getByRole("button", { name: "Assign project roles" }).click()
   await expect(page.getByRole("dialog")).toBeVisible()

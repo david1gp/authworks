@@ -21,6 +21,6 @@ export async function adminOrgOwnerRolesPageCheck(setup: AdminOrgOwnerSetup): Pr
   await expect(projectGroup.getByRole("cell", { name: setup.roleKeyB })).toBeVisible()
 
   await page.getByRole("link", { name: /Organization member · 1 member/ }).click()
-  await page.waitForURL(/\/admin\/users\?role=member/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\?role=member/, { timeout: 30_000 })
   await expect(page.getByText(setup.memberUserName).first()).toBeVisible()
 }
