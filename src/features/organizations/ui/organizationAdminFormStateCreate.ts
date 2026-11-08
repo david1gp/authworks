@@ -11,6 +11,7 @@ import { organizationInvitationCreateRequestSchema } from "../public/organizatio
 import { organizationMembershipCreateRequestSchema } from "../public/organizationMembershipCreateRequestSchema.js"
 import { organizationMetadataKeySchema } from "../public/organizationMetadataKeySchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
+import { organizationSlugSchema } from "../public/organizationSlugSchema.js"
 import {
   type OrganizationAdminProviderCreateInput,
   organizationAdminProviderCreateRequestBuild,
@@ -27,6 +28,7 @@ const emailSchema = v.pipe(v.string(), v.email())
 export function organizationAdminFormStateCreate() {
   const createName = createSignalObject("")
   const detailName = createSignalObject("")
+  const detailSlug = createSignalObject("")
   const validationMessage = createSignalObject<string | undefined>(undefined)
   const membershipUserId = createSignalObject("")
   const membershipRoles = createSignalObject<OrganizationRoleId[]>(["member"])
@@ -139,6 +141,7 @@ export function organizationAdminFormStateCreate() {
     claimPrimary,
     createName,
     detailName,
+    detailSlug,
     discoveryDomain,
     discoveryMessage,
     invitationEmail,
@@ -222,6 +225,8 @@ export function organizationAdminFormStateCreate() {
       v.safeParse(organizationCreateRequestSchema, { name }).success
         ? valid()
         : invalid("admin.organizations.list.nameRequired"),
+    validateOrganizationSlug: (slug: string) =>
+      v.safeParse(organizationSlugSchema, slug).success ? valid() : invalid("admin.teams.slugInvalid"),
     validateProviderCreate: () =>
       organizationAdminProviderCreateRequestBuild(providerCreate.get()) !== undefined
         ? valid()

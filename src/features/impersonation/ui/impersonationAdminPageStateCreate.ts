@@ -18,6 +18,8 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type ImpersonationAdminPageStateOptions = {
   readonly adapter: ImpersonationAdminAdapter
+  /** Audit-stream suffix below the shell base path; the demo shell keeps the events page. */
+  readonly auditSuffix?: "/activity" | "/events"
   readonly confirm: (message: string) => boolean | Promise<boolean>
   /** Renders the ended confirmation without a prior mutation, so the state is URL-reachable. */
   readonly endedSeed?: () => boolean
@@ -123,8 +125,9 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     /** Deep link into the audit stream filtered to this impersonation session. */
     eventsHref: (basePath: string) => {
       const session = active.get()
-      if (session === null) return `${basePath}/events?aggregateType=impersonation`
-      return `${basePath}/events?aggregateId=${encodeURIComponent(session.sessionId)}`
+      const suffix = options.auditSuffix ?? "/activity"
+      if (session === null) return `${basePath}${suffix}?aggregateType=impersonation`
+      return `${basePath}${suffix}?aggregateId=${encodeURIComponent(session.sessionId)}`
     },
     impersonationEnd: async () => {
       const session = active.get()

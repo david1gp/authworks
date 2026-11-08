@@ -38,5 +38,15 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
     screen,
   })
 
-  return { ...page, confirmState }
+  // The realm overview links into the selected organization's users page, which moved
+  // under `/orgs/{slug}`; without a selected org the tile falls back to the realm root.
+  const usersHref = () => {
+    const organization = session.guard.organization
+    const organizationId = typeof organization === "object" ? organization.organizationId : undefined
+    const slug =
+      organizationId === undefined ? undefined : session.organizations.find((item) => item.id === organizationId)?.slug
+    return slug === undefined ? "/realm" : `/orgs/${slug}/users`
+  }
+
+  return { ...page, confirmState, usersHref }
 }

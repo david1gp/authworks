@@ -17,6 +17,8 @@ export function impersonationAdminDemoStateCreate() {
   const confirmState = confirmStateCreate()
   const page = impersonationAdminPageStateCreate({
     adapter: impersonationAdminDemoAdapterCreate(fixtureState),
+    // The demo shell keeps the events page; the activity stream filters demo fixtures out.
+    auditSuffix: "/events",
     // Destructive impersonation changes are answered by the visible, cancelable dialog.
     confirm: confirmState.confirm,
     // The ended state is reachable straight from a URL, so it seeds its confirmation.

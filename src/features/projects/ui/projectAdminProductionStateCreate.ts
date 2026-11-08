@@ -1,3 +1,5 @@
+import { useLocation } from "@solidjs/router"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { projectAdminProductionAdapterCreate } from "./projectAdminProductionAdapterCreate.js"
 import type { ProjectAdminScreen } from "./projectAdminScreenSchema.js"
@@ -9,6 +11,7 @@ export function projectAdminProductionStateCreate(options: {
   readonly screen: () => ProjectAdminScreen
 }) {
   const session = productionSessionContextGet()
+  const location = useLocation()
   const realmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
@@ -22,10 +25,16 @@ export function projectAdminProductionStateCreate(options: {
     if (access === "loading") return false
     return access.realmAdministrator || access.organizationRoles.some((role) => role === "owner" || role === "admin")
   }
+  const organizationBasePath = () =>
+    productionOrganizationBasePathGet({
+      organizationId: organizationId() ?? undefined,
+      organizations: session.organizations,
+      pathname: location.pathname,
+    })
 
   return projectAdminScreenStateCreate({
     adapter: projectAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
-    basePath: "/admin",
+    basePath: organizationBasePath,
     canManage,
     organizationId,
     projectId: options.projectId,

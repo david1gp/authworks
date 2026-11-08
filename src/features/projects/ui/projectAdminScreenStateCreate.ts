@@ -2,8 +2,8 @@ import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
-import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
+import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 import { projectAdminApplicationsTabStateCreate } from "./projectAdminApplicationsTabStateCreate.js"
 import { projectAdminDetailViewStateCreate } from "./projectAdminDetailViewStateCreate.js"
 import { projectAdminListViewStateCreate } from "./projectAdminListViewStateCreate.js"
@@ -31,7 +31,7 @@ const dialogSchema = v.picklist([
  */
 export function projectAdminScreenStateCreate(options: {
   readonly adapter: ProjectAdminAdapter
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly canManage: () => boolean
   readonly organizationId: () => string | undefined
   readonly projectId: () => string | undefined
@@ -40,6 +40,7 @@ export function projectAdminScreenStateCreate(options: {
 }) {
   // Destructive prompts are rendered in-app, so they are translated and always cancelable.
   const confirmState = confirmStateCreate()
+  const basePath = () => (typeof options.basePath === "function" ? options.basePath() : options.basePath)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -78,7 +79,7 @@ export function projectAdminScreenStateCreate(options: {
   const detail = projectAdminDetailViewStateCreate({
     basePath: options.basePath,
     canManage: options.canManage,
-    onDeleted: () => navigate(options.withActor(`${options.basePath}/projects`)),
+    onDeleted: () => navigate(options.withActor(`${basePath()}/projects`)),
     organizationId: options.organizationId,
     page,
     removeOpen: dialogOpen("remove-project"),

@@ -1,5 +1,6 @@
 import { useLocation } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { organizationAdminApiCreate } from "./organizationAdminApiCreate.js"
 import { organizationAdminListSearchSelect } from "./organizationAdminListSearchSelect.js"
@@ -21,14 +22,20 @@ export function organizationAdminProductionStateCreate(options: {
   }
   const organizationId = () => {
     if (new URLSearchParams(location.search).get("scope") === "realm") return ""
-    // Production routes render through catch-all `/admin/*adminPath` entries, so `useParams`
-    // carries no `:organizationId`; prefer the explicit prop, which the route resolves from
-    // its own path contract (same pattern as the machine-user and project screens).
+    // Production routes render through catch-all entries, so `useParams` carries no
+    // `:organizationId`; prefer the explicit prop, which the route resolves from its own
+    // path contract (same pattern as the machine-user and project screens).
     const fromRoute = options.organizationId()
     if (fromRoute !== undefined) return fromRoute
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : ""
   }
+  const organizationBasePath = () =>
+    productionOrganizationBasePathGet({
+      organizationId: organizationId() === "" ? undefined : organizationId(),
+      organizations: session.organizations,
+      pathname: location.pathname,
+    })
   const adapter = organizationAdminApiCreate({ baseUrl: window.location.origin, realmId })
   // Destructive prompts are rendered in-app, so they are translated and always cancelable.
   const confirmState = confirmStateCreate()
@@ -41,5 +48,5 @@ export function organizationAdminProductionStateCreate(options: {
     screen: options.screen,
   })
 
-  return organizationAdminScreenStateCreate({ basePath: "/admin", confirmState, page })
+  return organizationAdminScreenStateCreate({ basePath: organizationBasePath, confirmState, page })
 }

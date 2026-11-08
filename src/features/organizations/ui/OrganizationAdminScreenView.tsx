@@ -53,8 +53,11 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             onNameInput={state.form.detailName.set}
             onRenameSubmit={state.organizationRenameSubmit}
             onRetry={state.page.reload}
+            onSlugInput={state.form.detailSlug.set}
+            onSlugSubmit={state.organizationSlugSubmit}
             organization={state.page.organization()}
             pendingId={state.page.pendingId?.()}
+            slug={state.form.detailSlug.get()}
             status={state.page.status()}
           />
         </Match>

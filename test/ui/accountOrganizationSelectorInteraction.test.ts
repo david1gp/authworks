@@ -21,6 +21,7 @@ const organizationAccess = (id: string): OrganizationMe => ({
     id,
     name: id,
     realmId: "realm-1",
+    slug: `slug-${id}`,
     status: "active" as const,
     updatedAt: 1,
   },

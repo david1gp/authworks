@@ -39,8 +39,11 @@ export function OrganizationAdminDetailView(props: {
   readonly onNameInput: (value: string) => void
   readonly onRenameSubmit: (event: SubmitEvent) => void
   readonly onRetry: () => void
+  readonly onSlugInput: (value: string) => void
+  readonly onSlugSubmit: (event: SubmitEvent) => void
   readonly organization?: Organization
   readonly pendingId?: string
+  readonly slug: string
   readonly status: OrganizationAdminStatus
 }) {
   return (
@@ -121,6 +124,34 @@ export function OrganizationAdminDetailView(props: {
                         >
                           {messageTranslate("common.save")}
                         </AuthenticatedButton>
+                      </div>
+                    </AuthenticatedSettingsRow>
+                  </AuthenticatedSettingsList>
+                </form>
+                <form class="grid gap-3 px-4 py-3" onSubmit={props.onSlugSubmit}>
+                  <AuthenticatedSettingsList>
+                    <AuthenticatedSettingsRow
+                      label={messageTranslate("admin.teams.slug")}
+                      htmlFor="organization-detail-slug"
+                    >
+                      <div class="grid gap-1.5">
+                        <div class="flex items-center gap-2">
+                          <AuthenticatedInput
+                            id="organization-detail-slug"
+                            onInput={(event) => props.onSlugInput(event.currentTarget.value)}
+                            value={props.slug}
+                          />
+                          <AuthenticatedButton
+                            size="sm"
+                            disabled={props.pendingId !== undefined}
+                            icon={mdiContentSave}
+                            type="submit"
+                            variant="filledBlue"
+                          >
+                            {messageTranslate("common.save")}
+                          </AuthenticatedButton>
+                        </div>
+                        <p class="text-xs text-muted-foreground">{messageTranslate("admin.teams.slugHint")}</p>
                       </div>
                     </AuthenticatedSettingsRow>
                   </AuthenticatedSettingsList>

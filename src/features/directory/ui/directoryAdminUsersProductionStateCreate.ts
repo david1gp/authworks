@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { directoryAdminProductionAdapterCreate } from "./directoryAdminProductionAdapterCreate.js"
 import { directoryAdminUsersPageStateCreate } from "./directoryAdminUsersPageStateCreate.js"
@@ -75,8 +76,16 @@ export function directoryAdminUsersProductionStateCreate() {
     search,
   })
   const teamsDialogs = directoryTeamsDialogsStateCreate({ page: teams })
+  const organizationBasePath = () =>
+    productionOrganizationBasePathGet({
+      organizationId: organizationId() === "" ? undefined : organizationId(),
+      organizations: session.organizations,
+      pathname: location.pathname,
+    })
   return {
-    basePath: "/admin",
+    get basePath() {
+      return organizationBasePath()
+    },
     confirmState,
     navigate,
     organizationId,
