@@ -79,6 +79,7 @@ describe("production application contexts", () => {
               createdAt: 1,
               id: organizationId,
               name: "Owner organization",
+              slug: "owner-organization",
               realmId,
               status: "active",
               updatedAt: 1,
@@ -131,7 +132,9 @@ describe("production application contexts", () => {
 
     const contexts = await productionApplicationContextsCreate()
 
-    expect(contexts.session.organizations).toEqual([{ id: organizationId, label: "Owner organization" }])
+    expect(contexts.session.organizations).toEqual([
+      { id: organizationId, label: "Owner organization", slug: "owner-organization" },
+    ])
     expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
     expect(contexts.session.guard.authentication).toEqual({ status: "authenticated", userId })
     // Signed-in users pass the coarse permission gate; per-screen `access` (realm admin / org admin) decides.
@@ -180,7 +183,7 @@ describe("production application contexts", () => {
     expect(emptyList.session.guard.organizationResolutionFailed).toBe(false)
   })
 
-  test("switches the authoritative organization in-app and replaces only the organization URL state", async () => {
+  test("switches the authoritative organization in-app without touching the URL", async () => {
     const secondOrganizationId = "12345678901234567891"
     let href = `https://auth.example/account?organization=${organizationId}#access`
     let assignCount = 0
@@ -201,6 +204,7 @@ describe("production application contexts", () => {
           createdAt: 1,
           id: organizationId,
           name: "Owner organization",
+          slug: "owner-organization",
           realmId,
           status: "active",
           updatedAt: 1,
@@ -220,6 +224,7 @@ describe("production application contexts", () => {
           createdAt: 1,
           id: secondOrganizationId,
           name: "Field Notes",
+          slug: "field-notes",
           realmId,
           status: "active",
           updatedAt: 1,
@@ -372,7 +377,7 @@ describe("production application contexts", () => {
       organizationId: secondOrganizationId,
       status: "available",
     })
-    expect(href).toBe(`https://auth.example/account?organization=${secondOrganizationId}#access`)
+    expect(href).toBe(`https://auth.example/account?organization=${organizationId}#access`)
     expect(assignCount).toBe(0)
     expect(requests).toContain(`/realms/${realmId}/sessions/csrf`)
     expect(requests).toContain(`/realms/${realmId}/me/organizations/switch`)
@@ -385,7 +390,7 @@ describe("production application contexts", () => {
       organizationId: secondOrganizationId,
       status: "available",
     })
-    expect(href).toBe(`https://auth.example/account?organization=${secondOrganizationId}#access`)
+    expect(href).toBe(`https://auth.example/account?organization=${organizationId}#access`)
   })
 
   test("rejects mismatched top-level switch invariants while allowing a nested actor organization mismatch", async () => {
@@ -499,6 +504,7 @@ describe("production application contexts", () => {
               createdAt: 1,
               id: organizationId,
               name: "Owner organization",
+              slug: "owner-organization",
               realmId,
               status: "active",
               updatedAt: 1,
@@ -636,6 +642,7 @@ describe("production application contexts", () => {
               createdAt: 1,
               id: organizationId,
               name: "Owner organization",
+              slug: "owner-organization",
               realmId,
               status: "active",
               updatedAt: 1,
@@ -688,16 +695,318 @@ describe("production application contexts", () => {
     const contexts = await productionApplicationContextsCreate()
 
     expect(contexts.session.organizations).toEqual([
-      { id: organizationId, imageUrl: iconUrl, label: "Owner organization" },
+      { id: organizationId, imageUrl: iconUrl, label: "Owner organization", slug: "owner-organization" },
     ])
   })
+
+  test("resolves the selected organization from the URL slug and syncs the server session", async () => {
+    const fixture = productionOrganizationSlugResolutionFixtureInstall("https://auth.example/orgs/field-notes/users")
+
+    const contexts = await productionApplicationContextsCreate()
+
+    expect(contexts.session.organizations).toEqual([
+      { id: organizationId, label: "Owner organization", slug: "owner-organization" },
+      { id: fixture.secondOrganizationId, label: "Field Notes", slug: "field-notes" },
+    ])
+    expect(contexts.session.guard.organization).toEqual({
+      organizationId: fixture.secondOrganizationId,
+      status: "available",
+    })
+    expect(fixture.requests).toContain(`/realms/${realmId}/me/organizations/switch`)
+  })
+
+  test("treats an unknown URL slug as missing instead of falling back to another organization", async () => {
+    const fixture = productionOrganizationSlugResolutionFixtureInstall("https://auth.example/orgs/unknown-slug/users")
+
+    const contexts = await productionApplicationContextsCreate()
+
+    expect(contexts.session.guard.organization).toBe("missing")
+    expect(fixture.requests).not.toContain(`/realms/${realmId}/me/organizations/switch`)
+  })
+
+  test("resolves organization slugs for bootstrap sessions through the tenant list", async () => {
+    const requests: string[] = []
+    const responses: Record<string, unknown> = {
+      "/organization-discovery": {
+        branding: {
+          dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+          disableWatermark: true,
+          light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+          themeMode: "system",
+        },
+        domain: "customer.example",
+        found: true,
+        organization: { id: organizationId, name: "Owner organization", realmId },
+        policy: {
+          allowDomainDiscovery: true,
+          allowEmailOtp: true,
+          allowExternalIdentity: true,
+          allowExternalIdentityAutoLinking: true,
+          allowPassword: true,
+          allowPasswordRecovery: true,
+          allowPasskey: true,
+          allowRegistration: true,
+          providerIds: [],
+          requiredMfa: false,
+          allowedFactors: ["totp", "email_otp", "passkey"],
+          preferredFactorOrder: ["totp", "email_otp", "passkey"],
+          minimumStepUpAssurance: "authenticated",
+          mfaInitSkipLifetimeSeconds: null,
+          secondFactorCheckLifetimeSeconds: null,
+          multiFactorCheckLifetimeSeconds: null,
+          forceMfaLocalOnly: false,
+        },
+        providers: [],
+      },
+      [`/realms/${realmId}/sessions/current`]: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "bootstrap_admin",
+          createdAt: 1,
+          current: true,
+          device: {},
+          expiresAt: 2,
+          id: "session-1",
+          lastUsedAt: 1,
+          realmId,
+          revokedAt: null,
+          subjectId: "bootstrap-admin-id",
+          subjectType: "bootstrap_admin",
+        },
+      },
+      [`/realms/${realmId}`]: {
+        realm: {
+          createdAt: 1,
+          domain: "customer.example",
+          domains: ["customer.example"],
+          id: realmId,
+          name: "customer",
+          status: "active",
+          updatedAt: 1,
+        },
+      },
+      [`/realms/${realmId}/organizations`]: {
+        items: [
+          {
+            createdAt: 1,
+            id: organizationId,
+            name: "Owner organization",
+            realmId,
+            slug: "owner-organization",
+            status: "active",
+            updatedAt: 1,
+          },
+        ],
+      },
+    }
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      value: async (input: string | URL | Request) => {
+        const path = new URL(String(input), "https://auth.example").pathname
+        requests.push(path)
+        const body = responses[path]
+        return body === undefined ? Response.json({}, { status: 404 }) : Response.json(body)
+      },
+    })
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { href: "https://auth.example/orgs/owner-organization/users" } },
+    })
+
+    const contexts = await productionApplicationContextsCreate()
+
+    // Bootstrap sessions carry no memberships, so slugs must come from the tenant list;
+    // otherwise the slug URL resolves to a missing organization and every org page breaks.
+    expect(contexts.session.organizations).toEqual([
+      { id: organizationId, imageUrl: undefined, label: "Owner organization", slug: "owner-organization" },
+    ])
+    expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
+    expect(requests).toContain(`/realms/${realmId}/organizations`)
+    expect(requests).not.toContain(`/realms/${realmId}/me/organizations/switch`)
+  })
+
+  test("ignores the legacy organization query parameter when selecting the default organization", async () => {
+    const fixture = productionOrganizationSlugResolutionFixtureInstall(
+      "https://auth.example/account?organization=12345678901234567891",
+      undefined,
+    )
+
+    const contexts = await productionApplicationContextsCreate()
+
+    expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
+    expect(fixture.requests).not.toContain(`/realms/${realmId}/me/organizations/switch`)
+  })
 })
+
+function productionOrganizationSlugResolutionFixtureInstall(
+  href: string,
+  sessionOrganizationId: string | undefined = organizationId,
+) {
+  const secondOrganizationId = "12345678901234567891"
+  const requests: string[] = []
+  let currentHref = href
+  const responses: Record<string, unknown> = {
+    "/organization-discovery": {
+      branding: {
+        dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+        disableWatermark: true,
+        light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+        themeMode: "system",
+      },
+      domain: "customer.example",
+      found: true,
+      organization: { id: organizationId, name: "Owner organization", realmId },
+      policy: {
+        allowDomainDiscovery: true,
+        allowEmailOtp: true,
+        allowExternalIdentity: true,
+        allowExternalIdentityAutoLinking: true,
+        allowPassword: true,
+        allowPasswordRecovery: true,
+        allowPasskey: true,
+        allowRegistration: true,
+        providerIds: [],
+        requiredMfa: false,
+        allowedFactors: ["totp", "email_otp", "passkey"],
+        preferredFactorOrder: ["totp", "email_otp", "passkey"],
+        minimumStepUpAssurance: "authenticated",
+        mfaInitSkipLifetimeSeconds: null,
+        secondFactorCheckLifetimeSeconds: null,
+        multiFactorCheckLifetimeSeconds: null,
+        forceMfaLocalOnly: false,
+      },
+      providers: [],
+    },
+    [`/realms/${realmId}`]: {
+      realm: {
+        createdAt: 1,
+        domain: "customer.example",
+        domains: ["customer.example"],
+        id: realmId,
+        name: "customer",
+        status: "active",
+        updatedAt: 1,
+      },
+    },
+    [`/realms/${realmId}/me`]: {
+      capabilities: { realmAdministrator: false, realmRead: false },
+      user: {
+        createdAt: 1,
+        email: "alice@example.com",
+        emailVerified: true,
+        id: userId,
+        profile: { displayName: "Alice Example" },
+        realmId,
+        state: "active",
+        updatedAt: 1,
+        userName: "alice",
+        verificationState: "verified",
+      },
+    },
+    [`/realms/${realmId}/me/organizations`]: {
+      items: [
+        {
+          membership: {
+            createdAt: 1,
+            id: "membership-1",
+            organizationId,
+            realmId,
+            roles: ["member"],
+            updatedAt: 1,
+            userId,
+          },
+          organization: {
+            createdAt: 1,
+            id: organizationId,
+            name: "Owner organization",
+            realmId,
+            slug: "owner-organization",
+            status: "active",
+            updatedAt: 1,
+          },
+        },
+        {
+          membership: {
+            createdAt: 1,
+            id: "membership-2",
+            organizationId: secondOrganizationId,
+            realmId,
+            roles: ["member"],
+            updatedAt: 1,
+            userId,
+          },
+          organization: {
+            createdAt: 1,
+            id: secondOrganizationId,
+            name: "Field Notes",
+            realmId,
+            slug: "field-notes",
+            status: "active",
+            updatedAt: 1,
+          },
+        },
+      ],
+    },
+    [`/realms/${realmId}/sessions/current`]: {
+      session: {
+        assurance: "authenticated",
+        authenticationMethod: "password",
+        createdAt: 1,
+        current: true,
+        device: {},
+        expiresAt: 2,
+        id: "session-1",
+        lastUsedAt: 1,
+        realmId,
+        revokedAt: null,
+        subjectId: userId,
+        subjectType: "user",
+        userId,
+        ...(sessionOrganizationId === undefined ? {} : { organizationId: sessionOrganizationId }),
+      },
+    },
+  }
+  Object.defineProperty(globalThis, "fetch", {
+    configurable: true,
+    value: async (input: string | URL | Request) => {
+      const requestUrl = new URL(String(input), "https://auth.example")
+      requests.push(requestUrl.pathname)
+      if (requestUrl.pathname.endsWith("/sessions/csrf")) return Response.json({ csrfToken: "csrf-fixture" })
+      if (requestUrl.pathname.endsWith("/me/organizations/switch")) {
+        return Response.json(productionOrganizationSwitchResponseCreate(secondOrganizationId))
+      }
+      const response = responses[requestUrl.pathname]
+      return response === undefined ? Response.json({}, { status: 404 }) : Response.json(response)
+    },
+  })
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      history: {
+        replaceState: (_state: unknown, _title: string, next: string) => {
+          currentHref = new URL(next, currentHref).toString()
+        },
+        state: null,
+      },
+      location: {
+        get href() {
+          return currentHref
+        },
+        host: "auth.example",
+        origin: "https://auth.example",
+      },
+    },
+  })
+
+  return { requests, secondOrganizationId }
+}
 
 function productionOrganizationSwitchFixtureInstall(secondOrganizationId: string) {
   const secondOrganization = {
     createdAt: 1,
     id: secondOrganizationId,
     name: "Field Notes",
+    slug: "field-notes",
     realmId,
     status: "active",
     updatedAt: 1,
@@ -717,6 +1026,7 @@ function productionOrganizationSwitchFixtureInstall(secondOrganizationId: string
         createdAt: 1,
         id: organizationId,
         name: "Owner organization",
+        slug: "owner-organization",
         realmId,
         status: "active",
         updatedAt: 1,
@@ -878,6 +1188,7 @@ function productionOrganizationSwitchResponseCreate(
       id: targetOrganizationId,
       name: targetOrganizationId === organizationId ? "Owner organization" : "Field Notes",
       realmId,
+      slug: targetOrganizationId === organizationId ? "owner-organization" : "field-notes",
       status: "active",
       updatedAt: 1,
     },

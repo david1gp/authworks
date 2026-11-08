@@ -1,8 +1,8 @@
 import { Route, Router } from "@solidjs/router"
 import { AccountDemoApp } from "../features/account/ui/AccountDemoApp.js"
+import { AdminActivityDemoAdapter } from "../features/admin/ui/AdminActivityDemoAdapter.js"
 import { AdminDemoAdapter } from "../features/admin/ui/AdminDemoAdapter.js"
 import { AdminDemoApp } from "../features/admin/ui/AdminDemoApp.js"
-import { AdminActivityDemoAdapter } from "../features/admin/ui/AdminActivityDemoAdapter.js"
 import { AdminDemoPlaceholder } from "../features/admin/ui/AdminDemoPlaceholder.js"
 import { DemoHub } from "../features/demo/ui/DemoHub.js"
 import { DirectoryAdminDemoAdapter } from "../features/directory/ui/DirectoryAdminDemoAdapter.js"
@@ -96,6 +96,10 @@ export function UiRouter(props: {
         <Route path="/account/*accountPath" component={productionRouteComponentCreate("account")} />
         <Route path="/invitations" component={productionRouteComponentCreate("invitations")} />
         <Route path="/invitations/*invitationPath" component={productionRouteComponentCreate("invitations")} />
+        <Route path="/orgs" component={productionRouteComponentCreate("admin")} />
+        <Route path="/orgs/*orgPath" component={productionRouteComponentCreate("admin")} />
+        <Route path="/realm" component={productionRouteComponentCreate("admin")} />
+        <Route path="/realm/*realmPath" component={productionRouteComponentCreate("admin")} />
         <Route path="/admin" component={productionRouteComponentCreate("admin")} />
         <Route path="/admin/*adminPath" component={productionRouteComponentCreate("admin")} />
       </Router>

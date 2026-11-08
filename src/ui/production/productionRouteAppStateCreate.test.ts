@@ -49,6 +49,25 @@ const sessionCreate = (
   realms: [],
 })
 
+const slugSessionCreate = (organizationId: string | undefined, realmAdmin: boolean): ProductionSessionContextValue => ({
+  actorLabel: "",
+  guard: {
+    access: { organizationRoles: [], realmAdministrator: realmAdmin },
+    authentication: { status: "authenticated", userId: "user-1" },
+    organization: organizationId === undefined ? "missing" : { organizationId, status: "available" },
+    permission: "granted",
+    realm: { realmId: "realm-1", status: "available" },
+  },
+  impersonation: null,
+  organizations: [
+    { id: "org-1", label: "Acme", slug: "acme" },
+    { id: "org-2", label: "Field Notes", slug: "field-notes" },
+  ],
+  organizationSelect: async () => ({ success: true as const, data: undefined }),
+  organizationSwitchPending: () => false,
+  realms: [],
+})
+
 const stateObserve = async (route: ProductionRouteContract, session: ProductionSessionContextValue) => {
   const assignments: string[] = []
   Object.defineProperty(globalThis, "window", {
@@ -94,6 +113,42 @@ describe("productionRouteAppStateCreate authentication redirect", () => {
     const anonymousAccount = await stateObserve(productionRouteContractMap.account, sessionCreate("anonymous"))
     expect(anonymousAccount.assignments).toEqual(["/login?return_to=%2Faccount%3Ftab%3Dsecurity%23details"])
     expect(anonymousAccount.state.signInUrl()).toBe("/login?return_to=%2Faccount%3Ftab%3Dsecurity%23details")
+  })
+
+  test("hides organization screens for unknown slugs instead of falling back to another org", async () => {
+    const { productionRouteContractMap } = await import("./productionRouteContractMap.js")
+
+    mockLocation = { hash: "", pathname: "/orgs/unknown-slug/users", search: "" }
+    const unknown = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-1", false))
+    expect(unknown.state.screen()).toBeUndefined()
+    expect(unknown.state.redirectTarget()).toBeUndefined()
+
+    mockLocation = { hash: "", pathname: "/orgs/acme/users", search: "" }
+    const known = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-1", false))
+    expect(known.state.screen()?.key).toBe("users")
+    expect(known.state.redirectTarget()).toBeUndefined()
+    expect(known.state.routeParam("orgSlug")).toBe("acme")
+  })
+
+  test("redirects removed admin paths to the slug or realm replacement", async () => {
+    const { productionRouteContractMap } = await import("./productionRouteContractMap.js")
+
+    mockLocation = { hash: "", pathname: "/admin/users", search: "" }
+    const orgLegacy = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-2", false))
+    expect(orgLegacy.state.screen()).toBeUndefined()
+    expect(orgLegacy.state.redirectTarget()).toBe("/orgs/field-notes/users")
+
+    mockLocation = { hash: "", pathname: "/admin/organizations", search: "" }
+    const realmLegacy = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-2", false))
+    expect(realmLegacy.state.redirectTarget()).toBe("/realm/organizations")
+
+    mockLocation = { hash: "", pathname: "/admin", search: "" }
+    const realmEntry = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-1", true))
+    expect(realmEntry.state.redirectTarget()).toBe("/realm")
+    const orgEntry = await stateObserve(productionRouteContractMap.admin, slugSessionCreate("org-1", false))
+    expect(orgEntry.state.redirectTarget()).toBe("/orgs/acme")
+    const noAccess = await stateObserve(productionRouteContractMap.admin, slugSessionCreate(undefined, false))
+    expect(noAccess.state.redirectTarget()).toBeUndefined()
   })
 
   test("keeps an authenticated account route in place when its organization context changes", async () => {

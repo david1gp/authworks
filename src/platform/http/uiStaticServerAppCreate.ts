@@ -10,7 +10,7 @@ type UiStaticServerAppCreateOptions = {
 const uiAssetCacheControl = "public, max-age=31536000, immutable"
 const uiStaticCacheControl = "public, max-age=3600"
 const uiIndexCacheControl = "no-cache"
-const uiRoutePrefixes = ["/login", "/consent", "/account", "/invitations", "/admin"] as const
+const uiRoutePrefixes = ["/login", "/consent", "/account", "/invitations", "/admin", "/orgs", "/realm"] as const
 const uiContentTypes: Readonly<Record<string, string>> = {
   ".avif": "image/avif",
   ".css": "text/css; charset=UTF-8",

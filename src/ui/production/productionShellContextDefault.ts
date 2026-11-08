@@ -20,8 +20,8 @@ export const productionShellContextDefault = {
     },
     impersonation: null,
     organizations: [
-      { id: "northwind", label: "Northwind Labs" },
-      { id: "field-notes", label: "Field Notes" },
+      { id: "northwind", label: "Northwind Labs", slug: "northwind" },
+      { id: "field-notes", label: "Field Notes", slug: "field-notes" },
     ],
     organizationSelect: noOrganizationSelection,
     organizationSwitchPending: () => false,
