@@ -28,7 +28,6 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
         </div>
         <div class="flex gap-2">
           <AuthenticatedButton
-            size="sm"
             disabled={props.state.pendingId() !== undefined}
             icon={mdiDownloadOutline}
             onClick={() => void props.state.eventsExport()}
@@ -37,7 +36,6 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
             {messageTranslate("admin.events.export")}
           </AuthenticatedButton>
           <AuthenticatedButton
-            size="sm"
             icon={mdiFilterRemoveOutline}
             onClick={() => props.state.eventFiltersClear()}
             variant="outline"
@@ -102,7 +100,6 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
           value={props.state.eventFilters().occurredTo ?? ""}
         />
         <AuthenticatedButton
-          size="sm"
           variant="outline"
           aria-expanded={props.state.eventMoreFilters()}
           onClick={props.state.eventMoreFiltersToggle}

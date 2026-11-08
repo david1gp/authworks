@@ -441,7 +441,6 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               aria-pressed={activeRole() === undefined}
               icon={directoryRoleIconGet("all")}
               onClick={() => roleSet(undefined)}
-              size="sm"
               variant={activeRole() === undefined ? "filledBlue" : "outline"}
             >
               {messageTranslate("admin.users.directoryRoleAll")}
@@ -453,7 +452,6 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                   aria-pressed={activeRole() === role}
                   icon={directoryRoleIconGet(role)}
                   onClick={() => roleSet(activeRole() === role ? undefined : role)}
-                  size="sm"
                   variant={activeRole() === role ? "filledBlue" : "outline"}
                 >
                   {messageTranslate(directoryRoleMessageKey(role))}
@@ -879,7 +877,6 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                         disabled={page().pendingId() === `invitation:${invitation.id}`}
                         icon={authenticatedIconRegistry.directoryInviteRevoke}
                         onClick={() => page().invitationRevoke(invitation.id, invitation.email)}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.invitations.revoke")}
@@ -1007,7 +1004,6 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
                           disabled={page().pendingId() === `invitation:${invitation.id}`}
                           icon={authenticatedIconRegistry.directoryInviteRevoke}
                           onClick={() => page().invitationRevoke(invitation.id, invitation.email)}
-                          size="sm"
                           variant="outline"
                         >
                           {messageTranslate("admin.organizations.invitations.revoke")}
@@ -1162,7 +1158,6 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
         <AuthenticatedButton
           icon={authenticatedIconRegistry.directoryInviteCopy}
           onClick={() => dialogs().copyText(page().invitationLink())}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.users.inviteTokenCopy")}
@@ -1170,7 +1165,6 @@ function InvitationTokenPanel(props: { state: DirectoryAdminUsersViewState }) {
         <AuthenticatedButton
           icon={authenticatedIconRegistry.directoryInviteAcknowledge}
           onClick={() => page().invitationTokenAcknowledge()}
-          size="sm"
           variant="filledBlue"
         >
           {messageTranslate("admin.users.inviteTokenDismiss")}
@@ -1388,7 +1382,6 @@ function ServiceAccountSecretPanel(props: { state: DirectoryAdminUsersViewState 
         <AuthenticatedButton
           icon={authenticatedIconRegistry.directoryInviteCopy}
           onClick={() => dialogs().copyText(page().serviceSecret()?.secret)}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.users.directoryServiceAccountSecretCopy")}
@@ -1396,7 +1389,6 @@ function ServiceAccountSecretPanel(props: { state: DirectoryAdminUsersViewState 
         <AuthenticatedButton
           icon={authenticatedIconRegistry.directoryInviteAcknowledge}
           onClick={() => page().serviceSecretAcknowledge()}
-          size="sm"
           variant="filledBlue"
         >
           {messageTranslate("admin.users.inviteTokenDismiss")}
@@ -1696,7 +1688,6 @@ function TeamDetailBody(props: {
                       props.state.teamsDialogs.editOpen(current())
                       props.dialogOpenSet("edit-team")
                     }}
-                    size="sm"
                     variant="outline"
                   >
                     {messageTranslate("admin.teams.editTitle")}
@@ -1713,7 +1704,6 @@ function TeamDetailBody(props: {
                           if (deleted) props.onSelect(undefined)
                         })
                     }
-                    size="sm"
                     variant="outlineRed"
                   >
                     {messageTranslate("admin.teams.delete")}
@@ -1864,7 +1854,6 @@ function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; 
                           onClick={() =>
                             void teams().teamMemberUnassignSubmit(team(), entry.user.id, memberName(entry))
                           }
-                          size="sm"
                           title={
                             team().leader.userId === entry.user.id
                               ? messageTranslate("admin.teams.removeLeaderDenied")
@@ -1894,7 +1883,6 @@ function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; 
                       disabled={teams().pendingId() !== undefined}
                       icon={authenticatedIconRegistry.directoryTeamDelete}
                       onClick={() => void teams().teamMemberUnassignSubmit(team(), entry.user.id, memberName(entry))}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("common.remove")}
@@ -1989,7 +1977,6 @@ function TeamAddMember(props: { readonly state: DirectoryAdminUsersViewState; re
                               if (assigned) void teams().memberCandidateSearch(dialogs().memberSearch.get())
                             })
                         }
-                        size="sm"
                         title={
                           leadsOther() === undefined
                             ? messageTranslate("admin.teams.addMember")
@@ -2213,7 +2200,6 @@ function UnassignedAssignControl(props: {
               if (assigned) selection.set("")
             })
         }}
-        size="sm"
         variant="outline"
       >
         {messageTranslate("admin.teams.addMemberAction")}

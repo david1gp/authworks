@@ -113,7 +113,6 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
                         <AuthenticatedButton
                           aria-label={messageTranslate("common.revoke")}
                           title={messageTranslate("common.revoke")}
-                          size="sm"
                           disabled={props.state.pendingId() !== undefined}
                           icon={mdiCancel}
                           onClick={() =>

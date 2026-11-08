@@ -148,7 +148,6 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
                     : "border-transparent text-muted-foreground hover:border-line hover:bg-surface/70 hover:text-foreground",
                 )}
                 onClick={() => props.state.whatsappWindowSet(option.value)}
-                size="none"
                 type="button"
                 variant="none"
               >

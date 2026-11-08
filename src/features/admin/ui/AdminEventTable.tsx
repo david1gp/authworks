@@ -77,7 +77,6 @@ export function AdminEventTable(props: { readonly state: ReturnType<typeof admin
                   </TableCell>
                   <TableCell class={authenticatedTableClasses.action}>
                     <AuthenticatedButton
-                      size="sm"
                       icon={props.state.expandedEventId() === item.id ? mdiChevronUp : mdiChevronDown}
                       aria-label={
                         props.state.expandedEventId() === item.id

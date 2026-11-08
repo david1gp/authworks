@@ -281,12 +281,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                   actions={
                     <>
                       <Show when={page().permissionsGet().editProfile}>
-                        <AuthenticatedButton
-                          icon={mdiPencil}
-                          onClick={() => editProfileOpen(state)}
-                          size="sm"
-                          variant="outline"
-                        >
+                        <AuthenticatedButton icon={mdiPencil} onClick={() => editProfileOpen(state)} variant="outline">
                           {messageTranslate("admin.userProfile.editProfile")}
                         </AuthenticatedButton>
                       </Show>
@@ -457,12 +452,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
             <AuthenticatedEmptyState
               actions={
                 <Show when={can().manageOrganizationRole}>
-                  <AuthenticatedButton
-                    icon={mdiPlus}
-                    onClick={() => void page().membershipAdd()}
-                    size="sm"
-                    variant="outline"
-                  >
+                  <AuthenticatedButton icon={mdiPlus} onClick={() => void page().membershipAdd()} variant="outline">
                     {messageTranslate("admin.userProfile.membershipAdd")}
                   </AuthenticatedButton>
                 </Show>
@@ -587,7 +577,6 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
                 props.state.dialogOpenSet("assign-roles")(true)
                 void dialogAssignOpen(props.state)
               }}
-              size="sm"
               variant="outline"
             >
               {messageTranslate("admin.userProfile.assignRoles")}
@@ -625,7 +614,6 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
                       disabled={page().pendingIdGet() !== undefined}
                       icon={mdiDeleteOutline}
                       onClick={() => void page().assignmentRemove(assignment.assignmentId, assignment.projectName)}
-                      size="sm"
                       variant="outlineRed"
                     >
                       {messageTranslate("admin.userProfile.projectRolesRemove")}
@@ -685,7 +673,6 @@ function SecurityTab(props: { readonly state: DirectoryUserProfileViewState }) {
               disabled={page().pendingIdGet() !== undefined}
               icon={mdiLogout}
               onClick={() => void page().sessionsRevokeAll()}
-              size="sm"
               variant="outlineRed"
             >
               {messageTranslate("admin.userProfile.revokeAll")}
@@ -790,7 +777,6 @@ function SessionRow(props: { readonly page: DirectoryUserProfilePageState; reado
           disabled={props.page.pendingIdGet() !== undefined}
           icon={mdiLogout}
           onClick={() => void props.page.sessionRevoke(props.session.id)}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.userProfile.sessionsRevoke")}
@@ -836,7 +822,6 @@ function AuthenticationMethods(props: {
               disabled={disabled()}
               icon={mdiDeleteOutline}
               onClick={() => void props.page.totpRemove()}
-              size="sm"
               variant="outlineRed"
             >
               {messageTranslate("admin.userProfile.totpRemove")}
@@ -890,7 +875,6 @@ function AuthenticationMethods(props: {
                   disabled={disabled()}
                   icon={mdiDeleteOutline}
                   onClick={() => void props.page.passkeyRevoke(credential.id)}
-                  size="sm"
                   variant="outline"
                 >
                   {messageTranslate("admin.userProfile.passkeyRevoke")}
@@ -907,7 +891,6 @@ function AuthenticationMethods(props: {
               disabled={disabled()}
               icon={mdiDeleteOutline}
               onClick={() => void props.page.recoveryCodesInvalidate()}
-              size="sm"
               variant="outlineRed"
             >
               {messageTranslate("admin.userProfile.recoveryCodesInvalidate")}

@@ -41,7 +41,6 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
         title={messageTranslate("admin.roles.edit")}
         icon={mdiPencil}
         onClick={() => state.editRoleOpenSet(entry.project.id, roleId)(true)}
-        size="sm"
         variant="outline"
       />
       <AuthenticatedButton
@@ -50,7 +49,6 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
         title={messageTranslate("admin.roles.delete")}
         icon={mdiDelete}
         onClick={() => void page().roleDelete(entry.project.id, roleId)}
-        size="sm"
         variant="outlineRed"
       />
     </Show>
@@ -75,7 +73,6 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
             <AuthenticatedButton
               icon={mdiPlus}
               onClick={() => state.newRoleOpenSet(entry.project.id)(true)}
-              size="sm"
               variant="filledBlue"
             >
               {messageTranslate("admin.roles.projects.newRole")}

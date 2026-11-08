@@ -31,7 +31,6 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
               class="in-[[data-shell=focus]]:rounded-none in-[[data-shell=focus]]:border-0 in-[[data-shell=focus]]:bg-transparent in-[[data-shell=focus]]:shadow-none in-[[data-shell=focus]]:[&>div]:border-0 in-[[data-shell=focus]]:[&>div]:px-0 in-[[data-shell=focus]]:[&>div:first-child]:pt-0 in-[[data-shell=focus]]:[&>div:last-child]:pb-0"
               actions={
                 <AuthenticatedButton
-                  size="sm"
                   icon={mdiLogout}
                   disabled={props.state.pendingId() === "session:sign-out"}
                   onClick={props.state.adminSignOut}

@@ -91,7 +91,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
           when={!page().lastAdmin()}
           fallback={
             <span title={messageTranslate("admin.realmAdministrators.lastAdminHint")}>
-              <AuthenticatedButton disabled icon={directoryRoleIconGet("owner")} size="sm" variant="outline">
+              <AuthenticatedButton disabled icon={directoryRoleIconGet("owner")} variant="outline">
                 {messageTranslate("admin.realmAdministrators.remove")}
               </AuthenticatedButton>
             </span>
@@ -101,7 +101,6 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
             disabled={page().pendingId() === `revoke:${admin.userId}`}
             icon={directoryRoleIconGet("owner")}
             onClick={() => void page().administratorRemove(admin)}
-            size="sm"
             variant="outlineRed"
           >
             {messageTranslate("admin.realmAdministrators.remove")}
@@ -220,12 +219,7 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                           when={!page().lastAdmin()}
                           fallback={
                             <span title={messageTranslate("admin.realmAdministrators.lastAdminHint")}>
-                              <AuthenticatedButton
-                                disabled
-                                icon={directoryRoleIconGet("owner")}
-                                size="sm"
-                                variant="outline"
-                              >
+                              <AuthenticatedButton disabled icon={directoryRoleIconGet("owner")} variant="outline">
                                 {messageTranslate("admin.realmAdministrators.remove")}
                               </AuthenticatedButton>
                             </span>
@@ -235,7 +229,6 @@ export function DirectoryRealmAdministratorsView(props: { readonly state: Direct
                             disabled={page().pendingId() === `revoke:${admin.userId}`}
                             icon={directoryRoleIconGet("owner")}
                             onClick={() => void page().administratorRemove(admin)}
-                            size="sm"
                             variant="outlineRed"
                           >
                             {messageTranslate("admin.realmAdministrators.remove")}

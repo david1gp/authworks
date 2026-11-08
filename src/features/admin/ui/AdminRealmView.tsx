@@ -92,7 +92,6 @@ export function AdminRealmView(props: {
                     <AuthenticatedButton
                       icon={mdiPencilOutline}
                       onClick={() => dialogOpenSet("edit-realm")}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("admin.realm.edit")}
