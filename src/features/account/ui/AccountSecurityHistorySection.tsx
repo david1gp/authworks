@@ -75,7 +75,6 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
           <Show when={props.state.securityHistoryNextPageToken()}>
             <div class="border-t border-line-subtle px-3 py-2">
               <AuthenticatedButton
-                size="sm"
                 disabled={props.state.pendingId() === "security-history:next"}
                 icon={mdiChevronDown}
                 onClick={props.state.securityHistoryLoadMore}

@@ -79,7 +79,6 @@ export function AccountInvitationView(props: {
                       disabled={props.pendingId !== undefined}
                       icon={mdiCheck}
                       onClick={props.onAccept}
-                      size="sm"
                     >
                       {messageTranslate("common.continue")}
                     </AuthenticatedButton>
@@ -88,7 +87,6 @@ export function AccountInvitationView(props: {
                       disabled={props.pendingId !== undefined}
                       icon={mdiClose}
                       onClick={props.onDecline}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("common.decline")}

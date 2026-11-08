@@ -39,7 +39,6 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
   const dialog = () => (
     <AuthenticatedDialog
       class={hasPassword() ? "sm:justify-self-end" : "w-full"}
-      triggerSize="sm"
       description={messageTranslate("account.password.description")}
       onOpenChange={props.onDialogOpenChange}
       open={props.dialogOpen}

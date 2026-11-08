@@ -122,7 +122,6 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
         <Show when={props.state.refreshTokensNextPageToken()}>
           <div>
             <AuthenticatedButton
-              size="sm"
               disabled={props.state.pendingId() !== undefined}
               icon={mdiChevronDown}
               onClick={props.state.refreshTokensLoadMore}
@@ -140,7 +139,6 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
               open={state.allDialogOpen()}
               title={messageTranslate("account.refreshTokens.revokeAll")}
               triggerIcon={mdiKeyRemove}
-              triggerSize="sm"
               triggerLabel={messageTranslate("account.refreshTokens.revokeAll")}
               variant="outline"
             >

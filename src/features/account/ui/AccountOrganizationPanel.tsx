@@ -207,7 +207,6 @@ export function AccountOrganizationPanel(props: {
                 disabled={props.effectiveAccessPending}
                 icon={mdiChevronDown}
                 onClick={props.onEffectiveAccessLoadMore}
-                size="sm"
                 type="button"
                 variant="outline"
               >

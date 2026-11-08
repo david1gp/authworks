@@ -56,7 +56,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
       <div class="grid gap-3">
         <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.emailDescription")}</p>
         <div class="flex flex-wrap gap-2">
-          <AuthenticatedButton size="sm" icon={mdiRefresh} onClick={props.onRetry} type="button" variant="outline">
+          <AuthenticatedButton icon={mdiRefresh} onClick={props.onRetry} type="button" variant="outline">
             {messageTranslate("account.profile.emailRefresh")}
           </AuthenticatedButton>
         </div>

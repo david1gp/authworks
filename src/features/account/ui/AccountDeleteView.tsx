@@ -63,7 +63,6 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                 open={props.dialogOpen}
                 title={messageTranslate("account.delete.title")}
                 triggerIcon={mdiAccountRemoveOutline}
-                triggerSize="sm"
                 triggerLabel={messageTranslate("account.delete.dangerZoneToggle")}
                 variant="outline"
               >

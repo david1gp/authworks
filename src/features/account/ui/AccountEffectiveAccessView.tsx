@@ -91,7 +91,6 @@ export function AccountEffectiveAccessView(props: {
                 disabled={props.pendingId !== undefined}
                 icon={mdiChevronDown}
                 onClick={props.onLoadMore}
-                size="sm"
                 type="button"
                 variant="outline"
               >

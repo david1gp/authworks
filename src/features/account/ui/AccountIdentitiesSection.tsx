@@ -134,7 +134,6 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                                   disabled={props.state.pendingId() !== undefined}
                                   icon={accountIdentityProviderIconGet(provider.type)}
                                   onClick={() => props.state.identityLinkStart(provider.id)}
-                                  size="sm"
                                   type="button"
                                   variant="outline"
                                 >

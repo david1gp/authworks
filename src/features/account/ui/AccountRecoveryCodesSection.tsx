@@ -35,7 +35,6 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
           open={state.dialogOpen()}
           title={messageTranslate("shell.nav.recoveryCodes")}
           triggerIcon={mdiBackupRestore}
-          triggerSize="sm"
           triggerLabel={messageTranslate("account.recovery.generate")}
           variant="outline"
         >

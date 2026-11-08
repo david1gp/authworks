@@ -65,7 +65,6 @@ export function AccountOrganizationSelector(props: {
                 onKeyDown={state.tabKeyDown}
                 ref={(element) => state.tabRefSet(id(), element)}
                 role="tab"
-                size="none"
                 tabIndex={state.tabIndexGet(id())}
                 type="button"
                 variant="none"
