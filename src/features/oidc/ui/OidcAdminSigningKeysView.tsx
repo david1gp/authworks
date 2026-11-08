@@ -25,7 +25,6 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
   const retireButton = (key: OidcSigningKey) => (
     <Show when={key.status === "active"}>
       <AuthenticatedButton
-        size="sm"
         aria-label={messageTranslate("admin.oidc.keys.retire")}
         title={messageTranslate("admin.oidc.keys.retire")}
         disabled={state.pendingId() !== undefined}

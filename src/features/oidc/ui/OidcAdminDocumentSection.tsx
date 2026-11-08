@@ -41,7 +41,7 @@ export function OidcAdminDocumentSection(props: {
             </Show>
           )}
         </Show>
-        <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
+        <AuthenticatedButton icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
           {messageTranslate("admin.oidc.documents.copy")}
         </AuthenticatedButton>
         <Show when={props.copied}>

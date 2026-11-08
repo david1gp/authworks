@@ -51,7 +51,6 @@ export function ImpersonationAdminView(props: {
                     {messageTranslate("admin.impersonation.auditLink")}
                   </A>
                   <AuthenticatedButton
-                    size="sm"
                     disabled={state.pendingId() !== undefined}
                     icon={mdiLogout}
                     onClick={() => void state.impersonationEnd()}

@@ -165,7 +165,6 @@ export function OidcAdminClientDetailView(props: {
                           </p>
                           <div class="flex shrink-0 flex-wrap gap-2">
                             <AuthenticatedButton
-                              size="sm"
                               disabled={state.page.pendingId() !== undefined}
                               icon={mdiAutorenew}
                               onClick={() => void state.page.clientSecretRotate(client().id)}
@@ -174,7 +173,6 @@ export function OidcAdminClientDetailView(props: {
                               {messageTranslate("admin.oidc.secret.rotate")}
                             </AuthenticatedButton>
                             <AuthenticatedButton
-                              size="sm"
                               disabled={state.page.pendingId() !== undefined}
                               icon={mdiCancel}
                               onClick={() => void state.page.clientSecretRevoke(client().id)}
@@ -189,7 +187,6 @@ export function OidcAdminClientDetailView(props: {
                     <div class="mt-3 flex flex-wrap gap-2 border-t border-line-subtle pt-3">
                       <Show when={client().status === "active"}>
                         <AuthenticatedButton
-                          size="sm"
                           disabled={state.page.pendingId() !== undefined}
                           icon={mdiCancel}
                           onClick={() => void state.page.clientLifecycleSet(client().id, "inactive")}
@@ -202,7 +199,6 @@ export function OidcAdminClientDetailView(props: {
                       <Show when={client().status === "inactive"}>
                         <AuthenticatedButton
                           disabled={state.page.pendingId() !== undefined}
-                          size="sm"
                           icon={mdiCheckCircle}
                           onClick={() => void state.page.clientLifecycleSet(client().id, "active")}
                           type="button"
@@ -213,7 +209,6 @@ export function OidcAdminClientDetailView(props: {
                       </Show>
                       <AuthenticatedButton
                         disabled={state.page.pendingId() !== undefined}
-                        size="sm"
                         icon={mdiDelete}
                         onClick={() => void state.clientRemove(client().id)}
                         type="button"

@@ -154,7 +154,6 @@ export function OrganizationConfigurationGeneralSection(props: {
                                 <AuthenticatedButton
                                   disabled={!dirty() || busy()}
                                   icon={mdiContentSave}
-                                  size="sm"
                                   type="submit"
                                   variant="filledBlue"
                                 >
@@ -164,7 +163,6 @@ export function OrganizationConfigurationGeneralSection(props: {
                                   disabled={busy()}
                                   icon={mdiDelete}
                                   onClick={() => props.screen.metadataRemove(entry.key)}
-                                  size="sm"
                                   type="button"
                                   variant="outlineRed"
                                 >
@@ -230,7 +228,6 @@ export function OrganizationConfigurationGeneralSection(props: {
                       disabled={props.page.pendingId() !== undefined}
                       icon={mdiCheckCircle}
                       onClick={() => lifecycleConfirm("active")}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("admin.configuration.reactivate")}
@@ -241,7 +238,6 @@ export function OrganizationConfigurationGeneralSection(props: {
                       disabled={props.page.pendingId() !== undefined}
                       icon={mdiCancel}
                       onClick={() => lifecycleConfirm("inactive")}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("admin.configuration.deactivate")}
@@ -252,7 +248,6 @@ export function OrganizationConfigurationGeneralSection(props: {
                       disabled={props.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => lifecycleConfirm("removed")}
-                      size="sm"
                       variant="outlineRed"
                     >
                       {messageTranslate("admin.configuration.remove")}

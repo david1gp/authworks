@@ -49,7 +49,6 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
   const revokeButton = (credential: MachineCredential) => (
     <Show when={state.credentialState(credential) !== "revoked"}>
       <AuthenticatedButton
-        size="sm"
         aria-label={messageTranslate("admin.machine.credentials.revoke")}
         title={`${messageTranslate("admin.machine.credentials.revoke")} ${credentialName(credential)}`}
         disabled={state.pendingId() !== undefined}

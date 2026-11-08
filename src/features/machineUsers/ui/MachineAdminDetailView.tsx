@@ -61,7 +61,6 @@ export function MachineAdminDetailView(props: {
                       state.editForm.load()
                       state.editOpenSet(true)
                     }}
-                    size="sm"
                     variant="outline"
                   >
                     {messageTranslate("admin.machine.users.edit")}
@@ -112,7 +111,6 @@ export function MachineAdminDetailView(props: {
                   {messageTranslate("admin.machine.secret.redacted")}
                 </span>
                 <AuthenticatedButton
-                  size="sm"
                   disabled={state.page.pendingId() !== undefined}
                   icon={mdiAutorenew}
                   onClick={() => void state.page.clientSecretRotate(machineUser().id)}
@@ -123,7 +121,6 @@ export function MachineAdminDetailView(props: {
                 <span class="ml-auto flex flex-wrap gap-2">
                   <Show when={machineUser().status === "active"}>
                     <AuthenticatedButton
-                      size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiCancel}
                       onClick={() => void state.page.machineUserLifecycleSet(machineUser().id, "inactive")}
@@ -134,7 +131,6 @@ export function MachineAdminDetailView(props: {
                   </Show>
                   <Show when={machineUser().status === "inactive"}>
                     <AuthenticatedButton
-                      size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiCheckCircle}
                       onClick={() => void state.page.machineUserLifecycleSet(machineUser().id, "active")}
@@ -144,7 +140,6 @@ export function MachineAdminDetailView(props: {
                     </AuthenticatedButton>
                   </Show>
                   <AuthenticatedButton
-                    size="sm"
                     disabled={state.page.pendingId() !== undefined}
                     icon={mdiDelete}
                     onClick={() => void state.machineUserRemove(machineUser().id)}

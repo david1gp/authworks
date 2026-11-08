@@ -34,7 +34,6 @@ export function ProjectDetailApplicationsTab(props: {
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
           onClick={() => state.lifecycleSet(application.id, "inactive")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
@@ -45,7 +44,6 @@ export function ProjectDetailApplicationsTab(props: {
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
           onClick={() => state.lifecycleSet(application.id, "active")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
@@ -55,7 +53,6 @@ export function ProjectDetailApplicationsTab(props: {
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.lifecycleSet(application.id, "removed")}
-        size="sm"
         variant="outlineRed"
       >
         {messageTranslate("admin.projects.lifecycle.remove")}

@@ -23,7 +23,6 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
   const state = props.state
   const revokeButton = (consent: OidcConsent) => (
     <AuthenticatedButton
-      size="sm"
       aria-label={messageTranslate("common.revoke")}
       title={messageTranslate("common.revoke")}
       disabled={state.page.pendingId() !== undefined}

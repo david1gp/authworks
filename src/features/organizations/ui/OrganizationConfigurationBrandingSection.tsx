@@ -261,14 +261,12 @@ export function OrganizationConfigurationBrandingSection(props: {
               <div class="flex items-center gap-1.5">
                 <AuthenticatedButton
                   onClick={() => props.previewThemeSet("light")}
-                  size="sm"
                   variant={props.previewTheme === "light" ? "filledBlue" : "outline"}
                 >
                   {messageTranslate("admin.configuration.previewLight")}
                 </AuthenticatedButton>
                 <AuthenticatedButton
                   onClick={() => props.previewThemeSet("dark")}
-                  size="sm"
                   variant={props.previewTheme === "dark" ? "filledBlue" : "outline"}
                 >
                   {messageTranslate("admin.configuration.previewDark")}
@@ -295,10 +293,10 @@ export function OrganizationConfigurationBrandingSection(props: {
             <AuthenticatedStatus label={messageTranslate("admin.configuration.dirty")} tone="warning" />
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <AuthenticatedButton icon={mdiRestore} onClick={state.discard} size="sm" variant="outline">
+            <AuthenticatedButton icon={mdiRestore} onClick={state.discard} variant="outline">
               {messageTranslate("admin.configuration.discard")}
             </AuthenticatedButton>
-            <AuthenticatedButton icon={mdiContentSave} onClick={() => void state.save()} size="sm" variant="filledBlue">
+            <AuthenticatedButton icon={mdiContentSave} onClick={() => void state.save()} variant="filledBlue">
               {messageTranslate("common.save")}
             </AuthenticatedButton>
           </div>

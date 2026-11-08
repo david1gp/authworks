@@ -199,7 +199,6 @@ export function OrganizationAdminSecurityPolicyView(props: {
                         aria-label={messageTranslate("admin.organizations.policy.moveUp", {
                           factor: messageTranslate(factorLabelKeys[factor]),
                         })}
-                        size="sm"
                         disabled={props.fieldInherited("preferredFactorOrder") || index() === 0}
                         icon={mdiArrowUp}
                         onClick={() => props.onPreferredFactorMove(factor, -1)}
@@ -212,7 +211,6 @@ export function OrganizationAdminSecurityPolicyView(props: {
                         aria-label={messageTranslate("admin.organizations.policy.moveDown", {
                           factor: messageTranslate(factorLabelKeys[factor]),
                         })}
-                        size="sm"
                         disabled={props.fieldInherited("preferredFactorOrder") || index() === props.order.length - 1}
                         icon={mdiArrowDown}
                         onClick={() => props.onPreferredFactorMove(factor, 1)}

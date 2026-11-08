@@ -116,7 +116,6 @@ export function OrganizationAdminDetailView(props: {
                           value={props.name}
                         />
                         <AuthenticatedButton
-                          size="sm"
                           disabled={props.pendingId !== undefined}
                           icon={mdiContentSave}
                           type="submit"
@@ -142,7 +141,6 @@ export function OrganizationAdminDetailView(props: {
                             value={props.slug}
                           />
                           <AuthenticatedButton
-                            size="sm"
                             disabled={props.pendingId !== undefined}
                             icon={mdiContentSave}
                             type="submit"
@@ -256,7 +254,6 @@ export function OrganizationAdminDetailView(props: {
                 <div class="flex flex-wrap gap-2 px-4 py-2">
                   <Show when={organization().status !== "active"}>
                     <AuthenticatedButton
-                      size="sm"
                       disabled={props.pendingId !== undefined}
                       icon={mdiCheckCircle}
                       onClick={() => props.onLifecycleSet("active")}
@@ -267,7 +264,6 @@ export function OrganizationAdminDetailView(props: {
                   </Show>
                   <Show when={organization().status === "active"}>
                     <AuthenticatedButton
-                      size="sm"
                       disabled={props.pendingId !== undefined}
                       icon={mdiCancel}
                       onClick={() => props.onLifecycleSet("inactive")}
@@ -278,7 +274,6 @@ export function OrganizationAdminDetailView(props: {
                   </Show>
                   <Show when={organization().status !== "removed"}>
                     <AuthenticatedButton
-                      size="sm"
                       disabled={props.pendingId !== undefined}
                       icon={mdiDelete}
                       onClick={() => props.onLifecycleSet("removed")}

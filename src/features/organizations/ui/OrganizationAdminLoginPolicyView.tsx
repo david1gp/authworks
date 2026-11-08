@@ -334,12 +334,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                     </Show>
                     <Show when={props.policy.providerIds != null}>
                       <div>
-                        <AuthenticatedButton
-                          onClick={props.onProviderAllowlistReset}
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                        >
+                        <AuthenticatedButton onClick={props.onProviderAllowlistReset} type="button" variant="outline">
                           {messageTranslate("admin.organizations.policy.providerAllowlistReset")}
                         </AuthenticatedButton>
                       </div>
@@ -392,7 +387,6 @@ export function OrganizationAdminLoginPolicyView(props: {
           <AuthenticatedSection
             actions={
               <AuthenticatedButton
-                size="sm"
                 icon={mdiPlus}
                 variant="outline"
                 onClick={() => {
@@ -443,7 +437,6 @@ export function OrganizationAdminLoginPolicyView(props: {
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
                           <AuthenticatedButton
-                            size="sm"
                             disabled={props.pendingId === `provider:${provider.id}`}
                             icon={mdiToggleSwitch}
                             onClick={() => props.onProviderEnabledToggle(provider)}
@@ -455,7 +448,6 @@ export function OrganizationAdminLoginPolicyView(props: {
                             <AuthenticatedButton
                               aria-label={messageTranslate("admin.organizations.providers.disable")}
                               title={messageTranslate("admin.organizations.providers.disable")}
-                              size="sm"
                               disabled={props.pendingId === `provider:${provider.id}`}
                               icon={mdiCancel}
                               onClick={() => props.onProviderDisable(provider.id, provider.displayName)}
@@ -544,14 +536,12 @@ export function OrganizationAdminLoginPolicyView(props: {
                         <Show when={props.providerEdits[provider.id] !== undefined}>
                           <div class="flex flex-wrap justify-end gap-2">
                             <AuthenticatedButton
-                              size="sm"
                               onClick={() => props.onProviderEditReset(provider.id)}
                               variant="outline"
                             >
                               {messageTranslate("common.cancel")}
                             </AuthenticatedButton>
                             <AuthenticatedButton
-                              size="sm"
                               disabled={props.pendingId === `provider:${provider.id}`}
                               icon={mdiContentSave}
                               onClick={() => props.onProviderEditSubmit(provider)}
@@ -579,7 +569,6 @@ export function OrganizationAdminLoginPolicyView(props: {
                             </p>
                           </div>
                           <AuthenticatedButton
-                            size="sm"
                             disabled={
                               props.pendingId === `provider:${provider.id}` ||
                               (props.providerSecrets[provider.id] ?? "").length === 0

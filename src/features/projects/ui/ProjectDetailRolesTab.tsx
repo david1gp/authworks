@@ -138,7 +138,6 @@ export function ProjectDetailRolesTab(props: {
                           disabled={state.page.pendingId() !== undefined}
                           icon={mdiDelete}
                           onClick={() => state.roleDelete(role.id)}
-                          size="sm"
                           variant="outlineRed"
                         >
                           {messageTranslate("admin.projects.lifecycle.remove")}

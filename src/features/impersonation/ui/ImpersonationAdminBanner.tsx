@@ -46,13 +46,7 @@ export function ImpersonationAdminBanner(props: {
         <A class="text-xs font-medium underline underline-offset-2" href={props.eventsHref}>
           {messageTranslate("admin.impersonation.auditLink")}
         </A>
-        <AuthenticatedButton
-          size="sm"
-          disabled={props.pending}
-          icon={mdiLogout}
-          onClick={props.onEnd}
-          variant="outline"
-        >
+        <AuthenticatedButton disabled={props.pending} icon={mdiLogout} onClick={props.onEnd} variant="outline">
           {messageTranslate("admin.impersonation.end")}
         </AuthenticatedButton>
       </div>

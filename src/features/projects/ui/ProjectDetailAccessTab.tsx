@@ -38,7 +38,6 @@ export function ProjectDetailAccessTab(props: {
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
           onClick={() => state.grantLifecycleSet(grant.id, "inactive")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
@@ -49,7 +48,6 @@ export function ProjectDetailAccessTab(props: {
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
           onClick={() => state.grantLifecycleSet(grant.id, "active")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
@@ -59,7 +57,6 @@ export function ProjectDetailAccessTab(props: {
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.grantDelete(grant.id)}
-        size="sm"
         variant="outlineRed"
       >
         {messageTranslate("common.revoke")}
@@ -134,7 +131,6 @@ export function ProjectDetailAccessTab(props: {
           disabled={state.page.pendingId() !== undefined}
           icon={mdiDelete}
           onClick={() => state.assignRemove(assignment.id)}
-          size="sm"
           variant="outlineRed"
         >
           {messageTranslate("admin.projects.lifecycle.remove")}

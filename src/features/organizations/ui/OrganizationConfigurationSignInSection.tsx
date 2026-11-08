@@ -227,7 +227,6 @@ export function OrganizationConfigurationSignInSection(props: {
                   <div>
                     <AuthenticatedButton
                       onClick={props.screen.policyProviderAllowlistReset}
-                      size="sm"
                       type="button"
                       variant="outline"
                     >

@@ -66,12 +66,11 @@ export function MachineAdminSecretPanel(props: {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={state.copy} variant="outline">
+        <AuthenticatedButton icon={mdiContentCopy} onClick={state.copy} variant="outline">
           {messageTranslate("admin.machine.secret.copy")}
         </AuthenticatedButton>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
         <AuthenticatedButton
-          size="sm"
           disabled={!state.copied() && !state.copyFailed()}
           icon={mdiCheck}
           onClick={state.acknowledge}

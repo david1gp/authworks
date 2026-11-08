@@ -43,7 +43,6 @@ export function OrganizationConfigurationDomainsSection(props: {
             <AuthenticatedButton
               icon={mdiPlus}
               onClick={() => props.screen.domainClaimOpenSet(true)}
-              size="sm"
               variant="filledBlue"
             >
               {messageTranslate("admin.configuration.claim")}
@@ -92,7 +91,6 @@ export function OrganizationConfigurationDomainsSection(props: {
                             disabled={props.page.pendingId() === `domain:${domain.domain}`}
                             icon={mdiCheckCircle}
                             onClick={() => void props.page.domainVerify(domain.domain)}
-                            size="sm"
                           >
                             {messageTranslate("admin.organizations.domains.verify")}
                           </AuthenticatedButton>
@@ -101,7 +99,6 @@ export function OrganizationConfigurationDomainsSection(props: {
                           disabled={props.page.pendingId() === `domain:${domain.domain}`}
                           icon={mdiDelete}
                           onClick={() => state.removalOpen(domain.domain)}
-                          size="sm"
                           variant="outlineRed"
                         >
                           {messageTranslate("admin.organizations.domains.remove")}
@@ -127,7 +124,6 @@ export function OrganizationConfigurationDomainsSection(props: {
                                   `${verification().recordType} ${verification().recordName} ${verification().recordValue}`,
                                 )
                               }
-                              size="sm"
                               variant="outline"
                             >
                               {state.copied()
