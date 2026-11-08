@@ -257,11 +257,13 @@ function directoryListQueryRead(requestUrl: string): Result<DirectoryUserListQue
   const roleParam = searchParams.get("role")
   const stateParam = searchParams.get("state")
   const emailVerifiedParam = searchParams.get("emailVerified")
+  const includeDeletedParam = searchParams.get("includeDeleted")
   const teamParam = searchParams.get("team")
   const withoutFilters = new URLSearchParams(searchParams)
   withoutFilters.delete("role")
   withoutFilters.delete("state")
   withoutFilters.delete("emailVerified")
+  withoutFilters.delete("includeDeleted")
   withoutFilters.delete("team")
   const parsed = listQueryFromSearchParams(withoutFilters)
   if (!parsed.success)
@@ -277,9 +279,21 @@ function directoryListQueryRead(requestUrl: string): Result<DirectoryUserListQue
         "directory.invalid",
       )
   }
+  let includeDeleted: boolean | undefined
+  if (includeDeletedParam !== null) {
+    if (includeDeletedParam === "true") includeDeleted = true
+    else if (includeDeletedParam === "false") includeDeleted = false
+    else
+      return resultErrorCodedCreate(
+        "directoryListQueryRead",
+        "The directory list query is invalid.",
+        "directory.invalid",
+      )
+  }
   const query = v.safeParse(directoryUserListQuerySchema, {
     ...parsed.data,
     ...(emailVerified === undefined ? {} : { emailVerified }),
+    ...(includeDeleted === undefined ? {} : { includeDeleted }),
     ...(roleParam === null ? {} : { role: roleParam }),
     ...(stateParam === null ? {} : { state: stateParam }),
     ...(teamParam === null ? {} : { team: teamParam }),

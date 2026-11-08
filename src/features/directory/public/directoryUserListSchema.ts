@@ -10,6 +10,7 @@ const directorySortBySchema = v.picklist(["createdAt", "lastSignInAt", "userName
 export const directoryUserListQuerySchema = v.strictObject({
   ...listQuerySchema.entries,
   emailVerified: v.optional(v.boolean()),
+  includeDeleted: v.optional(v.boolean()),
   role: v.optional(organizationRoleIdSchema),
   sortBy: v.optional(directorySortBySchema),
   state: v.optional(userStateSchema),

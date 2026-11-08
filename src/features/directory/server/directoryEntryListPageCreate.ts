@@ -40,7 +40,16 @@ export function directoryEntryListPageCreate(input: {
   const state = input.query !== undefined && "state" in input.query ? input.query.state : undefined
   const emailVerified =
     input.query !== undefined && "emailVerified" in input.query ? input.query.emailVerified : undefined
+  const includeDeleted =
+    input.query !== undefined && "includeDeleted" in input.query ? input.query.includeDeleted : undefined
   let entries = [...input.entries]
+  if (state === undefined && includeDeleted !== true) {
+    entries = entries.filter((entry) => {
+      const user = input.usersById.get(entry.user.id)
+      if (user === undefined) return false
+      return user.state !== "deleted"
+    })
+  }
   if (search !== undefined && search.length > 0) {
     entries = entries.filter((entry) => {
       const user = input.usersById.get(entry.user.id)

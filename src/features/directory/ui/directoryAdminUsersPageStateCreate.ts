@@ -64,7 +64,7 @@ export type DirectoryAdminUsersPageStateCreateOptions = {
 const pageSize = 20
 
 const cacheSchemaName = "authworks.admin.users"
-const cacheEntrySchemaVersion = 1
+const cacheEntrySchemaVersion = 2
 
 const cacheRead = (key: string): DirectoryEntry[] | undefined => {
   try {
@@ -143,6 +143,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       ...(parsed.q !== undefined && parsed.q.length > 0 ? { search: parsed.q } : {}),
       ...(parsed.role !== undefined ? { role: parsed.role } : {}),
       ...(parsed.team !== undefined ? { team: parsed.team } : {}),
+      ...(parsed.showDeleted === "true" ? { includeDeleted: true as const } : {}),
       sortBy: parsed.sort ?? "lastSignInAt",
       sortDirection: parsed.dir ?? (parsed.sort === "userName" ? "asc" : "desc"),
     }
@@ -219,7 +220,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const peopleFilterKey = () =>
-    `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}`
+    `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${query().showDeleted ?? ""}`
   let lastPeopleFilterKey: string | undefined
   let lastEffectKey: string | undefined
   let lastContextKey = `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
@@ -253,7 +254,7 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   }
 
   const effectKeyGet = () =>
-    `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
+    `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${query().showDeleted ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
 
   createEffect(
     on(effectKeyGet, (effectKey) => {

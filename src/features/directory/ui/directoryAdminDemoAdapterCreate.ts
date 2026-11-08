@@ -94,6 +94,9 @@ export function directoryAdminDemoAdapterCreate(
     const input = parsed.output
     const role = input.role
     let rows = empty() ? [] : [...people]
+    if (input.state === undefined && input.includeDeleted !== true)
+      rows = rows.filter((entry) => entry.user.state !== "deleted")
+    else if (input.state !== undefined) rows = rows.filter((entry) => entry.user.state === input.state)
     if (typeof input.search === "string" && input.search.trim().length > 0)
       rows = rows.filter((entry) => peopleMatchesSearch(entry, input.search as string))
     if (role !== undefined)

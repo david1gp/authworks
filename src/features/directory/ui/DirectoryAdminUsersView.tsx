@@ -105,6 +105,12 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
       else params.set("team", team)
     })
   const activeTeamFilter = () => query().team
+  const showDeletedSet = (show: boolean) =>
+    searchParamsSet((params) => {
+      if (!show) params.delete("showDeleted")
+      else params.set("showDeleted", "true")
+    })
+  const showDeletedActive = () => query().showDeleted === "true"
   const scopeSet = (scope: "organization" | "all") =>
     searchParamsSet((params) => {
       if (scope === "organization") params.delete("scope")
@@ -168,6 +174,9 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     if (activeTab() === "people") {
       // The header total must describe the filtered list: with an organization-scoped role
       // filter the matching pill count is the exact total, not the unfiltered people total.
+      // The summary counts active members only; with deleted members shown the loaded
+      // page is the exact total instead.
+      if (showDeletedActive()) return page().people().length
       const team = activeTeamFilter()
       if (team !== undefined)
         return team === "unassigned"
@@ -453,6 +462,16 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               )}
             </For>
           </fieldset>
+          <AuthenticatedButton
+            aria-pressed={showDeletedActive()}
+            icon={authenticatedIconRegistry.directoryTeamDelete}
+            onClick={() => showDeletedSet(!showDeletedActive())}
+            variant={showDeletedActive() ? "filledBlue" : "outline"}
+          >
+            {messageTranslate(
+              showDeletedActive() ? "admin.users.directoryHideDeleted" : "admin.users.directoryShowDeleted",
+            )}
+          </AuthenticatedButton>
         </AuthenticatedToolbar>
 
         <Show
@@ -494,7 +513,10 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                   actions={
                     <Show
                       when={
-                        (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
+                        (query().q ?? "").length > 0 ||
+                        activeRole() !== undefined ||
+                        activeTeamFilter() !== undefined ||
+                        showDeletedActive()
                       }
                     >
                       <AuthenticatedButton
@@ -503,6 +525,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                           authenticatedUrlSearchParamWrite("q", "")
                           roleSet(undefined)
                           teamFilterSet(undefined)
+                          showDeletedSet(false)
                         }}
                         variant="outline"
                       >
@@ -511,7 +534,10 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                     </Show>
                   }
                   description={
-                    (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
+                    (query().q ?? "").length > 0 ||
+                    activeRole() !== undefined ||
+                    activeTeamFilter() !== undefined ||
+                    showDeletedActive()
                       ? activeTeamFilter() !== undefined
                         ? messageTranslate("admin.users.directoryEmptySearchTeamDetail")
                         : messageTranslate("admin.users.directoryEmptySearchDetail")
@@ -519,7 +545,10 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                   }
                   icon={directoryTabIconGet("people")}
                   title={
-                    (query().q ?? "").length > 0 || activeRole() !== undefined || activeTeamFilter() !== undefined
+                    (query().q ?? "").length > 0 ||
+                    activeRole() !== undefined ||
+                    activeTeamFilter() !== undefined ||
+                    showDeletedActive()
                       ? messageTranslate("admin.users.directoryEmptySearch")
                       : messageTranslate("admin.users.directoryNoPeople")
                   }

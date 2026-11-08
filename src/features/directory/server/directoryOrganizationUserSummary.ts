@@ -31,7 +31,7 @@ export function directoryOrganizationUserSummary(
     userIds: [...new Set(active.map((membership) => membership.userId))],
   })
   if (!users.success) return users
-  const existingUserIds = new Set(users.data.map((user) => user.id))
+  const existingUserIds = new Set(users.data.filter((user) => user.state !== "deleted").map((user) => user.id))
   const counts = { admin: 0, guest: 0, member: 0, owner: 0 }
   const seen = new Set<string>()
   for (const membership of active) {

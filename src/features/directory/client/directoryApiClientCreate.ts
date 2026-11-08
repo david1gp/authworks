@@ -32,6 +32,7 @@ function directoryQueryToSearchParams(query: DirectoryUserListQuery | ListQuery 
   const params = new URLSearchParams(listQueryToSearchParams(query).replace(/^\?/, ""))
   const filters = query as DirectoryUserListQuery
   if (filters.emailVerified !== undefined) params.set("emailVerified", filters.emailVerified ? "true" : "false")
+  if (filters.includeDeleted !== undefined) params.set("includeDeleted", filters.includeDeleted ? "true" : "false")
   if (filters.role !== undefined) params.set("role", filters.role)
   if (filters.state !== undefined) params.set("state", filters.state)
   if (filters.team !== undefined) params.set("team", filters.team)

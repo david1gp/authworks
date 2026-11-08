@@ -43,7 +43,7 @@ export function directoryRealmUserList(options: DirectoryRealmUserListOptions): 
   if (!memberships.success) return memberships
   const users = userRealmList({
     database: options.database,
-    ...(parsed.output.state === "deleted" ? { includeDeleted: true } : {}),
+    ...(parsed.output.state === "deleted" || parsed.output.includeDeleted === true ? { includeDeleted: true } : {}),
     realmId: options.realmId,
   })
   if (!users.success) return users

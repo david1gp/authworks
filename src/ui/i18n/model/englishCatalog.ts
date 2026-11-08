@@ -1424,6 +1424,8 @@ export const englishCatalog = {
   "admin.users.directoryTeamColumn": "Team",
   "admin.users.directoryTeamFilter": "Team",
   "admin.users.directoryTeamUnassigned": "Unassigned",
+  "admin.users.directoryShowDeleted": "Show deleted",
+  "admin.users.directoryHideDeleted": "Hide deleted",
   "admin.users.directoryTabInvitations": "Pending invitations",
   "admin.users.directoryTabPeople": "People",
   "admin.users.directoryTabServiceAccounts": "Service accounts",
