@@ -32,7 +32,7 @@ export function AuthenticatedActionMenu(props: {
     >
       <Popover.Trigger
         aria-label={props.label ?? messageTranslate("ui.authenticated.moreActions")}
-        class={classMerge(authenticatedButtonClassGet("ghost", "sm", true), props.class)}
+        class={classMerge(authenticatedButtonClassGet("ghost", true), props.class)}
         title={props.label ?? messageTranslate("ui.authenticated.moreActions")}
       >
         <Icon aria-hidden="true" class="size-4.5" path={props.icon ?? mdiDotsVertical} />

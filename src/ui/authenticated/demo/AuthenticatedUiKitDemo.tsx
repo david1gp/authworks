@@ -144,7 +144,7 @@ export function AuthenticatedUiKitDemo() {
       </AuthenticatedToolbar>
       <AuthenticatedSection
         actions={
-          <AuthenticatedButton onClick={state.toggleLoading} size="sm" variant="outline">
+          <AuthenticatedButton onClick={state.toggleLoading} variant="outline">
             {messageTranslate("ui.authenticated.demo.loadingBlurb")}
           </AuthenticatedButton>
         }
@@ -171,7 +171,7 @@ export function AuthenticatedUiKitDemo() {
       </AuthenticatedSection>
       <AuthenticatedSection
         actions={
-          <AuthenticatedButton onClick={state.toggleEmpty} size="sm" variant="outline">
+          <AuthenticatedButton onClick={state.toggleEmpty} variant="outline">
             {messageTranslate("ui.authenticated.demo.emptyBlurb")}
           </AuthenticatedButton>
         }

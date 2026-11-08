@@ -24,7 +24,6 @@ export function AuthenticatedPagination(props: {
         <span class="min-w-0 truncate text-xs tabular-nums text-muted-foreground">{props.summary ?? ""}</span>
         <div class="flex items-center gap-1.5">
           <AuthenticatedButton
-            size="sm"
             disabled={!props.previousAvailable}
             onClick={props.onPrevious}
             icon={mdiChevronLeft}
@@ -33,7 +32,6 @@ export function AuthenticatedPagination(props: {
             {messageTranslate("common.previous")}
           </AuthenticatedButton>
           <AuthenticatedButton
-            size="sm"
             disabled={!props.nextAvailable}
             onClick={props.onNext}
             iconRight={mdiChevronRight}

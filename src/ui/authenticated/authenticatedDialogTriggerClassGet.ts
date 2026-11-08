@@ -3,11 +3,7 @@ import { classesButtonClickAnimation } from "#ui/interactive/button/classesButto
 import { authenticatedButtonClassGet } from "./authenticatedButtonClassGet.js"
 
 /** Retain uncommon legacy variants while sharing authenticated controls by default. */
-export function authenticatedDialogTriggerClassGet(
-  variant: ButtonVariant = "ghost",
-  customClass?: string,
-  size: "sm" | "md" = "md",
-) {
+export function authenticatedDialogTriggerClassGet(variant: ButtonVariant = "ghost", customClass?: string) {
   if (
     variant === "filledBlue" ||
     variant === "outline" ||
@@ -15,7 +11,7 @@ export function authenticatedDialogTriggerClassGet(
     variant === "filledRed" ||
     variant === "outlineRed"
   ) {
-    return authenticatedButtonClassGet(variant, size, false, customClass)
+    return authenticatedButtonClassGet(variant, false, customClass)
   }
-  return buttonCva2(variant, size === "sm" ? "sm" : undefined, classesButtonClickAnimation, customClass)
+  return buttonCva2(variant, classesButtonClickAnimation, customClass)
 }

@@ -28,7 +28,6 @@ export function AuthenticatedDialog(props: {
   readonly title: string
   readonly triggerLabel?: JSX.Element
   readonly triggerIcon?: string
-  readonly triggerSize?: "sm" | "md"
   readonly variant?: ButtonVariant
 }) {
   const state = authenticatedDialogStateCreate(() => props.open)
@@ -46,7 +45,7 @@ export function AuthenticatedDialog(props: {
     >
       <Show when={triggerLabel() !== undefined}>
         <Dialog.Trigger
-          class={authenticatedDialogTriggerClassGet(props.variant, props.class, props.triggerSize)}
+          class={authenticatedDialogTriggerClassGet(props.variant, props.class)}
           disabled={props.disabled}
           ref={state.triggerRegister}
         >
@@ -75,7 +74,6 @@ export function AuthenticatedDialog(props: {
               title={messageTranslate("common.close")}
               class="-mt-0.5 shrink-0"
               icon={mdiClose}
-              size="sm"
               variant="ghost"
             />
           </div>
