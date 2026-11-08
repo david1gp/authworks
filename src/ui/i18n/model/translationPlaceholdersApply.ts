@@ -1,7 +1,8 @@
 type PlaceholderValues = Readonly<Record<string, string | number>> | readonly (string | number)[]
 
-/** Applies named `{value}` and legacy `[X]` placeholders without changing unknown tokens. */
+/** Applies named `{value}` and legacy `[X]` placeholders without changing unknown tokens. Never throws. */
 export function translationPlaceholdersApply(template: string, values?: PlaceholderValues): string {
+  if (typeof template !== "string") return ""
   if (!values) return template
 
   return template.replace(/\{([A-Za-z0-9_.-]+)\}|\[(X\d*)\]/g, (match, named: string, positional: string) => {

@@ -20,7 +20,13 @@ export function authenticatedRelativeTimeStateCreate(
     },
     dateTime: () => {
       const resolved = timestamp()
-      return resolved === undefined ? undefined : new Date(resolved).toISOString()
+      if (resolved === undefined) return undefined
+      try {
+        const iso = new Date(resolved).toISOString()
+        return iso
+      } catch {
+        return undefined
+      }
     },
     text: () => {
       const resolved = timestamp()
