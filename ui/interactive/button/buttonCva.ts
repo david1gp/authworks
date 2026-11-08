@@ -37,18 +37,8 @@ export const buttonVariant = {
   outlineRed: "outlineRed",
 } as const
 
-export type ButtonSize = keyof typeof buttonSize
-export const buttonSize = {
-  none: "none",
-  minimal: "minimal",
-  sm: "sm",
-  default: "default",
-  lg: "lg",
-} as const
-
 export type ButtonCvaProps = {
   variant?: ButtonVariant
-  size?: ButtonSize
 }
 
 const baseClasses = classArr(
@@ -231,37 +221,21 @@ const variantClasses = {
   ),
 } as const satisfies Record<ButtonVariant, string>
 
-const sizeClasses = {
-  none: "",
-  minimal: "rounded-none",
-  sm: "px-3",
-  default: "py-2 px-3",
-  lg: "px-8 py-4 text-lg",
-} as const satisfies Record<ButtonSize, string>
+const defaultSizeClasses = "py-2 px-3"
 
-const defaultSize = buttonSize.default
+function buttonBase(variant: ButtonVariant, ...customClasses: (string | boolean | undefined | null | 0)[]) {
+  return classMerge(baseClasses, variantClasses[variant], customClasses)
+}
 
 export function buttonCva1(variant: ButtonVariant, ...customClasses: (string | boolean | undefined | null | 0)[]) {
-  return buttonCva2(variant, null, ...customClasses)
+  return buttonCva2(variant, ...customClasses)
 }
 
 export function buttonCva2(
   variant: ButtonVariant = buttonVariant.ghost,
-  size: ButtonSize | null = defaultSize,
   ...customClasses: (string | boolean | undefined | null | 0)[]
 ) {
-  const v = variant
-  const s = size ?? defaultSize
-  return classMerge(baseClasses, variantClasses[v], sizeClasses[s], combinedClasses(v, s), customClasses)
-}
-
-function combinedClasses(variant: ButtonVariant, size: ButtonSize) {
-  const variantGroup1 =
-    variant === buttonVariant.outline || variant === buttonVariant.filledYellow || variant === buttonVariant.outlineRed
-  if (variantGroup1 && size === buttonSize.lg) {
-    return "border-2"
-  }
-  return null
+  return buttonBase(variant, defaultSizeClasses, ...customClasses)
 }
 
 export function buttonCvaIconOnly(
@@ -270,9 +244,8 @@ export function buttonCvaIconOnly(
   isDisabled: boolean | undefined,
   ...customClasses: (string | boolean | undefined | null | 0)[]
 ) {
-  const classes = buttonCva2(
+  const classes = buttonBase(
     variant,
-    buttonSize.none,
     classesButtonClickAnimation,
     "rounded-full p-2.5",
     (isDisabled || isLoading) && classesButtonDisabled,
