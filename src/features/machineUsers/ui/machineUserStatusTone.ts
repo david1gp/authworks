@@ -6,7 +6,7 @@ const tones = { active: "success", inactive: "warning", removed: "danger" } as c
   AuthenticatedStatusTone
 >
 
-/** Maps a machine-user lifecycle status onto the shared authenticated status tone. */
+/** Maps a machine-user lifecycle status onto the shared authenticated status tone. Never throws. */
 export function machineUserStatusTone(status: MachineUserStatus): AuthenticatedStatusTone {
-  return tones[status]
+  return (tones as Record<string, AuthenticatedStatusTone>)[status] ?? "neutral"
 }

@@ -3,6 +3,7 @@ import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { For, Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedIsoDateTimeGet } from "../../../ui/authenticated/authenticatedIsoDateTimeGet.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { sessionDeviceLocationGet } from "../../sessions/ui/sessionDeviceLocationGet.js"
@@ -62,7 +63,7 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
                     </Show>
                     <time
                       class="col-span-2 text-xs tabular-nums text-muted-foreground sm:col-span-1 sm:text-right"
-                      dateTime={new Date(item.occurredAt).toISOString()}
+                      dateTime={authenticatedIsoDateTimeGet(item.occurredAt)}
                     >
                       {localeDateFormat(item.occurredAt, { dateStyle: "medium", timeStyle: "short" })}
                     </time>

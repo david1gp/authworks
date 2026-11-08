@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router"
-import { createEffect, Match, Show, Switch } from "solid-js"
+import { createEffect, ErrorBoundary, Match, Show, Switch } from "solid-js"
 import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
 import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
@@ -84,26 +84,34 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "authenticated"}>
-            <Show
-              when={state.shellKind() !== "focus" && screen().key !== "sign-in"}
+            <ErrorBoundary
               fallback={
                 <ProductionFocusShell title={messageTranslate(screen().title)}>
-                  <ProductionRouteContent state={state} />
+                  <ProductionStatePanel state="error" />
                 </ProductionFocusShell>
               }
             >
-              <ProductionAuthenticatedShell
-                kind={state.shellKind() as "account" | "admin" | "invitations"}
-                title={screen().title}
+              <Show
+                when={state.shellKind() !== "focus" && screen().key !== "sign-in"}
+                fallback={
+                  <ProductionFocusShell title={messageTranslate(screen().title)}>
+                    <ProductionRouteContent state={state} />
+                  </ProductionFocusShell>
+                }
               >
-                <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-                  <Show when={state.pageHeaderVisible()}>
-                    <AuthenticatedPageHeader title={messageTranslate(screen().title)} />
-                  </Show>
-                  <ProductionRouteContent state={state} />
-                </div>
-              </ProductionAuthenticatedShell>
-            </Show>
+                <ProductionAuthenticatedShell
+                  kind={state.shellKind() as "account" | "admin" | "invitations"}
+                  title={screen().title}
+                >
+                  <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+                    <Show when={state.pageHeaderVisible()}>
+                      <AuthenticatedPageHeader title={messageTranslate(screen().title)} />
+                    </Show>
+                    <ProductionRouteContent state={state} />
+                  </div>
+                </ProductionAuthenticatedShell>
+              </Show>
+            </ErrorBoundary>
           </Match>
         </Switch>
       )}

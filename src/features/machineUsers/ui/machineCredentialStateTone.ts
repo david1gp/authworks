@@ -6,7 +6,7 @@ const tones = { active: "success", expired: "warning", revoked: "danger" } as co
   AuthenticatedStatusTone
 >
 
-/** Maps the derived credential state onto the shared authenticated status tone. */
+/** Maps the derived credential state onto the shared authenticated status tone. Never throws. */
 export function machineCredentialStateTone(state: MachineCredentialState): AuthenticatedStatusTone {
-  return tones[state]
+  return (tones as Record<string, AuthenticatedStatusTone>)[state] ?? "neutral"
 }

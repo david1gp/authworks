@@ -1,4 +1,5 @@
 import { createMemo } from "solid-js"
+import { authenticatedIsoDateTimeGet } from "../../../ui/authenticated/authenticatedIsoDateTimeGet.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AdminActivityAdapter } from "./adminActivityAdapter.js"
@@ -30,7 +31,7 @@ export function adminActivityViewStateCreate(options: {
             }),
       actorId: event.actorId,
       timestamp: localeDateFormat(event.occurredAt, { dateStyle: "medium", timeStyle: "short" }),
-      datetime: new Date(event.occurredAt).toISOString(),
+      datetime: authenticatedIsoDateTimeGet(event.occurredAt),
       details: adminEventPayloadDisplay(event.payload),
     })),
   )

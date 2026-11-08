@@ -6,7 +6,7 @@ const tones = { active: "success", inactive: "warning", removed: "danger" } as c
   AuthenticatedStatusTone
 >
 
-/** Maps an OIDC client lifecycle status onto the shared authenticated status tone. */
+/** Maps an OIDC client lifecycle status onto the shared authenticated status tone. Never throws. */
 export function oidcAdminClientStatusTone(status: OidcClientStatus): AuthenticatedStatusTone {
-  return tones[status]
+  return (tones as Record<string, AuthenticatedStatusTone>)[status] ?? "neutral"
 }

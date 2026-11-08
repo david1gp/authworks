@@ -6,7 +6,7 @@ const tones = { active: "success", retired: "neutral" } as const satisfies Recor
   AuthenticatedStatusTone
 >
 
-/** Maps a signing key lifecycle status onto the shared authenticated status tone. */
+/** Maps a signing key lifecycle status onto the shared authenticated status tone. Never throws. */
 export function oidcAdminSigningKeyStatusTone(status: OidcSigningKeyStatus): AuthenticatedStatusTone {
-  return tones[status]
+  return (tones as Record<string, AuthenticatedStatusTone>)[status] ?? "neutral"
 }

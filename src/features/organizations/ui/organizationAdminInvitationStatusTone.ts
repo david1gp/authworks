@@ -9,7 +9,7 @@ const tones = {
   revoked: "danger",
 } as const satisfies Record<OrganizationInvitationStatus, AuthenticatedStatusTone>
 
-/** Maps an invitation lifecycle status onto the shared authenticated status tone. */
+/** Maps an invitation lifecycle status onto the shared authenticated status tone. Never throws. */
 export function organizationAdminInvitationStatusTone(status: OrganizationInvitationStatus): AuthenticatedStatusTone {
-  return tones[status]
+  return (tones as Record<string, AuthenticatedStatusTone>)[status] ?? "neutral"
 }

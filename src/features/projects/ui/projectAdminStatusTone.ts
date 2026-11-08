@@ -6,7 +6,7 @@ const tones = { active: "success", inactive: "warning", removed: "danger" } as c
   AuthenticatedStatusTone
 >
 
-/** Maps a project, application, or grant lifecycle status onto the shared authenticated status tone. */
+/** Maps a project, application, or grant lifecycle status onto the shared authenticated status tone. Never throws. */
 export function projectAdminStatusTone(status: ProjectStatus): AuthenticatedStatusTone {
-  return tones[status]
+  return (tones as Record<string, AuthenticatedStatusTone>)[status] ?? "neutral"
 }
