@@ -7,6 +7,7 @@ export const organizationTable = sqliteTable(
     id: text("id").primaryKey(),
     realmId: text("realm_id").notNull(),
     name: text("name").notNull(),
+    slug: text("slug").notNull(),
     status: text("status").notNull(),
     updatedAt: integer("updated_at").notNull(),
     version: integer("version").notNull(),
@@ -14,6 +15,7 @@ export const organizationTable = sqliteTable(
   (table) => [
     index("organizations_realm_id_idx").on(table.realmId),
     uniqueIndex("organizations_realm_name_idx").on(table.realmId, table.name),
+    uniqueIndex("organizations_realm_slug_idx").on(table.realmId, table.slug),
   ],
 )
 

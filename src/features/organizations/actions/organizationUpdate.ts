@@ -12,6 +12,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationNameNormalize } from "../domain/organizationNameNormalize.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
+import { organizationSlugNormalize } from "../domain/organizationSlugNormalize.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationUpdatedEventPayloadSchema } from "../events/organizationUpdatedEventPayloadSchema.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
@@ -69,8 +70,25 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
     if (!authorized.success) return authorized
     const name = organizationNameNormalize(parsed.data.name ?? current.data.name)
     if (!name.success) return name
+    let slug = current.data.slug
+    if (parsed.data.slug !== undefined) {
+      const normalized = organizationSlugNormalize(parsed.data.slug)
+      if (!normalized.success) return normalized
+      slug = normalized.data
+      if (slug !== current.data.slug) {
+        const taken = repository.organizationGetBySlug(options.realmId, slug)
+        if (!taken.success) return taken
+        if (taken.data !== null && taken.data.id !== current.data.id)
+          return resultErrorCodedCreate(
+            op,
+            "An organization with that slug already exists in this realm.",
+            "organizations.already-exists",
+          )
+      }
+    }
     const updated = repository.organizationUpdate(options.organizationId, {
       name: name.data,
+      slug,
       updatedAt,
       version: current.data.version + 1,
     })

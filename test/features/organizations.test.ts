@@ -465,6 +465,7 @@ test("organization lists accept legacy Zitadel IDs without accepting path-like I
       id: "323456789012345678",
       name: "Imported organization",
       realmId: realm.id,
+      slug: "imported-organization",
       status: "active",
       updatedAt: 1700000000000,
       version: 1,

@@ -320,6 +320,7 @@ test("migration preserves same-name native organizations and skips dependent rec
       id: "target-owner",
       name: "Owner organization",
       realmId,
+      slug: "owner-organization",
       status: "active",
       updatedAt: 1700000000000,
       version: 1,

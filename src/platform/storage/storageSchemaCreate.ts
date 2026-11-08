@@ -1,5 +1,7 @@
-import { and, asc, eq, like, ne, sql } from "drizzle-orm"
+import { and, asc, eq, isNotNull, isNull, like, ne, sql } from "drizzle-orm"
 import { type Result } from "#result"
+import { organizationSlugSuggest } from "../../features/organizations/domain/organizationSlugSuggest.js"
+import { organizationSlugUniqueResolve } from "../../features/organizations/domain/organizationSlugUniqueResolve.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
 import { realmAdministratorTable } from "../../features/realms/persistence/realmAdministratorTable.js"
@@ -31,9 +33,16 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS realm_domains_realm_id_idx ON realm_domains (realm_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS organizations (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, name TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, name), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS organizations (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, name TEXT NOT NULL, slug TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, name), UNIQUE (realm_id, slug), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS organizations_realm_id_idx ON organizations (realm_id)")
+    try {
+      database.run("ALTER TABLE organizations ADD COLUMN slug TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "slug")) throw error
+    }
+    database.run("CREATE UNIQUE INDEX IF NOT EXISTS organizations_realm_slug_idx ON organizations (realm_id, slug)")
+    storageOrganizationSlugBackfill(database)
     database.run(
       "CREATE TABLE IF NOT EXISTS organization_domains (domain TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, is_primary INTEGER NOT NULL CHECK (is_primary IN (0, 1)), verified INTEGER NOT NULL CHECK (verified IN (0, 1)), verification_token_hash TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
@@ -889,6 +898,42 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     return resultCreate(undefined)
   } catch (_error) {
     return resultErrorCreate(op, "The SQLite schema could not be created.")
+  }
+}
+
+function storageOrganizationSlugBackfill(database: StorageExecutor): void {
+  const missing = database
+    .select({
+      createdAt: organizationTable.createdAt,
+      id: organizationTable.id,
+      name: organizationTable.name,
+      realmId: organizationTable.realmId,
+    })
+    .from(organizationTable)
+    .where(isNull(organizationTable.slug))
+    .orderBy(asc(organizationTable.createdAt), asc(organizationTable.id))
+    .all()
+  if (missing.length === 0) return
+  const takenByRealm = new Map<string, Set<string>>()
+  for (const organization of missing) {
+    let taken = takenByRealm.get(organization.realmId)
+    if (taken === undefined) {
+      taken = new Set(
+        database
+          .select({ slug: organizationTable.slug })
+          .from(organizationTable)
+          .where(and(eq(organizationTable.realmId, organization.realmId), isNotNull(organizationTable.slug)))
+          .all()
+          .map((row) => row.slug),
+      )
+      takenByRealm.set(organization.realmId, taken)
+    }
+    const slug = organizationSlugUniqueResolve(organizationSlugSuggest(organization.name), (candidate) =>
+      resultCreate(taken.has(candidate)),
+    )
+    if (!slug.success) throw new Error(slug.errorMessage)
+    database.update(organizationTable).set({ slug: slug.data }).where(eq(organizationTable.id, organization.id)).run()
+    taken.add(slug.data)
   }
 }
 

@@ -7,6 +7,7 @@ export function organizationPublicViewCreate(row: OrganizationRow): Organization
     id: row.id,
     realmId: row.realmId,
     name: row.name,
+    slug: row.slug,
     status: row.status as Organization["status"],
     updatedAt: row.updatedAt,
   }
