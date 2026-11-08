@@ -35,6 +35,24 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    organizationGetBySlug(realmId: string, slug: string): Result<OrganizationRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(organizationTable)
+            .where(and(eq(organizationTable.realmId, realmId), eq(organizationTable.slug, slug)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationGetBySlug",
+          "The organization could not be read.",
+          "organizations.read-failed",
+        )
+      }
+    },
+
     organizationGet(organizationId: string): Result<OrganizationRow | null> {
       try {
         return resultCreate(

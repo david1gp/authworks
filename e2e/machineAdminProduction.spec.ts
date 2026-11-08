@@ -1,12 +1,97 @@
+import type { Page } from "@playwright/test"
 import { expect } from "@playwright/test"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
 // Payloads must satisfy the public UUIDv7-shaped resource identifier schema.
 const realmId = "018f0000-0000-7000-8000-000000000001"
+const organizationId = "018f0000-0000-7000-8000-000000000002"
+const organizationName = "Northwind Labs"
+const organizationSlug = "northwind-labs"
+const adminUserId = "01900000-0000-7000-8000-0000000000b1"
 const machineUserId = "018f0000-0000-7000-8000-000000000071"
 const credentialId = "018f0000-0000-7000-8000-000000000081"
 const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
+
+const organization = {
+  createdAt: 1,
+  id: organizationId,
+  name: organizationName,
+  realmId,
+  slug: organizationSlug,
+  status: "active",
+  updatedAt: 1,
+}
+
+/**
+ * Serves the user session behind the machine specs. Organization slug URLs resolve through
+ * the session organization list, which is only populated for user sessions, so the bootstrap
+ * session is overridden here with an org-owner user session. Registered after the per-test
+ * backend route, it wins for the session paths while the backend mock keeps the rest.
+ */
+async function machineSessionMock(page: Page): Promise<void> {
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) =>
+    route.fulfill({
+      json: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
+          createdAt: 1,
+          current: true,
+          device: {},
+          expiresAt: 1_700_000_900_000,
+          id: "01900000-0000-7000-8000-0000000000a1",
+          lastUsedAt: 1_700_000_050_000,
+          organizationId,
+          realmId,
+          revokedAt: null,
+          subjectId: adminUserId,
+          subjectType: "user",
+          userId: adminUserId,
+        },
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/me/organizations`, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            membership: {
+              createdAt: 1,
+              id: "018f0000-0000-7000-8000-000000000072",
+              organizationId,
+              realmId,
+              roles: ["owner"],
+              updatedAt: 1,
+              userId: adminUserId,
+            },
+            organization,
+          },
+        ],
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/me`, (route) =>
+    route.fulfill({
+      json: {
+        capabilities: { realmAdministrator: false, realmRead: true },
+        user: {
+          createdAt: 1,
+          email: "admin@customer.example",
+          emailVerified: true,
+          id: adminUserId,
+          profile: { displayName: "Customer admin" },
+          realmId,
+          state: "active",
+          updatedAt: 1,
+          userName: "customer-admin",
+          verificationState: "verified",
+        },
+      },
+    }),
+  )
+}
 
 const machineUser = {
   createdAt: 1,
@@ -29,11 +114,7 @@ const credential = {
 }
 
 test.beforeEach(async ({ page }) => {
-  await productionAdminSessionBootstrap(page, {
-    organizationId: "018f0000-0000-7000-8000-000000000002",
-    organizationName: "Northwind Labs",
-    realmId,
-  })
+  await productionAdminSessionBootstrap(page, { organizationId, organizationName, realmId })
 })
 
 test("the production machine user list reads the realm-scoped tenant API", async ({ page }) => {
@@ -45,7 +126,8 @@ test("the production machine user list reads the realm-scoped tenant API", async
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/machine-users")
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/users?tab=service-accounts`)
 
   // Machine users render as a wide table on desktop and as a stacked record list on mobile.
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
@@ -75,7 +157,8 @@ test("creating a machine user sends a CSRF-protected mutation and shows the cred
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/users?tab=service-accounts")
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/users?tab=service-accounts`)
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
 
   await page.getByRole("button", { name: "Create service account", exact: true }).click()
@@ -108,7 +191,8 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   // The stored secret is only ever presented as redacted before rotation.
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
   await expect(page.locator("[data-secret-value]")).toHaveCount(0)
@@ -139,7 +223,8 @@ test("client secret rotation is confirmed before the destructive mutation is sen
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
   // A canceled confirmation must not send the destructive mutation.
@@ -169,7 +254,8 @@ test("issuing a personal access token posts to the token path and shows the valu
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await page.getByRole("button", { name: "Issue credential", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Credential type", { exact: true }).selectOption("personal_access_token")
@@ -202,7 +288,8 @@ test("issuing an API key posts an expiry to the API key path", async ({ page }) 
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await page.getByRole("button", { name: "Issue credential", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Credential type", { exact: true }).selectOption("api_key")
@@ -230,7 +317,8 @@ test("credential revocation is confirmed and posts to the credential path", asyn
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   const row = page.getByRole("row").filter({ hasText: "Deployment pipeline token" })
   await expect(row).toContainText("Active")
 
@@ -266,7 +354,8 @@ test("machine user removal is confirmed before the lifecycle mutation is sent", 
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
 
   const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Remove machine user", exact: true }).click()
@@ -280,7 +369,7 @@ test("machine user removal is confirmed before the lifecycle mutation is sent", 
   await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   // Removal navigates back to the directory once the lifecycle mutation succeeds.
-  await expect(page).toHaveURL(/\/admin\/machine-users$/)
+  await expect(page).toHaveURL(/\/orgs\/northwind-labs\/machine-users$/)
   expect(lifecycleBody).toMatchObject({ status: "removed" })
 })
 
@@ -306,7 +395,8 @@ test("a listed credential never exposes a stored secret value", async ({ page })
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/machine-credentials")
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-credentials`)
 
   await expect(page.getByRole("row").filter({ hasText: "Deployment pipeline token" })).toBeVisible()
   await expect(page.getByRole("row").filter({ hasText: "Client secret" }).first()).toBeVisible()
@@ -323,7 +413,8 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto("/admin/users?tab=service-accounts")
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/users?tab=service-accounts`)
   // A denied service-account list renders the tab without rows; the guard boundary, not the
   // list, carries the inaccessible panel, so the denial is asserted through the detail route.
   await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toHaveCount(0)
@@ -336,7 +427,8 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
   await page.route(realmApiPath, async (route) =>
@@ -352,7 +444,8 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("stronger")
 
   await page.route(realmApiPath, async (route) =>
@@ -368,6 +461,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 404,
     }),
   )
-  await page.goto(`/admin/machine-users/${machineUserId}`)
+  await machineSessionMock(page)
+  await page.goto(`/orgs/${organizationSlug}/machine-users/${machineUserId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("different realm")
 })

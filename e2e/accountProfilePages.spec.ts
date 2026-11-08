@@ -686,6 +686,7 @@ async function accountBackgroundResponseFulfill(
             id: "01900000-0000-7000-8000-000000000002",
             name: "Customer identity",
             realmId,
+            slug: "customer-identity",
             status: "active",
             updatedAt: 1_700_000_000_000,
           },

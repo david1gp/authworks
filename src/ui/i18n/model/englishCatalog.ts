@@ -741,7 +741,8 @@ export const englishCatalog = {
   "admin.organizations.branding.warn": "Warning colour",
   "admin.organizations.detail.created": "Created",
   "admin.organizations.detail.realm": "Realm",
-  "admin.organizations.detail.settingsDescription": "Control the organization name and its lifecycle status.",
+  "admin.organizations.detail.settingsDescription":
+    "Control the organization name, URL slug, and its lifecycle status.",
   "admin.organizations.detail.settingsTitle": "Organization settings",
   "admin.organizations.detail.updated": "Last updated",
   "admin.organizations.detailTitle": "Organization detail",

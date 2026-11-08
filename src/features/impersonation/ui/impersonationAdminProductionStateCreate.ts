@@ -1,7 +1,8 @@
-import { useSearchParams } from "@solidjs/router"
+import { useLocation, useSearchParams } from "@solidjs/router"
 import { onMount } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { impersonationAdminPageStateCreate } from "./impersonationAdminPageStateCreate.js"
@@ -9,6 +10,7 @@ import { impersonationAdminProductionAdapterCreate } from "./impersonationAdminP
 
 export function impersonationAdminProductionStateCreate() {
   const session = productionSessionContextGet()
+  const location = useLocation()
   // The pre-selected subject lives in the URL, so a deep link from a user detail survives reloads.
   const [searchParams] = useSearchParams<{ userId?: string }>()
   const fallbackRealmId = () => {
@@ -47,5 +49,22 @@ export function impersonationAdminProductionStateCreate() {
     targetUserId: () => searchParams.userId,
   })
 
-  return { ...page, confirmState }
+  const organizationIdValue = () => {
+    const access = session.guard.access
+    if (access === "loading" || access.realmAdministrator) return undefined
+    const organization = session.guard.organization
+    return typeof organization === "object" ? organization.organizationId : undefined
+  }
+
+  return {
+    ...page,
+    get basePath() {
+      return productionOrganizationBasePathGet({
+        organizationId: organizationIdValue(),
+        organizations: session.organizations,
+        pathname: location.pathname,
+      })
+    },
+    confirmState,
+  }
 }

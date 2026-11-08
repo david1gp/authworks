@@ -4,7 +4,8 @@ import type { AdminRealmAdministratorSetup } from "./adminRealmAdministratorSetu
 
 /**
  * Signs the service user in through the hosted login. As a realm administrator whose session
- * organization is Authworks Dev (where the service user is owner) it lands on `/admin/users`.
+ * organization is Authworks Dev (where the service user is owner) it lands on that org's
+ * users page (reached through the removed `/admin/users` deep link).
  */
 export async function adminRealmAdministratorSignIn(page: Page, setup: AdminRealmAdministratorSetup): Promise<void> {
   // The app may still be settling its own redirect to `/login?return_to=...` from the
@@ -15,6 +16,6 @@ export async function adminRealmAdministratorSignIn(page: Page, setup: AdminReal
   await page.getByLabel("Username or email").fill(setup.context.serviceUsername)
   await page.getByLabel("Password", { exact: true }).fill(setup.context.servicePassword)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
-  await page.waitForURL(/\/admin\/users/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users/, { timeout: 30_000 })
   await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 }

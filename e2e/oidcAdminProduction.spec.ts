@@ -75,7 +75,7 @@ test("the production client list reads the realm-scoped tenant API", async ({ pa
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/oidc-clients")
+  await page.goto("/realm/oidc-clients")
 
   // Clients render as a wide table on desktop and as a stacked record list on mobile.
   await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
@@ -103,7 +103,7 @@ test("registering a client sends a CSRF-protected mutation and shows the secret 
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/oidc-clients")
+  await page.goto("/realm/oidc-clients")
   await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   await page.getByRole("button", { name: "Register client", exact: true }).click()
@@ -132,7 +132,7 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/oidc-clients/${clientId}`)
+  await page.goto(`/realm/oidc-clients/${clientId}`)
   // The stored secret is only ever presented as redacted before rotation.
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
@@ -159,7 +159,7 @@ test("signing key rotation is confirmed before the mutation is sent", async ({ p
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/signing-keys")
+  await page.goto("/realm/signing-keys")
   await expect(page.getByRole("table").getByText(keyId, { exact: true })).toBeVisible()
 
   // A canceled confirmation must not send the destructive mutation.
@@ -199,7 +199,7 @@ test("consent revocation posts to the subject's tenant path", async ({ page }) =
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/oidc-consents")
+  await page.goto("/realm/oidc-consents")
   await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   const confirmation = page.getByRole("alertdialog")
@@ -246,7 +246,7 @@ test("protocol documents read the well-known endpoints and stay read-only", asyn
     })
   })
 
-  await page.goto("/admin/protocol-documents")
+  await page.goto("/realm/protocol-documents")
 
   await expect(page.getByText("https://auth.example", { exact: true }).first()).toBeVisible()
   await expect(page.locator("[data-read-only-notice]")).toBeVisible()
@@ -260,7 +260,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto("/admin/oidc-clients")
+  await page.goto("/realm/oidc-clients")
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
   await page.route(realmApiPath, async (route) =>
@@ -271,7 +271,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 403,
     }),
   )
-  await page.goto(`/admin/oidc-clients/${clientId}`)
+  await page.goto(`/realm/oidc-clients/${clientId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("stronger")
 
   await page.route(realmApiPath, async (route) =>
@@ -280,6 +280,6 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
       status: 404,
     }),
   )
-  await page.goto(`/admin/oidc-clients/${clientId}`)
+  await page.goto(`/realm/oidc-clients/${clientId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("different realm")
 })

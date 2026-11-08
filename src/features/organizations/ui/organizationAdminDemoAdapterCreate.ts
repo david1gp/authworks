@@ -13,6 +13,8 @@ import type { ExternalIdentityProvider } from "../../externalIdentities/public/e
 import { passwordPolicyDefaults } from "../../passwords/domain/passwordPolicyDefaults.js"
 import type { PasswordPolicy } from "../../passwords/public/passwordPolicySchema.js"
 import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
+import { organizationSlugSuggest } from "../domain/organizationSlugSuggest.js"
+import { organizationSlugUniqueResolve } from "../domain/organizationSlugUniqueResolve.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
 import type { OrganizationInvitation } from "../public/organizationInvitationSchema.js"
@@ -260,19 +262,32 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         }
         return { membership: { ...(found ?? memberships[0]!) } }
       }),
-    organizationCreate: (input) =>
-      guard("organizationAdminDemoOrganizationCreate", () => {
+    organizationCreate: (input) => {
+      const slug = organizationSlugUniqueResolve(organizationSlugSuggest(input.name), (candidate) =>
+        resultCreate(organizations.some((organization) => organization.slug === candidate)),
+      )
+      if (!slug.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationAdminDemoOrganizationCreate",
+            "The organization slug is invalid.",
+            "organizations.invalid",
+          ),
+        )
+      return guard("organizationAdminDemoOrganizationCreate", () => {
         const organization: Organization = {
           createdAt: now,
           id: demoResourceIdGenerate(),
           name: input.name,
           realmId: demoRealmId,
+          slug: slug.data,
           status: "active",
           updatedAt: now,
         }
         organizations.push(organization)
         return { organization }
-      }),
+      })
+    },
     organizationGet: (organizationId) =>
       guard("organizationAdminDemoOrganizationGet", () => ({
         organization: organizations.find((item) => item.id === organizationId) ?? organizations[0]!,
@@ -302,7 +317,8 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     organizationUpdate: (organizationId, input) =>
       guard("organizationAdminDemoOrganizationUpdate", () => {
         const found = organizations.find((item) => item.id === organizationId) ?? organizations[0]!
-        found.name = input.name
+        if (input.name !== undefined) found.name = input.name
+        if (input.slug !== undefined) found.slug = input.slug
         found.updatedAt = now
         return { organization: { ...found } }
       }),

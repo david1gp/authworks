@@ -6,7 +6,7 @@ export function ImpersonationAdminProductionAdapter() {
   const state = impersonationAdminProductionStateCreate()
   return (
     <>
-      <ImpersonationAdminView basePath="/admin" state={state} />
+      <ImpersonationAdminView basePath={state.basePath} state={state} />
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
     </>
   )

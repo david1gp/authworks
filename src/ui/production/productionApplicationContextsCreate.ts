@@ -71,31 +71,34 @@ export async function productionApplicationContextsCreate(): Promise<{
   // the realm id as the label. `productionJsonGet` already swallows failures into `undefined`.
   void realm
   // Realm administrators may switch into any active organization, not just their memberships.
-  const allOrganizations =
-    session.subjectType === "user" && user?.capabilities?.realmAdministrator === true
-      ? await productionJsonGet(
-          `/realms/${encodeURIComponent(realmId)}/organizations`,
-          organizationListResponseSchema,
-          "productionOrganizationTenantList",
-        )
-      : undefined
+  // Bootstrap sessions carry no memberships, so they read the same tenant list: without it the
+  // organization list has no slugs and every `/orgs/{slug}` URL (and `/admin/*` redirect) breaks.
+  const realmAdministratorSession =
+    session.subjectType === "bootstrap_admin" ||
+    (session.subjectType === "user" && user?.capabilities?.realmAdministrator === true)
+  const allOrganizations = realmAdministratorSession
+    ? await productionJsonGet(
+        `/realms/${encodeURIComponent(realmId)}/organizations`,
+        organizationListResponseSchema,
+        "productionOrganizationTenantList",
+      )
+    : undefined
   const organizations = (
-    allOrganizations?.items.map((item) => ({ id: item.id, imageUrl: undefined, label: item.name })) ??
+    allOrganizations?.items.map((item) => ({
+      id: item.id,
+      imageUrl: undefined,
+      label: item.name,
+      slug: item.slug,
+    })) ??
     memberships?.items.map((item) => ({
       id: item.organization.id,
       imageUrl: organizationBrandingIconUrlSelect(item.branding),
       label: item.organization.name,
-    })) ?? [{ id: discovery.organization.id, imageUrl: undefined, label: discovery.organization.name }]
+      slug: item.organization.slug,
+    })) ?? [{ id: discovery.organization.id, imageUrl: undefined, label: discovery.organization.name, slug: undefined }]
   ).filter((item, index, items) => items.findIndex((other) => other.id === item.id) === index)
-  const requestedOrganization = v.safeParse(
-    organizationResourceIdSchema,
-    new URL(window.location.href).searchParams.get("organization"),
-  )
   const selectedOrganization =
     organizations.find((item) => item.id === session.organizationId) ??
-    (session.organizationId === undefined
-      ? organizations.find((item) => item.id === (requestedOrganization.success ? requestedOrganization.output : ""))
-      : undefined) ??
     organizations.find((item) => item.id === discovery.organization.id) ??
     organizations[0]
 
@@ -126,7 +129,6 @@ export async function productionApplicationContextsCreate(): Promise<{
       )
     const currentOrganization = organization.get()
     if (typeof currentOrganization === "object" && currentOrganization.organizationId === selected.output) {
-      productionOrganizationUrlUpdate(selected.output)
       return resultCreate(undefined)
     }
 
@@ -158,8 +160,24 @@ export async function productionApplicationContextsCreate(): Promise<{
         "platform.invalid-response",
       )
     organization.set({ organizationId: selected.output, status: "available" })
-    productionOrganizationUrlUpdate(selected.output)
     return resultCreate(undefined)
+  }
+
+  // The URL slug wins over the session: resolve the selected org from the path and keep the
+  // server session in sync through the existing switch endpoint. Unknown slugs never fall back
+  // to another org; guards then render the inaccessible panel.
+  const urlOrganizationSlug = productionUrlOrganizationSlugGet(new URL(window.location.href).pathname)
+  if (urlOrganizationSlug !== undefined) {
+    const urlOrganization = organizations.find((item) => item.slug === urlOrganizationSlug)
+    if (urlOrganization === undefined) {
+      organization.set("missing")
+    } else {
+      const current = organization.get()
+      if (typeof current !== "object" || current.organizationId !== urlOrganization.id) {
+        const switched = await organizationSelect(urlOrganization.id)
+        if (!switched.success) organization.set("missing")
+      }
+    }
   }
 
   const membershipsByOrganization = new Map(
@@ -269,10 +287,10 @@ function productionAnonymousSessionCreate(realmId: string, organizationId: strin
   } satisfies ProductionSessionContextValue
 }
 
-function productionOrganizationUrlUpdate(organizationId: string) {
-  const next = new URL(window.location.href)
-  next.searchParams.set("organization", organizationId)
-  window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
+function productionUrlOrganizationSlugGet(pathname: string): string | undefined {
+  const segments = pathname.split("/").filter(Boolean)
+  if (segments[0] !== "orgs" || segments.length < 2) return undefined
+  return segments[1]
 }
 
 function productionContextsCreate(options: {

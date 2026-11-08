@@ -18,7 +18,7 @@ const issueKindSchema = v.picklist(["api_key", "personal_access_token"])
  */
 export function machineAdminScreenStateCreate(options: {
   readonly adapter: MachineAdminAdapter
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly issuedSecretSeed?: () => MachineAdminIssuedSecret | undefined
   readonly machineUserId: () => string | undefined
   readonly now: () => number
@@ -28,6 +28,7 @@ export function machineAdminScreenStateCreate(options: {
 }) {
   // Destructive prompts are rendered in-app, so they are translated and always cancelable.
   const confirmState = confirmStateCreate()
+  const basePath = () => (typeof options.basePath === "function" ? options.basePath() : options.basePath)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -91,13 +92,13 @@ export function machineAdminScreenStateCreate(options: {
       issueKindSet,
       issueOpen: () => dialogOpen("credential"),
       issueOpenSet: dialogOpenSet("credential"),
-      onRemoved: () => navigate(`${options.basePath}/machine-users`),
+      onRemoved: () => navigate(`${basePath()}/machine-users`),
       page,
     }),
     list: machineAdminListViewStateCreate({
       createOpen: () => dialogOpen("machine-user"),
       createOpenSet: dialogOpenSet("machine-user"),
-      machineUserOpen: (id) => navigate(`${options.basePath}/machine-users/${id}`),
+      machineUserOpen: (id) => navigate(`${basePath()}/machine-users/${id}`),
       page,
       search,
       searchSet: (value: string) =>

@@ -1,4 +1,6 @@
+import { useLocation } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { directoryRolesPageStateCreate } from "./directoryRolesPageStateCreate.js"
 import { directoryRolesProductionAdapterCreate } from "./directoryRolesProductionAdapterCreate.js"
@@ -7,6 +9,13 @@ import { directoryRolesViewStateCreate } from "./directoryRolesViewStateCreate.j
 /** Binds the roles screen to realm-scoped browser clients and the active session context. */
 export function directoryRolesProductionStateCreate() {
   const session = productionSessionContextGet()
+  const location = useLocation()
+  const organizationBasePath = () =>
+    productionOrganizationBasePathGet({
+      organizationId: organizationId() === "" ? undefined : organizationId(),
+      organizations: session.organizations,
+      pathname: location.pathname,
+    })
   const realmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
@@ -34,7 +43,7 @@ export function directoryRolesProductionStateCreate() {
     confirm: confirmState.confirm,
     organizationId,
   })
-  const view = directoryRolesViewStateCreate({ asParam: () => undefined, basePath: "/admin", page })
+  const view = directoryRolesViewStateCreate({ asParam: () => undefined, basePath: organizationBasePath, page })
 
   return { confirmState, view }
 }

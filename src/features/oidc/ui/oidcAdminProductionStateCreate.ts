@@ -15,7 +15,7 @@ export function oidcAdminProductionStateCreate(options: {
 
   return oidcAdminScreenStateCreate({
     adapter: oidcAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
-    basePath: "/admin",
+    basePath: "/realm",
     clientId: options.clientId,
     screen: options.screen,
   })

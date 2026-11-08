@@ -19,13 +19,13 @@ export async function adminRealmAdministratorScopeCheck(setup: AdminRealmAdminis
   // Switch to the realm context through the administration context switcher.
   await page.locator("[data-admin-context-switcher]").click()
   await page.locator('[data-admin-context-option="realm"]').click()
-  await expect(page).toHaveURL(/\/admin\/realm(?:[?#]|$)/, { timeout: 30_000 })
+  await expect(page).toHaveURL(/\/realm(?:[?#]|$)/, { timeout: 30_000 })
   await expect(page.getByRole("link", { name: "Administrators" }).first()).toBeVisible()
 
   // Back to an organization to exercise the all-organizations user scope.
   await page.locator("[data-admin-context-switcher]").click()
   await page.locator('[data-admin-context-option="organization"]').first().click()
-  await expect(page).toHaveURL(/\/admin\/users/, { timeout: 30_000 })
+  await expect(page).toHaveURL(/\/orgs\/[^/]+\/users/, { timeout: 30_000 })
   await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 
   const scope = page.getByLabel("Organizations")

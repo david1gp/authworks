@@ -3,7 +3,7 @@ import type { AdminMemberDeniedSetup } from "./adminMemberDeniedSetupCreate.js"
 
 /**
  * Signs the plain member in through the hosted login and verifies the role-aware landing:
- * members without `return_to` land on `/account`, not `/admin/users`. Note the member may
+ * members without `return_to` land on `/account`, not the admin users page. Note the member may
  * belong to several organizations; sign-in uses discovery (Authworks Dev) so navigation
  * settles deterministically before assertions run.
  */

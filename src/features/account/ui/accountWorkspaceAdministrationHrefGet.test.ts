@@ -10,45 +10,73 @@ const guard: ProductionRouteGuardContext = {
   realm: { realmId: "realm", status: "available" },
 }
 
+const organizations = [{ id: "active", slug: "active-org" }]
+
 describe("account administration continuation", () => {
-  test("offers administration to realm administrators without an active organization", () => {
+  test("offers realm overview to realm administrators without an active organization", () => {
     expect(
-      accountWorkspaceAdministrationHrefGet({
-        ...guard,
-        access: { organizationRoles: [], realmAdministrator: true },
-        organization: "missing",
-      }),
-    ).toBe("/admin/users")
+      accountWorkspaceAdministrationHrefGet(
+        {
+          ...guard,
+          access: { organizationRoles: [], realmAdministrator: true },
+          organization: "missing",
+        },
+        organizations,
+      ),
+    ).toBe("/realm")
   })
 
   test.each(["owner", "admin"] as const)("offers administration to an active organization %s", (role) => {
     expect(
-      accountWorkspaceAdministrationHrefGet({
-        ...guard,
-        access: { organizationRoles: [role], realmAdministrator: false },
-      }),
-    ).toBe("/admin/users")
+      accountWorkspaceAdministrationHrefGet(
+        {
+          ...guard,
+          access: { organizationRoles: [role], realmAdministrator: false },
+        },
+        organizations,
+      ),
+    ).toBe("/orgs/active-org/users")
+  })
+
+  test("offers nothing when the active organization slug is unknown", () => {
+    expect(
+      accountWorkspaceAdministrationHrefGet(
+        {
+          ...guard,
+          access: { organizationRoles: ["owner"], realmAdministrator: false },
+        },
+        [],
+      ),
+    ).toBeUndefined()
   })
 
   test.each(["member", "guest"] as const)("does not offer administration to an ordinary %s", (role) => {
     expect(
-      accountWorkspaceAdministrationHrefGet({
-        ...guard,
-        access: { organizationRoles: [role], realmAdministrator: false },
-      }),
+      accountWorkspaceAdministrationHrefGet(
+        {
+          ...guard,
+          access: { organizationRoles: [role], realmAdministrator: false },
+        },
+        organizations,
+      ),
     ).toBeUndefined()
   })
 
   test("does not expose administration for unresolved access or stale organization roles", () => {
-    expect(accountWorkspaceAdministrationHrefGet({ ...guard, access: "loading" })).toBeUndefined()
+    expect(accountWorkspaceAdministrationHrefGet({ ...guard, access: "loading" }, organizations)).toBeUndefined()
     expect(
-      accountWorkspaceAdministrationHrefGet({
-        ...guard,
-        access: { organizationRoles: ["admin"], realmAdministrator: false },
-        organization: "loading",
-      }),
+      accountWorkspaceAdministrationHrefGet(
+        {
+          ...guard,
+          access: { organizationRoles: ["admin"], realmAdministrator: false },
+          organization: "loading",
+        },
+        organizations,
+      ),
     ).toBeUndefined()
-    expect(accountWorkspaceAdministrationHrefGet({ ...guard, authentication: "anonymous" })).toBeUndefined()
-    expect(accountWorkspaceAdministrationHrefGet({ ...guard, realm: "missing" })).toBeUndefined()
+    expect(
+      accountWorkspaceAdministrationHrefGet({ ...guard, authentication: "anonymous" }, organizations),
+    ).toBeUndefined()
+    expect(accountWorkspaceAdministrationHrefGet({ ...guard, realm: "missing" }, organizations)).toBeUndefined()
   })
 })

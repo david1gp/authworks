@@ -13,7 +13,7 @@ export async function adminOrgAdminLimitsRoleChange(setup: AdminOrgAdminLimitsSe
   await adminOrgAdminLimitsSessionEnsure(setup)
 
   await page.goto(`/admin/users/${encodeURIComponent(setup.ownerUserId)}`)
-  await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\/.+/, { timeout: 30_000 })
   await expect(page.getByText(`@${setup.ownerUserName}`).first()).toBeVisible()
   await page.getByRole("link", { name: "Roles and access" }).click()
 
@@ -23,7 +23,7 @@ export async function adminOrgAdminLimitsRoleChange(setup: AdminOrgAdminLimitsSe
   await expect(ownerOwnerCard).toBeChecked()
 
   await page.goto(`/admin/users/${encodeURIComponent(setup.memberUserId)}`)
-  await page.waitForURL(/\/admin\/users\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users\/.+/, { timeout: 30_000 })
   await expect(page.getByText(`@${setup.memberUserName}`).first()).toBeVisible()
   await page.getByRole("link", { name: "Roles and access" }).click()
 

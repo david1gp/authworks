@@ -35,11 +35,13 @@ const policy = {
   forceMfaLocalOnly: false,
 }
 
+const organizationSlug = "northwind-labs"
 const organization = {
   createdAt: 1_700_000_000_000,
   id: organizationId,
   name: organizationName,
   realmId,
+  slug: organizationSlug,
   status: "active",
   updatedAt: 1_700_000_100_000,
 }
@@ -185,30 +187,31 @@ const project = {
   updatedAt: 1,
 }
 
+const adminUserId = "01900000-0000-7000-8000-0000000000b1"
+
 test.beforeEach(async ({ page }) => {
   await productionAdminSessionBootstrap(page, { organizationId, organizationName, realmId })
-  await page.route(`**/realms/${realmId}/me/organizations`, (route) =>
+  // Organization slug URLs resolve through the session organization list, which is only
+  // populated for user sessions, so the bootstrap session is overridden with a user session
+  // here. The per-test backend mock below serves the matching /me payloads.
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) =>
     route.fulfill({
       json: {
-        items: [{ membership: { ...membership, roles: ["owner"] }, organization }],
-      },
-    }),
-  )
-  await page.route(`**/realms/${realmId}/me`, (route) =>
-    route.fulfill({
-      json: {
-        capabilities: { realmAdministrator: true, realmRead: true },
-        user: {
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
           createdAt: 1_700_000_000_000,
-          email: "admin@customer.example",
-          emailVerified: true,
-          id: "01900000-0000-7000-8000-0000000000b1",
-          profile: { displayName: "Customer admin" },
+          current: true,
+          device: {},
+          expiresAt: 1_700_000_900_000,
+          id: "01900000-0000-7000-8000-0000000000a1",
+          lastUsedAt: 1_700_000_000_000,
+          organizationId,
           realmId,
-          state: "active",
-          updatedAt: 1_700_000_000_000,
-          userName: "customer-admin",
-          verificationState: "verified",
+          revokedAt: null,
+          subjectId: adminUserId,
+          subjectType: "user",
+          userId: adminUserId,
         },
       },
     }),
@@ -220,6 +223,32 @@ async function realmBackendMock(page: Page, handler: (route: Route, pathname: st
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
+    // The per-test handlers below are registered after beforeEach, so the session payloads
+    // live here: the user session, its owner membership (slug included), and the tenant list
+    // that realm administrators resolve slugs through.
+    if (pathname === `/realms/${realmId}/me/organizations`)
+      return route.fulfill({
+        json: { items: [{ membership: { ...membership, roles: ["owner"] }, organization }] },
+      })
+    if (pathname === `/realms/${realmId}/me`)
+      return route.fulfill({
+        json: {
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user: {
+            createdAt: 1_700_000_000_000,
+            email: "admin@customer.example",
+            emailVerified: true,
+            id: adminUserId,
+            profile: { displayName: "Customer admin" },
+            realmId,
+            state: "active",
+            updatedAt: 1_700_000_000_000,
+            userName: "customer-admin",
+            verificationState: "verified",
+          },
+        },
+      })
+    if (pathname === `/realms/${realmId}/organizations`) return route.fulfill({ json: { items: [organization] } })
     return handler(route, pathname)
   })
 }
@@ -243,7 +272,7 @@ test("verifying a tenant domain posts to the dedicated path with CSRF", async ({
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/configuration/domains")
+  await page.goto(`/orgs/${organizationSlug}/configuration/domains`)
 
   await expect(page.getByText(domain.domain, { exact: true })).toBeVisible()
   const verifyResponse = page.waitForResponse(
@@ -272,7 +301,7 @@ test("revoking an organization invitation posts to the tenant revoke path", asyn
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/users?tab=invitations")
+  await page.goto(`/orgs/${organizationSlug}/users?tab=invitations`)
 
   await expect(page.getByText("1 invitation", { exact: true })).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole("table").getByText(invitation.email, { exact: true })).toBeVisible()
@@ -306,7 +335,7 @@ test("revoking an administrator session deletes the admin session path", async (
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/sessions")
+  await page.goto("/realm/sessions")
 
   await expect(page.getByText(sessionId, { exact: true }).first()).toBeVisible()
   const revokeResponse = page.waitForResponse(
@@ -349,7 +378,7 @@ test("saving the login policy persists the session lifetime with CSRF", async ({
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto("/admin/login-policy")
+  await page.goto("/realm/login-policy")
 
   const lifetime = page.locator("#policy-session-lifetime")
   await expect(lifetime).toBeVisible()
@@ -377,7 +406,7 @@ test("editing an OIDC client persists redirect URIs and the project link", async
     return route.fulfill({ json: { items: [] } })
   })
 
-  await page.goto(`/admin/oidc-clients/${clientId}`)
+  await page.goto(`/realm/oidc-clients/${clientId}`)
 
   const redirects = page.locator("#oidc-detail-redirects")
   await expect(redirects).toBeVisible()

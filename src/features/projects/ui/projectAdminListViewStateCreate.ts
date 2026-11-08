@@ -7,7 +7,7 @@ import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
 /** View state for the project directory: debounced search, status filter, create dialog, and navigation. */
 export function projectAdminListViewStateCreate(options: {
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly createOpen: () => boolean
   readonly createOpenSet: (open: boolean) => void
   readonly organizationId: () => string | undefined
@@ -56,7 +56,10 @@ export function projectAdminListViewStateCreate(options: {
     name,
     organizationId,
     page: options.page,
-    projectHref: (projectId: string) => options.withActor(`${options.basePath}/projects/${projectId}`),
+    projectHref: (projectId: string) => {
+      const basePath = typeof options.basePath === "function" ? options.basePath() : options.basePath
+      return options.withActor(`${basePath}/projects/${projectId}`)
+    },
     search: options.search,
     searchInput,
     searchSet: options.searchSet,

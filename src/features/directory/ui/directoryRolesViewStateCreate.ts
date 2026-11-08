@@ -21,9 +21,10 @@ const dialogSearchSchema = v.object({
  */
 export function directoryRolesViewStateCreate(options: {
   readonly asParam: () => string | undefined
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly page: DirectoryRolesPageState
 }) {
+  const basePath = () => (typeof options.basePath === "function" ? options.basePath() : options.basePath)
   const location = useLocation()
   const navigate = useNavigate()
   type DialogSearch = v.InferOutput<typeof dialogSearchSchema>
@@ -181,10 +182,10 @@ export function directoryRolesViewStateCreate(options: {
       dialog() === "edit-role" && dialogProjectId() === projectId && dialogRoleId() === roleId,
     editRoleOpenSet: (projectId: string, roleId: string) => dialogOpenSet("edit-role", projectId, roleId),
     page: options.page,
-    projectHref: (projectId: string) => withActor(`${options.basePath}/projects/${projectId}`),
+    projectHref: (projectId: string) => withActor(`${basePath()}/projects/${projectId}`),
     projectId,
-    projectsHref: () => withActor(`${options.basePath}/projects`),
-    usersHref: (roleId: string) => withActor(`${options.basePath}/users?role=${encodeURIComponent(roleId)}`),
+    projectsHref: () => withActor(`${basePath()}/projects`),
+    usersHref: (roleId: string) => withActor(`${basePath()}/users?role=${encodeURIComponent(roleId)}`),
   }
 }
 

@@ -11,11 +11,11 @@ export function AdminProductionAdapter(props: { readonly screen: AdminScreen }) 
   return (
     <Switch>
       <Match when={props.screen === "realm"}>
-        <AdminRealmView basePath="/admin" state={state} />
+        <AdminRealmView basePath="/realm" state={state} usersHref={state.usersHref()} />
         <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
       </Match>
       <Match when={true}>
-        <AdminScreenView basePath="/admin" screen={props.screen} state={state} />
+        <AdminScreenView basePath="/realm" screen={props.screen} state={state} />
         <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
       </Match>
     </Switch>

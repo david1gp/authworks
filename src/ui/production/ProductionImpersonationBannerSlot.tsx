@@ -13,7 +13,7 @@ export function ProductionImpersonationBannerSlot() {
       <Show when={state.active()}>
         {(session) => (
           <ImpersonationAdminBanner
-            eventsHref={`/admin/events?aggregateId=${encodeURIComponent(session().sessionId)}`}
+            eventsHref={state.eventsHref(session().sessionId)}
             onEnd={() => void state.end()}
             pending={state.pending()}
             remainingSeconds={state.remainingSeconds()}

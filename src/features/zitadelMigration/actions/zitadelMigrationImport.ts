@@ -12,6 +12,8 @@ import { oidcRepositoryCreate } from "../../oidc/persistence/oidcRepositoryCreat
 import { oidcClientCompatibilitySettingsValidate } from "../../oidc/public/oidcClientCompatibilitySettingsValidate.js"
 import { oidcRedirectUriValidate } from "../../oidc/public/oidcRedirectUriValidate.js"
 import { organizationRolesEncode } from "../../organizations/domain/organizationRolesEncode.js"
+import { organizationSlugSuggest } from "../../organizations/domain/organizationSlugSuggest.js"
+import { organizationSlugUniqueResolve } from "../../organizations/domain/organizationSlugUniqueResolve.js"
 import { organizationDomainRepositoryCreate } from "../../organizations/persistence/organizationDomainRepositoryCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../../organizations/persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../../organizations/persistence/organizationRepositoryCreate.js"
@@ -1058,11 +1060,22 @@ function importOrganization(
   }
   const current = currentById.data
   state.organizationIds.set(input.id, mappedId)
+  let slug: string | null = current?.slug ?? null
+  if (slug === null) {
+    const resolved = organizationSlugUniqueResolve(organizationSlugSuggest(input.name), (candidate) => {
+      const taken = repository.organizationGetBySlug(realmId, candidate)
+      if (!taken.success) return taken
+      return resultCreate(taken.data !== null)
+    })
+    if (!resolved.success) return resolved
+    slug = resolved.data
+  }
   const source = {
     createdAt: input.createdAt,
     id: mappedId,
     name: input.name,
     realmId,
+    slug,
     status: input.status,
     updatedAt: input.updatedAt,
     version: current?.version ?? 1,
@@ -1691,11 +1704,12 @@ function userEqual(
 
 function organizationEqual(
   current: OrganizationRow,
-  source: Readonly<{ createdAt: number; name: string; status: string; updatedAt: number }>,
+  source: Readonly<{ createdAt: number; name: string; slug: string; status: string; updatedAt: number }>,
 ): boolean {
   return (
     current.createdAt === source.createdAt &&
     current.name === source.name &&
+    current.slug === source.slug &&
     current.status === source.status &&
     current.updatedAt === source.updatedAt
   )

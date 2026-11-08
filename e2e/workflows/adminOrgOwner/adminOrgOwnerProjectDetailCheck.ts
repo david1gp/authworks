@@ -12,7 +12,7 @@ export async function adminOrgOwnerProjectDetailCheck(setup: AdminOrgOwnerSetup)
   await page.goto("/admin/projects")
   const projectUrl = `/admin/projects/${setup.projectId}`
   await page.goto(projectUrl)
-  await page.waitForURL(/\/admin\/projects\/.+/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/projects\/.+/, { timeout: 30_000 })
 
   const navigation = page.getByRole("navigation", { name: "Project detail", exact: true })
   await expect(navigation.getByRole("link", { name: "Overview" })).toBeVisible()

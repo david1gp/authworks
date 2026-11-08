@@ -12,7 +12,7 @@ export async function adminOrgOwnerActivityCheck(setup: AdminOrgOwnerSetup): Pro
   const activity = page.getByRole("link", { name: "Activity", exact: true })
   await expect(activity).toBeVisible()
   await activity.click()
-  await expect(page).toHaveURL(/\/admin\/activity(?:[?#].*)?$/)
+  await expect(page).toHaveURL(/\/orgs\/[^/]+\/activity(?:[?#].*)?$/)
   await expect(page.getByRole("heading", { name: /^(Activity|Recent activity)$/i }).first()).toBeVisible()
   await expect(page.getByText(`Organization · ${setup.organizationName}`, { exact: true })).toBeVisible()
   await expect(

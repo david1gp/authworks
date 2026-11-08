@@ -1,7 +1,11 @@
 import { type ChildProcess, spawn } from "node:child_process"
 import { type BrowserContext, expect, type Page } from "@playwright/test"
+import { organizationSlugSuggest } from "../src/features/organizations/domain/organizationSlugSuggest.js"
 import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
+
+// The fixture seeds "E2E Organization" through the API, so the slug is the suggested form.
+const organizationSlug = organizationSlugSuggest("E2E Organization")
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -126,7 +130,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     const adminDiscoveryPromise = page.waitForResponse(
       (response) => new URL(response.url()).pathname === "/organization-discovery",
     )
-    await page.goto("/admin/sign-in")
+    await page.goto("/realm/sign-in")
     await adminDiscoveryPromise
     await page.getByLabel("Bootstrap administrator credential", { exact: true }).fill(fixture.bootstrapAdmin.secret)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
@@ -137,9 +141,9 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     expect(await page.locator("body").textContent()).not.toContain(fixture.machineUser.clientSecret)
 
     await page.reload()
-    await page.goto("/admin/users")
+    await page.goto(`/orgs/${organizationSlug}/users`)
     // The detail route is stable; navigate directly to the member profile.
-    await page.goto(`/admin/users/${fixture.member.id}`)
+    await page.goto(`/orgs/${organizationSlug}/users/${fixture.member.id}`)
     // Sessions and auth methods live on the Security tab of the user detail.
     await page.getByRole("link", { name: "Security", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
@@ -147,7 +151,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await expect(page.getByRole("heading", { name: "Authentication methods", exact: true })).toBeVisible()
     await expect(page.getByText("Email code", { exact: true })).toBeVisible()
     await expect(page.getByText("Available", { exact: true }).first()).toBeVisible()
-    await page.goto("/admin/users")
+    await page.goto(`/orgs/${organizationSlug}/users`)
     await page.getByRole("button", { name: "Create user", exact: true }).click()
     const dialog = page.getByRole("dialog")
     await dialog.getByLabel("Email address", { exact: true }).fill("crud@e2e.authworks.test")
@@ -166,7 +170,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await page.goto(crudProfileHref)
     await expect(page.getByRole("heading", { name: "e2e-crud", exact: true })).toBeVisible()
     const userPath = new URL(page.url()).pathname
-    const deleteApiPath = userPath.replace("/admin/users/", `/realms/${fixture.realm.id}/users/`)
+    const deleteApiPath = userPath.replace(`/orgs/${organizationSlug}/users/`, `/realms/${fixture.realm.id}/users/`)
     const deleteRequestUrls: string[] = []
     page.on("request", (request) => {
       if (request.method() === "DELETE" && new URL(request.url()).pathname === deleteApiPath)
@@ -204,7 +208,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await deleteConfirmation.getByRole("button", { name: "Delete this user", exact: true }).click()
     expect((await deletedResponsePromise).status()).toBe(200)
     // Deletion navigates back to the list via a full reload; the removed user no longer appears there.
-    await expect(page).toHaveURL(/\/admin\/users$/, { timeout: 30000 })
+    await expect(page).toHaveURL(new RegExp(`/orgs/${organizationSlug}/users$`), { timeout: 30000 })
     await expect(page.getByRole("row").filter({ hasText: "e2e-crud" })).toHaveCount(0)
     expect(deleteRequestUrls).toHaveLength(1)
   } finally {
@@ -368,7 +372,9 @@ test("task 17 composed production scenario displays and revokes machine secrets,
 
   try {
     await composedApiProxyInstall(page, fixture)
-    await page.goto(`/login/password?return_to=${encodeURIComponent(`/admin/machine-users/${fixture.machineUser.id}`)}`)
+    await page.goto(
+      `/login/password?return_to=${encodeURIComponent(`/orgs/${organizationSlug}/machine-users/${fixture.machineUser.id}`)}`,
+    )
     await page.getByLabel("Username or email", { exact: true }).fill(fixture.administrator.email)
     await page.getByLabel("Password", { exact: true }).fill(fixture.administrator.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
@@ -376,7 +382,7 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(administratorRecoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
-    await expect(page).toHaveURL(new RegExp(`/admin/machine-users/${fixture.machineUser.id}$`))
+    await expect(page).toHaveURL(new RegExp(`/orgs/${organizationSlug}/machine-users/${fixture.machineUser.id}$`))
 
     await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
     const rotateConfirmation = page.getByRole("alertdialog")
@@ -405,7 +411,7 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.reload()
     await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
-    await page.goto("/admin/users?tab=invitations")
+    await page.goto(`/orgs/${organizationSlug}/users?tab=invitations`)
     await page.getByRole("button", { name: "Invite user", exact: true }).click()
     const inviteDialog = page.getByRole("dialog", { name: "Invite user" })
     await inviteDialog.getByLabel("Email address", { exact: true }).fill(fixture.member.email)

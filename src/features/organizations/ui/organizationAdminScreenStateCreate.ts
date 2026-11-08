@@ -44,10 +44,11 @@ type ThemeColorKey = "backgroundColor" | "fontColor" | "primaryColor" | "warnCol
 
 /** Glues the adapter-driven page state to local form input, URL state, and route links. */
 export function organizationAdminScreenStateCreate(options: {
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly confirmState: ConfirmState
   readonly page: ReturnType<typeof organizationAdminPageStateCreate>
 }) {
+  const basePath = () => (typeof options.basePath === "function" ? options.basePath() : options.basePath)
   const form = organizationAdminFormStateCreate()
   const location = useLocation()
   const navigate = useNavigate()
@@ -101,7 +102,12 @@ export function organizationAdminScreenStateCreate(options: {
     scope: policyScope,
   })
 
-  createEffect(on(options.page.organization, (organization) => form.detailName.set(organization?.name ?? "")))
+  createEffect(
+    on(options.page.organization, (organization) => {
+      form.detailName.set(organization?.name ?? "")
+      form.detailSlug.set(organization?.slug ?? "")
+    }),
+  )
   createEffect(
     on(options.page.branding, (loaded) => {
       if (options.page.status() !== "ready") return
@@ -121,7 +127,7 @@ export function organizationAdminScreenStateCreate(options: {
   )
 
   return {
-    basePath: () => options.basePath,
+    basePath,
     branding,
     brandingLegalUrlSet: (key: "privacyUrl" | "termsUrl", value: string) =>
       brandingUpdate({
@@ -143,7 +149,8 @@ export function organizationAdminScreenStateCreate(options: {
     confirmState: options.confirmState,
     createOpen,
     createOpenSet,
-    detailHrefBuild: (organizationId: string) => `${options.basePath}/organizations/${organizationId}`,
+    detailHrefBuild: (organizationId: string) =>
+      `/orgs/${options.page.organizations().find((item) => item.id === organizationId)?.slug ?? organizationId}`,
     domainClaimOpen,
     domainClaimOpenSet,
     domainClaimPending: domainClaimPending.get,
@@ -183,7 +190,7 @@ export function organizationAdminScreenStateCreate(options: {
       void options.page.invitationCreate(form.invitationEmail.get(), form.invitationRoles.get())
       form.invitationEmail.set("")
     },
-    listHref: () => `${options.basePath}/organizations`,
+    listHref: () => "/realm/organizations",
     membershipAddSubmit: (event: SubmitEvent) => {
       event.preventDefault()
       if (!form.validateMembership()) return
@@ -197,9 +204,9 @@ export function organizationAdminScreenStateCreate(options: {
       if (next.length === 0) return
       void options.page.membershipRolesSet(membership.id, next)
     },
-    membershipsHref: () => `${options.basePath}/memberships`,
-    machineCredentialsHref: () => `${options.basePath}/machine-credentials`,
-    machinesHref: () => `${options.basePath}/machine-users`,
+    membershipsHref: () => `${basePath()}/users`,
+    machineCredentialsHref: () => `${basePath()}/machine-credentials`,
+    machinesHref: () => `${basePath()}/machine-users`,
     page: options.page,
     policyLifetimeSet: (key: PolicyMfaLifetimeKey, rawValue: string) => {
       if (rawValue.trim().length === 0) {
@@ -381,6 +388,17 @@ export function organizationAdminScreenStateCreate(options: {
       const name = form.detailName.get()
       if (!form.validateOrganizationName(name)) return
       void options.page.organizationRename(name)
+    },
+    organizationSlugSubmit: (event: SubmitEvent) => {
+      event.preventDefault()
+      const slug = form.detailSlug.get()
+      if (!form.validateOrganizationSlug(slug)) return
+      void (async () => {
+        const updated = await options.page.organizationSlugSet(slug)
+        if (updated === undefined) return
+        // The slug is part of the URL, so follow the renamed organization to its new path.
+        navigate(location.pathname.replace(/^\/orgs\/[^/]+/, `/orgs/${updated.slug}`))
+      })()
     },
     search,
     searchSet,

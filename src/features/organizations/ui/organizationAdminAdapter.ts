@@ -100,7 +100,7 @@ export type OrganizationAdminAdapter = {
   readonly organizationList: (query?: OrganizationListQuery) => Promise<Result<OrganizationListResponse>>
   readonly organizationUpdate: (
     organizationId: string,
-    input: { readonly name: string },
+    input: { readonly name?: string; readonly slug?: string },
   ) => Promise<Result<OrganizationResponse>>
   readonly passwordPolicyGet: () => Promise<Result<PasswordPolicyResponse>>
   readonly passwordPolicySet: (input: PasswordPolicySetRequest) => Promise<Result<PasswordPolicyResponse>>

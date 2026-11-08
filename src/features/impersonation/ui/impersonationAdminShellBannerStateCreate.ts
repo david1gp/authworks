@@ -1,6 +1,8 @@
+import { useLocation } from "@solidjs/router"
 import { createEffect, createSignal, on, onCleanup } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
@@ -53,8 +55,20 @@ export function impersonationAdminShellBannerStateCreate(options: {
     onCleanup(() => clearInterval(timer))
   })
 
+  const location = useLocation()
+
   return {
     active: active.get,
+    eventsHref: (sessionId: string) => {
+      const organization = session.guard.organization
+      const organizationId = typeof organization === "object" ? organization.organizationId : undefined
+      const base = productionOrganizationBasePathGet({
+        organizationId,
+        organizations: session.organizations,
+        pathname: location.pathname,
+      })
+      return `${base}/activity?aggregateId=${encodeURIComponent(sessionId)}`
+    },
     end: async () => {
       const current = active.get()
       if (current === null) return

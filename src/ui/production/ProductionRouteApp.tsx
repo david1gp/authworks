@@ -3,8 +3,8 @@ import { createEffect, Match, Show, Switch } from "solid-js"
 import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
 import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
-import { AdminProductionAdapter } from "../../features/admin/ui/AdminProductionAdapter.js"
 import { AdminActivityProductionAdapter } from "../../features/admin/ui/AdminActivityProductionAdapter.js"
+import { AdminProductionAdapter } from "../../features/admin/ui/AdminProductionAdapter.js"
 import { adminScreenSchema } from "../../features/admin/ui/adminScreenSchema.js"
 import { DirectoryAdminProductionAdapter } from "../../features/directory/ui/DirectoryAdminProductionAdapter.js"
 import { directoryAdminScreenSchema } from "../../features/directory/ui/directoryAdminScreenSchema.js"
@@ -24,17 +24,14 @@ import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { ProductionAuthenticatedShell } from "./ProductionAuthenticatedShell.js"
 import { ProductionFocusShell } from "./ProductionFocusShell.js"
 import { ProductionStatePanel } from "./ProductionStatePanel.js"
-import { productionAdminRedirectSelect } from "./productionAdminRedirectSelect.js"
 import { productionRouteAppStateCreate } from "./productionRouteAppStateCreate.js"
 import type { ProductionRouteContract } from "./productionRouteContract.js"
 
 export function ProductionRouteApp(props: { readonly route: ProductionRouteContract }) {
   const state = productionRouteAppStateCreate(() => props.route)
   const navigate = useNavigate()
-  const redirect = () =>
-    props.route.feature === "admin" ? productionAdminRedirectSelect(window.location.pathname) : undefined
   createEffect(() => {
-    const target = redirect()
+    const target = state.redirectTarget()
     if (target !== undefined) navigate(target, { replace: true })
   })
   // The hosted login owns its own branded shell and resolves its realm through runtime discovery,
@@ -119,6 +116,12 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
     const guard = props.state.guardState()
     return guard.status === "authenticated" ? guard.realmId : undefined
   }
+  // Organization screens carry the slug in the path; the adapter needs the resolved id,
+  // which the guard context established from that slug (or the session default on realm paths).
+  const guardOrganizationId = () => {
+    const guard = props.state.guardState()
+    return guard.status === "authenticated" ? guard.organizationId : undefined
+  }
   const adminScreen = () => {
     if (props.state.shellKind() !== "admin") return undefined
     const parsed = v.safeParse(adminScreenSchema, props.state.screen()?.key)
@@ -173,7 +176,7 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
       </Match>
       <Match when={organizationAdminScreen() !== undefined}>
         <OrganizationAdminProductionAdapter
-          organizationId={props.state.routeParam("organizationId")}
+          organizationId={guardOrganizationId()}
           screen={organizationAdminScreen()!}
           section={props.state.routeParam("section")}
         />

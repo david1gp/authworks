@@ -1,5 +1,5 @@
 import { AxeBuilder } from "@axe-core/playwright"
-import { expect } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import { e2eBrowserConsoleTest as test } from "./harness/e2eBrowserConsoleTest.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
@@ -122,6 +122,7 @@ test.beforeEach(async ({ page }) => {
               id: "01900000-0000-7000-8000-000000000002",
               name: "Customer identity",
               realmId,
+              slug: "customer-identity",
               status: "active",
               updatedAt: 1_700_000_000_000,
             },
@@ -194,7 +195,7 @@ test("production focus and authenticated shells render without network adapters"
   await page.goto("/invitations")
   await expect(page.getByRole("heading", { name: "Invitations", exact: true })).toBeVisible()
 
-  await page.goto("/admin/users/user-42")
+  await page.goto("/orgs/customer-identity/users/user-42")
   await expect(page.getByRole("heading", { name: "User detail", exact: true })).toBeVisible()
   await expect(
     page
@@ -210,6 +211,166 @@ test("unauthenticated protected routes redirect to login with their destination 
 
   await expect(page).toHaveURL("/login?return_to=%2Fadmin%2Fnot-a-screen%3Ffrom%3Dbookmark%23details")
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
+})
+
+/**
+ * Serves the empty people list behind the slug-redirect tests so the Users heading renders
+ * deterministically without depending on directory content.
+ */
+async function directoryUsersBackendMock(page: Page): Promise<void> {
+  await page.route(/\/organizations\/[^/]+\/users/, async (route) => {
+    const pathname = new URL(route.request().url()).pathname
+    if (pathname.endsWith("/users/summary"))
+      return route.fulfill({ json: { roles: { admin: 0, guest: 0, member: 0, owner: 0 }, total: 0 } })
+    if (pathname.endsWith("/users")) return route.fulfill({ json: { items: [] } })
+    return route.fallback()
+  })
+  await page.route(/\/organizations\/[^/]+\/teams/, async (route) => {
+    const pathname = new URL(route.request().url()).pathname
+    if (pathname.endsWith("/teams")) return route.fulfill({ json: { items: [], unassignedCount: 0 } })
+    return route.fallback()
+  })
+}
+
+test("a removed org deep link redirects to the default organization users page", async ({ page }) => {
+  await directoryUsersBackendMock(page)
+  await page.goto("/admin/users")
+
+  await expect(page).toHaveURL(/\/orgs\/customer-identity\/users$/)
+  await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
+})
+
+test("a removed bare entry point redirects an organization-only user to the default organization", async ({ page }) => {
+  await page.route(`**/realms/${realmId}/me`, (route) =>
+    route.fulfill({
+      json: {
+        capabilities: { realmAdministrator: false, realmRead: true },
+        user: {
+          createdAt: 1_700_000_000_000,
+          email: "user@customer.example",
+          emailVerified: true,
+          id: "01900000-0000-7000-8000-0000000000b1",
+          profile: { displayName: "Customer user" },
+          realmId,
+          state: "active",
+          updatedAt: 1_700_000_000_000,
+          userName: "customer-user",
+          verificationState: "verified",
+        },
+      },
+    }),
+  )
+
+  await page.goto("/admin")
+
+  // The organization page itself is realm-administered, so the redirect target renders the
+  // insufficient-permission panel for organization-only users; the URL still carries the slug.
+  await expect(page).toHaveURL(/\/orgs\/customer-identity$/)
+  await expect(page.getByRole("heading", { name: "Access unavailable" })).toBeVisible()
+})
+
+test("an unknown organization slug renders the inaccessible panel instead of another org", async ({ page }) => {
+  await page.goto("/orgs/unknown-slug/users")
+
+  await expect(page).toHaveURL(/\/orgs\/unknown-slug\/users$/)
+  await expect(page.getByRole("heading", { name: "Destination unavailable" })).toBeVisible()
+})
+
+test("the organization switcher navigates to the same subpath under the new slug", async ({ page }) => {
+  const secondOrganizationId = "01900000-0000-7000-8000-000000000003"
+  const secondOrganizationSlug = "second-organization"
+  const switchRequests: string[] = []
+  await page.route(`**/realms/${realmId}/me/organizations`, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            membership: {
+              createdAt: 1_700_000_000_000,
+              id: "01900000-0000-7000-8000-0000000000c1",
+              organizationId: "01900000-0000-7000-8000-000000000002",
+              realmId,
+              roles: ["owner"],
+              updatedAt: 1_700_000_000_000,
+              userId: "01900000-0000-7000-8000-0000000000b1",
+            },
+            organization: {
+              createdAt: 1_700_000_000_000,
+              id: "01900000-0000-7000-8000-000000000002",
+              name: "Customer identity",
+              realmId,
+              slug: "customer-identity",
+              status: "active",
+              updatedAt: 1_700_000_000_000,
+            },
+          },
+          {
+            membership: {
+              createdAt: 1_700_000_000_000,
+              id: "01900000-0000-7000-8000-0000000000c2",
+              organizationId: secondOrganizationId,
+              realmId,
+              roles: ["owner"],
+              updatedAt: 1_700_000_000_000,
+              userId: "01900000-0000-7000-8000-0000000000b1",
+            },
+            organization: {
+              createdAt: 1_700_000_000_000,
+              id: secondOrganizationId,
+              name: "Second organization",
+              realmId,
+              slug: secondOrganizationSlug,
+              status: "active",
+              updatedAt: 1_700_000_000_000,
+            },
+          },
+        ],
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/sessions/csrf`, (route) => route.fulfill({ json: { csrfToken: "csrf-e2e" } }))
+  await page.route(`**/realms/${realmId}/me/organizations/switch`, async (route) => {
+    switchRequests.push(route.request().postData() ?? "")
+    return route.fulfill({
+      json: {
+        activeOrganizationId: secondOrganizationId,
+        context: {
+          actor: {
+            actorId: "01900000-0000-7000-8000-0000000000b1",
+            assurance: "authenticated",
+            authenticationMethod: "trusted",
+            kind: "user",
+            organizationId: secondOrganizationId,
+            realmId,
+          },
+          actorId: "01900000-0000-7000-8000-0000000000b1",
+          kind: "organization",
+          organizationId: secondOrganizationId,
+          realmId,
+        },
+        organization: {
+          createdAt: 1_700_000_000_000,
+          id: secondOrganizationId,
+          name: "Second organization",
+          realmId,
+          slug: secondOrganizationSlug,
+          status: "active",
+          updatedAt: 1_700_000_000_000,
+        },
+      },
+    })
+  })
+
+  await directoryUsersBackendMock(page)
+  await page.goto("/orgs/customer-identity/users")
+  await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
+
+  await page.locator("[data-admin-context-switcher]").click()
+  await page.locator('[data-admin-context-option="organization"]').filter({ hasText: "Second organization" }).click()
+
+  await expect(page).toHaveURL(new RegExp(`/orgs/${secondOrganizationSlug}/users$`))
+  expect(switchRequests).toHaveLength(1)
+  expect(JSON.parse(switchRequests[0] ?? "{}")).toEqual({ organizationId: secondOrganizationId })
 })
 
 test("an unauthenticated invitation link lands on login with its token preserved", async ({ page }) => {
@@ -290,7 +451,8 @@ test("representative production login, account, and administration views have no
     await page.setViewportSize(viewport)
     for (const path of ["/login/password", "/account", "/admin"]) {
       await page.goto(path)
-      if (path === "/admin") await expect(page).toHaveURL(/\/admin\/users$/)
+      // The removed /admin prefix redirects by permission; the realm administrator lands on /realm.
+      if (path === "/admin") await expect(page).toHaveURL(/\/realm$/)
       await expect(page.locator("main")).toBeVisible()
       if (path === "/admin" && viewport.width === 1280) {
         const identity = page.getByRole("button", { name: "Customer user", exact: true })

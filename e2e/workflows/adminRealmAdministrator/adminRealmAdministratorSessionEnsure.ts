@@ -5,13 +5,14 @@ import { adminRealmAdministratorSignIn } from "./adminRealmAdministratorSignIn.j
 /**
  * Ensures the page holds an authenticated service-user session. Orchestrator resume re-runs
  * the spec with a fresh browser profile while skipping completed steps, so UI steps after
- * `sign-in` must re-authenticate when the session is gone. Leaves the page on `/admin/users`;
- * steps that need a deeper page navigate from there.
+ * `sign-in` must re-authenticate when the session is gone. Leaves the page on the users page
+ * (reached through the removed `/admin/users` deep link); steps that need a deeper page
+ * navigate from there.
  */
 export async function adminRealmAdministratorSessionEnsure(setup: AdminRealmAdministratorSetup): Promise<void> {
   const page = setup.context.page
   await page.goto("/admin/users")
-  await page.waitForURL(/\/admin\/users|\/login/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users|\/login/, { timeout: 30_000 })
   // The guard bounces to /login asynchronously after the session check resolves, so the
   // URL sampled right after navigation can still be /admin/users on a signed-out page.
   // Wait for a settled marker before branching.
@@ -22,6 +23,6 @@ export async function adminRealmAdministratorSessionEnsure(setup: AdminRealmAdmi
     await adminRealmAdministratorSignIn(page, setup)
     return
   }
-  await page.waitForURL(/\/admin\/users/, { timeout: 30_000 })
+  await page.waitForURL(/\/orgs\/[^/]+\/users/, { timeout: 30_000 })
   await expect(page.getByRole("heading", { name: "Users" }).first()).toBeVisible()
 }

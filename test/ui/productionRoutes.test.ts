@@ -18,7 +18,7 @@ import type { ProductionRouteGuardContext } from "../../src/ui/production/produc
 import { productionRouteGuardStateCreate } from "../../src/ui/production/productionRouteGuardStateCreate.js"
 import { productionRouteParamGet } from "../../src/ui/production/productionRouteParamGet.js"
 import { productionRouteScreenSelect } from "../../src/ui/production/productionRouteScreenSelect.js"
-import { productionShellNavigationGroups } from "../../src/ui/production/productionShellNavigationGroups.js"
+import { productionShellNavigationGroupsCreate } from "../../src/ui/production/productionShellNavigationGroupsCreate.js"
 import { productionShellNavigationLinkVisible } from "../../src/ui/production/productionShellNavigationLinkVisible.js"
 
 describe("production route contracts", () => {
@@ -42,7 +42,17 @@ describe("production route contracts", () => {
       expect(route.path.startsWith("/")).toBe(true)
       expect(route.screens.length).toBeGreaterThan(0)
       for (const screen of route.screens) {
-        expect(screen.path.startsWith(`/${route.path.split("/")[1]}`)).toBe(true)
+        // The administration route spans two URL prefixes plus the legacy sign-in exception;
+        // every other route keeps a single prefix.
+        if (route.path === "/orgs/:orgSlug") {
+          const adminPrefixes = ["/orgs/", "/realm"]
+          expect(
+            adminPrefixes.some((prefix) => screen.path.startsWith(prefix)),
+            screen.path,
+          ).toBe(true)
+        } else {
+          expect(screen.path.startsWith(`/${route.path.split("/")[1]}`)).toBe(true)
+        }
         expect(screen.contracts.length).toBeGreaterThan(0)
       }
     }
@@ -97,7 +107,36 @@ describe("production route contracts", () => {
       ]),
     )
     expect(productionRouteContractMap.invitations.screens.map((screen) => screen.path)).toContain("/invitations/accept")
-    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).toContain("/admin/users/:userId")
+    expect(productionRouteContractMap.admin.path).toBe("/orgs/:orgSlug")
+    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).toEqual(
+      expect.arrayContaining([
+        "/orgs/:orgSlug",
+        "/orgs/:orgSlug/users",
+        "/orgs/:orgSlug/users/:userId",
+        "/orgs/:orgSlug/roles",
+        "/orgs/:orgSlug/projects",
+        "/orgs/:orgSlug/projects/:projectId",
+        "/orgs/:orgSlug/configuration/:section",
+        "/orgs/:orgSlug/machine-users/:machineUserId",
+        "/orgs/:orgSlug/machine-credentials",
+        "/orgs/:orgSlug/impersonation",
+        "/orgs/:orgSlug/activity",
+        "/realm",
+        "/realm/activity",
+        "/realm/administrators",
+        "/realm/organizations",
+        "/realm/login-policy",
+        "/realm/oidc-clients",
+        "/realm/oidc-clients/:clientId",
+        "/realm/signing-keys",
+        "/realm/oidc-consents",
+        "/realm/protocol-documents",
+        "/realm/sessions",
+        "/realm/events",
+        "/realm/whatsapp",
+        "/realm/sign-in",
+      ]),
+    )
 
     const userDetail = productionRouteContractMap.admin.screens.find((screen) => screen.key === "user-detail")
     expect(userDetail?.contracts).toEqual(expect.arrayContaining(["users.get", "users.profile"]))
@@ -106,14 +145,38 @@ describe("production route contracts", () => {
     )
     for (const removed of [
       "/admin",
+      "/admin/activity",
       "/admin/branding",
+      "/admin/configuration",
+      "/admin/configuration/:section",
       "/admin/domains",
+      "/admin/events",
+      "/admin/impersonation",
+      "/admin/login-policy",
+      "/admin/machine-credentials",
+      "/admin/machine-users",
+      "/admin/machine-users/:machineUserId",
       "/admin/memberships",
       "/admin/invitations",
-      "/admin/machine-users",
+      "/admin/oidc-clients",
+      "/admin/oidc-clients/:clientId",
+      "/admin/oidc-consents",
+      "/admin/organizations",
+      "/admin/organizations/:organizationId",
+      "/admin/projects",
+      "/admin/projects/:projectId",
       "/admin/projects/:projectId/applications",
       "/admin/projects/:projectId/roles-grants",
       "/admin/projects/:projectId/effective-access",
+      "/admin/protocol-documents",
+      "/admin/realm",
+      "/admin/realm/administrators",
+      "/admin/roles",
+      "/admin/sessions",
+      "/admin/signing-keys",
+      "/admin/users",
+      "/admin/users/:userId",
+      "/admin/whatsapp",
     ])
       expect(
         productionRouteContractMap.admin.screens.map((screen) => screen.path),
@@ -129,7 +192,7 @@ describe("production route contracts", () => {
         expect(catalogKeys.has(screen.title), `${screen.path} title must be a typed key`).toBe(true)
       }
     }
-    for (const groups of Object.values(productionShellNavigationGroups)) {
+    for (const groups of Object.values(productionShellNavigationGroupsCreate("acme"))) {
       for (const group of groups) {
         if (group.label !== null) expect(catalogKeys.has(group.label), `${group.label} must be a typed key`).toBe(true)
         for (const item of group.items) {
@@ -141,7 +204,7 @@ describe("production route contracts", () => {
 
   test("keeps semantic icons on every authenticated navigation group and item", () => {
     const navigationGroups = Object.values(
-      productionShellNavigationGroups,
+      productionShellNavigationGroupsCreate("acme"),
     ) as readonly (readonly ProductionNavigationGroup[])[]
     for (const groups of navigationGroups) {
       for (const group of groups) {
@@ -149,17 +212,19 @@ describe("production route contracts", () => {
       }
     }
 
-    expect(productionShellNavigationGroups.admin[0]?.items[0]?.icon).toBeDefined()
+    expect(productionShellNavigationGroupsCreate("acme").admin[0]?.items[0]?.icon).toBeDefined()
   })
 
   test("resolves shell labels that share an English value through distinct unambiguous keys", () => {
-    const adminUsers = productionShellNavigationGroups.admin[0]?.items[0]
-    expect(adminUsers?.href).toBe("/admin/users")
+    const adminUsers = productionShellNavigationGroupsCreate("acme").admin[0]?.items[0]
+    expect(adminUsers?.href).toBe("/orgs/acme/users")
     expect(adminUsers?.label).toBe("shell.nav.users")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.label === "shell.nav.oidcGroup")
-    const adminConsents = realmGroup?.items.find((item) => item.href === "/admin/oidc-consents")
+    const realmGroup = productionShellNavigationGroupsCreate("acme").admin.find(
+      (group) => group.label === "shell.nav.oidcGroup",
+    )
+    const adminConsents = realmGroup?.items.find((item) => item.href === "/realm/oidc-consents")
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
 
@@ -334,39 +399,78 @@ describe("production shell state", () => {
   test("selects exact and parameterized screens without falling back for inaccessible paths", () => {
     expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account")?.key).toBe("overview")
     expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account/sessions")).toBeUndefined()
-    expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/users/user-42")?.key).toBe(
+    expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/orgs/acme/users/user-42")?.key).toBe(
       "user-detail",
     )
-    expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/not-a-screen")).toBeUndefined()
+    expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/orgs/acme/not-a-screen")).toBeUndefined()
+    expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/realm/not-a-screen")).toBeUndefined()
+  })
+
+  test("resolves organization screens by slug and realm screens by prefix", () => {
+    const admin = productionRouteContractMap.admin
+
+    for (const [pathname, key] of [
+      ["/orgs/acme", "organization-detail"],
+      ["/orgs/acme/users", "users"],
+      ["/orgs/acme/users/user-42", "user-detail"],
+      ["/orgs/acme/roles", "roles"],
+      ["/orgs/acme/projects", "projects"],
+      ["/orgs/acme/projects/project-9", "project-detail"],
+      ["/orgs/acme/configuration/branding", "configuration"],
+      ["/orgs/acme/machine-users/machine-user-1", "machine-user-detail"],
+      ["/orgs/acme/machine-credentials", "machine-credentials"],
+      ["/orgs/acme/impersonation", "impersonation"],
+      ["/orgs/acme/activity", "activity"],
+      ["/realm", "realm"],
+      ["/realm/activity", "activity"],
+      ["/realm/administrators", "realm-administrators"],
+      ["/realm/organizations", "organizations"],
+      ["/realm/login-policy", "login-policy"],
+      ["/realm/oidc-clients", "oidc-clients"],
+      ["/realm/oidc-clients/client-1", "oidc-client-detail"],
+      ["/realm/signing-keys", "signing-keys"],
+      ["/realm/oidc-consents", "oidc-consents"],
+      ["/realm/protocol-documents", "protocol-documents"],
+      ["/realm/sessions", "sessions"],
+      ["/realm/events", "audit-events"],
+      ["/realm/whatsapp", "whatsapp"],
+      ["/realm/sign-in", "sign-in"],
+    ] as const)
+      expect(productionRouteScreenSelect(admin, pathname)?.key, pathname).toBe(key)
+
+    const userDetail = productionRouteScreenSelect(admin, "/orgs/acme/users/user-42")
+    expect(productionRouteParamGet(userDetail?.path ?? "", "/orgs/acme/users/user-42", "orgSlug")).toBe("acme")
+    expect(productionRouteParamGet(userDetail?.path ?? "", "/orgs/acme/users/user-42", "userId")).toBe("user-42")
   })
 
   test("resolves project detail without legacy project sub-route screens", () => {
     const admin = productionRouteContractMap.admin
     for (const removed of [
-      "/admin/projects/project-9/applications",
-      "/admin/projects/project-9/roles-grants",
-      "/admin/projects/project-9/effective-access",
+      "/orgs/acme/projects/project-9/applications",
+      "/orgs/acme/projects/project-9/roles-grants",
+      "/orgs/acme/projects/project-9/effective-access",
     ])
       expect(productionRouteScreenSelect(admin, removed)).toBeUndefined()
 
-    const screen = productionRouteScreenSelect(admin, "/admin/projects/project-9")
+    const screen = productionRouteScreenSelect(admin, "/orgs/acme/projects/project-9")
     expect(screen?.key).toBe("project-detail")
-    expect(productionRouteParamGet(screen?.path ?? "", "/admin/projects/project-9", "projectId")).toBe("project-9")
+    expect(productionRouteParamGet(screen?.path ?? "", "/orgs/acme/projects/project-9", "orgSlug")).toBe("acme")
+    expect(productionRouteParamGet(screen?.path ?? "", "/orgs/acme/projects/project-9", "projectId")).toBe("project-9")
     expect(
-      productionRouteParamGet("/admin/projects/:projectId", "/admin/projects/project-9", "missing"),
+      productionRouteParamGet("/orgs/acme/projects/:projectId", "/orgs/acme/projects/project-9", "missing"),
     ).toBeUndefined()
   })
 
   test("resolves organization detail and configuration route params for production adapters", () => {
     const admin = productionRouteContractMap.admin
 
-    const detail = productionRouteScreenSelect(admin, "/admin/organizations/org-7")
+    const detail = productionRouteScreenSelect(admin, "/orgs/acme")
     expect(detail?.key).toBe("organization-detail")
-    expect(productionRouteParamGet(detail?.path ?? "", "/admin/organizations/org-7", "organizationId")).toBe("org-7")
+    expect(productionRouteParamGet(detail?.path ?? "", "/orgs/acme", "orgSlug")).toBe("acme")
 
-    const configuration = productionRouteScreenSelect(admin, "/admin/configuration/branding")
+    const configuration = productionRouteScreenSelect(admin, "/orgs/acme/configuration/branding")
     expect(configuration?.key).toBe("configuration")
-    expect(productionRouteParamGet(configuration?.path ?? "", "/admin/configuration/branding", "section")).toBe(
+    expect(productionRouteParamGet(configuration?.path ?? "", "/orgs/acme/configuration/branding", "section")).toBe(
       "branding",
     )
     // Unknown sections fall back to general in the configuration screen state.
@@ -374,47 +478,50 @@ describe("production shell state", () => {
   })
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
-    expect(productionShellNavigationGroups.account).toEqual([])
-    expect(productionShellNavigationGroups.admin.map((group) => group.scope)).toEqual([
+    expect(productionShellNavigationGroupsCreate("acme").account).toEqual([])
+    expect(productionShellNavigationGroupsCreate("acme").admin.map((group) => group.scope)).toEqual([
       "organization",
       "realm",
       "realm",
       "realm",
     ])
-    expect(productionShellNavigationGroups.admin[0]?.items.map((item) => item.href)).toEqual([
-      "/admin/users",
-      "/admin/roles",
-      "/admin/projects",
-      "/admin/configuration/general",
-      "/admin/impersonation",
-      "/admin/activity",
+    expect(productionShellNavigationGroupsCreate("acme").admin[0]?.items.map((item) => item.href)).toEqual([
+      "/orgs/acme/users",
+      "/orgs/acme/roles",
+      "/orgs/acme/projects",
+      "/orgs/acme/configuration/general",
+      "/orgs/acme/impersonation",
+      "/orgs/acme/activity",
     ])
-    expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
-    expect(productionNavigationItemActive("/admin/configuration", "/admin/configuration/branding")).toBe(true)
-    expect(productionShellNavigationGroups.admin[0]?.items[3]?.href).toBe("/admin/configuration/general")
-    expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
-    expect(productionNavigationItemActive("/admin", "/admin")).toBe(true)
-    expect(productionNavigationItemActive("/admin", "/account")).toBe(false)
+    expect(productionNavigationItemActive("/orgs/acme/users", "/orgs/acme/users/user-42")).toBe(true)
+    expect(productionNavigationItemActive("/orgs/acme/configuration", "/orgs/acme/configuration/branding")).toBe(true)
+    expect(productionShellNavigationGroupsCreate("acme").admin[0]?.items[3]?.href).toBe(
+      "/orgs/acme/configuration/general",
+    )
+    expect(productionNavigationItemActive("/orgs", "/orgs/acme/users")).toBe(false)
+    expect(productionNavigationItemActive("/realm", "/realm/organizations")).toBe(false)
+    expect(productionNavigationItemActive("/realm", "/realm")).toBe(true)
+    expect(productionNavigationItemActive("/realm", "/account")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account")).toBe(true)
-    expect(productionNavigationItemActive("/account", "/admin")).toBe(false)
+    expect(productionNavigationItemActive("/account", "/orgs/acme/users")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/legacy")).toBe(false)
   })
 
   test("lists impersonation for organization admins", () => {
-    const items = productionShellNavigationGroups.admin[0]?.items ?? []
-    expect(items.map((item) => item.href)).not.toContain("/admin/machine-credentials")
-    const impersonation = items.find((item) => item.href === "/admin/impersonation")
+    const items = productionShellNavigationGroupsCreate("acme").admin[0]?.items ?? []
+    expect(items.map((item) => item.href)).not.toContain("/orgs/acme/machine-credentials")
+    const impersonation = items.find((item) => item.href === "/orgs/acme/impersonation")
     expect(impersonation).toMatchObject({ access: "organization-admin", label: "shell.nav.impersonation" })
   })
 
   test("highlights only the most specific sidebar destination for a nested path", () => {
-    const hrefs = productionShellNavigationGroups.admin.flatMap((group) => group.items.map((item) => item.href))
-    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/realm/administrators")).toBe(
-      "/admin/realm/administrators",
+    const hrefs = productionShellNavigationGroupsCreate("acme").admin.flatMap((group) =>
+      group.items.map((item) => item.href),
     )
-    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/realm")).toBe("/admin/realm")
-    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/users/user-42")).toBe("/admin/users")
-    expect(productionNavigationActiveHrefSelect(hrefs, "/admin/impersonation")).toBe("/admin/impersonation")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/realm/administrators")).toBe("/realm/administrators")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/realm")).toBe("/realm")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/orgs/acme/users/user-42")).toBe("/orgs/acme/users")
+    expect(productionNavigationActiveHrefSelect(hrefs, "/orgs/acme/impersonation")).toBe("/orgs/acme/impersonation")
   })
 
   test("shows administration for an active realm session and always returns to account from admin", () => {
@@ -479,11 +586,36 @@ describe("production shell state", () => {
     expect(productionRouteScreenSelect(productionRouteContractMap.login, signOutHref)?.key).toBe("logout")
   })
 
-  test("keeps administration navigation targets owned by advertised screens", () => {
+  test("keeps administration destinations owned by advertised screens", () => {
     const admin = productionRouteContractMap.admin
-    const hrefs = productionShellNavigationGroups.admin.flatMap((group) => group.items.map((item) => item.href))
-
-    for (const href of hrefs) expect(productionRouteScreenSelect(admin, href), href).toBeDefined()
+    for (const path of [
+      "/orgs/acme/users",
+      "/orgs/acme/users/user-42",
+      "/orgs/acme/roles",
+      "/orgs/acme/projects",
+      "/orgs/acme/projects/project-9",
+      "/orgs/acme/configuration/general",
+      "/orgs/acme",
+      "/orgs/acme/machine-users/machine-user-1",
+      "/orgs/acme/machine-credentials",
+      "/orgs/acme/impersonation",
+      "/orgs/acme/activity",
+      "/realm",
+      "/realm/administrators",
+      "/realm/organizations",
+      "/realm/login-policy",
+      "/realm/oidc-clients",
+      "/realm/oidc-clients/client-1",
+      "/realm/signing-keys",
+      "/realm/oidc-consents",
+      "/realm/protocol-documents",
+      "/realm/sessions",
+      "/realm/events",
+      "/realm/whatsapp",
+      "/realm/activity",
+      "/realm/sign-in",
+    ])
+      expect(productionRouteScreenSelect(admin, path), path).toBeDefined()
   })
 })
 
@@ -517,18 +649,18 @@ describe("org-admin machine-user administration", () => {
   })
 
   test("keeps machine credentials reachable as a deep link outside the sidebar", () => {
-    const groups = productionShellNavigationGroups.admin
+    const groups = productionShellNavigationGroupsCreate("acme").admin
     const hrefs = groups.flatMap((group) => group.items.map((item) => item.href))
-    expect(hrefs).not.toContain("/admin/machine-users")
-    expect(hrefs).not.toContain("/admin/machine-users/:machineUserId")
-    expect(hrefs).not.toContain("/admin/machine-credentials")
+    expect(hrefs).not.toContain("/orgs/acme/machine-users")
+    expect(hrefs).not.toContain("/orgs/acme/machine-users/:machineUserId")
+    expect(hrefs).not.toContain("/orgs/acme/machine-credentials")
 
-    const screen = productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/machine-credentials")
+    const screen = productionRouteScreenSelect(productionRouteContractMap.admin, "/orgs/acme/machine-credentials")
     expect(screen?.key).toBe("machine-credentials")
     expect(screen?.title).toBe("shell.nav.machineCredentials")
 
     expect(productionRouteContractMap.admin.screens.find((screen) => screen.key === "machine-user-detail")?.path).toBe(
-      "/admin/machine-users/:machineUserId",
+      "/orgs/:orgSlug/machine-users/:machineUserId",
     )
   })
 

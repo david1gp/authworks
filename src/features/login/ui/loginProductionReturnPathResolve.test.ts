@@ -6,7 +6,7 @@ describe("loginProductionReturnPathResolve", () => {
     let calls = 0
     const destinationResolve = async () => {
       calls += 1
-      return "/admin/users"
+      return "/orgs/acme/users"
     }
     expect(
       await loginProductionReturnPathResolve({ destinationResolve, returnTo: "/account?tab=security#details" }),
@@ -16,7 +16,7 @@ describe("loginProductionReturnPathResolve", () => {
   })
 
   test("uses role-aware destinations and falls back on failure", async () => {
-    for (const destination of ["/admin/users", "/account", undefined]) {
+    for (const destination of ["/orgs/acme/users", "/account", undefined]) {
       expect(
         await loginProductionReturnPathResolve({ destinationResolve: async () => destination, returnTo: null }),
       ).toBe(destination ?? "/account")
@@ -27,13 +27,13 @@ describe("loginProductionReturnPathResolve", () => {
     let calls = 0
     const destinationResolve = () => {
       calls += 1
-      return calls === 1 ? new Promise<string | undefined>(() => {}) : Promise.resolve("/admin/users")
+      return calls === 1 ? new Promise<string | undefined>(() => {}) : Promise.resolve("/orgs/acme/users")
     }
     expect(await loginProductionReturnPathResolve({ destinationResolve, returnTo: null, timeoutMs: 1 })).toBe(
       "/account",
     )
     expect(await loginProductionReturnPathResolve({ destinationResolve, returnTo: null, timeoutMs: 1 })).toBe(
-      "/admin/users",
+      "/orgs/acme/users",
     )
     expect(calls).toBe(2)
   })

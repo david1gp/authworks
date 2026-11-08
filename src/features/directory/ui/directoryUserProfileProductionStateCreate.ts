@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, useParams } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import type { DirectoryUserProfileAdapter } from "./directoryUserProfileAdapter.js"
 import { directoryUserProfilePageStateCreate } from "./directoryUserProfilePageStateCreate.js"
@@ -42,9 +43,9 @@ export function directoryUserProfileProductionStateCreate(options: { readonly us
     realmId,
   })
   const confirmState = confirmStateCreate()
-  // Production routes render through catch-all `/admin/*adminPath` entries, so `useParams`
-  // carries no `:userId`; prefer the explicit prop, which the route resolves from its own
-  // path contract (same pattern as the machine-user and project screens).
+  // Production routes render through catch-all entries, so `useParams` carries no
+  // `:userId`; prefer the explicit prop, which the route resolves from its own path
+  // contract (same pattern as the machine-user and project screens).
   const userId = () => options.userId ?? params.userId
   const page = directoryUserProfilePageStateCreate(adapter, {
     actorOrganizationRoles: actorRoles,
@@ -74,7 +75,13 @@ export function directoryUserProfileProductionStateCreate(options: { readonly us
     }
 
   return {
-    basePath: "/admin",
+    get basePath() {
+      return productionOrganizationBasePathGet({
+        organizationId: organizationId() === "" ? undefined : organizationId(),
+        organizations: session.organizations,
+        pathname: location.pathname,
+      })
+    },
     confirmState,
     dialog: () => directoryUserProfileDialogSelect(location.search),
     dialogOpenSet,

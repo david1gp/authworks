@@ -10,6 +10,7 @@ const organizationJson = {
   id: organizationId,
   name: "Northwind Labs",
   realmId,
+  slug: "northwind-labs",
   status: "active",
   updatedAt: 1,
 }

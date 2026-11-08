@@ -15,6 +15,8 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { organizationNameNormalize } from "../domain/organizationNameNormalize.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationRolesEncode } from "../domain/organizationRolesEncode.js"
+import { organizationSlugSuggest } from "../domain/organizationSlugSuggest.js"
+import { organizationSlugUniqueResolve } from "../domain/organizationSlugUniqueResolve.js"
 import { organizationCreatedEventPayloadSchema } from "../events/organizationCreatedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationMembershipEventPayloadSchema } from "../events/organizationMembershipEventPayloadSchema.js"
@@ -70,11 +72,18 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
+    const slug = organizationSlugUniqueResolve(organizationSlugSuggest(name.data), (candidate) => {
+      const taken = repository.organizationGetBySlug(options.realmId, candidate)
+      if (!taken.success) return taken
+      return resultCreate(taken.data !== null)
+    })
+    if (!slug.success) return slug
     const created = repository.organizationCreate({
       createdAt,
       id: organizationId,
       realmId: options.realmId,
       name: name.data,
+      slug: slug.data,
       status: "active",
       updatedAt: createdAt,
       version: 1,

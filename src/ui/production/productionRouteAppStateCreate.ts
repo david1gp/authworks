@@ -6,6 +6,7 @@ import { productionLoginRedirectUrlCreate } from "./productionLoginRedirectUrlCr
 import type { ProductionRouteContract } from "./productionRouteContract.js"
 import { productionRouteGuardStateCreate } from "./productionRouteGuardStateCreate.js"
 import { productionRouteParamGet } from "./productionRouteParamGet.js"
+import { productionRouteRedirectSelect } from "./productionRouteRedirectSelect.js"
 import { productionRouteScreenSelect } from "./productionRouteScreenSelect.js"
 import { productionSessionContextGet } from "./productionSessionContextGet.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
@@ -23,8 +24,29 @@ export function productionRouteAppStateCreate(
   const api = productionApiContextGet()
   const location = options.location ?? useLocation()
   const session = options.session ?? productionSessionContextGet()
-  const screen = () => productionRouteScreenSelect(route(), location.pathname)
+  const screen = () => {
+    const matched = productionRouteScreenSelect(route(), location.pathname)
+    if (matched === undefined) return undefined
+    const orgSlug = productionRouteParamGet(matched.path, location.pathname, "orgSlug")
+    // Unknown slugs never render another organization's screen; the route falls back
+    // to the existing inaccessible panel instead of silently falling back to another org.
+    if (orgSlug !== undefined && session.organizations.some((item) => item.slug === orgSlug) === false) {
+      return undefined
+    }
+    return matched
+  }
   const guardState = () => productionRouteGuardStateCreate(screen()?.guard ?? route().guard, session.guard)
+  const redirectTarget = () => {
+    if (route().feature !== "admin") return undefined
+    const organization = session.guard.organization
+    return productionRouteRedirectSelect(location.pathname, {
+      currentOrganizationId: typeof organization === "object" ? organization.organizationId : undefined,
+      hash: location.hash,
+      organizations: session.organizations,
+      realmAdmin: session.guard.access !== "loading" && session.guard.access.realmAdministrator === true,
+      search: location.search,
+    })
+  }
 
   createEffect(() => {
     if (guardState().status !== "anonymous") return
@@ -34,6 +56,7 @@ export function productionRouteAppStateCreate(
   return {
     api,
     guardState,
+    redirectTarget,
     signInUrl: () => productionLoginRedirectUrlCreate(location),
     /** Generic shell page title, skipped on the account workspace and on screens that render their own header. */
     pageHeaderVisible: () => productionShellKindSelect(route()) !== "account" && screen()?.ownsPageHeader !== true,

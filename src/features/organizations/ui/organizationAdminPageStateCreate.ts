@@ -404,6 +404,15 @@ export function organizationAdminPageStateCreate(options: {
       organization.set({ ...updated.organization })
       notice.set("organization-renamed")
     },
+    organizationSlugSet: async (slug: string) => {
+      const updated = await mutate("organization:slug", () =>
+        options.adapter.organizationUpdate(options.organizationId(), { slug }),
+      )
+      if (updated === undefined) return undefined
+      organization.set({ ...updated.organization })
+      // No success notice: the follow-up navigation to the new slug URL is the confirmation.
+      return updated.organization
+    },
     organizations: organizations.get,
     overrides: overrides.get,
     pageIndex: () => pageTokens.get().length,

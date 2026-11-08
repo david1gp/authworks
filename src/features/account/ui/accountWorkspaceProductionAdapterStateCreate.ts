@@ -20,7 +20,7 @@ export function accountWorkspaceProductionAdapterStateCreate(realmId: () => stri
   })
 
   return {
-    administrationHref: () => accountWorkspaceAdministrationHrefGet(session.guard),
+    administrationHref: () => accountWorkspaceAdministrationHrefGet(session.guard, session.organizations),
     profile,
     security,
     securityProgress,

@@ -4,7 +4,7 @@ import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
 /** View state for the project detail header: back link, lifecycle menu, and typed confirms. */
 export function projectAdminDetailViewStateCreate(options: {
-  readonly basePath: string
+  readonly basePath: string | (() => string)
   readonly canManage: () => boolean
   readonly onDeleted: () => void
   readonly organizationId: () => string | undefined
@@ -37,12 +37,11 @@ export function projectAdminDetailViewStateCreate(options: {
     options.removeOpenSet(open)
   }
 
-  const backHref = () => options.withActor(`${options.basePath}/projects`)
+  const basePath = () => (typeof options.basePath === "function" ? options.basePath() : options.basePath)
+  const backHref = () => options.withActor(`${basePath()}/projects`)
   const baseHref = () => {
     const projectId = options.page.project()?.id ?? ""
-    return options.withActor(
-      projectId.length === 0 ? `${options.basePath}/projects` : `${options.basePath}/projects/${projectId}`,
-    )
+    return options.withActor(projectId.length === 0 ? `${basePath()}/projects` : `${basePath()}/projects/${projectId}`)
   }
   const tabHref = (tab: "overview" | "roles" | "applications" | "access") =>
     tab === "overview" ? baseHref() : `${baseHref()}?tab=${tab}`

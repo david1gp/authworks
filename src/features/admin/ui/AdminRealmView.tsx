@@ -47,6 +47,7 @@ const dialogQuerySet = (
 export function AdminRealmView(props: {
   readonly basePath: string
   readonly state: ReturnType<typeof adminPageStateCreate>
+  readonly usersHref: string
 }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -148,7 +149,7 @@ export function AdminRealmView(props: {
                       <AuthenticatedStatTile
                         label={messageTranslate("shell.nav.users")}
                         value={summary().users}
-                        href={`${props.basePath}/users`}
+                        href={props.usersHref}
                       />
                     </div>
                     <div class="relative min-w-0">

@@ -17,6 +17,7 @@ const organization = (id: string, name: string) => ({
     id,
     name,
     realmId: "realm-1",
+    slug: id,
     status: "active" as const,
     updatedAt: 1,
   },

@@ -124,6 +124,7 @@ const organizationAccess = (id: string, name: string, logoUrl?: string): Organiz
     id,
     name,
     realmId: "realm-1",
+    slug: `slug-${id}`,
     status: "active",
     updatedAt: 1,
   },
