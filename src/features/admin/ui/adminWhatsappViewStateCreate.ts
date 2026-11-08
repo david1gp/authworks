@@ -46,7 +46,6 @@ export type WhatsappRecentRow = Pick<
 
 export type WhatsappWindowOption = {
   readonly label: string
-  readonly selected: boolean
   readonly value: WhatsappOtpUsageQuery["window"]
 }
 
@@ -100,6 +99,11 @@ export function adminWhatsappViewStateCreate(options: {
       status: row.status,
     }))
 
+  // Window option objects keep stable identities across recentWindow changes so Solid
+  // <For> keeps row DOM; only the per-row selected flag (read via windowSelected) updates.
+  // Labels still re-translate, so a language change mints new objects while a window
+  // change reuses refs. The cache is instance-scoped over the three fixed keys.
+  const windowOptionCache = new Map<WhatsappOtpUsageQuery["window"], WhatsappWindowOption>()
   const windowOptions = (): readonly WhatsappWindowOption[] =>
     (
       [
@@ -107,7 +111,15 @@ export function adminWhatsappViewStateCreate(options: {
         { label: messageTranslate("admin.whatsapp.window3d"), value: "3d" },
         { label: messageTranslate("admin.whatsapp.window7d"), value: "7d" },
       ] as const
-    ).map((option) => ({ ...option, selected: option.value === recentWindow() }))
+    ).map((option) => {
+      const cached = windowOptionCache.get(option.value)
+      if (cached !== undefined && cached.label === option.label) return cached
+      const next: WhatsappWindowOption = { label: option.label, value: option.value }
+      windowOptionCache.set(option.value, next)
+      return next
+    })
+
+  const windowSelected = (value: WhatsappOtpUsageQuery["window"]): boolean => value === recentWindow()
 
   const senderCards = (): readonly WhatsappSenderCard[] =>
     (usage()?.senders ?? []).map((sender) => ({
@@ -145,6 +157,7 @@ export function adminWhatsappViewStateCreate(options: {
     recentRows,
     recentStatusGet: whatsappRecentStatusGet,
     windowOptions,
+    windowSelected,
     remainingHint: (): string | undefined => {
       const remaining = tightestRemaining()
       return remaining === undefined

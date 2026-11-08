@@ -140,10 +140,10 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
           <For each={view.windowOptions()}>
             {(option) => (
               <Button
-                aria-pressed={option.selected}
+                aria-pressed={view.windowSelected(option.value)}
                 class={classMerge(
                   "shrink-0 gap-2 rounded-control border px-3.5 py-2 text-sm whitespace-nowrap shadow-none focus-visible:ring-accent",
-                  option.selected
+                  view.windowSelected(option.value)
                     ? "border-accent/50 bg-surface text-foreground shadow-sm"
                     : "border-transparent text-muted-foreground hover:border-line hover:bg-surface/70 hover:text-foreground",
                 )}

@@ -1,5 +1,6 @@
 import { describe, expect, mock, test } from "bun:test"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
+import type { WhatsappOtpUsageQuery } from "../../whatsappOtp/public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminDemoWhatsappUsageFixture } from "./adminDemoWhatsappUsageFixture.js"
@@ -123,21 +124,32 @@ describe("whatsapp usage view state", () => {
   test("marks the active window option and defaults to 24h", () => {
     const day = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "24h" })
     expect(day.windowOptions()).toEqual([
-      { label: "Last 24 hours", selected: true, value: "24h" },
-      { label: "Last 3 days", selected: false, value: "3d" },
-      { label: "Last 7 days", selected: false, value: "7d" },
+      { label: "Last 24 hours", value: "24h" },
+      { label: "Last 3 days", value: "3d" },
+      { label: "Last 7 days", value: "7d" },
     ])
+    expect(day.windowSelected("24h")).toBe(true)
+    expect(day.windowSelected("3d")).toBe(false)
     const week = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "7d" })
-    expect(week.windowOptions().filter((option) => option.selected)).toEqual([
-      { label: "Last 7 days", selected: true, value: "7d" },
-    ])
+    expect(week.windowOptions().map((option) => option.value)).toEqual(["24h", "3d", "7d"])
+    expect(week.windowSelected("7d")).toBe(true)
+    expect(week.windowSelected("24h")).toBe(false)
     const fallback = adminWhatsappViewStateCreate({ usage: () => undefined })
-    expect(
-      fallback
-        .windowOptions()
-        .filter((option) => option.selected)
-        .map((option) => option.value),
-    ).toEqual(["24h"])
+    expect(fallback.windowSelected("24h")).toBe(true)
+    expect(fallback.windowSelected("7d")).toBe(false)
+  })
+
+  test("keeps window option identities stable when the recent window changes", () => {
+    const [window, setWindow] = createSignal<WhatsappOtpUsageQuery["window"]>("24h")
+    const state = adminWhatsappViewStateCreate({ usage: () => undefined, window })
+    const before = state.windowOptions()
+    expect(state.windowSelected("24h")).toBe(true)
+    setWindow("7d")
+    const after = state.windowOptions()
+    expect(after).toHaveLength(before.length)
+    expect(after.map((option, index) => option === before[index])).toEqual([true, true, true])
+    expect(state.windowSelected("7d")).toBe(true)
+    expect(state.windowSelected("24h")).toBe(false)
   })
 })
 
