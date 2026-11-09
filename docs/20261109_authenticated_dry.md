@@ -113,4 +113,11 @@ and deploy.
   pass over `/demo`, `/demo/account`, `/demo/admin/ui-kit`: 0 page errors,
   changed components (incl. outlineRed+`shadow-xs` dialog button) render
   correctly. Production authed routes unverified (need backend session).
-- [ ] Ship (commits, merge, push, deploy, smoke/e2e)
+- [x] Ship — 4 conventional commits (924398e1, fb496212, 5f5e6715, d64030a9),
+  fast-forward merged to `main`, pushed, deployed (`prodctl`, release
+  20261109T022852Z @ d64030a9). Public smoke passed. Production e2e: all
+  suites run; 2 failures, both pre-existing and unrelated (stale
+  `emailPreview` spec vs `ede2e0f0` directory redesign;
+  `adminRealmAdministrator` production 401 landing state). First e2e attempt
+  was invalid (another app squatting local port 5174) and was re-run on a
+  free port.
