@@ -14,6 +14,7 @@ export function authenticatedButtonStateCreate(props: Accessor<AuthenticatedButt
     "validationVariant",
     "validationIcon",
     "variant",
+    "size",
     "class",
     "disabled",
     "onClick",
@@ -40,6 +41,7 @@ export function authenticatedButtonStateCreate(props: Accessor<AuthenticatedButt
     class: () =>
       authenticatedButtonClassGet(
         local.validationMessage ? local.validationVariant : local.variant,
+        local.size,
         !local.children,
         (local.isLoading || Boolean(local.validationMessage)) && "cursor-not-allowed",
         local.class,

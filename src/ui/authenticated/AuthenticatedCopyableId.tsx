@@ -1,6 +1,6 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "./AuthenticatedButton.js"
 import { authenticatedCopyableIdStateCreate } from "./authenticatedCopyableIdStateCreate.js"
 
 /** A readable identifier with a copy action and the complete value in its title. */
@@ -15,15 +15,15 @@ export function AuthenticatedCopyableId(props: {
       <span class="truncate font-mono text-xs" title={props.value}>
         {props.full ? props.value : state.text()}
       </span>
-      <button
+      <AuthenticatedButton
         aria-label={`Copy ${props.label}`}
-        class="grid size-7 shrink-0 place-items-center rounded-control text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+        class="shrink-0 text-muted-foreground hover:text-foreground"
+        icon={state.copied() ? mdiCheck : mdiContentCopy}
         onClick={state.copy}
+        size="sm"
         title={state.copied() ? "Copied" : `Copy ${props.label}`}
-        type="button"
-      >
-        <Icon aria-hidden="true" class="size-4" path={state.copied() ? mdiCheck : mdiContentCopy} />
-      </button>
+        variant="ghost"
+      />
       <span aria-live="polite" class="sr-only">
         {state.copied() ? "Copied" : ""}
       </span>

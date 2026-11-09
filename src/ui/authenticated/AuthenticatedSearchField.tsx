@@ -42,7 +42,7 @@ export function AuthenticatedSearchField(props: {
         <button
           aria-label={messageTranslate("ui.authenticated.clearSearch")}
           class={classMerge(
-            authenticatedButtonClassGet("ghost", true),
+            authenticatedButtonClassGet("ghost", "md", true),
             "absolute top-1/2 right-1 size-7 -translate-y-1/2",
           )}
           onClick={state.clear}

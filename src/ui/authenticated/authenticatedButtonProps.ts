@@ -1,13 +1,10 @@
-import type { ComponentProps } from "solid-js"
+import type { ButtonIconProps } from "#ui/interactive/button/ButtonIcon.jsx"
+import type { AuthenticatedButtonSize } from "./authenticatedButtonSize.js"
 import type { AuthenticatedButtonVariant } from "./authenticatedButtonVariant.js"
 
-export interface AuthenticatedButtonProps extends ComponentProps<"button"> {
+/** Shared icon/loading/validation contract; only the visual variants are re-themed. */
+export interface AuthenticatedButtonProps extends Omit<ButtonIconProps, "variant" | "validationVariant"> {
   variant?: AuthenticatedButtonVariant
-  icon?: string
-  iconRight?: string
-  iconClass?: string
-  isLoading?: boolean
-  validationMessage?: string
+  size?: AuthenticatedButtonSize
   validationVariant?: AuthenticatedButtonVariant
-  validationIcon?: string
 }
