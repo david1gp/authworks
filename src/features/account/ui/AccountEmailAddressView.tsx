@@ -13,7 +13,6 @@ import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDial
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
@@ -119,7 +118,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                         </AuthenticatedButton>
                       </Show>
                       <AuthenticatedButton
-                        class={authenticatedDangerOutlineButtonClass}
+                        class="shadow-xs"
                         disabled={address.isPrimary || props.actionId !== undefined}
                         icon={mdiEmailRemoveOutline}
                         onClick={() => props.onRemove(address.id)}
@@ -127,7 +126,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                           address.isPrimary ? messageTranslate("account.profile.emailPrimaryRemoveBlocked") : undefined
                         }
                         type="button"
-                        variant="outline"
+                        variant="outlineRed"
                       >
                         {props.actionId === address.id && props.status === "sending"
                           ? messageTranslate("account.profile.emailRemoving")

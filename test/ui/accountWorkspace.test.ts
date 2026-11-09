@@ -850,9 +850,12 @@ describe("account workspace", () => {
     expect(danger).toContain('class="border-danger/35"')
     expect(danger).toContain('description={messageTranslate("account.delete.warning")}')
 
-    for (const name of ["AccountPasskeysSection", "AccountRecoveryCodesSection"]) {
+    for (const [name, variant] of [
+      ["AccountPasskeysSection", "outlineRed"],
+      ["AccountRecoveryCodesSection", "outline"],
+    ] as const) {
       const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
-      expect(source).toContain('variant="outline"')
+      expect(source).toContain(`variant="${variant}"`)
     }
   })
 

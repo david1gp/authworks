@@ -6,7 +6,6 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
@@ -101,12 +100,12 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                       <Show when={token.status === "active"}>
                         <div>
                           <AuthenticatedButton
-                            class={authenticatedDangerOutlineButtonClass}
+                            class="shadow-xs"
                             disabled={props.state.pendingId() !== undefined || !state.dialogOpen(token.familyId)}
                             icon={mdiKeyRemove}
                             onClick={() => state.tokenRevoke(token.familyId, props.state.refreshTokenRevoke)}
                             type="button"
-                            variant="outline"
+                            variant="outlineRed"
                           >
                             {messageTranslate("account.refreshTokens.revoke")}
                           </AuthenticatedButton>

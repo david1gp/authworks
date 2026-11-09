@@ -5,7 +5,6 @@ import { Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
@@ -83,11 +82,11 @@ export function AccountInvitationView(props: {
                       {messageTranslate("common.continue")}
                     </AuthenticatedButton>
                     <AuthenticatedButton
-                      class={authenticatedDangerOutlineButtonClass}
+                      class="shadow-xs"
                       disabled={props.pendingId !== undefined}
                       icon={mdiClose}
                       onClick={props.onDecline}
-                      variant="outline"
+                      variant="outlineRed"
                     >
                       {messageTranslate("common.decline")}
                     </AuthenticatedButton>

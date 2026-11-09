@@ -5,7 +5,6 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
@@ -73,12 +72,12 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
                     </Show>
                     <div>
                       <AuthenticatedButton
-                        class={authenticatedDangerOutlineButtonClass}
+                        class="shadow-xs"
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiDelete}
                         onClick={() => props.state.passkeyRevoke(credential.id)}
                         type="button"
-                        variant="outline"
+                        variant="outlineRed"
                       >
                         {messageTranslate("account.passkeys.remove")}
                       </AuthenticatedButton>

@@ -7,7 +7,6 @@ import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
@@ -132,12 +131,12 @@ export function AccountProfilePictureField(props: {
             </AuthenticatedButton>
             <Show when={props.url.length > 0}>
               <AuthenticatedButton
-                class={authenticatedDangerOutlineButtonClass}
+                class="shadow-xs"
                 disabled={state.busy()}
                 icon={mdiDelete}
                 onClick={state.remove}
                 type="button"
-                variant="outline"
+                variant="outlineRed"
               >
                 {messageTranslate("account.profile.pictureRemove")}
               </AuthenticatedButton>

@@ -5,7 +5,6 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
@@ -119,12 +118,12 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                         <Show when={!session.current}>
                           <div>
                             <AuthenticatedButton
-                              class={authenticatedDangerOutlineButtonClass}
+                              class="shadow-xs"
                               disabled={props.state.pendingId() !== undefined || !state.dialogOpen(session.id)}
                               icon={mdiLogout}
                               onClick={() => state.sessionRevoke(session.id, props.state.sessionRevoke)}
                               type="button"
-                              variant="outline"
+                              variant="outlineRed"
                             >
                               {messageTranslate("account.sessions.revoke")}
                             </AuthenticatedButton>

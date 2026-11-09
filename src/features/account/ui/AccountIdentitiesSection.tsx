@@ -11,7 +11,6 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import { accountIdentitiesSectionStateCreate } from "./accountIdentitiesSectionStateCreate.js"
@@ -83,12 +82,12 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                     </Show>
                     <div>
                       <AuthenticatedButton
-                        class={authenticatedDangerOutlineButtonClass}
+                        class="shadow-xs"
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiLinkOff}
                         onClick={() => props.state.identityUnlink(identity.providerId, identity.externalSubject)}
                         type="button"
-                        variant="outline"
+                        variant="outlineRed"
                       >
                         {messageTranslate("account.identities.unlink")}
                       </AuthenticatedButton>

@@ -5,7 +5,6 @@ import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButt
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
-import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
@@ -95,12 +94,12 @@ export function AccountConsentsView(props: {
                           </div>
                           <div>
                             <AuthenticatedButton
-                              class={authenticatedDangerOutlineButtonClass}
+                              class="shadow-xs"
                               disabled={state.revokeDisabled(consent.clientId)}
                               icon={mdiCancel}
                               onClick={() => state.consentRevoke(consent.clientId)}
                               type="button"
-                              variant="outline"
+                              variant="outlineRed"
                             >
                               {messageTranslate("common.revoke")}
                             </AuthenticatedButton>
