@@ -34,6 +34,7 @@
   --color-line: var(--border);
   --color-line-subtle: var(--border-subtle);
   --color-line-strong: var(--border-strong);
+  --color-border: var(--border);
   --color-input: var(--border-subtle);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
@@ -167,6 +168,11 @@
 }
 
 @layer base {
+  /* Tailwind v4 defaults borders to currentColor; restore the soft palette border. */
+  * {
+    border-color: var(--color-border);
+  }
+
   :root {
     --background: #f5f7fa;
     --foreground: #0f172a;
