@@ -71,10 +71,14 @@ test("e2e orchestrator resumes only for the same target, base URL, and a fresh c
   ).toBe("stale")
 })
 
-test("e2e target base URL prefers the orchestrator override and falls back to production", () => {
-  expect(e2eTargetBaseUrlGet({})).toBe(productionBaseUrl)
-  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_BASE_URL: "" })).toBe(productionBaseUrl)
-  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_BASE_URL: devBaseUrl })).toBe(devBaseUrl)
+test("e2e target base URL requires an explicit target and prefers the orchestrator override", () => {
+  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_TARGET: "production" })).toBe(productionBaseUrl)
+  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_BASE_URL: "", AUTHWORKS_E2E_TARGET: "production" })).toBe(
+    productionBaseUrl,
+  )
+  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_BASE_URL: devBaseUrl, AUTHWORKS_E2E_TARGET: "dev" })).toBe(devBaseUrl)
+  expect(() => e2eTargetBaseUrlGet({})).toThrow("There is no default environment.")
+  expect(() => e2eTargetBaseUrlGet({ AUTHWORKS_E2E_TARGET: "" })).toThrow("There is no default environment.")
 })
 
 test("e2e suite registry orders local suites before live specs on both targets", () => {
@@ -159,16 +163,20 @@ test("e2e production environment merge fills service keys from dotenv files with
   )
   process.chdir(directory)
   try {
-    const filled = e2eProductionEnvironmentMerged({ AUTHWORKS_SSOTEST_USERNAME: "tester" })
+    const filled = e2eProductionEnvironmentMerged({ AUTHWORKS_SSOTEST_USERNAME: "tester" }, "production")
     expect(filled.AUTHWORKS_E2E_SERVICE_USERNAME).toBe("file-service")
     expect(filled.AUTHWORKS_E2E_SERVICE_PASSWORD).toBe("file-secret")
     expect(filled.AUTHWORKS_SSOTEST_USERNAME).toBe("tester")
-    const explicit = e2eProductionEnvironmentMerged({
-      AUTHWORKS_E2E_SERVICE_PASSWORD: "explicit-secret",
-      AUTHWORKS_E2E_SERVICE_USERNAME: "explicit-service",
-    })
+    const explicit = e2eProductionEnvironmentMerged(
+      {
+        AUTHWORKS_E2E_SERVICE_PASSWORD: "explicit-secret",
+        AUTHWORKS_E2E_SERVICE_USERNAME: "explicit-service",
+      },
+      "production",
+    )
     expect(explicit.AUTHWORKS_E2E_SERVICE_USERNAME).toBe("explicit-service")
     expect(explicit.AUTHWORKS_E2E_SERVICE_PASSWORD).toBe("explicit-secret")
+    expect(() => e2eProductionEnvironmentMerged({}, "dev")).toThrow("production")
   } finally {
     process.chdir(cwd)
   }

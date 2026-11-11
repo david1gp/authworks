@@ -38,7 +38,13 @@ function e2eDotEnvFileParse(raw: string): Record<string, string> {
 
 export function e2eProductionEnvironmentMerged(
   environment: Readonly<Record<string, string | undefined>>,
+  target: E2eTarget,
 ): Record<string, string | undefined> {
+  if (target !== "production")
+    throw new Error(
+      'e2eProductionEnvironmentMerged requires target "production" ' +
+        `(got "${target}"): .env/.env.production credentials must never load for another target.`,
+    )
   const merged: Record<string, string | undefined> = { ...environment }
   for (const file of [".env", ".env.production"]) {
     if (!existsSync(file)) continue
@@ -58,7 +64,7 @@ export function e2eProductionEnvironmentMerged(
 export function e2eCredentialsResolve(options: E2eCredentialsResolveOptions): Result<E2eLiveCredentials> {
   const op = "e2eCredentialsResolve"
   if (options.target === "production") {
-    const environment = e2eProductionEnvironmentMerged(options.environment ?? process.env)
+    const environment = e2eProductionEnvironmentMerged(options.environment ?? process.env, options.target)
     const memberUsername = environment.AUTHWORKS_SSOTEST_USERNAME?.trim() ?? ""
     const memberPassword = environment.AUTHWORKS_SSOTEST_PASSWORD ?? ""
     if (memberUsername.length === 0 || memberPassword.length === 0) return createResultError(op, productionMemberError)

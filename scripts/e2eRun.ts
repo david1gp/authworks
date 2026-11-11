@@ -39,15 +39,18 @@ async function e2eRunScriptMain(): Promise<number> {
     process.stderr.write(`${stateDir.errorMessage}\n`)
     return 2
   }
-  const resolved = e2eTargetResolve({ AUTHWORKS_E2E_TARGET: target })
+  const resolved = e2eTargetResolve({
+    AUTHWORKS_E2E_BASE_URL: process.env.AUTHWORKS_E2E_BASE_URL,
+    AUTHWORKS_E2E_TARGET: target,
+  })
   if (!resolved.success) {
     process.stderr.write(`${resolved.errorMessage}\n`)
     return 2
   }
-  const baseUrl = target === "dev" ? "http://login.localhost:5190" : resolved.data.baseUrl
+  const baseUrl = resolved.data.baseUrl
   // Production service credentials live in .env/.env.production, not the shell. Merge them once so the
   // in-process cleanup (stale-run purge and the finally hook) authenticates the same way spawned suites do.
-  const runEnvironment = target === "production" ? e2eProductionEnvironmentMerged(process.env) : process.env
+  const runEnvironment = target === "production" ? e2eProductionEnvironmentMerged(process.env, target) : process.env
   const checkpointPath = e2eCheckpointPathGet(stateDir.data, target)
   const read = e2eCheckpointRead(checkpointPath)
   if (!read.success) {

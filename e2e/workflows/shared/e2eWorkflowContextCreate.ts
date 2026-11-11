@@ -5,7 +5,7 @@ import type { E2eCheckpoint, E2eCheckpointEntity } from "../../harness/e2eCheckp
 import { e2eCheckpointWrite } from "../../harness/e2eCheckpointWrite.js"
 import { e2eServiceCredentialsRequire } from "../../harness/e2eCredentialsResolve.js"
 import { e2eEntityRecord } from "../../harness/e2eEntityRecord.js"
-import { e2eTargetBaseUrlGet } from "../../harness/e2eTargetBaseUrlGet.js"
+import { e2eTargetBaseUrlAssert, e2eTargetRequire } from "../../harness/e2eTargetResolve.js"
 import { e2eWorkflowApiClientCreate } from "./e2eWorkflowApiClientCreate.js"
 
 export type E2eWorkflowContext = {
@@ -29,7 +29,11 @@ export function e2eWorkflowContextCreate(page: Page): E2eWorkflowContext {
   const runId = process.env.AUTHWORKS_E2E_RUN_ID ?? read.data.checkpoint.runId
   if (runId.length === 0) throw new Error("e2eWorkflowContext: AUTHWORKS_E2E_RUN_ID is not set.")
   const credentials = e2eServiceCredentialsRequire()
-  const baseUrl = process.env.AUTHWORKS_E2E_BASE_URL ?? e2eTargetBaseUrlGet()
+  const resolved = e2eTargetRequire(process.env)
+  const override = process.env.AUTHWORKS_E2E_BASE_URL
+  const baseUrl = override === undefined || override === "" ? resolved.baseUrl : override
+  const mismatch = e2eTargetBaseUrlAssert(resolved.target, baseUrl)
+  if (mismatch !== undefined) throw new Error(mismatch)
   const domain = new URL(baseUrl).hostname
   return {
     api: e2eWorkflowApiClientCreate({ baseUrl }),

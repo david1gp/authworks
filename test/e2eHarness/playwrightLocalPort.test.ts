@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { spawnSync } from "node:child_process"
 
 function configRead(port?: string) {
-  const env: NodeJS.ProcessEnv = { ...process.env, AUTHWORKS_E2E_SUITE_KIND: "local" }
+  const env: NodeJS.ProcessEnv = { ...process.env, AUTHWORKS_E2E_SUITE_KIND: "local", AUTHWORKS_E2E_TARGET: "dev" }
   delete env.AUTHWORKS_E2E_LOCAL_PORT
   if (port !== undefined) env.AUTHWORKS_E2E_LOCAL_PORT = port
   return spawnSync("bun", ["-e", 'import config from "./playwright.config.ts"; console.log(JSON.stringify(config))'], {
@@ -37,4 +37,16 @@ test("local Playwright rejects invalid port overrides", () => {
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain("AUTHWORKS_E2E_LOCAL_PORT must be an integer")
   }
+})
+
+test("local Playwright config fails closed without an explicit target", () => {
+  const env: NodeJS.ProcessEnv = { ...process.env, AUTHWORKS_E2E_SUITE_KIND: "local" }
+  delete env.AUTHWORKS_E2E_TARGET
+  const result = spawnSync(
+    "bun",
+    ["-e", 'import config from "./playwright.config.ts"; console.log(JSON.stringify(config))'],
+    { encoding: "utf8", env },
+  )
+  expect(result.status).not.toBe(0)
+  expect(result.stderr).toContain("There is no default environment.")
 })

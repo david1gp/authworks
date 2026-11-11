@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test"
 import { e2eStateDirResolve } from "./e2e/harness/e2eStateDirResolve.js"
+import { e2eTargetRequire } from "./e2e/harness/e2eTargetResolve.js"
+
+// Fail closed: no default target. This throw runs at config load, before
+// Playwright launches any browser or request (including `playwright --list`).
+const resolvedTarget = e2eTargetRequire(process.env)
+const target = resolvedTarget.target
 
 const suiteKind = process.env.AUTHWORKS_E2E_SUITE_KIND
-const target = process.env.AUTHWORKS_E2E_TARGET
 const isLive = suiteKind === "live"
-const targetBaseUrl = process.env.AUTHWORKS_E2E_BASE_URL
 const localPortOverride = process.env.AUTHWORKS_E2E_LOCAL_PORT
 const localPort = localPortOverride ?? "5174"
 if (!isLive && (!/^[1-9]\d*$/.test(localPort) || Number(localPort) > 65535)) {
@@ -20,8 +24,7 @@ const liveTestIgnore =
 const liveArtifactsDir = (() => {
   const stateDir = e2eStateDirResolve()
   if (!stateDir.success) return undefined
-  const stateTarget = target === "dev" ? "dev" : "production"
-  return `${stateDir.data.replace(/\/+$/, "")}/${stateTarget}/artifacts`
+  return `${stateDir.data.replace(/\/+$/, "")}/${target}/artifacts`
 })()
 
 export default defineConfig({
@@ -40,7 +43,7 @@ export default defineConfig({
     timeout: 15_000,
   },
   use: {
-    baseURL: isLive ? (targetBaseUrl ?? "https://authworks.contentoren.de") : localOrigin,
+    baseURL: isLive ? resolvedTarget.baseUrl : localOrigin,
     trace: isLive ? "retain-on-failure" : "off",
     ...(liveArtifactsDir === undefined ? {} : { outputDir: liveArtifactsDir }),
     ...devices["Desktop Chrome"],

@@ -11,7 +11,8 @@ import { e2eEntityRecord } from "../../e2e/harness/e2eEntityRecord.js"
 import { e2eRunIdCreate } from "../../e2e/harness/e2eRunIdCreate.js"
 import { e2eStateDirResolve } from "../../e2e/harness/e2eStateDirResolve.js"
 import { e2eStepRun } from "../../e2e/harness/e2eStepRun.js"
-import { e2eTargetResolve } from "../../e2e/harness/e2eTargetResolve.js"
+import { e2eTargetBaseUrlGet } from "../../e2e/harness/e2eTargetBaseUrlGet.js"
+import { e2eTargetRequire, e2eTargetResolve } from "../../e2e/harness/e2eTargetResolve.js"
 import { e2eTargetSchema } from "../../e2e/harness/e2eTargetSchema.js"
 import { e2eTestEmailCreate } from "../../e2e/harness/e2eTestEmailCreate.js"
 import { e2eTestNameCreate } from "../../e2e/harness/e2eTestNameCreate.js"
@@ -47,22 +48,52 @@ test("e2e test emails derive from the test name", () => {
   expect(e2eTestEmailCreate("e2e-aw-202603040506-abcdef-owner")).toBe("e2e-aw-202603040506-abcdef-owner@example.com")
 })
 
-test("e2e targets resolve production by default and dev from the environment", () => {
-  expect(e2eTargetResolve({}).success).toBe(true)
-  const production = e2eTargetResolve({})
+test("e2e targets fail closed without an explicit target and resolve dev from the environment", () => {
+  for (const environment of [{}, { AUTHWORKS_E2E_TARGET: "" }]) {
+    const missing = e2eTargetResolve(environment)
+    expect(missing.success).toBe(false)
+    if (!missing.success) {
+      expect(missing.errorMessage).toContain("AUTHWORKS_E2E_TARGET")
+      expect(missing.errorMessage).toContain("There is no default environment.")
+    }
+  }
+  const production = e2eTargetResolve({ AUTHWORKS_E2E_TARGET: "production" })
   if (production.success) {
     expect(production.data.target).toBe("production")
     expect(production.data.baseUrl).toBe("https://authworks.contentoren.de")
-  }
-  expect(e2eTargetResolve({ AUTHWORKS_E2E_TARGET: "staging" }).success).toBe(false)
+  } else expect.unreachable("production target must resolve")
+  const unknown = e2eTargetResolve({ AUTHWORKS_E2E_TARGET: "staging" })
+  expect(unknown.success).toBe(false)
+  if (!unknown.success) expect(unknown.errorMessage).toContain("AUTHWORKS_E2E_TARGET")
   const dev = e2eTargetResolve({ AUTHWORKS_E2E_TARGET: "dev" })
   if (dev.success) {
     expect(dev.data.target).toBe("dev")
-    expect(dev.data.baseUrl).toBe("http://127.0.0.1:5190")
-  }
+    expect(dev.data.baseUrl).toBe("http://login.localhost:5190")
+  } else expect.unreachable("dev target must resolve")
   const devCustom = e2eTargetResolve({ AUTHWORKS_E2E_BASE_URL: "http://127.0.0.1:6001", AUTHWORKS_E2E_TARGET: "dev" })
   if (devCustom.success) expect(devCustom.data.baseUrl).toBe("http://127.0.0.1:6001")
+  else expect.unreachable("dev override must resolve")
   expect(v.safeParse(e2eTargetSchema, "production").success).toBe(true)
+})
+
+test("e2e target require throws fail-closed for unset, empty, and unknown targets", () => {
+  for (const environment of [{}, { AUTHWORKS_E2E_TARGET: "" }, { AUTHWORKS_E2E_TARGET: "staging" }]) {
+    expect(() => e2eTargetRequire(environment)).toThrow("AUTHWORKS_E2E_TARGET")
+  }
+  expect(() => e2eTargetRequire({})).toThrow("There is no default environment.")
+  expect(e2eTargetRequire({ AUTHWORKS_E2E_TARGET: "dev" }).target).toBe("dev")
+  expect(e2eTargetBaseUrlGet({ AUTHWORKS_E2E_TARGET: "production" })).toBe("https://authworks.contentoren.de")
+  expect(() => e2eTargetBaseUrlGet({})).toThrow("There is no default environment.")
+})
+
+test("e2e targets refuse a base URL pointing at the other target", () => {
+  expect(
+    e2eTargetResolve({ AUTHWORKS_E2E_BASE_URL: "https://authworks.contentoren.de", AUTHWORKS_E2E_TARGET: "dev" })
+      .success,
+  ).toBe(false)
+  expect(
+    e2eTargetResolve({ AUTHWORKS_E2E_BASE_URL: "http://127.0.0.1:5190", AUTHWORKS_E2E_TARGET: "production" }).success,
+  ).toBe(false)
 })
 
 test("e2e state dir prefers an override, then the shared dir, then a user fallback", () => {

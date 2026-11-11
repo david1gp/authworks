@@ -55,7 +55,7 @@
     "test": "bun --conditions=browser test --timeout=30000 --isolate --max-concurrency=1 --dots --bail=1 test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui src/features",
     "test:e2e": "bun scripts/e2eRun.ts --target production",
     "test:e2e:dev": "bun scripts/e2eRun.ts --target dev",
-    "test:e2e:local": "playwright test",
+    "test:e2e:local": "AUTHWORKS_E2E_TARGET=dev playwright test",
     "test:mailcow": "bun test test/integration/mailcowEmail.test.ts",
     "test:whatsapp-otp-live": "bun run build:library && bun test --timeout=180000 --max-concurrency=1 --dots --bail=1 test/integration/whatsappOtpLive.test.ts",
     "test:w": "bun --conditions=browser test --watch test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
