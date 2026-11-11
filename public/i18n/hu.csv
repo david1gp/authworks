@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,Hitelesítő adatok és életciklus
 admin.redesign.actions,Műveletek
 admin.redesign.activeSessions,Aktív munkamenetek
 admin.redesign.administratorId,adminisztrátori azonosító
+admin.redesign.atSign,@
 admin.redesign.consentTrust,Hozzájárulás és bizalom
 admin.redesign.device,Eszköz
 admin.redesign.documents,dokumentumok

@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,Kimlik bilgileri ve yaşam döngüsü
 admin.redesign.actions,İşlemler
 admin.redesign.activeSessions,Etkin oturumlar
 admin.redesign.administratorId,yönetici kimliği
+admin.redesign.atSign,@
 admin.redesign.consentTrust,Onay ve güven
 admin.redesign.device,Cihaz
 admin.redesign.documents,belgeler

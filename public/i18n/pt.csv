@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,Credenciais e ciclo de vida
 admin.redesign.actions,Ações
 admin.redesign.activeSessions,Sessões ativas
 admin.redesign.administratorId,ID do administrador
+admin.redesign.atSign,@
 admin.redesign.consentTrust,Consentimento e confiança
 admin.redesign.device,Dispositivo
 admin.redesign.documents,documentos

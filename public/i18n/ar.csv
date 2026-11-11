@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,بيانات الاعتماد ودورة 
 admin.redesign.actions,الإجراءات
 admin.redesign.activeSessions,الجلسات النشطة
 admin.redesign.administratorId,معرّف المسؤول
+admin.redesign.atSign,@
 admin.redesign.consentTrust,الموافقة والثقة
 admin.redesign.device,الجهاز
 admin.redesign.documents,المستندات

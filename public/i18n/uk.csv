@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,Облікові дані та життє
 admin.redesign.actions,Дії
 admin.redesign.activeSessions,Активні сеанси
 admin.redesign.administratorId,ID адміністратора
+admin.redesign.atSign,@
 admin.redesign.consentTrust,Згода та довіра
 admin.redesign.device,Пристрій
 admin.redesign.documents,документи

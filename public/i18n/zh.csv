@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,凭据与生命周期
 admin.redesign.actions,操作
 admin.redesign.activeSessions,活跃会话
 admin.redesign.administratorId,管理员 ID
+admin.redesign.atSign,@
 admin.redesign.consentTrust,授权与信任
 admin.redesign.device,设备
 admin.redesign.documents,文档

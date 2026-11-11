@@ -2080,6 +2080,7 @@ admin.oidc.secret.credentialsLifecycle,資格情報とライフサイクル
 admin.redesign.actions,操作
 admin.redesign.activeSessions,アクティブなセッション
 admin.redesign.administratorId,管理者 ID
+admin.redesign.atSign,@
 admin.redesign.consentTrust,同意と信頼
 admin.redesign.device,デバイス
 admin.redesign.documents,ドキュメント

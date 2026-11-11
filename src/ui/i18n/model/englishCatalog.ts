@@ -1,5 +1,6 @@
 /** Stable message keys introduced with the shared i18n foundation. */
 export const englishCatalog = {
+  "admin.redesign.atSign": "@",
   "admin.redesign.from": "From",
   "admin.redesign.to": "To",
   "admin.redesign.moreFilters": "More filters",

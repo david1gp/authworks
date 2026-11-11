@@ -96,7 +96,7 @@ export function DirectoryUserCard(props: {
         <div class="flex min-w-0 flex-col items-start gap-y-0.5">
           <AuthenticatedCopyField
             icon={mdiAccountOutline}
-            label="@"
+            label={messageTranslate("admin.redesign.atSign")}
             copyLabel={messageTranslate("admin.userProfile.username")}
             value={props.entry.user.userName}
           />

@@ -783,6 +783,8 @@ const identicalAllowlist: readonly string[] = [
   "admin.impersonation.remainingValue",
   // SI unit symbol for seconds (input suffix next to seconds-lifetime fields); identical by standard.
   "admin.redesign.s",
+  // Universal at-sign sigil for the username row; identical by symbol in every locale.
+  "admin.redesign.atSign",
   // E.164 example phone number, not prose.
   "account.profile.phonePlaceholder",
   // RFC 2606 example domain used as an input placeholder.
