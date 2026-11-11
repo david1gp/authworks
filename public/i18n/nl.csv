@@ -1003,6 +1003,7 @@ admin.projects.status,Status
 admin.projects.statusValue.active,Actief
 admin.projects.statusValue.inactive,Inactief
 admin.projects.statusValue.removed,Verwijderd
+admin.sessions.id,Sessie-ID
 admin.sessions.revoked,De sessie is ingetrokken.
 admin.realm.confirmMismatch,De realm-naam komt niet overeen.
 admin.realm.description,Identiteits- en aanmeldconfiguratie van het realm dat u beheert.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Filters wissen
 admin.users.directoryCreated,Aangemaakt
 admin.users.directoryEmptySearch,Geen personen komen met deze zoekopdracht overeen.
 admin.users.directoryEmptySearchDetail,"Probeer een andere naam, e-mailadres of wis het rollenfilter."
+admin.users.directoryHideDeleted,Verwijderde verbergen
 admin.users.directoryInvite,Gebruiker uitnodigen
 admin.users.directoryInviteDescription,Stuur een organisatie-uitnodiging per e-mail. De link wordt één keer getoond.
 admin.users.directoryInviteEmail,E-mailadres
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Dit geheim wordt één keer get
 admin.users.directoryServiceAccountStatus,Accountstatus
 admin.users.directoryServiceAccountUserName,Gebruikersnaam
 admin.users.directoryServiceAccountUserNameHint,Gebruikt als client-ID bij het uitwisselen van clientreferenties.
+admin.users.directoryShowDeleted,Verwijderde tonen
 admin.users.directoryStatus,Gebruikersstatus
 admin.users.directorySubtitle,{count} personen
 admin.users.directorySubtitleOne,1 persoon
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Gevraagde toegang
 oidc.consent.signInDescription,Meld u aan om dit autorisatieverzoek te bekijken.
 oidc.consent.signInTitle,Aanmelden vereist
 ui.authenticated.clearSearch,Zoekopdracht wissen
+ui.authenticated.copied,Gekopieerd
+ui.authenticated.copyFailed,Kan {field} niet kopiëren
+ui.authenticated.copyField,{field} kopiëren
 ui.authenticated.demo.adminBlurb,Beheerder: beheert leden en projecten en logingegevens zonder eigenaren.
 ui.authenticated.demo.chipBlurb,Compacte tokens voor rol en status en projectzichtbaarheid.
 ui.authenticated.demo.emptyBlurb,Lege staat: geen enkel record past bij het filter.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Exacte match: de tabel-URL hieronder draagt de
 ui.authenticated.moreActions,Meer acties
 ui.authenticated.never,Nooit
 ui.authenticated.search,Zoeken
+ui.authenticated.sortAscending,Oplopend sorteren
 ui.authenticated.sortBy,Sorteren op {column}
+ui.authenticated.sortDescending,Aflopend sorteren
 ui.authenticated.demo.avatarDescription,Foto met initialen-terugval in deterministische tonen.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Kaarten
 ui.authenticated.demo.chipsTitle,Chips
 ui.authenticated.demo.dataDescription,"Sorteerbare koppen, rijkoppelingen, skeletladen en lege staat."
 ui.authenticated.demo.dataTitle,Gegevenstabel

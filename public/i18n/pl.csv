@@ -1003,6 +1003,7 @@ admin.projects.status,Stan
 admin.projects.statusValue.active,Aktywny
 admin.projects.statusValue.inactive,Nieaktywny
 admin.projects.statusValue.removed,Usunięta
+admin.sessions.id,Identyfikator sesji
 admin.sessions.revoked,Sesja została unieważniona.
 admin.realm.confirmMismatch,Nazwa obszaru nie jest zgodna.
 admin.realm.description,"Konfiguracja tożsamości i logowania obszaru, którym administrujesz."
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Wyczyść filtry
 admin.users.directoryCreated,Utworzono
 admin.users.directoryEmptySearch,Żadne osoby nie pasują do tego wyszukiwania.
 admin.users.directoryEmptySearchDetail,"Spróbuj innej nazwy, adresu e-mail lub wyczyść filtr ról."
+admin.users.directoryHideDeleted,Ukryj usuniętych
 admin.users.directoryInvite,Zaproś użytkownika
 admin.users.directoryInviteDescription,Wyślij zaproszenie do organizacji pocztą e-mail. Link jest pokazywany jeden raz.
 admin.users.directoryInviteEmail,Adres e-mail
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Ten sekret jest pokazywany jede
 admin.users.directoryServiceAccountStatus,Stan
 admin.users.directoryServiceAccountUserName,Nazwa użytkownika
 admin.users.directoryServiceAccountUserNameHint,Używana jako ID klienta podczas wymiany poświadczeń klienta.
+admin.users.directoryShowDeleted,Pokaż usuniętych
 admin.users.directoryStatus,Stan
 admin.users.directorySubtitle,{count} osób
 admin.users.directorySubtitleOne,1 osoba
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Żądany dostęp
 oidc.consent.signInDescription,"Zaloguj się, aby przejrzeć to żądanie autoryzacji."
 oidc.consent.signInTitle,Wymagane logowanie
 ui.authenticated.clearSearch,Wyczyść wyszukiwanie
+ui.authenticated.copied,Skopiowano
+ui.authenticated.copyFailed,Nie udało się skopiować {field}
+ui.authenticated.copyField,Kopiuj {field}
 ui.authenticated.demo.adminBlurb,Admin: zarządza członkami i projektami i poświadczeniami bez właścicieli.
 ui.authenticated.demo.chipBlurb,Zwarte tokeny roli i stanu i widoczności projektu.
 ui.authenticated.demo.emptyBlurb,Stan pusty: żaden rekord nie pasuje do filtra.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Dokładne dopasowanie: URL tabeli poniżej nie
 ui.authenticated.moreActions,Więcej działań
 ui.authenticated.never,Nigdy
 ui.authenticated.search,Szukaj
+ui.authenticated.sortAscending,Sortuj rosnąco
 ui.authenticated.sortBy,Sortuj według {column}
+ui.authenticated.sortDescending,Sortuj malejąco
 ui.authenticated.demo.avatarDescription,Zdjęcie z inicjałami zastępczymi w tonacjach deterministycznych.
 ui.authenticated.demo.avatarTitle,Awatar
+ui.authenticated.demo.cardsTitle,Karty
 ui.authenticated.demo.chipsTitle,Oznaczenia
 ui.authenticated.demo.dataDescription,"Sortowalne nagłówki, linki wierszy, ładowanie szkieletowe i stan pusty."
 ui.authenticated.demo.dataTitle,Tabela danych

@@ -1003,6 +1003,7 @@ admin.projects.status,Statut
 admin.projects.statusValue.active,Actif
 admin.projects.statusValue.inactive,Inactif
 admin.projects.statusValue.removed,Supprimée
+admin.sessions.id,Identifiant de session
 admin.sessions.revoked,La session a été révoquée.
 admin.realm.confirmMismatch,Le nom du domaine de sécurité ne correspond pas.
 admin.realm.description,Configuration d'identité et de connexion du domaine de sécurité que vous administrez.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Effacer les filtres
 admin.users.directoryCreated,Créée
 admin.users.directoryEmptySearch,Aucune personne ne correspond à cette recherche.
 admin.users.directoryEmptySearchDetail,"Essayez un autre nom, une autre adresse e-mail ou retirez le filtre de rôle."
+admin.users.directoryHideDeleted,Masquer les supprimés
 admin.users.directoryInvite,Inviter un utilisateur
 admin.users.directoryInviteDescription,Envoyez une invitation à l'organisation par e-mail. Le lien n'est affiché qu'une fois.
 admin.users.directoryInviteEmail,Adresse e-mail
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Ce secret n'est affiché qu'une
 admin.users.directoryServiceAccountStatus,Statut
 admin.users.directoryServiceAccountUserName,Nom d'utilisateur
 admin.users.directoryServiceAccountUserNameHint,Utilisé comme ID client lors de l'échange d'identifiants client.
+admin.users.directoryShowDeleted,Afficher les supprimés
 admin.users.directoryStatus,Statut
 admin.users.directorySubtitle,{count} personnes
 admin.users.directorySubtitleOne,1 personne
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Accès demandé
 oidc.consent.signInDescription,Connectez-vous pour examiner cette demande d’autorisation.
 oidc.consent.signInTitle,Connexion requise
 ui.authenticated.clearSearch,Effacer la recherche
+ui.authenticated.copied,Copié
+ui.authenticated.copyFailed,Impossible de copier {field}
+ui.authenticated.copyField,Copier {field}
 ui.authenticated.demo.adminBlurb,Admin : gère membres et projets et identifiants sans les propriétaires.
 ui.authenticated.demo.chipBlurb,Pastilles compactes pour rôle et état et visibilité du projet.
 ui.authenticated.demo.emptyBlurb,État vide : aucun enregistrement ne correspond au filtre.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Correspondance exacte : l’URL du tableau po
 ui.authenticated.moreActions,Plus d’actions
 ui.authenticated.never,Jamais
 ui.authenticated.search,Rechercher
+ui.authenticated.sortAscending,Trier par ordre croissant
 ui.authenticated.sortBy,Trier par {column}
+ui.authenticated.sortDescending,Trier par ordre décroissant
 ui.authenticated.demo.avatarDescription,Photo avec initiales de repli aux tons déterministes.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Cartes
 ui.authenticated.demo.chipsTitle,Pastilles
 ui.authenticated.demo.dataDescription,"En-têtes triables, liens de ligne, chargement squelette et état vide."
 ui.authenticated.demo.dataTitle,Tableau de données

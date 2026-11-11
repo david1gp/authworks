@@ -1003,6 +1003,7 @@ admin.projects.status,状態
 admin.projects.statusValue.active,有効
 admin.projects.statusValue.inactive,非アクティブ
 admin.projects.statusValue.removed,削除済み
+admin.sessions.id,セッション ID
 admin.sessions.revoked,セッションを取り消しました。
 admin.realm.confirmMismatch,レルム名が一致しません。
 admin.realm.description,管理しているレルムの識別情報とサインインの設定です。
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,フィルターをクリア
 admin.users.directoryCreated,作成日
 admin.users.directoryEmptySearch,この検索に一致するユーザーはいません。
 admin.users.directoryEmptySearchDetail,別の名前やメールアドレスを試すか、ロールフィルターをクリアしてください。
+admin.users.directoryHideDeleted,削除済みを非表示
 admin.users.directoryInvite,ユーザーを招待
 admin.users.directoryInviteDescription,メールで組織招待を送信します。リンクは一度だけ表示されます。
 admin.users.directoryInviteEmail,メールアドレス
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,このシークレットは一�
 admin.users.directoryServiceAccountStatus,状態
 admin.users.directoryServiceAccountUserName,ユーザー名
 admin.users.directoryServiceAccountUserNameHint,クライアント資格情報の交換時にクライアント ID として使用されます。
+admin.users.directoryShowDeleted,削除済みを表示
 admin.users.directoryStatus,状態
 admin.users.directorySubtitle,{count} 人のメンバー
 admin.users.directorySubtitleOne,1 人
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,要求されたアクセス
 oidc.consent.signInDescription,この認可リクエストを確認するにはサインインしてください。
 oidc.consent.signInTitle,サインインが必要です
 ui.authenticated.clearSearch,検索をクリア
+ui.authenticated.copied,コピーしました
+ui.authenticated.copyFailed,{field} をコピーできませんでした
+ui.authenticated.copyField,{field} をコピー
 ui.authenticated.demo.adminBlurb,管理者: 所有者を除くメンバーとプロジェクトと資格情報を管理。
 ui.authenticated.demo.chipBlurb,役割と状態とプロジェクト可視性の小型トークン。
 ui.authenticated.demo.emptyBlurb,空状態: フィルタに一致するレコードなし。
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,完全一致: 下の表URLが有効な並替�
 ui.authenticated.moreActions,その他の操作
 ui.authenticated.never,なし
 ui.authenticated.search,検索
+ui.authenticated.sortAscending,昇順で並べ替え
 ui.authenticated.sortBy,{column}で並べ替え
+ui.authenticated.sortDescending,降順で並べ替え
 ui.authenticated.demo.avatarDescription,決定的なトーンのイニシャルフォールバック付き写真。
 ui.authenticated.demo.avatarTitle,アバター
+ui.authenticated.demo.cardsTitle,カード
 ui.authenticated.demo.chipsTitle,チップ
 ui.authenticated.demo.dataDescription,ソート可能なヘッダー、行リンク、スケルトン読み込み、空状態。
 ui.authenticated.demo.dataTitle,データテーブル

@@ -1003,6 +1003,7 @@ admin.projects.status,Stato
 admin.projects.statusValue.active,Attivo
 admin.projects.statusValue.inactive,Inattivo
 admin.projects.statusValue.removed,Rimossa
+admin.sessions.id,ID sessione
 admin.sessions.revoked,La sessione è stata revocata.
 admin.realm.confirmMismatch,Il nome del reame non corrisponde.
 admin.realm.description,Configurazione di identità e accesso del reame che stai amministrando.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Cancella filtri
 admin.users.directoryCreated,Creato
 admin.users.directoryEmptySearch,Nessuna persona corrisponde a questa ricerca.
 admin.users.directoryEmptySearchDetail,"Prova un altro nome, indirizzo e-mail o cancella il filtro per ruolo."
+admin.users.directoryHideDeleted,Nascondi eliminati
 admin.users.directoryInvite,Invita utente
 admin.users.directoryInviteDescription,Invia un invito all'organizzazione via e-mail. Il link viene mostrato una sola volta.
 admin.users.directoryInviteEmail,Indirizzo e-mail
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Questo segreto viene mostrato u
 admin.users.directoryServiceAccountStatus,Stato
 admin.users.directoryServiceAccountUserName,Nome utente
 admin.users.directoryServiceAccountUserNameHint,Usato come ID client durante lo scambio delle credenziali client.
+admin.users.directoryShowDeleted,Mostra eliminati
 admin.users.directoryStatus,Stato
 admin.users.directorySubtitle,{count} persone
 admin.users.directorySubtitleOne,1 persona
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Accesso richiesto
 oidc.consent.signInDescription,Accedi per esaminare questa richiesta di autorizzazione.
 oidc.consent.signInTitle,Accesso richiesto
 ui.authenticated.clearSearch,Cancella ricerca
+ui.authenticated.copied,Copiato
+ui.authenticated.copyFailed,Impossibile copiare {field}
+ui.authenticated.copyField,Copia {field}
 ui.authenticated.demo.adminBlurb,Amministratore: gestisce membri e progetti e credenziali senza proprietari.
 ui.authenticated.demo.chipBlurb,Contrassegni compatti per ruolo e stato e visibilità del progetto.
 ui.authenticated.demo.emptyBlurb,Stato vuoto: nessun record corrisponde al filtro.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Corrispondenza esatta: l’URL della tabella r
 ui.authenticated.moreActions,Altre azioni
 ui.authenticated.never,Mai
 ui.authenticated.search,Cerca
+ui.authenticated.sortAscending,Ordina in ordine crescente
 ui.authenticated.sortBy,Ordina per {column}
+ui.authenticated.sortDescending,Ordina in ordine decrescente
 ui.authenticated.demo.avatarDescription,Foto con fallback alle iniziali in toni deterministici.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Schede
 ui.authenticated.demo.chipsTitle,Etichette
 ui.authenticated.demo.dataDescription,"Intestazioni ordinabili, link di riga, caricamento scheletro e stato vuoto."
 ui.authenticated.demo.dataTitle,Tabella dati

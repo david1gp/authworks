@@ -1003,6 +1003,7 @@ admin.projects.status,Status
 admin.projects.statusValue.active,Aktiv
 admin.projects.statusValue.inactive,Inaktiv
 admin.projects.statusValue.removed,Entfernt
+admin.sessions.id,Sitzungs-ID
 admin.sessions.revoked,Die Sitzung wurde widerrufen.
 admin.realm.confirmMismatch,Der Bereichsname stimmt nicht überein.
 admin.realm.description,"Identitäts- und Anmeldekonfiguration für den Bereich, den Sie verwalten."
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Filter zurücksetzen
 admin.users.directoryCreated,Erstellt
 admin.users.directoryEmptySearch,Keine Personen passen zu dieser Suche.
 admin.users.directoryEmptySearchDetail,"Versuchen Sie einen anderen Namen, eine andere E-Mail-Adresse oder entfernen Sie den Rollenfilter."
+admin.users.directoryHideDeleted,Gelöschte ausblenden
 admin.users.directoryInvite,Benutzer einladen
 admin.users.directoryInviteDescription,Senden Sie eine Organisationseinladung per E-Mail. Der Link wird einmalig angezeigt.
 admin.users.directoryInviteEmail,E-Mail-Adresse
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Dieses Secret wird einmalig ang
 admin.users.directoryServiceAccountStatus,Zustand
 admin.users.directoryServiceAccountUserName,Benutzername
 admin.users.directoryServiceAccountUserNameHint,Wird beim Austausch von Client-Anmeldedaten als Client-ID verwendet.
+admin.users.directoryShowDeleted,Gelöschte anzeigen
 admin.users.directoryStatus,Zustand
 admin.users.directorySubtitle,{count} Personen
 admin.users.directorySubtitleOne,1 Person
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Angeforderter Zugriff
 oidc.consent.signInDescription,"Melden Sie sich an, um diese Autorisierungsanfrage zu prüfen."
 oidc.consent.signInTitle,Anmeldung erforderlich
 ui.authenticated.clearSearch,Suche löschen
+ui.authenticated.copied,Kopiert
+ui.authenticated.copyFailed,{field} konnte nicht kopiert werden
+ui.authenticated.copyField,{field} kopieren
 ui.authenticated.demo.adminBlurb,Admin: verwaltet Mitglieder und Projekte und Zugangsdaten ohne Eigentümer.
 ui.authenticated.demo.chipBlurb,Kompakte Kennzeichen für Rolle und Status und Projektsichtbarkeit.
 ui.authenticated.demo.emptyBlurb,Leerer Zustand: kein Datensatz passt zum Filter.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Exakte Übereinstimmung: die Tabellen-URL unte
 ui.authenticated.moreActions,Weitere Aktionen
 ui.authenticated.never,Nie
 ui.authenticated.search,Suchen
+ui.authenticated.sortAscending,Aufsteigend sortieren
 ui.authenticated.sortBy,Nach {column} sortieren
+ui.authenticated.sortDescending,Absteigend sortieren
 ui.authenticated.demo.avatarDescription,Foto mit Initialen-Fallback in festen Farbtönen.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Karten
 ui.authenticated.demo.chipsTitle,Chips
 ui.authenticated.demo.dataDescription,"Sortierbare Kopfzeilen, Zeilenlinks, Ladezustand und leerer Zustand."
 ui.authenticated.demo.dataTitle,Datentabelle

@@ -1003,6 +1003,7 @@ admin.projects.status,الحالة
 admin.projects.statusValue.active,نشط
 admin.projects.statusValue.inactive,غير نشط
 admin.projects.statusValue.removed,مُزالة
+admin.sessions.id,معرّف الجلسة
 admin.sessions.revoked,تم إلغاء الجلسة.
 admin.realm.confirmMismatch,اسم النطاق غير مطابق.
 admin.realm.description,إعدادات الهوية وتسجيل الدخول للنطاق الذي تديره.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,مسح عوامل التصفية
 admin.users.directoryCreated,تاريخ الإنشاء
 admin.users.directoryEmptySearch,لا يوجد أشخاص يطابقون هذا البحث.
 admin.users.directoryEmptySearchDetail,جرّب اسماً أو بريداً إلكترونياً مختلفاً، أو امسح عامل تصفية الدور.
+admin.users.directoryHideDeleted,إخفاء المحذوفين
 admin.users.directoryInvite,دعوة مستخدم
 admin.users.directoryInviteDescription,أرسل دعوة إلى المؤسسة بالبريد الإلكتروني. يُعرض الرابط مرة واحدة.
 admin.users.directoryInviteEmail,عنوان البريد الإلكتروني
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,يُعرض هذا السر مر
 admin.users.directoryServiceAccountStatus,الحالة
 admin.users.directoryServiceAccountUserName,اسم المستخدم
 admin.users.directoryServiceAccountUserNameHint,يُستخدم كمعرّف العميل عند تبادل بيانات اعتماد العميل.
+admin.users.directoryShowDeleted,إظهار المحذوفين
 admin.users.directoryStatus,الحالة
 admin.users.directorySubtitle,{count} من الأشخاص
 admin.users.directorySubtitleOne,شخص واحد
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,الوصول المطلوب
 oidc.consent.signInDescription,سجّل الدخول لمراجعة طلب التفويض هذا.
 oidc.consent.signInTitle,تسجيل الدخول مطلوب
 ui.authenticated.clearSearch,مسح البحث
+ui.authenticated.copied,تم النسخ
+ui.authenticated.copyFailed,تعذر نسخ {field}
+ui.authenticated.copyField,نسخ {field}
 ui.authenticated.demo.adminBlurb,المشرف: يدير الأعضاء والمشاريع وبيانات الاعتماد دون المالكين.
 ui.authenticated.demo.chipBlurb,شارات مدمجة للدور والحالة وظهور المشروع.
 ui.authenticated.demo.emptyBlurb,حالة فارغة: لا يطابق أي سجل عامل التصفية.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,تطابق تام: رابط الجدول أد�
 ui.authenticated.moreActions,إجراءات أخرى
 ui.authenticated.never,أبداً
 ui.authenticated.search,بحث
+ui.authenticated.sortAscending,ترتيب تصاعدي
 ui.authenticated.sortBy,ترتيب حسب {column}
+ui.authenticated.sortDescending,ترتيب تنازلي
 ui.authenticated.demo.avatarDescription,صورة مع أحرف أولى احتياطية بألوان ثابتة.
 ui.authenticated.demo.avatarTitle,الصورة الرمزية
+ui.authenticated.demo.cardsTitle,بطاقات
 ui.authenticated.demo.chipsTitle,شارات
 ui.authenticated.demo.dataDescription,ترويسات قابلة للترتيب وروابط للصفوف وهيكل تحميل وموضع فارغ.
 ui.authenticated.demo.dataTitle,جدول البيانات

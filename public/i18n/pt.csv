@@ -1003,6 +1003,7 @@ admin.projects.status,Estado
 admin.projects.statusValue.active,Ativo
 admin.projects.statusValue.inactive,Inativo
 admin.projects.statusValue.removed,Removida
+admin.sessions.id,ID da sessão
 admin.sessions.revoked,A sessão foi revogada.
 admin.realm.confirmMismatch,O nome do domínio de segurança não corresponde.
 admin.realm.description,Configuração de identidade e login do domínio de segurança que você administra.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Limpar filtros
 admin.users.directoryCreated,Criado
 admin.users.directoryEmptySearch,Nenhuma pessoa corresponde a esta pesquisa.
 admin.users.directoryEmptySearchDetail,"Experimente outro nome, endereço de e-mail ou limpe o filtro de funções."
+admin.users.directoryHideDeleted,Ocultar eliminados
 admin.users.directoryInvite,Convidar utilizador
 admin.users.directoryInviteDescription,Envie um convite da organização por e-mail. A ligação é mostrada uma vez.
 admin.users.directoryInviteEmail,Endereço de e-mail
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Este segredo é mostrado uma ve
 admin.users.directoryServiceAccountStatus,Estado
 admin.users.directoryServiceAccountUserName,Nome de utilizador
 admin.users.directoryServiceAccountUserNameHint,Usado como ID de cliente ao trocar credenciais de cliente.
+admin.users.directoryShowDeleted,Mostrar eliminados
 admin.users.directoryStatus,Estado
 admin.users.directorySubtitle,{count} pessoas
 admin.users.directorySubtitleOne,1 pessoa
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Acesso pedido
 oidc.consent.signInDescription,Inicie sessão para rever este pedido de autorização.
 oidc.consent.signInTitle,Início de sessão necessário
 ui.authenticated.clearSearch,Limpar pesquisa
+ui.authenticated.copied,Copiado
+ui.authenticated.copyFailed,Não foi possível copiar {field}
+ui.authenticated.copyField,Copiar {field}
 ui.authenticated.demo.adminBlurb,Administração: gere membros e projetos e credenciais sem proprietários.
 ui.authenticated.demo.chipBlurb,Selos compactos de função e estado e visibilidade do projeto.
 ui.authenticated.demo.emptyBlurb,Estado vazio: nenhum registro corresponde ao filtro.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Correspondência exata: a URL da tabela traz a
 ui.authenticated.moreActions,Mais ações
 ui.authenticated.never,Nunca
 ui.authenticated.search,Pesquisar
+ui.authenticated.sortAscending,Ordenar por ordem crescente
 ui.authenticated.sortBy,Ordenar por {column}
+ui.authenticated.sortDescending,Ordenar por ordem decrescente
 ui.authenticated.demo.avatarDescription,Foto com iniciais alternativas em tons determinísticos.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Cartões
 ui.authenticated.demo.chipsTitle,Etiquetas
 ui.authenticated.demo.dataDescription,"Cabeçalhos ordenáveis, links de linha, carregamento esqueleto e estado vazio."
 ui.authenticated.demo.dataTitle,Tabela de dados

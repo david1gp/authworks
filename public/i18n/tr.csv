@@ -1003,6 +1003,7 @@ admin.projects.status,Durum
 admin.projects.statusValue.active,Etkin
 admin.projects.statusValue.inactive,Etkin değil
 admin.projects.statusValue.removed,Kaldırıldı
+admin.sessions.id,Oturum kimliği
 admin.sessions.revoked,Oturum iptal edildi.
 admin.realm.confirmMismatch,Alan adı eşleşmiyor.
 admin.realm.description,Yönettiğiniz alanın kimlik ve oturum açma yapılandırması.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Filtreleri temizle
 admin.users.directoryCreated,Oluşturulma
 admin.users.directoryEmptySearch,Bu aramayla eşleşen kişi yok.
 admin.users.directoryEmptySearchDetail,"Farklı bir ad, e-posta adresi deneyin veya rol filtresini temizleyin."
+admin.users.directoryHideDeleted,Silinenleri gizle
 admin.users.directoryInvite,Kullanıcı davet et
 admin.users.directoryInviteDescription,E-postayla bir kuruluş daveti gönderin. Bağlantı bir kez gösterilir.
 admin.users.directoryInviteEmail,E-posta adresi
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Bu parola bir kez gösterilir. 
 admin.users.directoryServiceAccountStatus,Durum
 admin.users.directoryServiceAccountUserName,Kullanıcı adı
 admin.users.directoryServiceAccountUserNameHint,İstemci kimlik bilgileri takas edilirken istemci ID'si olarak kullanılır.
+admin.users.directoryShowDeleted,Silinenleri göster
 admin.users.directoryStatus,Durum
 admin.users.directorySubtitle,{count} kişi
 admin.users.directorySubtitleOne,1 kişi
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,İstenen erişim
 oidc.consent.signInDescription,Bu yetkilendirme isteğini incelemek için oturum açın.
 oidc.consent.signInTitle,Oturum açma gerekli
 ui.authenticated.clearSearch,Aramayı temizle
+ui.authenticated.copied,Kopyalandı
+ui.authenticated.copyFailed,{field} kopyalanamadı
+ui.authenticated.copyField,{field} kopyala
 ui.authenticated.demo.adminBlurb,Yönetici: sahip olmadan üye ve proje ve kimlik bilgisi yönetir.
 ui.authenticated.demo.chipBlurb,Rol ve durum ve proje görünürlüğü için kompakt rozetler.
 ui.authenticated.demo.emptyBlurb,Boş durum: hiçbir kayıt filtreye uymuyor.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Tam eşleşme: aşağıdaki tablo URL etkin s�
 ui.authenticated.moreActions,Diğer işlemler
 ui.authenticated.never,Asla
 ui.authenticated.search,Ara
+ui.authenticated.sortAscending,Artan sırada sırala
 ui.authenticated.sortBy,{column} ölçütüne göre sırala
+ui.authenticated.sortDescending,Azalan sırada sırala
 ui.authenticated.demo.avatarDescription,Deterministik tonlarda baş harf yedekli fotoğraf.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Kartlar
 ui.authenticated.demo.chipsTitle,Rozetler
 ui.authenticated.demo.dataDescription,"Sıralanabilir başlıklar, satır bağlantıları, iskelet yükleme ve boş durum."
 ui.authenticated.demo.dataTitle,Veri tablosu

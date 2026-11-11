@@ -1003,6 +1003,7 @@ admin.projects.status,Állapot
 admin.projects.statusValue.active,Aktív
 admin.projects.statusValue.inactive,Inaktív
 admin.projects.statusValue.removed,Eltávolítva
+admin.sessions.id,Munkamenet-azonosító
 admin.sessions.revoked,A munkamenet visszavonásra került.
 admin.realm.confirmMismatch,A tartomány neve nem egyezik.
 admin.realm.description,Az Ön által felügyelt tartomány azonosítási és bejelentkezési beállításai.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Szűrők törlése
 admin.users.directoryCreated,Létrehozva
 admin.users.directoryEmptySearch,Senki sem felel meg ennek a keresésnek.
 admin.users.directoryEmptySearchDetail,"Próbáljon másik nevet, e-mail-címet, vagy törölje a szerepkörszűrőt."
+admin.users.directoryHideDeleted,Töröltek elrejtése
 admin.users.directoryInvite,Felhasználó meghívása
 admin.users.directoryInviteDescription,Küldjön szervezeti meghívót e-mailben. A link egyszer jelenik meg.
 admin.users.directoryInviteEmail,E-mail-cím
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Ez a titok egyszer jelenik meg.
 admin.users.directoryServiceAccountStatus,Állapot
 admin.users.directoryServiceAccountUserName,Felhasználónév
 admin.users.directoryServiceAccountUserNameHint,Ügyfél ID-ként használatos az ügyfél-hitelesítő adatok cseréjekor.
+admin.users.directoryShowDeleted,Töröltek megjelenítése
 admin.users.directoryStatus,Állapot
 admin.users.directorySubtitle,{count} személy
 admin.users.directorySubtitleOne,1 fő
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Kért hozzáférés
 oidc.consent.signInDescription,Jelentkezzen be az engedélyezési kérelem áttekintéséhez.
 oidc.consent.signInTitle,Bejelentkezés szükséges
 ui.authenticated.clearSearch,Keresés törlése
+ui.authenticated.copied,Másolva
+ui.authenticated.copyFailed,Nem sikerült másolni: {field}
+ui.authenticated.copyField,{field} másolása
 ui.authenticated.demo.adminBlurb,Admin: tagokat és projekteket és hitelesítő adatokat kezel tulajdonosok nélkül.
 ui.authenticated.demo.chipBlurb,Kompakt jelvények szerephez és állapothoz és projektláthatósághoz.
 ui.authenticated.demo.emptyBlurb,Üres állapot: egyetlen rekord sem illeszkedik a szűrőre.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Pontos egyezés: a táblázat URL-je hordozza 
 ui.authenticated.moreActions,További műveletek
 ui.authenticated.never,Soha
 ui.authenticated.search,Keresés
+ui.authenticated.sortAscending,Rendezés növekvő sorrendben
 ui.authenticated.sortBy,Rendezés: {column}
+ui.authenticated.sortDescending,Rendezés csökkenő sorrendben
 ui.authenticated.demo.avatarDescription,Fénykép determinisztikus tónusú monogram-tartalékkal.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Kártyák
 ui.authenticated.demo.chipsTitle,Jelvények
 ui.authenticated.demo.dataDescription,"Rendezhető fejlécek, sorhivatkozások, váz-betöltés és üres állapot."
 ui.authenticated.demo.dataTitle,Adattábla

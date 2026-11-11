@@ -1003,6 +1003,7 @@ admin.projects.status,Стан
 admin.projects.statusValue.active,Активна
 admin.projects.statusValue.inactive,Неактивний
 admin.projects.statusValue.removed,Видалена
+admin.sessions.id,ID сеансу
 admin.sessions.revoked,Сеанс було відкликано.
 admin.realm.confirmMismatch,Назва області не збігається.
 admin.realm.description,"Налаштування ідентифікації та входу для області, якою ви керуєте."
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Очистити фільтри
 admin.users.directoryCreated,Створено
 admin.users.directoryEmptySearch,Ніхто не відповідає пошуку.
 admin.users.directoryEmptySearchDetail,"Спробуйте інше ім’я, email або скиньте фільтр ролей."
+admin.users.directoryHideDeleted,Приховати видалених
 admin.users.directoryInvite,Запросити користувача
 admin.users.directoryInviteDescription,Надішліть запрошення до організації email. Посилання показується один раз.
 admin.users.directoryInviteEmail,Адреса email
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Цей секрет показ�
 admin.users.directoryServiceAccountStatus,Статус
 admin.users.directoryServiceAccountUserName,Ім’я користувача
 admin.users.directoryServiceAccountUserNameHint,Використовується як ID клієнта під час обміну облікових даних клієнта.
+admin.users.directoryShowDeleted,Показати видалених
 admin.users.directoryStatus,Статус
 admin.users.directorySubtitle,{count} людей
 admin.users.directorySubtitleOne,1 особа
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Запитаний доступ
 oidc.consent.signInDescription,"Увійдіть, щоб переглянути цей запит авторизації."
 oidc.consent.signInTitle,Потрібен вхід
 ui.authenticated.clearSearch,Очистити пошук
+ui.authenticated.copied,Скопійовано
+ui.authenticated.copyFailed,Не вдалося скопіювати {field}
+ui.authenticated.copyField,Скопіювати {field}
 ui.authenticated.demo.adminBlurb,Адмін: керує учасниками і проєктами й обліковими даними без власників.
 ui.authenticated.demo.chipBlurb,Компактні мітки ролі й статусу й видимості проєкту.
 ui.authenticated.demo.emptyBlurb,Порожньо: жоден запис не відповідає фільтру.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Точна відповідність: URL т�
 ui.authenticated.moreActions,Інші дії
 ui.authenticated.never,Ніколи
 ui.authenticated.search,Пошук
+ui.authenticated.sortAscending,Сортувати за зростанням
 ui.authenticated.sortBy,Сортувати за {column}
+ui.authenticated.sortDescending,Сортувати за спаданням
 ui.authenticated.demo.avatarDescription,Фото з ініціалами-заглушкою в детермінованих тонах.
 ui.authenticated.demo.avatarTitle,Аватар
+ui.authenticated.demo.cardsTitle,Картки
 ui.authenticated.demo.chipsTitle,Мітки
 ui.authenticated.demo.dataDescription,"Сортувальні заголовки, посилання рядків, скелетонне завантаження та порожній стан."
 ui.authenticated.demo.dataTitle,Таблиця даних

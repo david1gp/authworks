@@ -1003,6 +1003,7 @@ admin.projects.status,Состояние
 admin.projects.statusValue.active,Активна
 admin.projects.statusValue.inactive,Неактивен
 admin.projects.statusValue.removed,Удалена
+admin.sessions.id,ID сеанса
 admin.sessions.revoked,Сеанс был отозван.
 admin.realm.confirmMismatch,Имя области не совпадает.
 admin.realm.description,"Настройки идентификации и входа для области, которой вы управляете."
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Очистить фильтры
 admin.users.directoryCreated,Создан
 admin.users.directoryEmptySearch,Никто не соответствует поиску.
 admin.users.directoryEmptySearchDetail,"Попробуйте другое имя, email или сбросьте фильтр ролей."
+admin.users.directoryHideDeleted,Скрыть удалённых
 admin.users.directoryInvite,Пригласить пользователя
 admin.users.directoryInviteDescription,Отправьте приглашение в организацию по email. Ссылка показывается один раз.
 admin.users.directoryInviteEmail,Адрес email
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Этот секрет пока�
 admin.users.directoryServiceAccountStatus,Статус
 admin.users.directoryServiceAccountUserName,Имя пользователя
 admin.users.directoryServiceAccountUserNameHint,Используется как ID клиента при обмене учётных данных клиента.
+admin.users.directoryShowDeleted,Показать удалённых
 admin.users.directoryStatus,Статус
 admin.users.directorySubtitle,{count} человек
 admin.users.directorySubtitleOne,1 человек
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Запрошенный доступ
 oidc.consent.signInDescription,"Войдите, чтобы просмотреть этот запрос авторизации."
 oidc.consent.signInTitle,Требуется вход
 ui.authenticated.clearSearch,Очистить поиск
+ui.authenticated.copied,Скопировано
+ui.authenticated.copyFailed,Не удалось скопировать {field}
+ui.authenticated.copyField,Скопировать {field}
 ui.authenticated.demo.adminBlurb,Админ: управляет участниками и проектами и учетными данными без владельцев.
 ui.authenticated.demo.chipBlurb,Компактные метки роли и статуса и видимости проекта.
 ui.authenticated.demo.emptyBlurb,Пусто: ни одна запись не подходит под фильтр.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Точное совпадение: URL таб�
 ui.authenticated.moreActions,Другие действия
 ui.authenticated.never,Никогда
 ui.authenticated.search,Поиск
+ui.authenticated.sortAscending,Сортировать по возрастанию
 ui.authenticated.sortBy,Сортировать по {column}
+ui.authenticated.sortDescending,Сортировать по убыванию
 ui.authenticated.demo.avatarDescription,Фото с инициалами-заглушкой в детерминированных тонах.
 ui.authenticated.demo.avatarTitle,Аватар
+ui.authenticated.demo.cardsTitle,Карточки
 ui.authenticated.demo.chipsTitle,Метки
 ui.authenticated.demo.dataDescription,"Сортируемые заголовки, ссылки строк, скелетонная загрузка и пустое состояние."
 ui.authenticated.demo.dataTitle,Таблица данных

@@ -1003,6 +1003,7 @@ admin.projects.status,Estado
 admin.projects.statusValue.active,Activo
 admin.projects.statusValue.inactive,Inactivo
 admin.projects.statusValue.removed,Eliminada
+admin.sessions.id,ID de sesión
 admin.sessions.revoked,La sesión fue revocada.
 admin.realm.confirmMismatch,El nombre del ámbito no coincide.
 admin.realm.description,Configuración de identidad e inicio de sesión del ámbito que está administrando.
@@ -1250,6 +1251,7 @@ admin.users.directoryClearFilters,Borrar filtros
 admin.users.directoryCreated,Creada
 admin.users.directoryEmptySearch,Ninguna persona coincide con esta búsqueda.
 admin.users.directoryEmptySearchDetail,"Prueba con otro nombre, correo electrónico o quita el filtro de rol."
+admin.users.directoryHideDeleted,Ocultar eliminados
 admin.users.directoryInvite,Invitar usuario
 admin.users.directoryInviteDescription,Envía una invitación a la organización por correo. El enlace se muestra una sola vez.
 admin.users.directoryInviteEmail,Correo electrónico
@@ -1286,6 +1288,7 @@ admin.users.directoryServiceAccountSecretWarning,Este secreto se muestra una sol
 admin.users.directoryServiceAccountStatus,Estado
 admin.users.directoryServiceAccountUserName,Nombre de usuario
 admin.users.directoryServiceAccountUserNameHint,Se usa como ID de cliente al intercambiar credenciales de cliente.
+admin.users.directoryShowDeleted,Mostrar eliminados
 admin.users.directoryStatus,Estado
 admin.users.directorySubtitle,{count} personas
 admin.users.directorySubtitleOne,1 persona
@@ -1386,6 +1389,9 @@ oidc.consent.scopeTitle,Acceso solicitado
 oidc.consent.signInDescription,Inicia sesión para revisar esta solicitud de autorización.
 oidc.consent.signInTitle,Inicio de sesión requerido
 ui.authenticated.clearSearch,Borrar búsqueda
+ui.authenticated.copied,Copiado
+ui.authenticated.copyFailed,No se pudo copiar {field}
+ui.authenticated.copyField,Copiar {field}
 ui.authenticated.demo.adminBlurb,Administración: gestiona miembros y proyectos y credenciales sin propietarios.
 ui.authenticated.demo.chipBlurb,Distintivos compactos de rol y estado y visibilidad del proyecto.
 ui.authenticated.demo.emptyBlurb,Estado vacío: ningún registro coincide con el filtro.
@@ -1408,9 +1414,12 @@ ui.authenticated.demo.sortCaption,Coincidencia exacta: la URL de la tabla incluy
 ui.authenticated.moreActions,Más acciones
 ui.authenticated.never,Nunca
 ui.authenticated.search,Buscar
+ui.authenticated.sortAscending,Ordenar de forma ascendente
 ui.authenticated.sortBy,Ordenar por {column}
+ui.authenticated.sortDescending,Ordenar de forma descendente
 ui.authenticated.demo.avatarDescription,Foto con iniciales alternativas en tonos deterministas.
 ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.cardsTitle,Tarjetas
 ui.authenticated.demo.chipsTitle,Etiquetas
 ui.authenticated.demo.dataDescription,"Encabezados ordenables, enlaces de fila, carga esqueleto y estado vacío."
 ui.authenticated.demo.dataTitle,Tabla de datos
