@@ -2,9 +2,8 @@ import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
 import { A } from "@solidjs/router"
-import { For, Show } from "solid-js"
+import { Show } from "solid-js"
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
-import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
 import { AuthenticatedCopyButton } from "../../../ui/authenticated/AuthenticatedCopyButton.js"
 import { AuthenticatedCopyField } from "../../../ui/authenticated/AuthenticatedCopyField.js"
 import { AuthenticatedEntityCard } from "../../../ui/authenticated/AuthenticatedEntityCard.js"
@@ -12,9 +11,7 @@ import { AuthenticatedRelativeTime } from "../../../ui/authenticated/Authenticat
 import { authenticatedCardClasses } from "../../../ui/authenticated/authenticatedCardClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
-import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
-import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
-import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
+import { directoryUserCardRoleTextGet } from "./directoryUserCardRoleTextGet.js"
 
 export function DirectoryUserCard(props: {
   readonly entry: DirectoryEntry
@@ -93,31 +90,18 @@ export function DirectoryUserCard(props: {
             <span class="min-w-0 truncate text-xs text-muted-foreground" title={props.entry.team?.name ?? undefined}>
               {props.entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
             </span>
-            <span class="flex shrink-0 items-center gap-1 overflow-hidden">
-              <Show
-                when={props.scope === "all"}
-                fallback={
-                  <For each={directoryOrganizationRolesGet(props.entry, props.organizationId)}>
-                    {(role) => (
-                      <AuthenticatedChip
-                        icon={directoryRoleIconGet(role)}
-                        label={messageTranslate(directoryRoleLabelKeyGet(role))}
-                        tone={role === "owner" || role === "admin" ? "accent" : "neutral"}
-                      />
-                    )}
-                  </For>
-                }
-              >
-                <For each={props.entry.memberships}>
-                  {(membership) => (
-                    <AuthenticatedChip
-                      label={`${membership.organizationName}: ${membership.roles.map((role) => messageTranslate(directoryRoleLabelKeyGet(role))).join(", ")}`}
-                      tone="neutral"
-                    />
-                  )}
-                </For>
-              </Show>
-            </span>
+            <Show when={directoryUserCardRoleTextGet(props.entry, props.organizationId, props.scope)}>
+              {(roleText) => (
+                <>
+                  <span aria-hidden="true" class="shrink-0 text-xs text-muted-foreground/50">
+                    ·
+                  </span>
+                  <span class="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={roleText()}>
+                    {roleText()}
+                  </span>
+                </>
+              )}
+            </Show>
           </div>
           <span class="flex flex-col text-xs text-muted-foreground">
             <span>
