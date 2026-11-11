@@ -36,6 +36,7 @@ export function mailTransportConfigurationParse(
   if (language !== undefined && !supportedLanguages.includes(language as (typeof supportedLanguages)[number]))
     return resultErrorCreate(op, "Email transport configuration is invalid. Invalid footer language.")
 
+  const tlsServerName = optionalValue(input.AUTHWORKS_EMAIL_SMTP_TLS_SERVERNAME)
   const invitationSender = invitationSenderCreate(input)
   if (!invitationSender.success) return invitationSender
   return resultCreate<MailTransportConfiguration>({
@@ -58,6 +59,7 @@ export function mailTransportConfigurationParse(
       password: password.data,
       port: port.data,
       security: security.data,
+      ...(tlsServerName === undefined ? {} : { tlsServerName }),
       username: username.data,
     },
   })
@@ -84,6 +86,10 @@ function portParse(value: string | undefined, name: string) {
       `Email transport configuration is missing or invalid: ${name}.`,
     )
   return resultCreate(parsed)
+}
+
+function optionalValue(value: string | undefined): string | undefined {
+  return value === undefined || value.length === 0 ? undefined : value
 }
 
 function requiredValue(value: string | undefined, name: string) {

@@ -4,5 +4,6 @@ export type SmtpMailDeliveryPortConfiguration = {
   readonly password: string
   readonly port: number
   readonly security: "plain" | "starttls" | "tls"
+  readonly tlsServerName?: string
   readonly username: string
 }

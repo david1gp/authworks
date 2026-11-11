@@ -133,3 +133,86 @@ test("email transport configuration remains disabled unless explicitly enabled",
   )
   expect(invalid.success).toBe(false)
 })
+
+const smtpEnvBase = {
+  AUTHWORKS_EMAIL_DELIVERY_ENABLED: "true",
+  AUTHWORKS_EMAIL_GENERATOR_BASE_URL: "https://email-generator.example.test",
+  AUTHWORKS_EMAIL_SMTP_FROM: "sender@example.test",
+  AUTHWORKS_EMAIL_SMTP_HOST: "127.0.0.1",
+  AUTHWORKS_EMAIL_SMTP_PASSWORD: "not-a-real-password",
+  AUTHWORKS_EMAIL_SMTP_PORT: "587",
+  AUTHWORKS_EMAIL_SMTP_SECURITY: "starttls",
+  AUTHWORKS_EMAIL_SMTP_USERNAME: "sender@example.test",
+}
+
+test("email transport configuration passes an explicit TLS server name to SMTP", () => {
+  const parsed = mailTransportConfigurationParse(
+    { ...smtpEnvBase, AUTHWORKS_EMAIL_SMTP_TLS_SERVERNAME: "mail.example.com" },
+    "https://auth.example.test",
+  )
+  expect(parsed.success).toBe(true)
+  if (!parsed.success || parsed.data === undefined) return
+  expect(parsed.data.smtp).toMatchObject({ host: "127.0.0.1", tlsServerName: "mail.example.com" })
+
+  const unset = mailTransportConfigurationParse({ ...smtpEnvBase }, "https://auth.example.test")
+  expect(unset.success).toBe(true)
+  if (!unset.success || unset.data === undefined) return
+  expect("tlsServerName" in unset.data.smtp).toBe(false)
+
+  const empty = mailTransportConfigurationParse(
+    { ...smtpEnvBase, AUTHWORKS_EMAIL_SMTP_TLS_SERVERNAME: "" },
+    "https://auth.example.test",
+  )
+  expect(empty.success).toBe(true)
+  if (!empty.success || empty.data === undefined) return
+  expect("tlsServerName" in empty.data.smtp).toBe(false)
+})
+
+test("SMTP delivery forwards an explicit TLS server name to nodemailer", async () => {
+  const { mock } = await import("bun:test")
+  let captured: Record<string, unknown> | undefined
+  mock.module("nodemailer", () => ({
+    default: {
+      createTransport(options: Record<string, unknown>) {
+        captured = options
+        return { sendMail: async () => undefined }
+      },
+    },
+  }))
+  const { smtpMailDeliveryPortCreate: createPort } = await import(
+    "../../src/features/email/server/smtpMailDeliveryPortCreate.js"
+  )
+
+  const withName = createPort({
+    from: "sender@example.test",
+    host: "127.0.0.1",
+    password: "not-a-real-password",
+    port: 587,
+    security: "starttls",
+    tlsServerName: "mail.example.com",
+    username: "sender@example.test",
+  })
+  const delivered = await withName.deliver({
+    message: { html: "<p>Hello</p>", subject: "Welcome", text: "Hello" },
+    to: "recipient@example.test",
+  })
+  expect(delivered.success).toBe(true)
+  expect(captured).toMatchObject({ host: "127.0.0.1", tls: { servername: "mail.example.com" } })
+
+  captured = undefined
+  const withoutName = createPort({
+    from: "sender@example.test",
+    host: "smtp.example.test",
+    password: "not-a-real-password",
+    port: 587,
+    security: "starttls",
+    username: "sender@example.test",
+  })
+  const deliveredDefault = await withoutName.deliver({
+    message: { html: "<p>Hello</p>", subject: "Welcome", text: "Hello" },
+    to: "recipient@example.test",
+  })
+  expect(deliveredDefault.success).toBe(true)
+  expect(captured !== undefined && "tls" in captured).toBe(false)
+  mock.restore()
+})

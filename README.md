@@ -77,7 +77,9 @@ AUTHWORKS_EMAIL_SMTP_PASSWORD=replace-with-a-secret
 AUTHWORKS_EMAIL_SMTP_FROM=mailer@example.com
 ```
 
-Transactional email is disabled by default. The SMTP settings above are the required production names. The optional
+Transactional email is disabled by default. The SMTP settings above are the required production names. When the
+SMTP host is an IP or alias whose certificate belongs to another name, set the optional
+`AUTHWORKS_EMAIL_SMTP_TLS_SERVERNAME` to that certificate name so TLS verification keeps working. The optional
 footer names are `AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_TEXT`, `AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_URL`,
 `AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_SUBTITLE`, `AUTHWORKS_EMAIL_FOOTER_LANGUAGE`, and
 `AUTHWORKS_EMAIL_FOOTER_LEGAL_SIGNATURE`; invitation sender overrides are

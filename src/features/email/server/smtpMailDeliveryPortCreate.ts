@@ -29,6 +29,7 @@ export function smtpMailDeliveryPortCreate(options: SmtpMailDeliveryPortCreateOp
       port: options.port,
       requireTLS: options.security === "starttls",
       secure: options.security === "tls",
+      ...(options.tlsServerName === undefined ? {} : { tls: { servername: options.tlsServerName } }),
     })
 
   return {
