@@ -11,7 +11,6 @@ export function DirectoryAdminUsersProductionAdapter() {
     basePath: screen.basePath,
     confirmState: screen.confirmState,
     dialogs,
-    navigateProfile: (userId: string) => screen.navigate(`${screen.basePath}/users/${userId}`),
     page: screen.page,
     teams: screen.teams,
     teamsDialogs: screen.teamsDialogs,

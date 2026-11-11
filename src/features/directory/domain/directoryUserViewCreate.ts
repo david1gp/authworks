@@ -11,6 +11,7 @@ export function directoryUserViewCreate(user: User): Result<DirectoryUser> {
     emailVerified: user.emailVerified,
     id: user.id,
     ...(user.lastSignInAt === undefined ? {} : { lastSignInAt: user.lastSignInAt }),
+    ...(user.phoneNumber === undefined ? {} : { phoneNumber: user.phoneNumber }),
     ...(user.profile.picture?.url === undefined ? {} : { pictureUrl: user.profile.picture.url }),
     state: user.state,
     userName: user.userName,

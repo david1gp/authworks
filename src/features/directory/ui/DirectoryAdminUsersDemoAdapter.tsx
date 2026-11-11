@@ -1,4 +1,3 @@
-import { useNavigate } from "@solidjs/router"
 import type { DirectoryAdminUsersViewState } from "./DirectoryAdminUsersView.js"
 import { DirectoryAdminUsersView } from "./DirectoryAdminUsersView.js"
 import { directoryAdminUsersDemoStateCreate } from "./directoryAdminUsersDemoStateCreate.js"
@@ -7,14 +6,12 @@ import { directoryAdminUsersDialogsStateCreate } from "./directoryAdminUsersDial
 /** Demo mount for the users screen: fixture adapter honouring `?as=` plus the shared view. */
 export function DirectoryAdminUsersDemoAdapter() {
   const screen = directoryAdminUsersDemoStateCreate()
-  const navigate = useNavigate()
   const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page, teams: screen.teams })
   const state: DirectoryAdminUsersViewState = {
     basePath: screen.basePath,
     confirmState: screen.confirmState,
     dialogs,
-    navigateProfile: (userId: string) =>
-      navigate(`${screen.basePath}/users/${userId}${window.location.search}`, { replace: false }),
+    profileHref: (userId: string) => `${screen.basePath}/users/${userId}${window.location.search}`,
     page: screen.page,
     teams: screen.teams,
     teamsDialogs: screen.teamsDialogs,

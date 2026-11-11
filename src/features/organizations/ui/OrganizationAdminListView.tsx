@@ -1,29 +1,22 @@
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedCardList } from "../../../ui/authenticated/AuthenticatedCardList.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageHeader } from "../../../ui/authenticated/AuthenticatedPageHeader.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
-import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
-import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
-import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
-import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
-import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Organization } from "../public/organizationSchema.js"
+import { OrganizationAdminCard } from "./OrganizationAdminCard.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
-import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 
 export function OrganizationAdminListView(props: {
   readonly createName: string
@@ -133,82 +126,14 @@ export function OrganizationAdminListView(props: {
         onRetry={props.onRetry}
         status={props.status}
       >
-        <AuthenticatedSection>
-          <AuthenticatedRecordList label={messageTranslate("admin.organizations.list.title")}>
+        <div>
+          <AuthenticatedCardList label={messageTranslate("admin.organizations.list.title")}>
             <For each={props.organizations}>
               {(organization) => (
-                <AuthenticatedRecordItem
-                  fields={[
-                    {
-                      label: messageTranslate("admin.organizations.detail.created"),
-                      value: <AuthenticatedRelativeTime value={organization.createdAt} />,
-                    },
-                  ]}
-                  status={
-                    <AuthenticatedStatus
-                      label={messageTranslate(`admin.organizations.statusValue.${organization.status}`)}
-                      tone={organizationAdminStatusTone(organization.status)}
-                    />
-                  }
-                  title={
-                    <A
-                      class="min-w-0 truncate text-accent hover:underline"
-                      title={organization.name}
-                      href={props.detailHrefBuild(organization.id)}
-                    >
-                      {organization.name}
-                    </A>
-                  }
-                />
+                <OrganizationAdminCard organization={organization} href={props.detailHrefBuild(organization.id)} />
               )}
             </For>
-          </AuthenticatedRecordList>
-
-          <Table
-            aria-label={messageTranslate("admin.organizations.list.title")}
-            class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
-          >
-            <TableHeader class={authenticatedTableClasses.header}>
-              <TableRow>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.organizations.list.name")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.organizations.status")}
-                </TableHead>
-                <TableHead class={authenticatedTableClasses.head}>
-                  {messageTranslate("admin.organizations.detail.created")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <For each={props.organizations}>
-                {(organization) => (
-                  <TableRow class={authenticatedTableClasses.row}>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      <A
-                        class="min-w-0 truncate font-medium text-accent hover:underline"
-                        title={organization.name}
-                        href={props.detailHrefBuild(organization.id)}
-                      >
-                        {organization.name}
-                      </A>
-                    </TableCell>
-                    <TableCell class={authenticatedTableClasses.cell}>
-                      <AuthenticatedStatus
-                        label={messageTranslate(`admin.organizations.statusValue.${organization.status}`)}
-                        tone={organizationAdminStatusTone(organization.status)}
-                      />
-                    </TableCell>
-                    <TableCell class={`${authenticatedTableClasses.cell} whitespace-nowrap tabular-nums`}>
-                      <AuthenticatedRelativeTime value={organization.createdAt} />
-                    </TableCell>
-                  </TableRow>
-                )}
-              </For>
-            </TableBody>
-          </Table>
+          </AuthenticatedCardList>
 
           <AuthenticatedPagination
             nextAvailable={props.nextPageAvailable}
@@ -216,7 +141,7 @@ export function OrganizationAdminListView(props: {
             onPrevious={props.onPreviousPage}
             previousAvailable={props.previousPageAvailable}
           />
-        </AuthenticatedSection>
+        </div>
       </OrganizationAdminState>
     </section>
   )

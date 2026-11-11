@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { userSchema } from "../../users/public/userSchema.js"
 import { userStateSchema } from "../../users/public/userStateSchema.js"
 import { userVerificationStateSchema } from "../../users/public/userVerificationStateSchema.js"
 
@@ -9,6 +10,7 @@ export const directoryUserSchema = v.strictObject({
   emailVerified: v.boolean(),
   id: v.pipe(v.string(), v.minLength(1)),
   lastSignInAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  phoneNumber: userSchema.entries.phoneNumber,
   pictureUrl: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(2048))),
   state: userStateSchema,
   userName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),

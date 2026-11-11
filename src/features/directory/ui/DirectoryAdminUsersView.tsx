@@ -7,7 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedChip } from "../../../ui/authenticated/AuthenticatedChip.js"
-import { AuthenticatedDataTable } from "../../../ui/authenticated/AuthenticatedDataTable.js"
+import { AuthenticatedCardList } from "../../../ui/authenticated/AuthenticatedCardList.js"
+import { AuthenticatedCardListSkeleton } from "../../../ui/authenticated/AuthenticatedCardListSkeleton.js"
+import { AuthenticatedSortSelect } from "../../../ui/authenticated/AuthenticatedSortSelect.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedEmptyState } from "../../../ui/authenticated/AuthenticatedEmptyState.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
@@ -36,15 +38,13 @@ import { machineUserStatusTone } from "../../machineUsers/ui/machineUserStatusTo
 import type { OrganizationRoleId } from "../../organizations/public/organizationRoleIdSchema.js"
 import type { Team } from "../../teams/public/teamSchema.js"
 import { organizationAdminInvitationStatusTone } from "../../organizations/ui/organizationAdminInvitationStatusTone.js"
-import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryAdminTab } from "./directoryAdminTabSchema.js"
-import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
+import { DirectoryUserCard } from "./DirectoryUserCard.js"
 import type { DirectoryAdminUsersDialogsState } from "./directoryAdminUsersDialogsStateCreate.js"
 import type { DirectoryAdminUsersPageState } from "./directoryAdminUsersPageStateCreate.js"
 import type { DirectoryTeamsDialogsState } from "./directoryTeamsDialogsStateCreate.js"
 import type { DirectoryTeamsPageState } from "./directoryTeamsPageStateCreate.js"
 import { directoryAdminUsersQueryParse } from "./directoryAdminUsersQuerySchema.js"
-import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
 import { directoryRoleDescriptionKeyGet } from "./directoryRoleDescriptionKeyGet.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
@@ -56,15 +56,13 @@ export type DirectoryAdminUsersViewState = {
   readonly basePath: string
   readonly confirmState: ConfirmState
   readonly dialogs: DirectoryAdminUsersDialogsState
-  readonly navigateProfile: (userId: string) => void
+  readonly profileHref?: (userId: string) => string
   readonly page: DirectoryAdminUsersPageState
   readonly teams: DirectoryTeamsPageState
   readonly teamsDialogs: DirectoryTeamsDialogsState
 }
 
 const roleFilters = ["owner", "admin", "member", "guest"] as const satisfies readonly OrganizationRoleId[]
-
-const directoryUserNameGet = (entry: DirectoryEntry): string => entry.user.displayName ?? entry.user.userName
 
 const directoryTabsHref = (basePath: string, search: string, tab: DirectoryAdminTab): string => {
   const params = new URLSearchParams(search)
@@ -126,7 +124,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
   const activeTab = (): DirectoryAdminTab => page().tab()
   const activeRole = () => query().role
   const activeScope = () => (page().realmAdministrator() ? (query().scope ?? "organization") : "organization")
-  const profileHref = (userId: string) => `${state.basePath}/users/${userId}`
+  const profileHref = (userId: string) => state.profileHref?.(userId) ?? `${state.basePath}/users/${userId}`
   const tabItems = () => {
     const search = location.search
     const teams = () => state.teams
@@ -222,137 +220,6 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
     }
   }
 
-  const personRoles = (entry: DirectoryEntry): readonly OrganizationRoleId[] =>
-    directoryOrganizationRolesGet(entry, page().organizationId())
-
-  const roleCells = (entry: DirectoryEntry) => {
-    if (activeScope() === "all") {
-      return (
-        <span class="flex flex-wrap items-center gap-1">
-          <For each={entry.memberships}>
-            {(membership) => (
-              <AuthenticatedChip
-                label={`${membership.organizationName}: ${membership.roles.map((role) => messageTranslate(directoryRoleMessageKey(role))).join(", ")}`}
-                tone="neutral"
-              />
-            )}
-          </For>
-        </span>
-      )
-    }
-    return (
-      <span class="flex flex-wrap items-center gap-1">
-        <For each={personRoles(entry)}>
-          {(role) => (
-            <AuthenticatedChip
-              icon={directoryRoleIconGet(role)}
-              label={messageTranslate(directoryRoleMessageKey(role))}
-              tone={role === "owner" || role === "admin" ? "accent" : "neutral"}
-            />
-          )}
-        </For>
-      </span>
-    )
-  }
-
-  const statusCell = (entry: DirectoryEntry) => (
-    <span class="flex flex-wrap items-center gap-1">
-      <AuthenticatedStatus
-        label={messageTranslate(`admin.users.lifecycle.${entry.user.state}`)}
-        tone={directoryAdminUserStatusTone(entry.user.state)}
-      />
-    </span>
-  )
-
-  const peopleColumns = () => [
-    {
-      cell: (entry: DirectoryEntry) => (
-        <span class="flex min-w-0 items-center gap-2.5">
-          <AuthenticatedAvatar
-            class="size-6"
-            name={directoryUserNameGet(entry)}
-            size="sm"
-            src={entry.user.pictureUrl}
-          />
-          <span class="truncate font-medium" title={directoryUserNameGet(entry)}>
-            {directoryUserNameGet(entry)}
-          </span>
-        </span>
-      ),
-      header: messageTranslate("admin.users.displayName"),
-      key: "user",
-    },
-    {
-      cell: (entry: DirectoryEntry) => (
-        <span class="font-mono text-xs" title={entry.user.userName}>
-          @{entry.user.userName}
-        </span>
-      ),
-      header: messageTranslate("admin.userProfile.username"),
-      key: "userName",
-      sortKey: "userName",
-    },
-    {
-      cell: (entry: DirectoryEntry) => (
-        <span class="flex min-w-0 items-center gap-1.5">
-          <span class="truncate text-muted-foreground" title={entry.user.email}>
-            {entry.user.email}
-          </span>
-          <Show when={!entry.user.emailVerified}>
-            <span
-              aria-label={messageTranslate("admin.users.unverifiedEmail")}
-              class="size-2 rounded-full bg-warning"
-              role="img"
-              title={messageTranslate("admin.users.unverifiedEmail")}
-            />
-          </Show>
-        </span>
-      ),
-      header: messageTranslate("admin.users.email"),
-      key: "email",
-    },
-    {
-      cell: (entry: DirectoryEntry) => roleCells(entry),
-      header: messageTranslate("admin.users.directoryRole"),
-      key: "role",
-    },
-    {
-      cell: (entry: DirectoryEntry) => (
-        <span class="truncate text-muted-foreground" title={entry.team?.name ?? undefined}>
-          {entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
-        </span>
-      ),
-      header: messageTranslate("admin.users.directoryTeamColumn"),
-      key: "team",
-    },
-    {
-      cell: (entry: DirectoryEntry) => statusCell(entry),
-      header: messageTranslate("admin.users.directoryStatus"),
-      key: "status",
-    },
-    {
-      cell: (entry: DirectoryEntry) => (
-        <AuthenticatedRelativeTime
-          fallback={<span class="text-muted-foreground">{messageTranslate("admin.users.directoryNever")}</span>}
-          value={entry.user.lastSignInAt}
-        />
-      ),
-      header: messageTranslate("admin.users.directoryLastSignIn"),
-      key: "lastSignInAt",
-      align: "end" as const,
-      class: "whitespace-nowrap tabular-nums",
-      sortKey: "lastSignInAt",
-    },
-    {
-      cell: (entry: DirectoryEntry) => <AuthenticatedRelativeTime value={entry.user.createdAt} />,
-      header: messageTranslate("admin.users.directoryCreated"),
-      key: "createdAt",
-      align: "end" as const,
-      class: "whitespace-nowrap tabular-nums",
-      sortKey: "createdAt",
-    },
-  ]
-
   return (
     <div class="grid min-w-0 gap-3 [&>*]:min-w-0 [&>header>div:first-child>div:first-child]:flex [&>header>div:first-child>div:first-child]:flex-wrap [&>header>div:first-child>div:first-child]:items-baseline [&>header>div:first-child>div:first-child]:gap-x-3">
       <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
@@ -435,6 +302,16 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               }
             />
           </span>
+          <AuthenticatedSortSelect
+            label={messageTranslate("admin.users.directoryTabPeople")}
+            sort={sortActive()}
+            onSortChange={sortChange}
+            options={[
+              { key: "userName", label: messageTranslate("admin.userProfile.username") },
+              { key: "lastSignInAt", label: messageTranslate("admin.users.directoryLastSignIn") },
+              { key: "createdAt", label: messageTranslate("admin.users.directoryCreated") },
+            ]}
+          />
           <fieldset class="flex flex-wrap items-center gap-1.5">
             <legend class="sr-only">{messageTranslate("admin.users.directoryRole")}</legend>
             <AuthenticatedButton
@@ -495,11 +372,9 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
                 </AuthenticatedSection>
               }
             >
-              <AuthenticatedSection>
-                <div class="grid gap-2 p-5">
-                  <For each={[0, 1, 2, 3, 4]}>{(index) => <AuthenticatedSkeleton index={index} />}</For>
-                </div>
-              </AuthenticatedSection>
+              <div>
+                <AuthenticatedCardListSkeleton count={5} />
+              </div>
             </Show>
           }
         >
@@ -554,66 +429,26 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
               </AuthenticatedSection>
             }
           >
-            <AuthenticatedSection>
-              <div class="hidden md:block">
-                <AuthenticatedDataTable
-                  activeSort={sortActive()}
-                  caption={messageTranslate("admin.users.directoryTabPeople")}
-                  columns={peopleColumns()}
-                  onRowClick={(entry) => state.navigateProfile(entry.user.id)}
-                  onSortChange={sortChange}
-                  rowHref={(entry) => profileHref(entry.user.id)}
-                  rowKey={(entry) => entry.user.id}
-                  rows={page().people()}
-                />
-              </div>
-              <AuthenticatedRecordList label={messageTranslate("admin.users.directoryTabPeople")}>
+            <div>
+              <AuthenticatedCardList label={messageTranslate("admin.users.directoryTabPeople")}>
                 <For each={page().people()}>
                   {(entry) => (
-                    <AuthenticatedRecordItem
-                      compact
-                      meta={[
-                        `@${entry.user.userName}`,
-                        personRoles(entry)
-                          .map((role) => messageTranslate(directoryRoleMessageKey(role)))
-                          .join(", ") || "—",
-                        entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned"),
-                        <AuthenticatedRelativeTime
-                          fallback={messageTranslate("admin.users.directoryNever")}
-                          value={entry.user.lastSignInAt}
-                        />,
-                      ]}
-                      status={statusCell(entry)}
-                      title={
-                        <span class="flex items-center gap-2">
-                          <AuthenticatedAvatar
-                            name={directoryUserNameGet(entry)}
-                            size="sm"
-                            src={entry.user.pictureUrl}
-                          />
-                          <span class="truncate">{directoryUserNameGet(entry)}</span>
-                          <A
-                            aria-label={messageTranslate("admin.users.directoryOpenProfile", {
-                              name: directoryUserNameGet(entry),
-                            })}
-                            class="shrink-0 text-xs font-medium text-accent hover:underline"
-                            href={profileHref(entry.user.id)}
-                          >
-                            {messageTranslate("admin.users.directoryOpen")}
-                          </A>
-                        </span>
-                      }
+                    <DirectoryUserCard
+                      entry={entry}
+                      href={profileHref(entry.user.id)}
+                      organizationId={page().organizationId()}
+                      scope={activeScope()}
                     />
                   )}
                 </For>
-              </AuthenticatedRecordList>
+              </AuthenticatedCardList>
               <AuthenticatedPagination
                 nextAvailable={page().nextPageAvailable()}
                 onNext={page().pageNext}
                 onPrevious={page().pagePrevious}
                 previousAvailable={page().previousPageAvailable()}
               />
-            </AuthenticatedSection>
+            </div>
           </Show>
         </Show>
       </Show>

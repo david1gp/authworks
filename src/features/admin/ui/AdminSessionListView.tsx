@@ -1,16 +1,11 @@
-import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For, Show } from "solid-js"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedCardList } from "../../../ui/authenticated/AuthenticatedCardList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
-import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
-import { sessionDeviceLabelGet } from "../../sessions/ui/sessionDeviceLabelGet.js"
+import { AdminSessionCard } from "./AdminSessionCard.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 
@@ -55,85 +50,25 @@ export function AdminSessionListView(props: { readonly state: ReturnType<typeof 
           />
         }
       >
-        <AuthenticatedSection>
-          <div class="overflow-x-auto">
-            <Table class={authenticatedTableClasses.tableWide}>
-              <TableHeader class={authenticatedTableClasses.header}>
-                <TableRow>
-                  <TableHead class={authenticatedTableClasses.head}>
-                    {messageTranslate("admin.redesign.device")}
-                  </TableHead>
-                  <TableHead class={authenticatedTableClasses.head}>
-                    {messageTranslate("admin.users.directoryUser")}
-                  </TableHead>
-                  <TableHead class={authenticatedTableClasses.head}>{messageTranslate("admin.redesign.ip")}</TableHead>
-                  <TableHead class={authenticatedTableClasses.head}>
-                    {messageTranslate("admin.users.sessions.location")}
-                  </TableHead>
-                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
-                    {messageTranslate("login.chooser.lastUsed")}
-                  </TableHead>
-                  <TableHead class={`${authenticatedTableClasses.head} text-right`}>
-                    {messageTranslate("admin.users.sessions.expires")}
-                  </TableHead>
-                  <TableHead class={authenticatedTableClasses.head}>
-                    <span class="sr-only">{messageTranslate("admin.redesign.actions")}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <For each={props.state.sessions()}>
-                  {(session) => (
-                    <TableRow class={authenticatedTableClasses.row} data-admin-session={session.id}>
-                      <TableCell class={authenticatedTableClasses.cell}>
-                        {sessionDeviceLabelGet(session.device)}
-                        <span class="block font-mono text-xs text-muted-foreground">{session.id}</span>
-                      </TableCell>
-                      <TableCell class={authenticatedTableClasses.cell}>
-                        <span title={session.subjectId}>
-                          {session.subjectDisplayName || session.subjectEmail || session.subjectId}
-                        </span>
-                        <Show when={session.subjectDisplayName && session.subjectEmail}>
-                          <span class="ml-2 text-xs text-muted-foreground">{session.subjectEmail}</span>
-                        </Show>
-                      </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} font-mono text-xs`}>
-                        {session.device.ipAddress || "—"}
-                      </TableCell>
-                      <TableCell class={authenticatedTableClasses.cell}>
-                        {[session.device.region, session.device.countryCode].filter(Boolean).join(", ") || "—"}
-                      </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} text-right`}>
-                        <AuthenticatedRelativeTime value={session.lastUsedAt} />
-                      </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} text-right`}>
-                        <AuthenticatedRelativeTime value={session.expiresAt} />
-                      </TableCell>
-                      <TableCell class={authenticatedTableClasses.action}>
-                        <AuthenticatedButton
-                          aria-label={messageTranslate("common.revoke")}
-                          title={messageTranslate("common.revoke")}
-                          disabled={props.state.pendingId() !== undefined}
-                          icon={mdiCancel}
-                          onClick={() =>
-                            void props.state.sessionRevoke(session.userId ?? session.subjectId, session.id)
-                          }
-                          variant="outline"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </For>
-              </TableBody>
-            </Table>
-          </div>
+        <div>
+          <AuthenticatedCardList label={messageTranslate("shell.nav.sessions")}>
+            <For each={props.state.sessions()}>
+              {(session) => (
+                <AdminSessionCard
+                  session={session}
+                  disabled={props.state.pendingId() !== undefined}
+                  onRevoke={() => void props.state.sessionRevoke(session.userId ?? session.subjectId, session.id)}
+                />
+              )}
+            </For>
+          </AuthenticatedCardList>
           <AuthenticatedPagination
             nextAvailable={props.state.hasNextPage()}
             onNext={props.state.pageNext}
             onPrevious={props.state.pagePrevious}
             previousAvailable={props.state.hasPreviousPage()}
           />
-        </AuthenticatedSection>
+        </div>
       </Show>
       <Show when={props.state.status() === "empty"}>
         <AuthenticatedPagination

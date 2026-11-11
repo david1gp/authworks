@@ -17,6 +17,7 @@ type DirectoryPersonFixture = {
   readonly id: string
   readonly lastName?: string
   readonly lastSignInAt?: number
+  readonly phoneNumber?: string
   readonly organizationRoles: readonly ("owner" | "admin" | "member" | "guest")[]
   readonly otherMemberships?: readonly {
     readonly organizationId: string
@@ -33,6 +34,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Ada Osei",
     email: "ada.osei@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100001",
     firstName: "Ada",
     id: "01900000-0000-7000-8000-000000000101",
     lastName: "Osei",
@@ -46,6 +48,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Bruno Feld",
     email: "bruno.feld@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100002",
     firstName: "Bruno",
     id: "01900000-0000-7000-8000-000000000102",
     lastName: "Feld",
@@ -62,6 +65,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Cleo Marchetti",
     email: "cleo.marchetti@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100003",
     firstName: "Cleo",
     id: "01900000-0000-7000-8000-000000000103",
     lastName: "Marchetti",
@@ -75,6 +79,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Devon Achebe",
     email: "devon.achebe@acme.example",
     emailVerified: false,
+    phoneNumber: "+15550100004",
     firstName: "Devon",
     id: "01900000-0000-7000-8000-000000000104",
     lastName: "Achebe",
@@ -88,6 +93,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Elif Demir",
     email: "elif.demir@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100005",
     firstName: "Elif",
     id: "01900000-0000-7000-8000-000000000105",
     lastName: "Demir",
@@ -101,6 +107,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Farah Nasser",
     email: "farah.nasser@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100006",
     firstName: "Farah",
     id: "01900000-0000-7000-8000-000000000106",
     lastName: "Nasser",
@@ -113,6 +120,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Gus Halvorsen",
     email: "gus.halvorsen@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100007",
     firstName: "Gus",
     id: "01900000-0000-7000-8000-000000000107",
     lastName: "Halvorsen",
@@ -126,6 +134,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Hana Sato",
     email: "hana.sato@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100008",
     firstName: "Hana",
     id: "01900000-0000-7000-8000-000000000108",
     lastName: "Sato",
@@ -139,6 +148,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Ivan Petrov",
     email: "ivan.petrov@acme.example",
     emailVerified: false,
+    phoneNumber: "+15550100009",
     firstName: "Ivan",
     id: "01900000-0000-7000-8000-000000000109",
     lastName: "Petrov",
@@ -152,6 +162,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Juno Reyes",
     email: "juno.reyes@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100010",
     firstName: "Juno",
     id: "01900000-0000-7000-8000-000000000110",
     lastName: "Reyes",
@@ -167,6 +178,7 @@ const personFixtures: readonly DirectoryPersonFixture[] = [
     displayName: "Kai Lindqvist",
     email: "kai.lindqvist@acme.example",
     emailVerified: true,
+    phoneNumber: "+15550100011",
     firstName: "Kai",
     id: "01900000-0000-7000-8000-000000000111",
     lastName: "Lindqvist",
@@ -280,6 +292,7 @@ export const directoryAdminDemoPeople: DirectoryEntry[] = personFixtures.map((pe
       })),
     ],
     user: {
+      ...(person.phoneNumber === undefined ? {} : { phoneNumber: person.phoneNumber }),
       createdAt,
       ...(person.displayName === undefined ? {} : { displayName: person.displayName }),
       email: person.email,
