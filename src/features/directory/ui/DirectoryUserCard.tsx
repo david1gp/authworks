@@ -9,11 +9,9 @@ import { AuthenticatedCopyButton } from "../../../ui/authenticated/Authenticated
 import { AuthenticatedCopyField } from "../../../ui/authenticated/AuthenticatedCopyField.js"
 import { AuthenticatedEntityCard } from "../../../ui/authenticated/AuthenticatedEntityCard.js"
 import { AuthenticatedRelativeTime } from "../../../ui/authenticated/AuthenticatedRelativeTime.js"
-import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedCardClasses } from "../../../ui/authenticated/authenticatedCardClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
-import { directoryAdminUserStatusTone } from "./directoryAdminUserStatusTone.js"
 import { directoryOrganizationRolesGet } from "./directoryOrganizationRolesGet.js"
 import { directoryRoleIconGet } from "./directoryRoleIconGet.js"
 import { directoryRoleLabelKeyGet } from "./directoryRoleLabelKeyGet.js"
@@ -58,39 +56,6 @@ export function DirectoryUserCard(props: {
           </span>
         </span>
       }
-      status={
-        <span class="flex shrink-0 flex-col items-end gap-1">
-          <AuthenticatedStatus
-            label={messageTranslate(`admin.users.lifecycle.${props.entry.user.state}`)}
-            tone={directoryAdminUserStatusTone(props.entry.user.state)}
-          />
-          <span class="flex flex-wrap justify-end gap-1">
-            <Show
-              when={props.scope === "all"}
-              fallback={
-                <For each={directoryOrganizationRolesGet(props.entry, props.organizationId)}>
-                  {(role) => (
-                    <AuthenticatedChip
-                      icon={directoryRoleIconGet(role)}
-                      label={messageTranslate(directoryRoleLabelKeyGet(role))}
-                      tone={role === "owner" || role === "admin" ? "accent" : "neutral"}
-                    />
-                  )}
-                </For>
-              }
-            >
-              <For each={props.entry.memberships}>
-                {(membership) => (
-                  <AuthenticatedChip
-                    label={`${membership.organizationName}: ${membership.roles.map((role) => messageTranslate(directoryRoleLabelKeyGet(role))).join(", ")}`}
-                    tone="neutral"
-                  />
-                )}
-              </For>
-            </Show>
-          </span>
-        </span>
-      }
     >
       <div class="flex min-w-0 flex-col gap-y-2">
         <div class="flex min-w-0 flex-col items-start gap-y-0.5">
@@ -124,9 +89,39 @@ export function DirectoryUserCard(props: {
           </Show>
         </div>
         <div class="flex min-w-0 flex-col gap-y-0.5">
-          <span class="truncate text-xs text-muted-foreground" title={props.entry.team?.name ?? undefined}>
-            {props.entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
-          </span>
+          <div class="flex min-w-0 items-center justify-between gap-2">
+            <span
+              class="min-w-0 flex-1 truncate text-xs text-muted-foreground"
+              title={props.entry.team?.name ?? undefined}
+            >
+              {props.entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
+            </span>
+            <span class="flex shrink-0 items-center justify-end gap-1 overflow-hidden">
+              <Show
+                when={props.scope === "all"}
+                fallback={
+                  <For each={directoryOrganizationRolesGet(props.entry, props.organizationId)}>
+                    {(role) => (
+                      <AuthenticatedChip
+                        icon={directoryRoleIconGet(role)}
+                        label={messageTranslate(directoryRoleLabelKeyGet(role))}
+                        tone={role === "owner" || role === "admin" ? "accent" : "neutral"}
+                      />
+                    )}
+                  </For>
+                }
+              >
+                <For each={props.entry.memberships}>
+                  {(membership) => (
+                    <AuthenticatedChip
+                      label={`${membership.organizationName}: ${membership.roles.map((role) => messageTranslate(directoryRoleLabelKeyGet(role))).join(", ")}`}
+                      tone="neutral"
+                    />
+                  )}
+                </For>
+              </Show>
+            </span>
+          </div>
           <span class="flex flex-col text-xs text-muted-foreground">
             <span>
               {messageTranslate("admin.users.directoryLastSignIn")}:{" "}
