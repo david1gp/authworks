@@ -92,7 +92,7 @@ export function DirectoryUserCard(props: {
         </span>
       }
     >
-      <div class="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <div class="flex min-w-0 flex-col gap-y-2">
         <div class="flex min-w-0 flex-col items-start gap-y-0.5">
           <AuthenticatedCopyField
             icon={mdiAccountOutline}
@@ -123,7 +123,7 @@ export function DirectoryUserCard(props: {
             />
           </Show>
         </div>
-        <div class="flex min-w-0 max-w-[11rem] flex-col gap-y-0.5">
+        <div class="flex min-w-0 flex-col gap-y-0.5">
           <span class="truncate text-xs text-muted-foreground" title={props.entry.team?.name ?? undefined}>
             {props.entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
           </span>
