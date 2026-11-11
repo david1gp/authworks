@@ -89,14 +89,11 @@ export function DirectoryUserCard(props: {
           </Show>
         </div>
         <div class="flex min-w-0 flex-col gap-y-0.5">
-          <div class="flex min-w-0 items-center justify-between gap-2">
-            <span
-              class="min-w-0 flex-1 truncate text-xs text-muted-foreground"
-              title={props.entry.team?.name ?? undefined}
-            >
+          <div class="flex min-w-0 items-center gap-1.5">
+            <span class="min-w-0 truncate text-xs text-muted-foreground" title={props.entry.team?.name ?? undefined}>
               {props.entry.team?.name ?? messageTranslate("admin.users.directoryTeamUnassigned")}
             </span>
-            <span class="flex shrink-0 items-center justify-end gap-1 overflow-hidden">
+            <span class="flex shrink-0 items-center gap-1 overflow-hidden">
               <Show
                 when={props.scope === "all"}
                 fallback={
