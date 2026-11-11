@@ -337,15 +337,11 @@ test("revoking an administrator session deletes the admin session path", async (
 
   await page.goto("/realm/sessions")
 
-  await expect(page.getByText(sessionId, { exact: true }).first()).toBeVisible()
+  await expect(page.locator(`[data-entity-id="${sessionId}"]`)).toBeVisible()
   const revokeResponse = page.waitForResponse(
     (response) => new URL(response.url()).pathname === sessionPath && response.request().method() === "DELETE",
   )
-  await page
-    .getByRole("row")
-    .filter({ hasText: sessionId })
-    .getByRole("button", { name: "Revoke", exact: true })
-    .click()
+  await page.locator(`[data-entity-id="${sessionId}"]`).getByRole("button", { name: "Revoke", exact: true }).click()
   const sessionConfirmation = page.getByRole("alertdialog")
   await expect(sessionConfirmation).toBeVisible()
   expect(revokes).toEqual([])
