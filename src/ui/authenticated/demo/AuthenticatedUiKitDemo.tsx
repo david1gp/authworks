@@ -18,6 +18,9 @@ import { messageTranslate } from "../../i18n/model/messageTranslate.js"
 import { AuthenticatedActionMenu } from "../AuthenticatedActionMenu.js"
 import { AuthenticatedAvatar } from "../AuthenticatedAvatar.js"
 import { AuthenticatedButton } from "../AuthenticatedButton.js"
+import { AuthenticatedCardList } from "../AuthenticatedCardList.js"
+import { AuthenticatedCopyField } from "../AuthenticatedCopyField.js"
+import { AuthenticatedEntityCard } from "../AuthenticatedEntityCard.js"
 import { AuthenticatedChip } from "../AuthenticatedChip.js"
 import { AuthenticatedDataTable } from "../AuthenticatedDataTable.js"
 import { AuthenticatedEmptyState } from "../AuthenticatedEmptyState.js"
@@ -168,6 +171,31 @@ export function AuthenticatedUiKitDemo() {
           rowKey={(row) => row.id}
           rows={state.rows()}
         />
+      </AuthenticatedSection>
+      <AuthenticatedSection title={messageTranslate("ui.authenticated.demo.cardsTitle")}>
+        <AuthenticatedCardList class="p-2" label={messageTranslate("ui.authenticated.demo.cardsTitle")}>
+          <For each={demoUiKitTableRows.slice(0, 2)}>
+            {(row, index) => (
+              <AuthenticatedEntityCard
+                title={row.name}
+                label={row.name}
+                href={index() === 0 ? `/demo/admin/ui-kit/users/${row.id}` : undefined}
+                leading={<AuthenticatedAvatar name={row.name} size="sm" />}
+              >
+                <AuthenticatedCopyField
+                  icon={mdiEmailOutline}
+                  copyLabel={messageTranslate("admin.organizations.memberships.user")}
+                  value={row.email}
+                />
+                <AuthenticatedCopyField
+                  identifier
+                  copyLabel={messageTranslate("admin.users.identifier")}
+                  value={row.id}
+                />
+              </AuthenticatedEntityCard>
+            )}
+          </For>
+        </AuthenticatedCardList>
       </AuthenticatedSection>
       <AuthenticatedSection
         actions={
