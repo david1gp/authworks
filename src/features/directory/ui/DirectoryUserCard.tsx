@@ -1,3 +1,4 @@
+import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
 import { A } from "@solidjs/router"
@@ -94,7 +95,8 @@ export function DirectoryUserCard(props: {
       <div class="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div class="flex min-w-0 flex-col items-start gap-y-0.5">
           <AuthenticatedCopyField
-            class="[&>span:first-of-type]:before:content-['@']"
+            icon={mdiAccountOutline}
+            label="@"
             copyLabel={messageTranslate("admin.userProfile.username")}
             value={props.entry.user.userName}
           />
