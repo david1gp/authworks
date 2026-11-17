@@ -46,12 +46,50 @@ bun run build     # emit dist/
 bun run format   # biome
 bun run check    # repository checks
 bun run release  # git-cliff changelog + tag
-bun run deploy   # prodctl deploy (fast, no preflight)
+bun run deploy   # prodctl deploy plus CLI rollout to configured targets
 bun run deploy:preflight # check + smoke preflight, run before deploy when needed
+bun run deploy:cli # roll out only the CLI to configured targets
 ```
 
 `bun run check` runs formatting, UI-literal, type, test, build, and build-output
 checks. Its test commands pass `--max-concurrency=1`.
+
+## Deploying the CLI
+
+The `authworks` CLI can be installed per user or once per machine. Targets come
+from the environment only, so a fresh clone deploys nothing until it is
+configured.
+
+Copy `.env.deploy-cli.example` to `.env.deploy-cli` (gitignored) and list the
+targets, space separated:
+
+| target             | installs to                                                                    |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `local`            | `~/.local/share/authworks-cli` plus `~/.local/bin/authworks`                   |
+| `system`           | this machine, system-wide; requires root                                       |
+| `user@host`        | that account on that host, per user, over ssh                                  |
+| `user@host:system` | that machine, system-wide, over ssh (the account must write the system prefix) |
+
+```bash
+cp .env.deploy-cli.example .env.deploy-cli
+# AUTHWORKS_CLI_DEPLOY_TARGETS="local"
+bun run deploy:cli --dry-run
+bun run deploy:cli
+```
+
+The bundle is built once from `src/outputs/cli.ts` and installed to every
+target. Each install writes a release directory, verifies `<binary> --version`
+from that release, then swaps the symlink atomically, so a failed install never
+replaces a working CLI. System-wide installs keep the last three releases.
+
+List a target in `AUTHWORKS_CLI_REQUIRED_TARGETS` to make its failure fail the
+run; unlisted failures only warn. With no targets configured the deploy is a
+no-op. `bun run deploy` runs the service deployment and then the CLI rollout.
+
+Override the system locations with `AUTHWORKS_CLI_SYSTEM_PREFIX` (default
+`/opt`) and `AUTHWORKS_CLI_SYSTEM_BIN_DIR` (default `/usr/local/bin`). Point the
+config elsewhere with `AUTHWORKS_CLI_DEPLOY_ENV_FILE`. The file is parsed as
+text and never sourced, and per-user credentials stay in `~/.config/authworks/`.
 
 ## Production deployment
 
