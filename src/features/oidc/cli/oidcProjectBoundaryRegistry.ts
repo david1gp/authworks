@@ -102,6 +102,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     developmentRedirectUris: [
       "http://127.0.0.1:3017/login/authworks/callback",
       "https://preview.allgroups.chat/login/authworks/callback",
+      "https://allgroups-chat.wonder1.de/login/authworks/callback",
     ],
   },
   {

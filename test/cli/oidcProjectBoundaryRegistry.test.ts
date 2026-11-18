@@ -33,6 +33,7 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     development: [
       "http://127.0.0.1:3017/login/authworks/callback",
       "https://preview.allgroups.chat/login/authworks/callback",
+      "https://allgroups-chat.wonder1.de/login/authworks/callback",
     ],
     production: ["https://allgroups.chat/login/authworks/callback"],
   },
