@@ -5,6 +5,7 @@ import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
 import { runtimeCreate } from "../runtime/runtimeCreate.js"
 import { storagePragmasVerify } from "./storagePragmasVerify.js"
+import { storageProviderTypeCheckWiden } from "./storageProviderTypeCheckWiden.js"
 import { type StorageClient, storageSchema } from "./storageSchema.js"
 import { storageSchemaCreate } from "./storageSchemaCreate.js"
 
@@ -31,6 +32,12 @@ export function storageDatabaseOpen(
     if (!pragmas.success) {
       sqlite.close()
       return pragmas
+    }
+
+    const widened = storageProviderTypeCheckWiden(sqlite)
+    if (!widened.success) {
+      sqlite.close()
+      return widened
     }
 
     const db = drizzle(sqlite, { schema: storageSchema })
