@@ -11,6 +11,12 @@ export const externalIdentityProviderDefaults: Readonly<
     }
   >
 > = {
+  apple: {
+    allowedScopes: ["name", "email"],
+    requiredScopes: ["email"],
+    scopes: ["name", "email"],
+    usesNonce: true,
+  },
   github: {
     allowedScopes: ["read:user", "user:email"],
     requiredScopes: ["read:user", "user:email"],

@@ -5,6 +5,8 @@ export type ExternalIdentityProviderIdentity = {
   readonly email?: string
   readonly emailVerified: boolean
   readonly externalSubject: string
+  readonly familyName?: string
+  readonly givenName?: string
   readonly issuer?: string
   readonly nonce?: string
   readonly picture?: string

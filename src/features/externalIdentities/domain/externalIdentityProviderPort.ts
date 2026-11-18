@@ -3,6 +3,8 @@ import type { ExternalIdentityProviderType } from "../public/externalIdentityPro
 import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
 
 export type ExternalIdentityProviderPortConfiguration = {
+  readonly appleKeyId?: string
+  readonly appleTeamId?: string
   readonly clientId: string
   readonly clientSecret: string
   readonly issuer?: string
@@ -19,6 +21,7 @@ export type ExternalIdentityProviderPortStartInput = {
 }
 
 export type ExternalIdentityProviderPortCallbackInput = {
+  readonly appleUserField?: string
   readonly code: string
   readonly nonce?: string
   readonly pkceVerifier: string

@@ -4,6 +4,8 @@ export const externalIdentityProviderTable = sqliteTable(
   "external_identity_providers",
   {
     allowAccountCreation: integer("allow_account_creation", { mode: "boolean" }).notNull(),
+    appleKeyId: text("apple_key_id"),
+    appleTeamId: text("apple_team_id"),
     clientId: text("client_id").notNull(),
     clientSecret: text("client_secret").notNull(),
     createdAt: integer("created_at").notNull(),

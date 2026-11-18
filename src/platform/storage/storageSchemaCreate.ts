@@ -575,7 +575,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS passkey_ceremonies_realm_user_idx ON passkey_ceremonies (realm_id, user_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS external_identity_providers (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, issuer TEXT, type TEXT NOT NULL CHECK (type IN ('google', 'github', 'microsoft', 'oidc')), display_name TEXT NOT NULL, enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)), allow_account_creation INTEGER NOT NULL CHECK (allow_account_creation IN (0, 1)), client_id TEXT NOT NULL, client_secret TEXT NOT NULL, redirect_uri TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, type, organization_id, issuer), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS external_identity_providers (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, issuer TEXT, apple_team_id TEXT, apple_key_id TEXT, type TEXT NOT NULL CHECK (type IN ('google', 'github', 'microsoft', 'apple', 'oidc')), display_name TEXT NOT NULL, enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)), allow_account_creation INTEGER NOT NULL CHECK (allow_account_creation IN (0, 1)), client_id TEXT NOT NULL, client_secret TEXT NOT NULL, redirect_uri TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, type, organization_id, issuer), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS external_identity_providers_realm_idx ON external_identity_providers (realm_id)",
@@ -587,6 +587,13 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       database.run("ALTER TABLE external_identity_providers ADD COLUMN issuer TEXT")
     } catch (error) {
       if (!storageSchemaDuplicateColumnIsExpected(error, "issuer")) throw error
+    }
+    for (const column of ["apple_team_id", "apple_key_id"] as const) {
+      try {
+        database.run(`ALTER TABLE external_identity_providers ADD COLUMN ${column} TEXT`)
+      } catch (error) {
+        if (!storageSchemaDuplicateColumnIsExpected(error, column)) throw error
+      }
     }
     database.run(
       "CREATE TABLE IF NOT EXISTS external_identities (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, provider_id TEXT NOT NULL, external_subject TEXT NOT NULL, username TEXT, display_name TEXT, email TEXT, email_verified INTEGER NOT NULL CHECK (email_verified IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (provider_id, external_subject), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (provider_id) REFERENCES external_identity_providers(id) ON DELETE CASCADE)",

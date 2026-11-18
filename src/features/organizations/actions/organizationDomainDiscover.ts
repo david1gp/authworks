@@ -66,8 +66,8 @@ export function organizationDomainDiscover(
     )
     .all()
     .filter((provider) => policy.data.providerIds === null || policy.data.providerIds.includes(provider.id))
-    .filter((provider): provider is typeof provider & { type: "google" | "github" | "microsoft" } =>
-      ["google", "github", "microsoft"].includes(provider.type),
+    .filter((provider): provider is typeof provider & { type: "google" | "github" | "microsoft" | "apple" } =>
+      ["google", "github", "microsoft", "apple"].includes(provider.type),
     )
   return resultCreate({
     branding: branding.data.branding,

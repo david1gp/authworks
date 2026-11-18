@@ -2,7 +2,9 @@ import { createPublicKey, verify } from "node:crypto"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
+import { appleClientSecretCreate } from "./appleClientSecretCreate.js"
 import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
+import { appleUserFieldParse } from "./appleUserFieldParse.js"
 import { externalIdentityOidcIssuerValidate } from "./externalIdentityOidcIssuerValidate.js"
 import type {
   ExternalIdentityProviderPort,
@@ -22,6 +24,7 @@ export function externalIdentityProviderPortCreate(
   const fetcher = options.fetch ?? fetch
   const timeoutMs = options.timeoutMs ?? 10_000
   return {
+    apple: externalIdentityApplePortCreate(fetcher, timeoutMs),
     github: externalIdentityProviderPortCreateFor("github", fetcher, timeoutMs),
     google: externalIdentityProviderPortCreateFor("google", fetcher, timeoutMs),
     microsoft: externalIdentityProviderPortCreateFor("microsoft", fetcher, timeoutMs),
@@ -295,6 +298,162 @@ async function microsoftIdentityCreate(
     providerType: "microsoft",
     username: providerStringGet(claims.data, "preferred_username") ?? undefined,
   })
+}
+
+function externalIdentityApplePortCreate(fetcher: typeof fetch, timeoutMs: number): ExternalIdentityProviderPort {
+  return {
+    authorizationUrlCreate(configuration, input) {
+      // Apple supports neither the account-chooser prompt nor PKCE parameters, and
+      // requires response_mode=form_post when the name/email scopes are requested so
+      // the authorization code returns as a POST to the registered redirect URI.
+      const query = new URLSearchParams({
+        client_id: configuration.clientId,
+        redirect_uri: configuration.redirectUri,
+        response_mode: "form_post",
+        response_type: "code",
+        scope: configuration.scopes.join(" "),
+        state: input.state,
+      })
+      if (input.nonce !== undefined) query.set("nonce", input.nonce)
+      return resultCreate(`https://appleid.apple.com/auth/authorize?${query.toString()}`)
+    },
+    async callbackExchange(configuration, input) {
+      const token = await appleTokenFetch(fetcher, timeoutMs, configuration, input.code)
+      if (!token.success) return token
+      return appleIdentityFetch(
+        fetcher,
+        timeoutMs,
+        token.data,
+        input.nonce,
+        configuration.clientId,
+        input.appleUserField,
+      )
+    },
+  }
+}
+
+async function appleTokenFetch(
+  fetcher: typeof fetch,
+  timeoutMs: number,
+  configuration: ExternalIdentityProviderPortConfiguration,
+  code: string,
+): Promise<ReturnType<typeof resultCreate<{ readonly idToken: string }>> | ReturnType<typeof resultErrorCreate>> {
+  // Apple's token endpoint takes the documented parameters only: no PKCE verifier and
+  // no userinfo endpoint exist. The client_secret is an ES256 JWT freshly signed with
+  // the provider's .p8 private key (stored in clientSecret) on every exchange.
+  if (
+    configuration.appleTeamId === undefined ||
+    configuration.appleKeyId === undefined ||
+    configuration.clientSecret.length === 0
+  )
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
+  const clientSecret = appleClientSecretCreate({
+    clientId: configuration.clientId,
+    issuedAtSeconds: Math.floor(Date.now() / 1_000),
+    keyId: configuration.appleKeyId,
+    privateKey: configuration.clientSecret,
+    teamId: configuration.appleTeamId,
+  })
+  if (!clientSecret.success)
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
+  const body = new URLSearchParams({
+    client_id: configuration.clientId,
+    client_secret: clientSecret.data,
+    code,
+    grant_type: "authorization_code",
+    redirect_uri: configuration.redirectUri,
+  })
+  try {
+    const response = await fetcher("https://appleid.apple.com/auth/token", {
+      body,
+      headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
+      method: "POST",
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    const raw = (await response.json().catch(() => undefined)) as unknown
+    if (!response.ok || typeof raw !== "object" || raw === null)
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
+    const idToken = providerStringGet(raw, "id_token")
+    if (idToken === null)
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
+    return resultCreate({ idToken })
+  } catch (_error) {
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider could not be reached.",
+      "external-identities.read-failed",
+    )
+  }
+}
+
+async function appleIdentityFetch(
+  fetcher: typeof fetch,
+  timeoutMs: number,
+  token: { readonly idToken: string },
+  expectedNonce: string | undefined,
+  clientId: string,
+  appleUserField: string | undefined,
+): Promise<ReturnType<typeof resultCreate<ExternalIdentityProviderIdentity>> | ReturnType<typeof resultErrorCreate>> {
+  const tokenClaims = await providerJwtClaimsVerify(
+    fetcher,
+    timeoutMs,
+    "https://appleid.apple.com/auth/keys",
+    token.idToken,
+  )
+  if (!tokenClaims.success) return tokenClaims
+  const subject = providerStringGet(tokenClaims.data, "sub")
+  const issuer = providerStringGet(tokenClaims.data, "iss")
+  const audience = tokenClaims.data.aud
+  const nonce = providerStringGet(tokenClaims.data, "nonce")
+  const email = providerStringGet(tokenClaims.data, "email")
+  // Apple serializes booleans as "true"/"false" strings in some payloads; accept both.
+  const emailVerified = appleBooleanGet(tokenClaims.data, "email_verified")
+  const audienceMatches = typeof audience === "string" ? audience === clientId : false
+  if (subject === null || issuer !== "https://appleid.apple.com" || !audienceMatches || nonce !== expectedNonce)
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
+  const user = appleUserField === undefined ? null : appleUserFieldParse(appleUserField)
+  if (user !== null && !user.success) return user
+  const givenName = user?.data?.name?.firstName
+  const familyName = user?.data?.name?.lastName
+  const displayName =
+    [givenName, familyName].filter((part) => part !== undefined && part.length > 0).join(" ") || undefined
+  return resultCreate({
+    ...(displayName === undefined ? {} : { displayName }),
+    ...(email === null ? {} : { email }),
+    ...(familyName === undefined ? {} : { familyName }),
+    ...(givenName === undefined ? {} : { givenName }),
+    emailVerified: email !== null && emailVerified,
+    externalSubject: subject,
+    issuer,
+    nonce,
+    providerType: "apple",
+  })
+}
+
+function appleBooleanGet(value: unknown, key: string): boolean {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false
+  const candidate = (value as Record<string, unknown>)[key]
+  return candidate === true || candidate === "true"
 }
 
 async function providerClaimsGet(
