@@ -88,6 +88,8 @@ describe("organization administration provider create request", () => {
   test("parses comma-separated scopes and omits a blank issuer", () => {
     const request = organizationAdminProviderCreateRequestBuild({
       allowAccountCreation: false,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Google",
@@ -104,6 +106,8 @@ describe("organization administration provider create request", () => {
   test("requires an issuer for generic OIDC providers and forbids it otherwise", () => {
     const missing = organizationAdminProviderCreateRequestBuild({
       allowAccountCreation: false,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Generic",
@@ -114,6 +118,8 @@ describe("organization administration provider create request", () => {
     })
     const provided = organizationAdminProviderCreateRequestBuild({
       allowAccountCreation: false,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Generic",
@@ -124,6 +130,8 @@ describe("organization administration provider create request", () => {
     })
     const misplaced = organizationAdminProviderCreateRequestBuild({
       allowAccountCreation: false,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Google",
@@ -137,11 +145,73 @@ describe("organization administration provider create request", () => {
     expect(provided?.issuer).toBe("https://issuer.example")
     expect(misplaced).toBeUndefined()
   })
+
+  test("requires team and key IDs for Apple providers and forbids them otherwise", () => {
+    const base = {
+      allowAccountCreation: false,
+      clientId: "com.example.services",
+      clientSecret: "private-key-pem",
+      displayName: "Apple",
+      issuer: "",
+      redirectUri: "https://auth.example/callback",
+      scopesText: "",
+    }
+    expect(
+      organizationAdminProviderCreateRequestBuild({ ...base, appleKeyId: "", appleTeamId: "", type: "apple" }),
+    ).toBeUndefined()
+    expect(
+      organizationAdminProviderCreateRequestBuild({ ...base, appleKeyId: "", appleTeamId: "TEAM", type: "apple" }),
+    ).toBeUndefined()
+    const provided = organizationAdminProviderCreateRequestBuild({
+      ...base,
+      appleKeyId: "KEYID",
+      appleTeamId: "TEAMID",
+      type: "apple",
+    })
+    expect(provided?.appleTeamId).toBe("TEAMID")
+    expect(provided?.appleKeyId).toBe("KEYID")
+    expect(
+      organizationAdminProviderCreateRequestBuild({
+        ...base,
+        appleKeyId: "KEYID",
+        appleTeamId: "TEAMID",
+        displayName: "Google",
+        type: "google",
+      }),
+    ).toBeUndefined()
+  })
 })
 
 describe("organization administration provider edit request", () => {
+  test("carries Apple team and key IDs only for Apple providers", () => {
+    const appleProvider: ExternalIdentityProvider = {
+      ...googleProvider,
+      appleKeyId: "KEYID",
+      appleTeamId: "TEAMID",
+      id: "provider-apple",
+      type: "apple",
+    }
+    const draft = organizationAdminProviderEditDraftCreate(appleProvider)
+    expect(draft).toMatchObject({ appleKeyId: "KEYID", appleTeamId: "TEAMID" })
+    const request = organizationAdminProviderEditRequestBuild(appleProvider, draft)
+    expect(request).toMatchObject({ appleKeyId: "KEYID", appleTeamId: "TEAMID" })
+    const googleRequest = organizationAdminProviderEditRequestBuild(googleProvider, {
+      appleKeyId: "",
+      appleTeamId: "",
+      clientId: "next-client",
+      displayName: "Next Name",
+      issuer: "",
+      redirectUri: "https://auth.example/next",
+      scopesText: "openid, email",
+    })
+    expect(googleRequest?.appleKeyId).toBeUndefined()
+    expect(googleRequest?.appleTeamId).toBeUndefined()
+  })
+
   test("builds an edit payload with identity fields and scopes", () => {
     const request = organizationAdminProviderEditRequestBuild(googleProvider, {
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "next-client",
       displayName: "Next Name",
       issuer: "",
@@ -235,6 +305,8 @@ describe("organization administration login policy state", () => {
     const form = organizationAdminFormStateCreate()
     form.providerCreate.set({
       allowAccountCreation: false,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Generic",
@@ -252,6 +324,8 @@ describe("organization administration login policy state", () => {
     const form = organizationAdminFormStateCreate()
     form.providerCreate.set({
       allowAccountCreation: true,
+      appleKeyId: "",
+      appleTeamId: "",
       clientId: "client-id",
       clientSecret: "secret",
       displayName: "Generic",

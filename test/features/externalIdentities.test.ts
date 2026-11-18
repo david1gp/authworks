@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import { generateKeyPairSync, type KeyObject, sign, verify } from "node:crypto"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -44,6 +45,7 @@ import type { StorageDatabase } from "../../src/platform/storage/storageDatabase
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
+import { userProfileTable } from "../../src/features/users/persistence/userProfileTable.js"
 import { userTable } from "../../src/features/users/persistence/userTable.js"
 
 async function withDatabase<T>(
@@ -1789,5 +1791,504 @@ test("linking works with a stale session and requests the provider account choos
       runtime: testkit.runtime,
     })
     expect(linked.success).toBe(true)
+  })
+})
+
+type AppleTestKeys = {
+  readonly clientSecretPem: string
+  readonly clientSecretPublicKey: KeyObject
+  readonly idTokenPrivateKey: KeyObject
+  readonly jwks: { readonly keys: readonly Record<string, unknown>[] }
+}
+
+function appleTestKeysCreate(): AppleTestKeys {
+  const clientSecretKeys = generateKeyPairSync("ec", { namedCurve: "prime256v1" })
+  const idTokenKeys = generateKeyPairSync("rsa", { modulusLength: 2048 })
+  return {
+    clientSecretPem: clientSecretKeys.privateKey.export({ format: "pem", type: "pkcs8" }).toString(),
+    clientSecretPublicKey: clientSecretKeys.publicKey,
+    idTokenPrivateKey: idTokenKeys.privateKey,
+    jwks: {
+      keys: [
+        {
+          ...(idTokenKeys.publicKey.export({ format: "jwk" }) as Record<string, unknown>),
+          alg: "RS256",
+          kid: "apple-signing-key",
+          use: "sig",
+        },
+      ],
+    },
+  }
+}
+
+function appleIdTokenCreate(privateKey: KeyObject, claims: Record<string, unknown>): string {
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", kid: "apple-signing-key" }), "utf8").toString("base64url")
+  const payload = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url")
+  const signature = sign("RSA-SHA256", Buffer.from(`${header}.${payload}`, "utf8"), privateKey)
+  return `${header}.${payload}.${signature.toString("base64url")}`
+}
+
+function appleIdTokenClaimsCreate(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  const now = Math.floor(Date.now() / 1_000)
+  return {
+    aud: "com.example.services",
+    email: "ada@example.com",
+    email_verified: "true",
+    exp: now + 600,
+    iat: now,
+    iss: "https://appleid.apple.com",
+    sub: "apple-sub-1",
+    ...overrides,
+  }
+}
+
+function appleFetchCreate(options: {
+  readonly idTokenGet: () => string
+  readonly jwks: Record<string, unknown>
+  readonly requests: string[]
+  readonly tokenBodies: URLSearchParams[]
+}): typeof fetch {
+  return providerFetchCreate(async (input, init) => {
+    const target = input.toString()
+    options.requests.push(target)
+    if (target === "https://appleid.apple.com/auth/token") {
+      const rawBody =
+        typeof init?.body === "string" ? init.body : ((init?.body as { toString(): string })?.toString() ?? "")
+      options.tokenBodies.push(new URLSearchParams(rawBody))
+      return providerJsonResponse({
+        access_token: "apple-access-token",
+        expires_in: 3600,
+        id_token: options.idTokenGet(),
+        token_type: "Bearer",
+      })
+    }
+    if (target === "https://appleid.apple.com/auth/keys") return providerJsonResponse(options.jwks)
+    return providerJsonResponse({}, 404)
+  })
+}
+
+async function appleProviderCreate(database: StorageDatabase, realmId: string, clientSecretPem: string) {
+  const created = externalIdentityProviderCreate({
+    allowDevelopmentFallback: true,
+    context: realmSystemContextCreate(),
+    database,
+    input: {
+      allowAccountCreation: true,
+      appleKeyId: "APPLEKEYID1",
+      appleTeamId: "APPLETEAMID",
+      clientId: "com.example.services",
+      clientSecret: clientSecretPem,
+      displayName: "Apple",
+      redirectUri: "https://app.test/callback",
+      type: "apple",
+    },
+    realmId,
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) throw new Error(created.errorMessage)
+  return created.data.provider
+}
+
+async function appleSignInStart(
+  database: StorageDatabase,
+  testkit: ReturnType<typeof platformTestkitCreate>,
+  realmId: string,
+  providerId: string,
+  providerPorts: Parameters<typeof externalIdentityStart>[0]["providerPorts"],
+) {
+  const started = await externalIdentityStart({
+    allowDevelopmentFallback: true,
+    database,
+    input: {},
+    providerId,
+    providerPorts,
+    realmId,
+    runtime: testkit.runtime,
+  })
+  expect(started.success).toBe(true)
+  if (!started.success) throw new Error(started.errorMessage)
+  const url = new URL(started.data.authorizationUrl)
+  return { state: url.searchParams.get("state") ?? "", nonce: url.searchParams.get("nonce") ?? "", url }
+}
+
+test("apple provider authorize URL uses form_post without prompt or PKCE parameters", () => {
+  const port = externalIdentityProviderPortCreate().apple
+  expect(port).toBeDefined()
+  if (port === undefined) return
+  const authorization = port.authorizationUrlCreate(
+    {
+      appleKeyId: "APPLEKEYID1",
+      appleTeamId: "APPLETEAMID",
+      clientId: "com.example.services",
+      clientSecret: "secret",
+      redirectUri: "https://app.test/callback",
+      scopes: ["name", "email"],
+      type: "apple",
+    },
+    { nonce: "nonce", pkceChallenge: "challenge", prompt: "select_account", state: "state" },
+  )
+  expect(authorization.success).toBe(true)
+  if (!authorization.success) return
+  const url = new URL(authorization.data)
+  expect(`${url.origin}${url.pathname}`).toBe("https://appleid.apple.com/auth/authorize")
+  const query = url.searchParams
+  expect(query.get("client_id")).toBe("com.example.services")
+  expect(query.get("redirect_uri")).toBe("https://app.test/callback")
+  expect(query.get("response_type")).toBe("code")
+  expect(query.get("response_mode")).toBe("form_post")
+  expect(query.get("scope")).toBe("name email")
+  expect(query.get("state")).toBe("state")
+  expect(query.get("nonce")).toBe("nonce")
+  expect(query.get("prompt")).toBeNull()
+  expect(query.get("code_challenge")).toBeNull()
+})
+
+test("apple sign-in verifies the id token, signs the client secret, and keeps the first-login name", async () => {
+  await withDatabase(async (database, testkit) => {
+    const keys = appleTestKeysCreate()
+    const realm = await createRealm(database, "external-apple.example.com")
+    const provider = await appleProviderCreate(database, realm.id, keys.clientSecretPem)
+    let currentIdToken = ""
+    const requests: string[] = []
+    const tokenBodies: URLSearchParams[] = []
+    const ports = externalIdentityProviderPortCreate({
+      fetch: appleFetchCreate({ idTokenGet: () => currentIdToken, jwks: keys.jwks, requests, tokenBodies }),
+    })
+    const { state, nonce, url } = await appleSignInStart(database, testkit, realm.id, provider.id, ports)
+    expect(url.searchParams.get("scope")).toBe("name email")
+    expect(nonce.length).toBeGreaterThan(0)
+    // Apple sends a private relay address with a string-verified flag; it is stored as the account email.
+    currentIdToken = appleIdTokenCreate(
+      keys.idTokenPrivateKey,
+      appleIdTokenClaimsCreate({ email: "relay-9f3k2@privaterelay.appleid.com", nonce }),
+    )
+    const callback = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
+      appleUserField: JSON.stringify({
+        email: "relay-9f3k2@privaterelay.appleid.com",
+        name: { firstName: "Ada", lastName: "Lovelace" },
+      }),
+      code: "apple-code",
+      database,
+      providerId: provider.id,
+      providerPorts: ports,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      state,
+    })
+    expect(callback.success).toBe(true)
+    if (!callback.success || callback.data.kind !== "authenticated") return
+    expect(callback.data.identity).toMatchObject({
+      email: "relay-9f3k2@privaterelay.appleid.com",
+      emailVerified: true,
+      externalSubject: "apple-sub-1",
+      providerType: "apple",
+    })
+    // The token endpoint receives the documented parameters with a freshly signed client secret.
+    expect(requests).toEqual(["https://appleid.apple.com/auth/token", "https://appleid.apple.com/auth/keys"])
+    const body = tokenBodies[0]
+    expect(body?.get("client_id")).toBe("com.example.services")
+    expect(body?.get("grant_type")).toBe("authorization_code")
+    expect(body?.get("code")).toBe("apple-code")
+    expect(body?.get("redirect_uri")).toBe("https://app.test/callback")
+    expect(body?.get("code_verifier")).toBeNull()
+    const secret = body?.get("client_secret") ?? ""
+    const secretParts = secret.split(".")
+    expect(secretParts).toHaveLength(3)
+    expect(JSON.parse(Buffer.from(secretParts[0] as string, "base64url").toString("utf8"))).toMatchObject({
+      alg: "ES256",
+      kid: "APPLEKEYID1",
+    })
+    const secretPayload = JSON.parse(Buffer.from(secretParts[1] as string, "base64url").toString("utf8")) as Record<
+      string,
+      unknown
+    >
+    expect(secretPayload).toMatchObject({
+      aud: "https://appleid.apple.com",
+      iss: "APPLETEAMID",
+      sub: "com.example.services",
+    })
+    expect(Number(secretPayload.exp) - Number(secretPayload.iat)).toBe(15 * 60)
+    expect(
+      verify(
+        "sha256",
+        Buffer.from(`${secretParts[0]}.${secretParts[1]}`, "utf8"),
+        { dsaEncoding: "ieee-p1363", key: keys.clientSecretPublicKey },
+        Buffer.from(secretParts[2] as string, "base64url"),
+      ),
+    ).toBe(true)
+    const userId = callback.data.authentication.userId
+    const profile = database.db.select().from(userProfileTable).where(eq(userProfileTable.userId, userId)).get()
+    expect(profile).toMatchObject({ displayName: "Ada Lovelace", firstName: "Ada", lastName: "Lovelace" })
+    expect(database.db.select().from(userTable).where(eq(userTable.id, userId)).get()?.email).toBe(
+      "relay-9f3k2@privaterelay.appleid.com",
+    )
+    // A returning sign-in without the user field links by the stable subject.
+    const again = await appleSignInStart(database, testkit, realm.id, provider.id, ports)
+    currentIdToken = appleIdTokenCreate(
+      keys.idTokenPrivateKey,
+      appleIdTokenClaimsCreate({ email: "relay-9f3k2@privaterelay.appleid.com", nonce: again.nonce }),
+    )
+    const relink = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
+      code: "apple-code-2",
+      database,
+      providerId: provider.id,
+      providerPorts: ports,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      state: again.state,
+    })
+    expect(relink).toMatchObject({ data: { authentication: { userId }, kind: "authenticated" }, success: true })
+  })
+})
+
+test("apple sign-in links a verified email to an existing account", async () => {
+  await withDatabase(async (database, testkit) => {
+    const keys = appleTestKeysCreate()
+    const realm = await createRealm(database, "external-apple-link.example.com")
+    const user = await createVerifiedUser(database, testkit, realm.id, "ada@example.com", "ada")
+    const provider = await appleProviderCreate(database, realm.id, keys.clientSecretPem)
+    let currentIdToken = ""
+    const ports = externalIdentityProviderPortCreate({
+      fetch: appleFetchCreate({ idTokenGet: () => currentIdToken, jwks: keys.jwks, requests: [], tokenBodies: [] }),
+    })
+    const { state, nonce } = await appleSignInStart(database, testkit, realm.id, provider.id, ports)
+    // A different Apple subject with the same verified email auto-links, like Google.
+    currentIdToken = appleIdTokenCreate(
+      keys.idTokenPrivateKey,
+      appleIdTokenClaimsCreate({ email: "ada@example.com", nonce, sub: "apple-sub-2" }),
+    )
+    const callback = await externalIdentityCallback({
+      allowDevelopmentFallback: true,
+      code: "apple-code",
+      database,
+      providerId: provider.id,
+      providerPorts: ports,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      state,
+    })
+    expect(callback).toMatchObject({
+      data: { authentication: { userId: user.id }, kind: "authenticated" },
+      success: true,
+    })
+  })
+})
+
+test("apple provider rejects invalid issuers, audiences, nonces, expiries, and malformed first-login payloads", async () => {
+  const keys = appleTestKeysCreate()
+  const otherKeys = generateKeyPairSync("rsa", { modulusLength: 2048 })
+  const configuration = {
+    appleKeyId: "APPLEKEYID1",
+    appleTeamId: "APPLETEAMID",
+    clientId: "com.example.services",
+    clientSecret: keys.clientSecretPem,
+    redirectUri: "https://app.test/callback",
+    scopes: ["name", "email"],
+    type: "apple" as const,
+  }
+  const input = {
+    appleUserField: undefined as string | undefined,
+    code: "code",
+    nonce: "expected-nonce",
+    pkceVerifier: "verifier",
+  }
+  const exchange = async (claims: Record<string, unknown>, exchangeInput = input, tokenStatus = 200) => {
+    let currentIdToken = ""
+    const ports = externalIdentityProviderPortCreate({
+      fetch: providerFetchCreate(async (target) => {
+        if (target.toString() === "https://appleid.apple.com/auth/token")
+          return providerJsonResponse({ access_token: "apple-access-token", id_token: currentIdToken }, tokenStatus)
+        if (target.toString() === "https://appleid.apple.com/auth/keys") return providerJsonResponse(keys.jwks)
+        return providerJsonResponse({}, 404)
+      }),
+    })
+    currentIdToken = appleIdTokenCreate(keys.idTokenPrivateKey, claims)
+    return ports.apple?.callbackExchange(configuration, { ...exchangeInput })
+  }
+  const past = Math.floor(Date.now() / 1_000) - 3_600
+  for (const claims of [
+    appleIdTokenClaimsCreate({ iss: "https://evil.example", nonce: "expected-nonce" }),
+    appleIdTokenClaimsCreate({ aud: "other-client", nonce: "expected-nonce" }),
+    appleIdTokenClaimsCreate({ nonce: "other-nonce" }),
+    appleIdTokenClaimsCreate({ exp: past, iat: past - 600, nonce: "expected-nonce" }),
+    appleIdTokenClaimsCreate({ nonce: "expected-nonce", sub: undefined }),
+  ]) {
+    expect((await exchange(claims))?.success).toBe(false)
+  }
+  // A token signed by another key fails verification.
+  const forged = appleIdTokenCreate(otherKeys.privateKey, appleIdTokenClaimsCreate({ nonce: "expected-nonce" }))
+  const forgedPorts = externalIdentityProviderPortCreate({
+    fetch: providerFetchCreate(async (target) => {
+      if (target.toString() === "https://appleid.apple.com/auth/token")
+        return providerJsonResponse({ access_token: "apple-access-token", id_token: forged })
+      if (target.toString() === "https://appleid.apple.com/auth/keys") return providerJsonResponse(keys.jwks)
+      return providerJsonResponse({}, 404)
+    }),
+  })
+  expect((await forgedPorts.apple?.callbackExchange(configuration, input))?.success).toBe(false)
+  // A missing id_token and an unreachable token endpoint both fail.
+  const missingPorts = externalIdentityProviderPortCreate({
+    fetch: providerFetchCreate(async (target) => {
+      if (target.toString() === "https://appleid.apple.com/auth/token")
+        return providerJsonResponse({ access_token: "apple-access-token" })
+      if (target.toString() === "https://appleid.apple.com/auth/keys") return providerJsonResponse(keys.jwks)
+      return providerJsonResponse({}, 404)
+    }),
+  })
+  expect((await missingPorts.apple?.callbackExchange(configuration, input))?.success).toBe(false)
+  expect((await exchange(appleIdTokenClaimsCreate({ nonce: "expected-nonce" }), input, 400))?.success).toBe(false)
+  // Without team or key IDs the port fails before any network call.
+  const unconfiguredPorts = externalIdentityProviderPortCreate({
+    fetch: providerFetchCreate(async () => {
+      throw new Error("must not call the network without Apple key configuration")
+    }),
+  })
+  expect(
+    (
+      await unconfiguredPorts.apple?.callbackExchange(
+        { ...configuration, appleKeyId: undefined, appleTeamId: undefined },
+        input,
+      )
+    )?.success,
+  ).toBe(false)
+  // A malformed first-login user field fails instead of creating a nameless link.
+  expect(
+    (await exchange(appleIdTokenClaimsCreate({ nonce: "expected-nonce" }), { ...input, appleUserField: "not-json" }))
+      ?.success,
+  ).toBe(false)
+  // A boolean false verification flag is honored without failing the exchange.
+  const unverified = await exchange(appleIdTokenClaimsCreate({ email_verified: false, nonce: "expected-nonce" }))
+  expect(unverified?.success).toBe(true)
+  if (unverified?.success) expect(unverified.data.emailVerified).toBe(false)
+})
+
+test("apple form_post callback completes sign-in from a cross-site POST body", async () => {
+  await withDatabase(async (database) => {
+    const keys = appleTestKeysCreate()
+    const realm = await createRealm(database, "apple-post.example.com")
+    const provider = await appleProviderCreate(database, realm.id, keys.clientSecretPem)
+    let currentIdToken = ""
+    const ports = externalIdentityProviderPortCreate({
+      fetch: appleFetchCreate({ idTokenGet: () => currentIdToken, jwks: keys.jwks, requests: [], tokenBodies: [] }),
+    })
+    const app = externalIdentityServerAppCreate({
+      allowDevelopmentFallback: true,
+      browserMode: true,
+      database,
+      providerPorts: ports,
+    })
+    const started = await app.request(
+      `https://apple-post.example.com/realms/${realm.id}/external-identity/${provider.id}/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(started.status).toBe(200)
+    const startedBody = (await started.json()) as { authorizationUrl: string }
+    const startUrl = new URL(startedBody.authorizationUrl)
+    expect(startUrl.searchParams.get("response_mode")).toBe("form_post")
+    const state = startUrl.searchParams.get("state") ?? ""
+    const nonce = startUrl.searchParams.get("nonce") ?? ""
+    currentIdToken = appleIdTokenCreate(keys.idTokenPrivateKey, appleIdTokenClaimsCreate({ nonce }))
+    const form = new URLSearchParams({
+      code: "apple-code",
+      state,
+      user: JSON.stringify({ email: "ada@example.com", name: { firstName: "Ada", lastName: "Lovelace" } }),
+    })
+    const callback = await app.request(
+      `https://apple-post.example.com/realms/${realm.id}/external-identity/${provider.id}/callback`,
+      {
+        body: form.toString(),
+        headers: { "content-type": "application/x-www-form-urlencoded", [sessionBrowserModeHeaderName]: "true" },
+        method: "POST",
+      },
+    )
+    expect(callback.status).toBe(302)
+    expect(callback.headers.get("location")).toBe("/account")
+    const cookie = callback.headers.get("set-cookie") ?? ""
+    expect(cookie).toContain("HttpOnly")
+    const token = /^session=([^;]+);/.exec(cookie)?.[1]
+    expect(token).toHaveLength(43)
+    // A denied authorization POST redirects to the provider failure page instead of hanging.
+    const denied = await app.request(
+      `https://apple-post.example.com/realms/${realm.id}/external-identity/${provider.id}/callback`,
+      {
+        body: new URLSearchParams({ error: "access_denied", state }).toString(),
+        headers: { "content-type": "application/x-www-form-urlencoded", [sessionBrowserModeHeaderName]: "true" },
+        method: "POST",
+      },
+    )
+    expect(denied.status).toBe(302)
+    expect(denied.headers.get("location")).toBe(`/login/idp/${encodeURIComponent(provider.id)}/failure`)
+  })
+})
+
+test("apple providers require team and key IDs while other providers forbid them", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "external-apple-config.example.com")
+    const base = {
+      allowAccountCreation: false,
+      clientId: "com.example.services",
+      clientSecret: "secret",
+      displayName: "Apple",
+      redirectUri: "https://app.test/callback",
+      type: "apple" as const,
+    }
+    const context = { context: realmSystemContextCreate(), database, realmId: realm.id }
+    expect(
+      externalIdentityProviderCreate({ ...context, allowDevelopmentFallback: true, input: { ...base } }).success,
+    ).toBe(false)
+    expect(
+      externalIdentityProviderCreate({
+        ...context,
+        allowDevelopmentFallback: true,
+        input: { ...base, appleTeamId: "APPLETEAMID" },
+      }).success,
+    ).toBe(false)
+    const created = externalIdentityProviderCreate({
+      ...context,
+      allowDevelopmentFallback: true,
+      input: { ...base, appleKeyId: "APPLEKEYID1", appleTeamId: "APPLETEAMID" },
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    expect(created.data.provider).toMatchObject({ appleKeyId: "APPLEKEYID1", appleTeamId: "APPLETEAMID" })
+    expect(
+      externalIdentityProviderCreate({
+        ...context,
+        allowDevelopmentFallback: true,
+        input: {
+          allowAccountCreation: false,
+          appleKeyId: "APPLEKEYID1",
+          appleTeamId: "APPLETEAMID",
+          clientId: "client-id",
+          clientSecret: "secret",
+          displayName: "Google",
+          redirectUri: "https://app.test/callback",
+          type: "google" as const,
+        },
+      }).success,
+    ).toBe(false)
+    const google = await createProvider(database, realm.id, true, "google")
+    expect(
+      externalIdentityProviderUpdate({
+        ...context,
+        allowDevelopmentFallback: true,
+        input: { appleTeamId: "APPLETEAMID" },
+        providerId: google.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      externalIdentityProviderUpdate({
+        ...context,
+        allowDevelopmentFallback: true,
+        input: { appleKeyId: "APPLEKEYID2" },
+        providerId: created.data.provider.id,
+      }),
+    ).toMatchObject({ data: { provider: { appleKeyId: "APPLEKEYID2", appleTeamId: "APPLETEAMID" } }, success: true })
   })
 })

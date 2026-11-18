@@ -517,8 +517,8 @@ test("two generic OIDC providers coexist per org while built-ins stay single", a
   })
 })
 
-test("all four provider types auto-link on a verified email, microsoft included", async () => {
-  const types: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft", "oidc"]
+test("all five provider types auto-link on a verified email, microsoft and apple included", async () => {
+  const types: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft", "oidc", "apple"]
   for (const type of types) {
     await withDatabase(async (database, testkit) => {
       const realm = await createRealm(database, `autolink-${type}.example.com`)
@@ -534,6 +534,7 @@ test("all four provider types auto-link on a verified email, microsoft included"
                 database,
                 input: {
                   allowAccountCreation: true,
+                  ...(type === "apple" ? { appleKeyId: "key-id", appleTeamId: "team-id" } : {}),
                   clientId: "client-id",
                   clientSecret: "client-secret",
                   displayName: type,
