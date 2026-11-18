@@ -138,6 +138,25 @@ test("production chooser splits own methods and every external provider into two
   }
 })
 
+test("production chooser renders the Apple provider with the Sign in with Apple button", async ({ page }) => {
+  const appleProviderId = "018f0000-0000-7000-8000-000000000005"
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }), {
+    ...discovery,
+    policy: { ...discovery.policy, providerIds: [providerId, appleProviderId] },
+    providers: [
+      { displayName: "GitHub", id: providerId, type: "github" },
+      { displayName: "Apple", id: appleProviderId, type: "apple" },
+    ],
+  })
+
+  await page.goto("/login")
+
+  const lists = page.locator(".login-chooser-list")
+  await expect(lists.nth(1).getByRole("listitem")).toHaveCount(2)
+  await expect(lists.nth(1)).toContainText("Sign in with Apple")
+  await expect(lists.nth(1)).toContainText("Continue with GitHub")
+})
+
 test("production chooser stays a single column without external providers", async ({ page }) => {
   await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }), {
     ...discovery,

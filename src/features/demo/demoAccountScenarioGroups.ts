@@ -122,7 +122,7 @@ export const demoAccountScenarioGroups: DemoFixtureScenarioGroup[] = [
       {
         key: "identities",
         title: "Linked identities",
-        description: "Review and unlink Google, GitHub, and Microsoft accounts.",
+        description: "Review and unlink Google, GitHub, Microsoft, and Apple accounts.",
         path: "/demo/account/identities",
         availability: "available",
         states: [...collectionStates],

@@ -56,7 +56,7 @@ export const demoAdminScenarioGroups: DemoFixtureScenarioGroup[] = [
       {
         key: "login-policy",
         title: "Login and identity providers",
-        description: "Set login policy and configure Google, GitHub, or Microsoft.",
+        description: "Set login policy and configure Google, GitHub, Microsoft, or Apple.",
         path: "/demo/admin/login-policy",
         availability: "available",
         states: [...collectionStates, "permission-denied"],

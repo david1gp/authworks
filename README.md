@@ -706,6 +706,54 @@ const client = projectApiClientCreate({ baseUrl: SERVER_URL, token: TOKEN })
 await client.projectUserAssignmentCreate(REALM_ID, PROJECT_ID, { userId: USER_ID, roleKeys: ["reader"] })
 ```
 
+## External identity providers
+
+Google, GitHub, Microsoft, Apple, and generic OIDC providers are configured per realm (optionally per
+organization) through the admin UI login-policy page, the API, or the CLI. A configured and enabled provider
+appears on the login chooser and provider screens, on registration when the policy allows it, and on the
+account security page, where a signed-in user can connect or unlink it the same way for every provider type.
+Unverified-email sign-ins never auto-link: a provider identity links to an existing account only when its email
+is verified and the login policy allows auto-linking, otherwise the user signs in and links explicitly.
+
+There is no provider environment configuration: like Google, Apple is a provider row whose secret is stored
+encrypted, never shown again, and rotated with the provider update commands. The login button appears only when
+a provider of that type is configured.
+
+### Sign in with Apple
+
+Apple needs a Services ID plus a Sign in with Apple key. In the Apple Developer account:
+
+1. Enable Sign in with Apple on an App ID, then create a Services ID — that identifier is the provider
+   `client-id`.
+2. Under the Services ID, add the return URL
+   `https://auth.example.com/realms/REALM_ID/external-identity/PROVIDER_ID/callback` (replace the origin,
+   realm, and provider IDs with the deployment values) and verify the domain.
+3. Create a Sign in with Apple private key (`.p8`), noting the 10-character key ID and the 10-character team ID.
+
+Then configure the provider (the `.p8` contents are the client secret; keep the file out of the shell history):
+
+```bash
+authworks external-identities provider-create --realm-id REALM_ID \
+  --type apple --display-name Apple \
+  --client-id com.example.services \
+  --client-secret "$(cat SignInWithApple.p8)" \
+  --apple-team-id TEAMID12345 --apple-key-id KEYID123456 \
+  --redirect-uri "https://auth.example.com/realms/REALM_ID/external-identity/PROVIDER_ID/callback" \
+  --allow-account-creation
+```
+
+The server signs a fresh ES256 `client_secret` JWT from the stored key on every token exchange (the JWT is never
+stored), verifies the `id_token` against Apple's JWKS (`iss` `https://appleid.apple.com`, `aud` the Services ID,
+`exp`, `nonce`), and accepts the `email_verified` `"true"`/`true` forms Apple uses. Because the `name`/`email`
+scopes require `response_mode=form_post`, Apple's authorization code arrives as a cross-site POST to the same
+callback URL that also accepts GET for the other providers; the opaque server-side state value is the CSRF
+protection in both modes, so no cookie changes are needed.
+
+Apple sends the user's name only on the first authorization (the `user` form field); it is stored then and never
+overwritten by later sign-ins, which match by the stable `sub`. Private-relay addresses (`is_private_email`) are
+stored as the account email like any verified address. The login button follows the Apple Human Interface
+Guidelines (black/white button with the Apple logo and "Sign in with Apple" text).
+
 ## OIDC claims and consent
 
 `acr`, `amr`, and `auth_time` come from the session everywhere: `acr` is the

@@ -65,7 +65,7 @@ export const demoLoginScenarioGroups: DemoFixtureScenarioGroup[] = [
     title: "Registration and verification",
   },
   {
-    description: "Passkeys and configured Google, GitHub, and Microsoft providers.",
+    description: "Passkeys and configured Google, GitHub, Microsoft, and Apple providers.",
     key: "passwordless",
     scenarios: [
       scenario("passkey", "Passkey", "Authenticate with a device-bound passkey.", [
