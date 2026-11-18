@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,L’ordine preferito può contenere 
 admin.organizations.policy.validation.requiredFactors,L’MFA obbligatoria richiede almeno un fattore consentito.
 admin.organizations.policy.validation.requiredMfaWeaker,L’organizzazione non può disattivare l’MFA richiesta dal realm.
 admin.organizations.providers.allowAccountCreation,Crea automaticamente account per le nuove persone
+admin.organizations.providers.appleKeyId,ID chiave Apple
+admin.organizations.providers.appleKeyIdHint,L’ID chiave di 10 caratteri della chiave privata Sign in with Apple.
+admin.organizations.providers.appleTeamId,ID team Apple
+admin.organizations.providers.appleTeamIdHint,L’ID team Apple Developer di 10 caratteri.
 admin.organizations.providers.clientId,ID client
 admin.organizations.providers.clientSecret,Segreto client
+admin.organizations.providers.clientSecretAppleHint,"Per Apple, incolla la chiave privata .p8 di Sign in with Apple. Viene archiviata in forma cifrata e non viene mai mostrata."
 admin.organizations.providers.create,Aggiungi provider
 admin.organizations.providers.created,Il provider è stato configurato.
 admin.organizations.providers.description,"Provider Google, GitHub e Microsoft configurati per questa organizzazione."
@@ -1869,6 +1874,7 @@ login.password.submit,Accedi
 login.password.title,Inserisca il suo contraseña
 login.provider.accountNotFoundDescription,Nessun account Authworks è collegato a questo account {provider}. Il collegamento degli account e la registrazione autonoma non sono ancora abilitati.
 login.provider.accountNotFoundTitle,Nessun account collegato
+login.provider.appleSubmit,Accedi con Apple
 login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
 login.provider.failureDescription,L'accesso con {provider} non è stato completato. Riprova.
 login.provider.linkingFailedDescription,Non è stato possibile completare il collegamento dell'account. Prova un altro metodo di accesso.

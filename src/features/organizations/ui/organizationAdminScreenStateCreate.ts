@@ -299,7 +299,15 @@ export function organizationAdminScreenStateCreate(options: {
         allowAccountCreation: !form.providerCreate.get().allowAccountCreation,
       }),
     providerCreateInput: (
-      key: "clientId" | "clientSecret" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+      key:
+        | "appleKeyId"
+        | "appleTeamId"
+        | "clientId"
+        | "clientSecret"
+        | "displayName"
+        | "issuer"
+        | "redirectUri"
+        | "scopesText",
       value: string,
     ) => form.providerCreate.set({ ...form.providerCreate.get(), [key]: value }),
     providerCreateSubmit: (event: SubmitEvent) => {
@@ -320,7 +328,7 @@ export function organizationAdminScreenStateCreate(options: {
     providerEditBegin: (provider: ExternalIdentityProvider) => form.providerEditBegin(provider),
     providerEditInput: (
       provider: ExternalIdentityProvider,
-      key: "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+      key: "appleKeyId" | "appleTeamId" | "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
       value: string,
     ) => form.providerEditInput(provider, key, value),
     providerEditReset: (providerId: string) => form.providerEditClear(providerId),

@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,A preferált sorrend csak engedélye
 admin.organizations.policy.validation.requiredFactors,A kötelező MFA-hoz legalább egy engedélyezett tényező szükséges.
 admin.organizations.policy.validation.requiredMfaWeaker,A szervezet nem kapcsolhatja ki a tartomány által megkövetelt MFA-t.
 admin.organizations.providers.allowAccountCreation,Automatikusan hozzon létre fiókot az új személyeknek
+admin.organizations.providers.appleKeyId,Apple kulcsazonosító
+admin.organizations.providers.appleKeyIdHint,A Sign in with Apple privát kulcs 10 karakteres kulcsazonosítója.
+admin.organizations.providers.appleTeamId,Apple csapatazonosító
+admin.organizations.providers.appleTeamIdHint,A 10 karakteres Apple Developer csapatazonosító.
 admin.organizations.providers.clientId,Ügyfél-azonosító
 admin.organizations.providers.clientSecret,Ügyféltitok
+admin.organizations.providers.clientSecretAppleHint,"Apple esetén illessze be a Sign in with Apple .p8 privát kulcsot. Titkosítva tároljuk, és soha nem jelenítjük meg."
 admin.organizations.providers.create,Szolgáltató hozzáadása
 admin.organizations.providers.created,A szolgáltató beállítva.
 admin.organizations.providers.description,"Ehhez a szervezethez beállított Google, GitHub és Microsoft szolgáltatók."
@@ -1869,6 +1874,7 @@ login.password.submit,Jelentkezzen be
 login.password.title,Adja meg jelszavát
 login.provider.accountNotFoundDescription,Ehhez a {provider}-fiókhoz nincs Authworks-fiók kapcsolva. A fiók-összekapcsolás és az önálló regisztráció még nincs engedélyezve.
 login.provider.accountNotFoundTitle,Nincs kapcsolt fiók
+login.provider.appleSubmit,Bejelentkezés Apple-lel
 login.provider.description,"A következő helyen folytatja: {provider}, és visszatér ide, ha végzett."
 login.provider.failureDescription,A {provider} használatával történő bejelentkezés nem fejeződött be. Próbálja újra.
 login.provider.linkingFailedDescription,A fiók összekapcsolása nem sikerült. Próbáljon másik bejelentkezési módot.

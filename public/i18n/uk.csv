@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,Бажаний порядок мож
 admin.organizations.policy.validation.requiredFactors,Обов’язкова MFA потребує щонайменше одного дозволеного фактора.
 admin.organizations.policy.validation.requiredMfaWeaker,"Організація не може вимкнути MFA, яку вимагає realm."
 admin.organizations.providers.allowAccountCreation,Автоматично створювати облікові записи для нових людей
+admin.organizations.providers.appleKeyId,Ідентифікатор ключа Apple
+admin.organizations.providers.appleKeyIdHint,10-символьний ідентифікатор ключа приватного ключа Sign in with Apple.
+admin.organizations.providers.appleTeamId,Ідентифікатор команди Apple
+admin.organizations.providers.appleTeamIdHint,10-символьний ідентифікатор команди Apple Developer.
 admin.organizations.providers.clientId,Ідентифікатор клієнта
 admin.organizations.providers.clientSecret,Секрет клієнта
+admin.organizations.providers.clientSecretAppleHint,Для Apple вставте приватний ключ .p8 Sign in with Apple. Він зберігається у зашифрованому вигляді й ніколи не відображається.
 admin.organizations.providers.create,Додати провайдера
 admin.organizations.providers.created,Провайдера налаштовано.
 admin.organizations.providers.description,"Налаштовані провайдери Google, GitHub і Microsoft для цієї організації."
@@ -1869,6 +1874,7 @@ login.password.submit,Увійти
 login.password.title,Введіть пароль
 login.provider.accountNotFoundDescription,Для цього облікового запису {provider} немає пов’язаного облікового запису Authworks. Пов’язування облікових записів і самостійна реєстрація ще не ввімкнені.
 login.provider.accountNotFoundTitle,Пов’язаного облікового запису немає
+login.provider.appleSubmit,Увійти з Apple
 login.provider.description,"Ви продовжите на сайті {provider}, а після завершення повернетеся сюди."
 login.provider.failureDescription,Вхід через {provider} не завершено. Спробуйте ще раз.
 login.provider.linkingFailedDescription,Не вдалося завершити пов’язування облікового запису. Спробуйте інший спосіб входу.

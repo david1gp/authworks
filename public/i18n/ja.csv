@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,優先順位には許可されたフ
 admin.organizations.policy.validation.requiredFactors,必須の MFA には許可されたファクターが少なくとも 1 つ必要です。
 admin.organizations.policy.validation.requiredMfaWeaker,組織はレルムで必須の MFA を無効にできません。
 admin.organizations.providers.allowAccountCreation,新しい人のアカウントを自動的に作成する
+admin.organizations.providers.appleKeyId,AppleキーID
+admin.organizations.providers.appleKeyIdHint,Sign in with Apple秘密鍵の10文字のキーID。
+admin.organizations.providers.appleTeamId,AppleチームID
+admin.organizations.providers.appleTeamIdHint,10文字のApple DeveloperチームID。
 admin.organizations.providers.clientId,クライアント ID
 admin.organizations.providers.clientSecret,クライアントシークレット
+admin.organizations.providers.clientSecretAppleHint,Appleの場合は、Sign in with Appleの.p8秘密鍵を貼り付けてください。暗号化して保存され、表示されることはありません。
 admin.organizations.providers.create,プロバイダーを追加
 admin.organizations.providers.created,プロバイダーを構成しました。
 admin.organizations.providers.description,この組織に構成された Google、GitHub、Microsoft のプロバイダー。
@@ -1869,6 +1874,7 @@ login.password.submit,ログイン
 login.password.title,パスワードを入力
 login.provider.accountNotFoundDescription,この{provider}アカウントにリンクされたAuthworksアカウントはありません。アカウントのリンクとセルフサービス登録はまだ有効になっていません。
 login.provider.accountNotFoundTitle,リンクされたアカウントがありません
+login.provider.appleSubmit,Appleでサインイン
 login.provider.description,{provider} で続行し、完了するとここに戻ります。
 login.provider.failureDescription,{provider}でのサインインを完了できませんでした。もう一度お試しください。
 login.provider.linkingFailedDescription,アカウントをリンクできませんでした。別のサインイン方法をお試しください。

@@ -7,6 +7,8 @@ import type { ExternalIdentityProviderType } from "../../externalIdentities/publ
 
 export type OrganizationAdminProviderCreateInput = {
   readonly allowAccountCreation: boolean
+  readonly appleKeyId: string
+  readonly appleTeamId: string
   readonly clientId: string
   readonly clientSecret: string
   readonly displayName: string
@@ -25,8 +27,12 @@ export function organizationAdminProviderCreateRequestBuild(
     .map((scope) => scope.trim())
     .filter((scope) => scope.length > 0)
   const issuer = input.issuer.trim()
+  const appleTeamId = input.appleTeamId.trim()
+  const appleKeyId = input.appleKeyId.trim()
   const parsed = v.safeParse(externalIdentityProviderCreateRequestSchema, {
     allowAccountCreation: input.allowAccountCreation,
+    ...(appleKeyId.length === 0 ? {} : { appleKeyId }),
+    ...(appleTeamId.length === 0 ? {} : { appleTeamId }),
     clientId: input.clientId.trim(),
     clientSecret: input.clientSecret,
     displayName: input.displayName.trim(),

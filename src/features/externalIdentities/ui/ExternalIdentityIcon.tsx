@@ -3,9 +3,11 @@ import { mdiGoogle } from "@adaptive-ds/mdi/mdiGoogle.js"
 import { mdiMicrosoft } from "@adaptive-ds/mdi/mdiMicrosoft.js"
 import { mdiOpenid } from "@adaptive-ds/mdi/mdiOpenid.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { iconApple } from "#ui/static/icons/iconApple.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
 const providerIcons: Readonly<Record<ExternalIdentityProviderType, string>> = {
+  apple: iconApple,
   github: mdiGithub,
   google: mdiGoogle,
   microsoft: mdiMicrosoft,

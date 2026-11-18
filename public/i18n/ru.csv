@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,Предпочтительный п�
 admin.organizations.policy.validation.requiredFactors,Для обязательной MFA нужен хотя бы один разрешённый фактор.
 admin.organizations.policy.validation.requiredMfaWeaker,"Организация не может отключить MFA, требуемую realm."
 admin.organizations.providers.allowAccountCreation,Автоматически создавать учётные записи для новых людей
+admin.organizations.providers.appleKeyId,ID ключа Apple
+admin.organizations.providers.appleKeyIdHint,10-значный ID ключа закрытого ключа Sign in with Apple.
+admin.organizations.providers.appleTeamId,ID команды Apple
+admin.organizations.providers.appleTeamIdHint,10-значный ID команды Apple Developer.
 admin.organizations.providers.clientId,Идентификатор клиента
 admin.organizations.providers.clientSecret,Секрет клиента
+admin.organizations.providers.clientSecretAppleHint,Для Apple вставьте закрытый ключ .p8 Sign in with Apple. Он хранится в зашифрованном виде и никогда не отображается.
 admin.organizations.providers.create,Добавить провайдера
 admin.organizations.providers.created,Провайдер настроен.
 admin.organizations.providers.description,"Настроенные провайдеры Google, GitHub и Microsoft для этой организации."
@@ -1869,6 +1874,7 @@ login.password.submit,Войти
 login.password.title,Введите свой пароль
 login.provider.accountNotFoundDescription,С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены.
 login.provider.accountNotFoundTitle,Связанный аккаунт не найден
+login.provider.appleSubmit,Войти с Apple
 login.provider.description,"Вы продолжите работу с {provider} и вернетесь сюда, когда закончите."
 login.provider.failureDescription,Вход через {provider} не завершён. Попробуйте ещё раз.
 login.provider.linkingFailedDescription,Не удалось завершить связывание аккаунта. Попробуйте другой способ входа.

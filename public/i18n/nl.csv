@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,De voorkeursvolgorde mag alleen toeg
 admin.organizations.policy.validation.requiredFactors,Voor vereiste MFA is ten minste één toegestane factor nodig.
 admin.organizations.policy.validation.requiredMfaWeaker,De organisatie kan door het realm vereiste MFA niet uitschakelen.
 admin.organizations.providers.allowAccountCreation,Automatisch accounts aanmaken voor nieuwe personen
+admin.organizations.providers.appleKeyId,Apple-sleutel-ID
+admin.organizations.providers.appleKeyIdHint,De 10-cijferige sleutel-ID van de privésleutel voor Log in met Apple.
+admin.organizations.providers.appleTeamId,Apple-team-ID
+admin.organizations.providers.appleTeamIdHint,De 10-cijferige Apple Developer-team-ID.
 admin.organizations.providers.clientId,Client-ID
 admin.organizations.providers.clientSecret,Clientgeheim
+admin.organizations.providers.clientSecretAppleHint,Plak voor Apple de .p8-privésleutel voor Log in met Apple. Deze wordt versleuteld opgeslagen en nooit weergegeven.
 admin.organizations.providers.create,Provider toevoegen
 admin.organizations.providers.created,De provider is geconfigureerd.
 admin.organizations.providers.description,"Geconfigureerde Google-, GitHub- en Microsoft-providers voor deze organisatie."
@@ -1869,6 +1874,7 @@ login.password.submit,Inloggen
 login.password.title,Voer in uw contraseña
 login.provider.accountNotFoundDescription,Er is geen Authworks-account gekoppeld aan dit {provider}-account. Accountkoppeling en zelfregistratie zijn nog niet ingeschakeld.
 login.provider.accountNotFoundTitle,Geen gekoppeld account
+login.provider.appleSubmit,Log in met Apple
 login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
 login.provider.failureDescription,Aanmelden met {provider} is niet voltooid. Probeer het opnieuw.
 login.provider.linkingFailedDescription,Het koppelen van het account is niet voltooid. Probeer een andere aanmeldmethode.

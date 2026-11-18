@@ -911,7 +911,13 @@ export const englishCatalog = {
   "admin.organizations.policy.validation.requiredMfaWeaker":
     "The organization cannot turn off MFA required by the realm.",
   "admin.organizations.providers.allowAccountCreation": "Create accounts for new people automatically",
+  "admin.organizations.providers.appleKeyId": "Apple key ID",
+  "admin.organizations.providers.appleKeyIdHint": "The 10-character key ID of the Sign in with Apple private key.",
+  "admin.organizations.providers.appleTeamId": "Apple team ID",
+  "admin.organizations.providers.appleTeamIdHint": "The 10-character Apple Developer team ID.",
   "admin.organizations.providers.clientId": "Client ID",
+  "admin.organizations.providers.clientSecretAppleHint":
+    "For Apple, paste the Sign in with Apple .p8 private key. It is stored encrypted and never shown.",
   "admin.organizations.providers.clientSecret": "Client secret",
   "admin.organizations.providers.create": "Add provider",
   "admin.organizations.providers.created": "The provider was configured.",
@@ -935,7 +941,7 @@ export const englishCatalog = {
   "admin.organizations.providers.displayName": "Display name",
   "admin.organizations.providers.empty": "No external identity provider is configured yet.",
   "admin.organizations.providers.invalid":
-    "Enter a display name, client ID, client secret, and an absolute redirect URI, plus an issuer for generic OIDC providers.",
+    "Enter a display name, client ID, client secret, and an absolute redirect URI, plus an issuer for generic OIDC providers or team and key IDs for Apple.",
   "admin.organizations.providers.issuer": "Issuer",
   "admin.organizations.providers.issuerHint": "Required for generic OIDC providers.",
   "admin.organizations.providers.scopes": "Scopes",
@@ -2031,6 +2037,7 @@ export const englishCatalog = {
   "login.provider.linkingFailedDescription":
     "Account linking could not be completed. Please try another sign-in method.",
   "login.provider.linkingFailedTitle": "Could not link account",
+  "login.provider.appleSubmit": "Sign in with Apple",
   "login.provider.submit": "Continue with {provider}",
   "login.provider.title": "Sign in with {provider}",
   "login.recent.description": "Continue with an account you used on this device.",

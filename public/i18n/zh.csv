@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,首选顺序只能包含允许的因
 admin.organizations.policy.validation.requiredFactors,必需的 MFA 至少需要一个允许的因素。
 admin.organizations.policy.validation.requiredMfaWeaker,组织不能关闭领域要求的 MFA。
 admin.organizations.providers.allowAccountCreation,自动为新用户创建账户
+admin.organizations.providers.appleKeyId,Apple 密钥 ID
+admin.organizations.providers.appleKeyIdHint,Sign in with Apple 私钥的 10 个字符的密钥 ID。
+admin.organizations.providers.appleTeamId,Apple 团队 ID
+admin.organizations.providers.appleTeamIdHint,10 个字符的 Apple Developer 团队 ID。
 admin.organizations.providers.clientId,客户端 ID
 admin.organizations.providers.clientSecret,客户端密钥
+admin.organizations.providers.clientSecretAppleHint,对于 Apple，请粘贴 Sign in with Apple .p8 私钥。它将被加密存储，永不显示。
 admin.organizations.providers.create,添加提供方
 admin.organizations.providers.created,提供方已配置。
 admin.organizations.providers.description,为此组织配置的 Google、GitHub 和 Microsoft 提供方。
@@ -1869,6 +1874,7 @@ login.password.submit,登录
 login.password.title,输入密码
 login.provider.accountNotFoundDescription,没有账户与此 {provider} 账户关联。账户关联和自助注册尚未启用。
 login.provider.accountNotFoundTitle,没有关联账户
+login.provider.appleSubmit,使用 Apple 登录
 login.provider.description,您将前往 {provider}，完成后返回此处。
 login.provider.failureDescription,使用 {provider} 登录未完成。请重试。
 login.provider.linkingFailedDescription,无法完成账户关联。请尝试其他登录方式。

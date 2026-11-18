@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,Preferowana kolejność może zawier
 admin.organizations.policy.validation.requiredFactors,Wymagany MFA potrzebuje co najmniej jednego dozwolonego czynnika.
 admin.organizations.policy.validation.requiredMfaWeaker,Organizacja nie może wyłączyć MFA wymaganego przez realm.
 admin.organizations.providers.allowAccountCreation,Automatycznie twórz konta dla nowych osób
+admin.organizations.providers.appleKeyId,Identyfikator klucza Apple
+admin.organizations.providers.appleKeyIdHint,10-znakowy identyfikator klucza prywatnego Sign in with Apple.
+admin.organizations.providers.appleTeamId,Identyfikator zespołu Apple
+admin.organizations.providers.appleTeamIdHint,10-znakowy identyfikator zespołu Apple Developer.
 admin.organizations.providers.clientId,Identyfikator klienta
 admin.organizations.providers.clientSecret,Sekret klienta
+admin.organizations.providers.clientSecretAppleHint,W przypadku Apple wklej klucz prywatny .p8 usługi Sign in with Apple. Jest przechowywany w postaci zaszyfrowanej i nigdy nie jest wyświetlany.
 admin.organizations.providers.create,Dodaj dostawcę
 admin.organizations.providers.created,Dostawca został skonfigurowany.
 admin.organizations.providers.description,"Skonfigurowani dostawcy Google, GitHub i Microsoft dla tej organizacji."
@@ -1869,6 +1874,7 @@ login.password.submit,Zalogować się
 login.password.title,Wpisz swoje hasło
 login.provider.accountNotFoundDescription,Z tym kontem {provider} nie jest powiązane konto Authworks. Powiązanie kont i samodzielna rejestracja nie są jeszcze włączone.
 login.provider.accountNotFoundTitle,Brak powiązanego konta
+login.provider.appleSubmit,Zaloguj się przez Apple
 login.provider.description,"Będziesz kontynuować w {provider} i wrócić tutaj, gdy skończysz."
 login.provider.failureDescription,Logowanie przez {provider} nie zostało ukończone. Spróbuj ponownie.
 login.provider.linkingFailedDescription,Nie udało się ukończyć powiązania konta. Spróbuj innej metody logowania.

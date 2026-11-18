@@ -21,14 +21,22 @@ type MethodChoiceButtonProps = {
 }
 
 export function MethodChoiceButton(props: MethodChoiceButtonProps) {
+  // Apple Human Interface Guidelines require the approved black (or white) button with the
+  // Apple logo and "Sign in with Apple" text. The contrast variant renders exactly those
+  // two styles and adapts to the theme.
+  const apple = () => props.method === "external-identity" && props.providerType === "apple"
   return (
     <Button
-      classList={{ "border-accent ring-1 ring-inset ring-accent": props.lastUsed }}
-      class="w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left hover:bg-surface-hover"
+      classList={{ "border-accent ring-1 ring-inset ring-accent": props.lastUsed && !apple() }}
+      class={
+        apple()
+          ? "w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left"
+          : "w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left hover:bg-surface-hover"
+      }
       disabled={props.pending}
       onClick={props.onClick}
       type="button"
-      variant="outline"
+      variant={apple() ? "contrast" : "outline"}
     >
       <Show
         when={props.method === "external-identity" && props.providerType}
@@ -49,9 +57,15 @@ export function MethodChoiceButton(props: MethodChoiceButtonProps) {
       >
         {(type) => <ExternalIdentityIcon class="size-8 shrink-0" type={type()} />}
       </Show>
-      <span class="grid min-w-0 flex-1 [&>span]:min-w-0 [&>span]:font-extrabold [&>span]:[overflow-wrap:anywhere] [&_small]:mt-[3px] [&_small]:text-muted-foreground">
+      <span
+        class={
+          apple()
+            ? "grid min-w-0 flex-1 [&>span]:min-w-0 [&>span]:font-extrabold [&>span]:[overflow-wrap:anywhere] [&_small]:mt-[3px] [&_small]:text-white/70 dark:[&_small]:text-slate-900/70"
+            : "grid min-w-0 flex-1 [&>span]:min-w-0 [&>span]:font-extrabold [&>span]:[overflow-wrap:anywhere] [&_small]:mt-[3px] [&_small]:text-muted-foreground"
+        }
+      >
         <span>
-          {props.label}
+          {apple() ? messageTranslate("login.provider.appleSubmit") : props.label}
           <Show when={props.lastUsed}>
             <span class="ms-2 inline-block max-w-full rounded-full bg-accent px-2 py-0.5 align-middle text-[0.6875rem] font-extrabold leading-none text-accent-contrast [overflow-wrap:anywhere]">
               {messageTranslate("login.chooser.lastUsed")}

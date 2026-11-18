@@ -71,7 +71,7 @@ const policyMfaLifetimeFields: readonly { key: PolicyMfaLifetimeKey; labelKey: M
   { key: "multiFactorCheckLifetimeSeconds", labelKey: "admin.organizations.policy.multiFactorLifetime" },
 ]
 
-const providerTypes: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft", "oidc"]
+const providerTypes: readonly ExternalIdentityProviderType[] = ["google", "github", "microsoft", "apple", "oidc"]
 
 function OrganizationAdminPolicyInheritedBadge(props: { readonly show: boolean }) {
   return (
@@ -102,7 +102,15 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly onProviderAllowlistReset: () => void
   readonly onProviderAllowlistToggle: (providerId: string) => void
   readonly onProviderCreateInput: (
-    key: "clientId" | "clientSecret" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+    key:
+      | "appleKeyId"
+      | "appleTeamId"
+      | "clientId"
+      | "clientSecret"
+      | "displayName"
+      | "issuer"
+      | "redirectUri"
+      | "scopesText",
     value: string,
   ) => void
   readonly onProviderCreateSubmit: (event: SubmitEvent) => void
@@ -111,7 +119,7 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly onProviderDisable: (providerId: string, displayName: string) => void
   readonly onProviderEditInput: (
     provider: ExternalIdentityProvider,
-    key: "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
+    key: "appleKeyId" | "appleTeamId" | "clientId" | "displayName" | "issuer" | "redirectUri" | "scopesText",
     value: string,
   ) => void
   readonly onProviderEditReset: (providerId: string) => void
@@ -131,6 +139,8 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly policyValidationMessage?: string
   readonly providerCreate: {
     readonly allowAccountCreation: boolean
+    readonly appleKeyId: string
+    readonly appleTeamId: string
     readonly clientId: string
     readonly clientSecret: string
     readonly displayName: string
@@ -517,6 +527,40 @@ export function OrganizationAdminLoginPolicyView(props: {
                               </p>
                             </div>
                           </Show>
+                          <Show when={provider.type === "apple"}>
+                            <div class="grid min-w-0 gap-1">
+                              <Label for={`provider-${provider.id}-apple-team-id`}>
+                                {messageTranslate("admin.organizations.providers.appleTeamId")}
+                              </Label>
+                              <AuthenticatedInput
+                                autocomplete="off"
+                                id={`provider-${provider.id}-apple-team-id`}
+                                onInput={(event) =>
+                                  props.onProviderEditInput(provider, "appleTeamId", event.currentTarget.value)
+                                }
+                                value={props.providerEdits[provider.id]?.appleTeamId ?? provider.appleTeamId ?? ""}
+                              />
+                              <p class="text-xs text-muted-foreground">
+                                {messageTranslate("admin.organizations.providers.appleTeamIdHint")}
+                              </p>
+                            </div>
+                            <div class="grid min-w-0 gap-1">
+                              <Label for={`provider-${provider.id}-apple-key-id`}>
+                                {messageTranslate("admin.organizations.providers.appleKeyId")}
+                              </Label>
+                              <AuthenticatedInput
+                                autocomplete="off"
+                                id={`provider-${provider.id}-apple-key-id`}
+                                onInput={(event) =>
+                                  props.onProviderEditInput(provider, "appleKeyId", event.currentTarget.value)
+                                }
+                                value={props.providerEdits[provider.id]?.appleKeyId ?? provider.appleKeyId ?? ""}
+                              />
+                              <p class="text-xs text-muted-foreground">
+                                {messageTranslate("admin.organizations.providers.appleKeyIdHint")}
+                              </p>
+                            </div>
+                          </Show>
                           <div class="grid min-w-0 gap-1 sm:col-span-2">
                             <Label for={`provider-${provider.id}-scopes`}>
                               {messageTranslate("admin.organizations.providers.scopes")}
@@ -638,7 +682,42 @@ export function OrganizationAdminLoginPolicyView(props: {
                       type="password"
                       value={props.providerCreate.clientSecret}
                     />
+                    <Show when={props.providerCreate.type === "apple"}>
+                      <p class="text-xs text-muted-foreground">
+                        {messageTranslate("admin.organizations.providers.clientSecretAppleHint")}
+                      </p>
+                    </Show>
                   </div>
+                  <Show when={props.providerCreate.type === "apple"}>
+                    <div class="grid min-w-0 gap-1">
+                      <Label for="provider-apple-team-id">
+                        {messageTranslate("admin.organizations.providers.appleTeamId")}
+                      </Label>
+                      <AuthenticatedInput
+                        autocomplete="off"
+                        id="provider-apple-team-id"
+                        onInput={(event) => props.onProviderCreateInput("appleTeamId", event.currentTarget.value)}
+                        value={props.providerCreate.appleTeamId}
+                      />
+                      <p class="text-xs text-muted-foreground">
+                        {messageTranslate("admin.organizations.providers.appleTeamIdHint")}
+                      </p>
+                    </div>
+                    <div class="grid min-w-0 gap-1">
+                      <Label for="provider-apple-key-id">
+                        {messageTranslate("admin.organizations.providers.appleKeyId")}
+                      </Label>
+                      <AuthenticatedInput
+                        autocomplete="off"
+                        id="provider-apple-key-id"
+                        onInput={(event) => props.onProviderCreateInput("appleKeyId", event.currentTarget.value)}
+                        value={props.providerCreate.appleKeyId}
+                      />
+                      <p class="text-xs text-muted-foreground">
+                        {messageTranslate("admin.organizations.providers.appleKeyIdHint")}
+                      </p>
+                    </div>
+                  </Show>
                   <div class="grid min-w-0 gap-1 sm:col-span-2">
                     <Label for="provider-redirect-uri">
                       {messageTranslate("admin.organizations.providers.redirectUri")}

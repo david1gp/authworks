@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,El orden preferido solo puede conten
 admin.organizations.policy.validation.requiredFactors,El MFA requerido necesita al menos un factor permitido.
 admin.organizations.policy.validation.requiredMfaWeaker,La organización no puede desactivar el MFA requerido por el realm.
 admin.organizations.providers.allowAccountCreation,Crear cuentas automáticamente para nuevas personas
+admin.organizations.providers.appleKeyId,ID de clave de Apple
+admin.organizations.providers.appleKeyIdHint,El ID de clave de 10 caracteres de la clave privada de Sign in with Apple.
+admin.organizations.providers.appleTeamId,ID de equipo de Apple
+admin.organizations.providers.appleTeamIdHint,El ID de equipo de Apple Developer de 10 caracteres.
 admin.organizations.providers.clientId,ID de cliente
 admin.organizations.providers.clientSecret,Secreto de cliente
+admin.organizations.providers.clientSecretAppleHint,"Para Apple, pegue la clave privada .p8 de Sign in with Apple. Se almacena cifrada y nunca se muestra."
 admin.organizations.providers.create,Añadir proveedor
 admin.organizations.providers.created,El proveedor se ha configurado.
 admin.organizations.providers.description,"Proveedores de Google, GitHub y Microsoft configurados para esta organización."
@@ -1869,6 +1874,7 @@ login.password.submit,Iniciar sesión
 login.password.title,Introduzca su contraseña
 login.provider.accountNotFoundDescription,No hay una cuenta de Authworks vinculada a esta cuenta de {provider}. La vinculación de cuentas y el registro autónomo aún no están habilitados.
 login.provider.accountNotFoundTitle,Ninguna cuenta vinculada
+login.provider.appleSubmit,Iniciar sesión con Apple
 login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
 login.provider.failureDescription,No se completó el inicio de sesión con {provider}. Inténtelo de nuevo.
 login.provider.linkingFailedDescription,No se pudo completar la vinculación de cuentas. Pruebe otro método de inicio de sesión.

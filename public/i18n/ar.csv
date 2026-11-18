@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,يجب أن يحتوي الترتي�
 admin.organizations.policy.validation.requiredFactors,تتطلب المصادقة متعددة العوامل الإلزامية عاملًا مسموحًا به واحدًا على الأقل.
 admin.organizations.policy.validation.requiredMfaWeaker,لا يمكن للمنظمة إيقاف المصادقة متعددة العوامل التي يتطلبها النطاق.
 admin.organizations.providers.allowAccountCreation,إنشاء حسابات للأشخاص الجدد تلقائياً
+admin.organizations.providers.appleKeyId,معرّف مفتاح Apple
+admin.organizations.providers.appleKeyIdHint,معرّف المفتاح المكوّن من 10 أحرف للمفتاح الخاص Sign in with Apple.
+admin.organizations.providers.appleTeamId,معرّف فريق Apple
+admin.organizations.providers.appleTeamIdHint,معرّف فريق Apple Developer المكوّن من 10 أحرف.
 admin.organizations.providers.clientId,معرّف العميل
 admin.organizations.providers.clientSecret,سر العميل
+admin.organizations.providers.clientSecretAppleHint,بالنسبة إلى Apple، الصق المفتاح الخاص .p8 الخاص بـ Sign in with Apple. يتم تخزينه مشفّرًا ولا يظهر أبدًا.
 admin.organizations.providers.create,إضافة مزوّد
 admin.organizations.providers.created,تمت تهيئة المزوّد.
 admin.organizations.providers.description,موفرو Google وGitHub وMicrosoft المكوّنون لهذه المؤسسة.
@@ -1869,6 +1874,7 @@ login.password.submit,تسجيل الدخول
 login.password.title,أدخل كلمة المرور
 login.provider.accountNotFoundDescription,لا يوجد حساب Authworks مرتبط بحساب {provider} هذا. لم يتم تفعيل ربط الحسابات والتسجيل الذاتي بعد.
 login.provider.accountNotFoundTitle,لا يوجد حساب مرتبط
+login.provider.appleSubmit,تسجيل الدخول باستخدام Apple
 login.provider.description,ستتابع على {provider} وتعود إلى هنا عند الانتهاء.
 login.provider.failureDescription,لم يكتمل تسجيل الدخول باستخدام {provider}. حاول مرة أخرى.
 login.provider.linkingFailedDescription,تعذر إكمال ربط الحساب. جرّب طريقة تسجيل دخول أخرى.

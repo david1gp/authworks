@@ -1,5 +1,6 @@
 import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { Show } from "solid-js"
+import { iconApple } from "#ui/static/icons/iconApple.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
 import { LoginMessages } from "../../login/ui/LoginMessages.js"
@@ -82,11 +83,14 @@ export function ExternalIdentityPanel(props: ExternalIdentityPanelProps) {
             }}
           >
             <LoginSubmitButton
-              icon={mdiLogin}
+              {...(props.type === "apple" ? { buttonClass: "w-full", buttonVariant: "contrast" as const } : {})}
+              icon={props.type === "apple" ? iconApple : mdiLogin}
               label={
                 props.status === "failure"
                   ? messageTranslate("common.retry")
-                  : messageTranslate("login.provider.submit", { provider: props.displayName })
+                  : props.type === "apple"
+                    ? messageTranslate("login.provider.appleSubmit")
+                    : messageTranslate("login.provider.submit", { provider: props.displayName })
               }
               pending={props.pending || props.status === "pending"}
               pendingLabel={messageTranslate("login.common.working")}

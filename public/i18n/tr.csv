@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,Tercih edilen sıra yalnızca izin v
 admin.organizations.policy.validation.requiredFactors,Gerekli MFA için en az bir izin verilen faktör gerekir.
 admin.organizations.policy.validation.requiredMfaWeaker,"Kuruluş, Realm'in gerektirdiği MFA'yı kapatamaz."
 admin.organizations.providers.allowAccountCreation,Yeni kişiler için otomatik olarak hesap oluştur
+admin.organizations.providers.appleKeyId,Apple anahtar kimliği
+admin.organizations.providers.appleKeyIdHint,Sign in with Apple özel anahtarının 10 karakterlik anahtar kimliği.
+admin.organizations.providers.appleTeamId,Apple ekip kimliği
+admin.organizations.providers.appleTeamIdHint,10 karakterlik Apple Developer ekip kimliği.
 admin.organizations.providers.clientId,İstemci kimliği
 admin.organizations.providers.clientSecret,İstemci gizli anahtarı
+admin.organizations.providers.clientSecretAppleHint,Apple için Sign in with Apple .p8 özel anahtarını yapıştırın. Şifreli olarak saklanır ve hiçbir zaman gösterilmez.
 admin.organizations.providers.create,Sağlayıcı ekle
 admin.organizations.providers.created,Sağlayıcı yapılandırıldı.
 admin.organizations.providers.description,"Bu kuruluş için yapılandırılmış Google, GitHub ve Microsoft sağlayıcıları."
@@ -1869,6 +1874,7 @@ login.password.submit,Oturum aç
 login.password.title,Şifrenizi girin
 login.provider.accountNotFoundDescription,Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil.
 login.provider.accountNotFoundTitle,Bağlı hesap yok
+login.provider.appleSubmit,Apple ile giriş yap
 login.provider.description,{provider} adresinden devam edecek ve işiniz bittiğinde buraya döneceksiniz.
 login.provider.failureDescription,{provider} ile giriş tamamlanamadı. Lütfen tekrar deneyin.
 login.provider.linkingFailedDescription,Hesap bağlama tamamlanamadı. Başka bir giriş yöntemi deneyin.

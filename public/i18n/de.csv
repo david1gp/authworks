@@ -887,8 +887,13 @@ admin.organizations.policy.validation.order,Die bevorzugte Reihenfolge darf nur 
 admin.organizations.policy.validation.requiredFactors,Erforderliche MFA benötigt mindestens einen erlaubten Faktor.
 admin.organizations.policy.validation.requiredMfaWeaker,Die Organisation kann die vom Realm erforderte MFA nicht deaktivieren.
 admin.organizations.providers.allowAccountCreation,Konten für neue Personen automatisch anlegen
+admin.organizations.providers.appleKeyId,Apple-Schlüssel-ID
+admin.organizations.providers.appleKeyIdHint,Die 10-stellige Schlüssel-ID des privaten Sign in with Apple-Schlüssels.
+admin.organizations.providers.appleTeamId,Apple-Team-ID
+admin.organizations.providers.appleTeamIdHint,Die 10-stellige Apple-Developer-Team-ID.
 admin.organizations.providers.clientId,Client-ID
 admin.organizations.providers.clientSecret,Client-Secret
+admin.organizations.providers.clientSecretAppleHint,Für Apple den privaten .p8-Schlüssel für Sign in with Apple einfügen. Er wird verschlüsselt gespeichert und nie angezeigt.
 admin.organizations.providers.create,Anbieter hinzufügen
 admin.organizations.providers.created,Der Anbieter wurde konfiguriert.
 admin.organizations.providers.description,"Konfigurierte Google-, GitHub- und Microsoft-Anbieter für diese Organisation."
@@ -1869,6 +1874,7 @@ login.password.submit,Anmelden
 login.password.title,Geben Sie Ihr Passwort ein
 login.provider.accountNotFoundDescription,Mit diesem {provider}-Konto ist kein Authworks-Konto verknüpft. Kontoverknüpfung und selbstständige Registrierung sind noch nicht aktiviert.
 login.provider.accountNotFoundTitle,Kein verknüpftes Konto
+login.provider.appleSubmit,Mit Apple anmelden
 login.provider.description,Sie werden bei {provider} fortfahren und kehren anschließend hierher zurück.
 login.provider.failureDescription,Die Anmeldung mit {provider} wurde nicht abgeschlossen. Bitte versuchen Sie es erneut.
 login.provider.linkingFailedDescription,Das Verknüpfen des Kontos konnte nicht abgeschlossen werden. Verwenden Sie eine andere Anmeldemethode.

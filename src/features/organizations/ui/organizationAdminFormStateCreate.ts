@@ -42,6 +42,8 @@ export function organizationAdminFormStateCreate() {
   const providerSecrets = createSignalObject<Record<string, string>>({})
   const providerCreate = createSignalObject<OrganizationAdminProviderCreateInput>({
     allowAccountCreation: false,
+    appleKeyId: "",
+    appleTeamId: "",
     clientId: "",
     clientSecret: "",
     displayName: "",
