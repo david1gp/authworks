@@ -122,7 +122,7 @@ export async function externalIdentityStart(
   const nonceHash = nonce === undefined ? null : externalIdentitySecretHashCreate(nonce)
   const pkceChallenge = externalIdentityPkceChallengeCreate(pkceVerifier)
   const scopes = externalIdentityProviderScopesValidate(
-    provider.data.type as "github" | "google" | "microsoft" | "oidc",
+    provider.data.type as "apple" | "github" | "google" | "microsoft" | "oidc",
     provider.data.scopes,
   )
   if (!scopes.success)
@@ -138,6 +138,8 @@ export async function externalIdentityStart(
   const authorizationUrl = await externalIdentityProviderAuthorizationUrlCreate(
     port,
     {
+      ...(provider.data.appleKeyId === null ? {} : { appleKeyId: provider.data.appleKeyId }),
+      ...(provider.data.appleTeamId === null ? {} : { appleTeamId: provider.data.appleTeamId }),
       clientId: provider.data.clientId,
       clientSecret: clientSecret.data,
       ...(provider.data.issuer === null ? {} : { issuer: provider.data.issuer }),

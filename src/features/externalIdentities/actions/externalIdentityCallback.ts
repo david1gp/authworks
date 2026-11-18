@@ -42,6 +42,7 @@ const externalIdentityTransactionExpiryMessage = "The external identity callback
 
 type ExternalIdentityCallbackOptions = {
   readonly allowDevelopmentFallback?: boolean
+  readonly appleUserField?: string
   readonly code: string
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
@@ -123,7 +124,7 @@ export async function externalIdentityCallback(
   if (port === undefined)
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const scopes = externalIdentityProviderScopesValidate(
-    providerRow.type as "github" | "google" | "microsoft" | "oidc",
+    providerRow.type as "apple" | "github" | "google" | "microsoft" | "oidc",
     providerRow.scopes,
   )
   if (!scopes.success)
@@ -138,6 +139,8 @@ export async function externalIdentityCallback(
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const identity = await port.callbackExchange(
     {
+      ...(providerRow.appleKeyId === null ? {} : { appleKeyId: providerRow.appleKeyId }),
+      ...(providerRow.appleTeamId === null ? {} : { appleTeamId: providerRow.appleTeamId }),
       clientId: providerRow.clientId,
       clientSecret: clientSecret.data,
       ...(providerRow.issuer === null ? {} : { issuer: providerRow.issuer }),
@@ -146,6 +149,7 @@ export async function externalIdentityCallback(
       type: providerRow.type as keyof ExternalIdentityProviderPorts,
     },
     {
+      ...(options.appleUserField === undefined ? {} : { appleUserField: options.appleUserField }),
       code: options.code,
       ...(transactionRow.nonce === null ? {} : { nonce: transactionRow.nonce }),
       pkceVerifier: transactionRow.pkceVerifier,
@@ -411,6 +415,7 @@ function externalIdentitySignInCommit(
         options.provider.type === "google" ||
         options.provider.type === "github" ||
         options.provider.type === "microsoft" ||
+        options.provider.type === "apple" ||
         options.provider.type === "oidc"
       if (eligibleEmail !== undefined && providerSupportsAutoLinking) {
         const policy = organizationLoginPolicyResolve({
@@ -461,10 +466,10 @@ function externalIdentitySignInCommit(
         },
         {
           displayName: options.identity.displayName ?? null,
-          firstName: null,
+          firstName: options.identity.givenName ?? null,
           gender: null,
           realmId: options.realmId,
-          lastName: null,
+          lastName: options.identity.familyName ?? null,
           nickName: null,
           preferredLanguage: null,
           updatedAt: options.now,

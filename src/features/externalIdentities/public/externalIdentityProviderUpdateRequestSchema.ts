@@ -2,6 +2,8 @@ import * as v from "valibot"
 
 export const externalIdentityProviderUpdateRequestSchema = v.strictObject({
   allowAccountCreation: v.optional(v.boolean()),
+  appleKeyId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
+  appleTeamId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
   clientId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(256))),
   clientSecret: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(4096))),
   displayName: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),

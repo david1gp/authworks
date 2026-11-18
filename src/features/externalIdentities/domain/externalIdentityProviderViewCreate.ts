@@ -14,6 +14,8 @@ export function externalIdentityProviderViewCreate(row: ExternalIdentityProvider
   const parsedType = v.safeParse(externalIdentityProviderTypeSchema, row.type)
   return {
     allowAccountCreation: row.allowAccountCreation,
+    ...(row.appleKeyId === null || row.appleKeyId.length === 0 ? {} : { appleKeyId: row.appleKeyId }),
+    ...(row.appleTeamId === null || row.appleTeamId.length === 0 ? {} : { appleTeamId: row.appleTeamId }),
     clientId: row.clientId,
     createdAt: row.createdAt,
     displayName: row.displayName,

@@ -101,6 +101,8 @@ export function externalIdentityProviderCreate(
       )
     const created = repository.externalIdentityProviderCreate({
       allowAccountCreation: parsed.output.allowAccountCreation,
+      appleKeyId: parsed.output.appleKeyId ?? null,
+      appleTeamId: parsed.output.appleTeamId ?? null,
       clientId: parsed.output.clientId,
       clientSecret: protectedSecret.data,
       createdAt: now,

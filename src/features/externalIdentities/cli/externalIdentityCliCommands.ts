@@ -31,6 +31,8 @@ const externalIdentityProviderCreateCommand = buildCommand({
       redirectUri: string
       type: string
       allowAccountCreation?: boolean
+      appleKeyId?: string
+      appleTeamId?: string
       issuer?: string
       organizationId?: string
       scopes?: string
@@ -45,6 +47,8 @@ const externalIdentityProviderCreateCommand = buildCommand({
         clientId: flags.clientId,
         clientSecret: flags.clientSecret,
         displayName: flags.displayName,
+        ...(flags.appleKeyId === undefined ? {} : { appleKeyId: flags.appleKeyId }),
+        ...(flags.appleTeamId === undefined ? {} : { appleTeamId: flags.appleTeamId }),
         ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
         organizationId: resolved.organizationId,
         redirectUri: flags.redirectUri,
@@ -59,13 +63,15 @@ const externalIdentityProviderCreateCommand = buildCommand({
       ...externalIdentityCommonFlags(),
       allowAccountCreation: { brief: "Allow new accounts", kind: "boolean" as const, optional: true as const },
       clientId: externalIdentityTextFlag("OAuth client ID"),
-      clientSecret: externalIdentityTextFlag("OAuth client secret"),
+      clientSecret: externalIdentityTextFlag("OAuth client secret (.p8 private key for type apple)"),
       displayName: externalIdentityTextFlag("Provider display name"),
+      appleTeamId: externalIdentityOptionalTextFlag("Apple team ID (type apple only)"),
+      appleKeyId: externalIdentityOptionalTextFlag("Apple key ID (type apple only)"),
       issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
       redirectUri: externalIdentityTextFlag("Registered callback URI"),
       scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
-      type: externalIdentityTextFlag("google, github, microsoft, or oidc"),
+      type: externalIdentityTextFlag("google, github, microsoft, apple, or oidc"),
     },
   },
   docs: { brief: "Configure an external identity provider" },
@@ -121,6 +127,8 @@ const externalIdentityProviderUpdateCommand = buildCommand({
     flags: ExternalIdentityCliFlags & {
       providerId: string
       allowAccountCreation?: boolean
+      appleKeyId?: string
+      appleTeamId?: string
       clientId?: string
       clientSecret?: string
       displayName?: string
@@ -139,6 +147,8 @@ const externalIdentityProviderUpdateCommand = buildCommand({
         flags.providerId,
         {
           ...(flags.allowAccountCreation === undefined ? {} : { allowAccountCreation: flags.allowAccountCreation }),
+          ...(flags.appleKeyId === undefined ? {} : { appleKeyId: flags.appleKeyId }),
+          ...(flags.appleTeamId === undefined ? {} : { appleTeamId: flags.appleTeamId }),
           ...(flags.clientId === undefined ? {} : { clientId: flags.clientId }),
           ...(flags.clientSecret === undefined ? {} : { clientSecret: flags.clientSecret }),
           ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
@@ -159,6 +169,8 @@ const externalIdentityProviderUpdateCommand = buildCommand({
       clientId: externalIdentityOptionalTextFlag("OAuth client ID"),
       clientSecret: externalIdentityOptionalTextFlag("OAuth client secret"),
       displayName: externalIdentityOptionalTextFlag("Provider display name"),
+      appleTeamId: externalIdentityOptionalTextFlag("Apple team ID (type apple only)"),
+      appleKeyId: externalIdentityOptionalTextFlag("Apple key ID (type apple only)"),
       enabled: externalIdentityOptionalBooleanFlag("Enable the provider"),
       issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       redirectUri: externalIdentityOptionalTextFlag("Registered callback URI"),
@@ -446,6 +458,8 @@ const externalIdentityTenantProviderCreateCommand = buildCommand({
       redirectUri: string
       type: string
       allowAccountCreation?: boolean
+      appleKeyId?: string
+      appleTeamId?: string
       issuer?: string
       organizationId?: string
       scopes?: string
@@ -460,6 +474,8 @@ const externalIdentityTenantProviderCreateCommand = buildCommand({
         clientId: flags.clientId,
         clientSecret: flags.clientSecret,
         displayName: flags.displayName,
+        ...(flags.appleKeyId === undefined ? {} : { appleKeyId: flags.appleKeyId }),
+        ...(flags.appleTeamId === undefined ? {} : { appleTeamId: flags.appleTeamId }),
         ...(flags.issuer === undefined ? {} : { issuer: flags.issuer }),
         ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
         redirectUri: flags.redirectUri,
@@ -474,13 +490,15 @@ const externalIdentityTenantProviderCreateCommand = buildCommand({
       ...externalIdentityCommonFlags(),
       allowAccountCreation: { brief: "Allow new accounts", kind: "boolean" as const, optional: true as const },
       clientId: externalIdentityTextFlag("OAuth client ID"),
-      clientSecret: externalIdentityTextFlag("OAuth client secret"),
+      clientSecret: externalIdentityTextFlag("OAuth client secret (.p8 private key for type apple)"),
       displayName: externalIdentityTextFlag("Provider display name"),
+      appleTeamId: externalIdentityOptionalTextFlag("Apple team ID (type apple only)"),
+      appleKeyId: externalIdentityOptionalTextFlag("Apple key ID (type apple only)"),
       issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
       redirectUri: externalIdentityTextFlag("Registered callback URI"),
       scopes: externalIdentityOptionalTextFlag("Space-separated scopes"),
-      type: externalIdentityTextFlag("google, github, microsoft, or oidc"),
+      type: externalIdentityTextFlag("google, github, microsoft, apple, or oidc"),
     },
   },
   docs: { brief: "Configure a tenant external identity provider" },
@@ -553,6 +571,8 @@ const externalIdentityTenantProviderUpdateCommand = buildCommand({
     flags: ExternalIdentityCliFlags & {
       providerId: string
       allowAccountCreation?: boolean
+      appleKeyId?: string
+      appleTeamId?: string
       clientId?: string
       clientSecret?: string
       displayName?: string
@@ -571,6 +591,8 @@ const externalIdentityTenantProviderUpdateCommand = buildCommand({
         flags.providerId,
         {
           ...(flags.allowAccountCreation === undefined ? {} : { allowAccountCreation: flags.allowAccountCreation }),
+          ...(flags.appleKeyId === undefined ? {} : { appleKeyId: flags.appleKeyId }),
+          ...(flags.appleTeamId === undefined ? {} : { appleTeamId: flags.appleTeamId }),
           ...(flags.clientId === undefined ? {} : { clientId: flags.clientId }),
           ...(flags.clientSecret === undefined ? {} : { clientSecret: flags.clientSecret }),
           ...(flags.displayName === undefined ? {} : { displayName: flags.displayName }),
@@ -591,6 +613,8 @@ const externalIdentityTenantProviderUpdateCommand = buildCommand({
       clientId: externalIdentityOptionalTextFlag("OAuth client ID"),
       clientSecret: externalIdentityOptionalTextFlag("OAuth client secret"),
       displayName: externalIdentityOptionalTextFlag("Provider display name"),
+      appleTeamId: externalIdentityOptionalTextFlag("Apple team ID (type apple only)"),
+      appleKeyId: externalIdentityOptionalTextFlag("Apple key ID (type apple only)"),
       enabled: externalIdentityOptionalBooleanFlag("Enable the provider"),
       issuer: externalIdentityOptionalTextFlag("OIDC issuer URL (type oidc only)"),
       redirectUri: externalIdentityOptionalTextFlag("Registered callback URI"),

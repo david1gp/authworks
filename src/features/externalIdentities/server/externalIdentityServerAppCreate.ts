@@ -74,6 +74,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   const externalIdentityCallbackRouteHandle = async (
     context: ExternalIdentityRouteContext,
     input: {
+      readonly appleUserField?: string
       readonly code: string
       readonly error?: string
       readonly interactionHandle?: string
@@ -99,6 +100,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
           }
         : await externalIdentityCallback({
             allowDevelopmentFallback: options.allowDevelopmentFallback === true,
+            ...(input.appleUserField === undefined ? {} : { appleUserField: input.appleUserField }),
             code: input.code,
             database: options.database,
             deviceMetadata: externalIdentityDeviceMetadataGet(context),
@@ -498,39 +500,48 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     )
   })
 
-  app.get("/realms/:realmId/external-identity/:providerId/callback", async (context) => {
+  // Apple requires response_mode=form_post when the name/email scopes are requested, so its
+  // authorization code arrives as an application/x-www-form-urlencoded POST (including the
+  // first-login `user` field) rather than a GET. The OAuth transaction store is server-side,
+  // so no SameSite cookie handling is needed for the cross-site POST; the opaque state value
+  // in the body is the CSRF protection in both modes.
+  const realmCallbackHandle = (
+    context: ExternalIdentityRouteContext,
+    realmId: string,
+    providerId: string,
+    params: ExternalIdentityCallbackParams,
+  ) => {
     const tenant = externalIdentityTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("realmId"),
+      realmId,
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
-    const state = context.req.query("state") ?? ""
     const transaction = externalIdentityRepositoryCreate(
       options.database.db,
-    ).externalIdentityOAuthTransactionGetByState(context.req.param("realmId"), externalIdentitySecretHashCreate(state))
+    ).externalIdentityOAuthTransactionGetByState(realmId, externalIdentitySecretHashCreate(params.state))
     const interactionHandle = transaction.success ? (transaction.data?.interactionHandle ?? undefined) : undefined
     const linkContext =
       transaction.success && transaction.data?.intent === "link"
-        ? { messageNonce: transaction.data.stateHash, providerId: context.req.param("providerId") }
+        ? { messageNonce: transaction.data.stateHash, providerId }
         : undefined
     return externalIdentityCallbackRouteHandle(context, {
-      code: context.req.query("code") ?? "",
-      error: context.req.query("error"),
+      ...(params.appleUserField === undefined ? {} : { appleUserField: params.appleUserField }),
+      code: params.code,
+      ...(params.error === undefined ? {} : { error: params.error }),
       interactionHandle,
       linkContext,
-      realmId: context.req.param("realmId"),
-      providerId: context.req.param("providerId"),
-      state,
+      realmId,
+      providerId,
+      state: params.state,
     })
-  })
+  }
 
-  app.get("/idps/callback", async (context) => {
-    const state = context.req.query("state") ?? ""
+  const globalCallbackHandle = (context: ExternalIdentityRouteContext, params: ExternalIdentityCallbackParams) => {
     const transaction = externalIdentityRepositoryCreate(
       options.database.db,
-    ).externalIdentityOAuthTransactionGetByStateHash(externalIdentitySecretHashCreate(state))
+    ).externalIdentityOAuthTransactionGetByStateHash(externalIdentitySecretHashCreate(params.state))
     if (!transaction.success) return externalIdentityErrorResponseCreate(context, transaction)
     if (transaction.data === null) {
       if (
@@ -547,8 +558,9 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       })
     }
     return externalIdentityCallbackRouteHandle(context, {
-      code: context.req.query("code") ?? "",
-      error: context.req.query("error"),
+      ...(params.appleUserField === undefined ? {} : { appleUserField: params.appleUserField }),
+      code: params.code,
+      ...(params.error === undefined ? {} : { error: params.error }),
       interactionHandle: transaction.data.interactionHandle ?? undefined,
       linkContext:
         transaction.data.intent === "link"
@@ -556,8 +568,44 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
           : undefined,
       realmId: transaction.data.realmId,
       providerId: transaction.data.providerId,
-      state,
+      state: params.state,
     })
+  }
+
+  app.get("/realms/:realmId/external-identity/:providerId/callback", async (context) =>
+    realmCallbackHandle(context, context.req.param("realmId"), context.req.param("providerId"), {
+      code: context.req.query("code") ?? "",
+      ...(context.req.query("error") === undefined ? {} : { error: context.req.query("error") as string }),
+      state: context.req.query("state") ?? "",
+    }),
+  )
+
+  app.post("/realms/:realmId/external-identity/:providerId/callback", async (context) => {
+    const params = await externalIdentityFormCallbackParamsRead(context)
+    if (params === null)
+      return externalIdentityErrorResponseCreate(context, {
+        errorMessage: "The external identity callback is invalid.",
+        op: "externalIdentityCallback",
+      })
+    return realmCallbackHandle(context, context.req.param("realmId"), context.req.param("providerId"), params)
+  })
+
+  app.get("/idps/callback", async (context) =>
+    globalCallbackHandle(context, {
+      code: context.req.query("code") ?? "",
+      ...(context.req.query("error") === undefined ? {} : { error: context.req.query("error") as string }),
+      state: context.req.query("state") ?? "",
+    }),
+  )
+
+  app.post("/idps/callback", async (context) => {
+    const params = await externalIdentityFormCallbackParamsRead(context)
+    if (params === null)
+      return externalIdentityErrorResponseCreate(context, {
+        errorMessage: "The external identity callback is invalid.",
+        op: "externalIdentityCallback",
+      })
+    return globalCallbackHandle(context, params)
   })
 
   app.post(
@@ -947,11 +995,43 @@ type ExternalIdentityRouteContext = {
   readonly req: {
     readonly header: (name: string) => string | undefined
     readonly param: (name: string) => string
+    readonly parseBody: () => Promise<Record<string, string | File | (string | File)[]>>
     readonly query: {
       (): Record<string, string>
       (name: string): string | undefined
     }
     readonly url: string
+  }
+}
+
+type ExternalIdentityCallbackParams = {
+  readonly appleUserField?: string
+  readonly code: string
+  readonly error?: string
+  readonly state: string
+}
+
+/** Reads Apple's form_post callback body (`code`, `state`, optional `error`/`user`). */
+async function externalIdentityFormCallbackParamsRead(
+  context: ExternalIdentityRouteContext,
+): Promise<ExternalIdentityCallbackParams | null> {
+  try {
+    const body = await context.req.parseBody()
+    const stringGet = (key: string): string | undefined => {
+      const candidate = body[key]
+      return typeof candidate === "string" ? candidate : undefined
+    }
+    const user = stringGet("user")
+    return {
+      ...(user === undefined || user.length === 0 ? {} : { appleUserField: user }),
+      code: stringGet("code") ?? "",
+      ...(stringGet("error") === undefined || stringGet("error")?.length === 0
+        ? {}
+        : { error: stringGet("error") as string }),
+      state: stringGet("state") ?? "",
+    }
+  } catch (_error) {
+    return null
   }
 }
 

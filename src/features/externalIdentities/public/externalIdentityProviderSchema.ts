@@ -3,6 +3,8 @@ import { externalIdentityProviderTypeSchema } from "./externalIdentityProviderTy
 
 export const externalIdentityProviderSchema = v.strictObject({
   allowAccountCreation: v.boolean(),
+  appleKeyId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
+  appleTeamId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
   clientId: v.pipe(v.string(), v.minLength(1)),
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),

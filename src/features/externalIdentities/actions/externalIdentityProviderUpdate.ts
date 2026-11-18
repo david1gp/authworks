@@ -63,7 +63,7 @@ export function externalIdentityProviderUpdate(
       parsed.data.scopes === undefined
         ? undefined
         : externalIdentityProviderScopesValidate(
-            current.data.type as "github" | "google" | "microsoft" | "oidc",
+            current.data.type as "apple" | "github" | "google" | "microsoft" | "oidc",
             parsed.data.scopes,
           )
     if (scopes !== undefined && !scopes.success) return scopes
@@ -72,6 +72,13 @@ export function externalIdentityProviderUpdate(
         ? undefined
         : externalIdentityProviderIssuerResolve(current.data.type, parsed.data.issuer)
     if (issuer !== undefined && !issuer.success) return issuer
+    if (current.data.type === "apple") {
+      const teamId = parsed.data.appleTeamId ?? current.data.appleTeamId
+      const keyId = parsed.data.appleKeyId ?? current.data.appleKeyId
+      if (teamId === null || keyId === null)
+        return resultErrorCreate(op, "Apple providers require a team ID and key ID.", "external-identities.invalid")
+    } else if (parsed.data.appleTeamId !== undefined || parsed.data.appleKeyId !== undefined)
+      return resultErrorCreate(op, "Only Apple providers accept a team ID and key ID.", "external-identities.invalid")
     if (issuer !== undefined && issuer.success && issuer.data !== null) {
       const conflict = transaction
         .select({ id: externalIdentityProviderTable.id })
@@ -115,6 +122,8 @@ export function externalIdentityProviderUpdate(
       ...(parsed.data.allowAccountCreation === undefined
         ? {}
         : { allowAccountCreation: parsed.data.allowAccountCreation }),
+      ...(parsed.data.appleKeyId === undefined ? {} : { appleKeyId: parsed.data.appleKeyId }),
+      ...(parsed.data.appleTeamId === undefined ? {} : { appleTeamId: parsed.data.appleTeamId }),
       ...(parsed.data.clientId === undefined ? {} : { clientId: parsed.data.clientId }),
       ...(clientSecret.data === null ? {} : { clientSecret: clientSecret.data }),
       ...(parsed.data.displayName === undefined ? {} : { displayName: parsed.data.displayName }),
