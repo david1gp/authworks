@@ -426,6 +426,8 @@ function importIdentityProvider(
     const id = randomUUID()
     const created = repository.externalIdentityProviderCreate({
       allowAccountCreation: input.configuration?.allowAccountCreation ?? false,
+      appleKeyId: credential.appleKeyId ?? null,
+      appleTeamId: credential.appleTeamId ?? null,
       clientId: credential.clientId,
       clientSecret: credential.clientSecret,
       createdAt: sourceTimestamp(input.createdAt, input),
@@ -489,6 +491,8 @@ function importIdentityProvider(
   const targetScopes = input.configuration?.scopes === undefined ? current.data.scopes : JSON.stringify(scopes.data)
   const targetClientId = credential?.clientId ?? input.clientId ?? current.data.clientId
   const targetSecret = credential?.clientSecret ?? current.data.clientSecret
+  const targetAppleTeamId = credential?.appleTeamId ?? current.data.appleTeamId
+  const targetAppleKeyId = credential?.appleKeyId ?? current.data.appleKeyId
   const changed =
     current.data.displayName !== input.name ||
     current.data.clientId !== targetClientId ||
@@ -498,10 +502,14 @@ function importIdentityProvider(
     current.data.scopes !== targetScopes ||
     current.data.updatedAt !== sourceUpdatedAt ||
     (credential !== undefined && current.data.clientSecret !== targetSecret) ||
+    current.data.appleTeamId !== targetAppleTeamId ||
+    current.data.appleKeyId !== targetAppleKeyId ||
     (input.configuration?.allowAccountCreation !== undefined &&
       current.data.allowAccountCreation !== input.configuration.allowAccountCreation)
   const updated = changed
     ? repository.externalIdentityProviderUpdate(realmId, current.data.id, {
+        ...(targetAppleTeamId === current.data.appleTeamId ? {} : { appleTeamId: targetAppleTeamId }),
+        ...(targetAppleKeyId === current.data.appleKeyId ? {} : { appleKeyId: targetAppleKeyId }),
         clientId: targetClientId,
         displayName: input.name,
         organizationId,

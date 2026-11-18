@@ -982,7 +982,7 @@ function identityProviderMap(
   }
 }
 
-function providerTypeMap(value: string | undefined): "google" | "github" | "microsoft" | undefined {
+function providerTypeMap(value: string | undefined): "apple" | "google" | "github" | "microsoft" | undefined {
   const normalized = value?.trim().toLowerCase()
   if (normalized === "google" || normalized === "provider_type_google") return "google"
   if (normalized === "github" || normalized === "provider_type_github") return "github"
@@ -993,6 +993,7 @@ function providerTypeMap(value: string | undefined): "google" | "github" | "micr
     normalized === "provider_type_microsoft"
   )
     return "microsoft"
+  if (normalized === "apple" || normalized === "provider_type_apple") return "apple"
   return undefined
 }
 

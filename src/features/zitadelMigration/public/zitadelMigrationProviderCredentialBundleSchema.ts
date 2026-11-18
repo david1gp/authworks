@@ -1,12 +1,23 @@
 import * as v from "valibot"
 
-const providerSchema = v.strictObject({
-  sourceId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
-  clientId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
-  clientSecret: v.pipe(v.string(), v.minLength(1), v.maxLength(4096)),
-  scopes: v.optional(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128)))),
-  type: v.picklist(["google", "github", "microsoft"]),
-})
+const providerSchema = v.pipe(
+  v.strictObject({
+    sourceId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
+    clientId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+    clientSecret: v.pipe(v.string(), v.minLength(1), v.maxLength(4096)),
+    scopes: v.optional(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128)))),
+    type: v.picklist(["google", "github", "microsoft", "apple"]),
+    appleTeamId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
+    appleKeyId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
+  }),
+  v.check(
+    (input) =>
+      input.type === "apple"
+        ? input.appleTeamId !== undefined && input.appleKeyId !== undefined
+        : input.appleTeamId === undefined && input.appleKeyId === undefined,
+    "Apple providers require a team ID and key ID; other providers forbid them.",
+  ),
+)
 const originSchema = v.pipe(
   v.string(),
   v.url(),

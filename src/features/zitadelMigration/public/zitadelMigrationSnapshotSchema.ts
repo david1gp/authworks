@@ -175,7 +175,7 @@ const identityProviderSchema = v.strictObject({
   clientId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   provider: v.picklist(["oidc", "saml"]),
-  authworksType: v.optional(v.nullable(v.picklist(["google", "github", "microsoft"]))),
+  authworksType: v.optional(v.nullable(v.picklist(["google", "github", "microsoft", "apple"]))),
   enabled: v.optional(v.boolean()),
   configuration: v.optional(
     v.strictObject({
