@@ -161,8 +161,10 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Site Crawler",
     productionName: "Site Crawler production",
     developmentName: "Site Crawler development",
-    productionRedirectUris: ["https://site-crawler.leonardomora.de/api/auth/authworks/callback"],
+    // site-crawler.wonder1.de is the only deployment (internal tool); the leonardomora host has no DNS.
+    productionRedirectUris: ["https://site-crawler.wonder1.de/api/auth/authworks/callback"],
     developmentRedirectUris: [],
+    productionPostLogoutRedirectUris: ["https://site-crawler.wonder1.de/sso"],
   },
   {
     slug: "multisub",

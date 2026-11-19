@@ -103,7 +103,7 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
   },
   "site-crawler": {
     development: [],
-    production: ["https://site-crawler.leonardomora.de/api/auth/authworks/callback"],
+    production: ["https://site-crawler.wonder1.de/api/auth/authworks/callback"],
   },
   "solid-convex": {
     development: [
@@ -127,6 +127,7 @@ const expectedPostLogoutUris: Record<string, { development: string[]; production
     development: ["https://multisub-dev.wonder1.de/", "https://multisub-dev.leonardomora.de/"],
     production: ["https://multisub.contentoren.de/"],
   },
+  "site-crawler": { development: [], production: ["https://site-crawler.wonder1.de/sso"] },
 }
 
 test("project production and development boundaries register the fixed confidential clients", async () => {
@@ -215,7 +216,7 @@ test("project production and development boundaries register the fixed confident
 
 test("migrated development callbacks keep their same-prefix wonder1.de alias", () => {
   // These live production callbacks intentionally run on the wonder1 host.
-  const productionWonder1Exempt = new Set(["crm", "work"])
+  const productionWonder1Exempt = new Set(["crm", "site-crawler", "work"])
   // These live development callbacks intentionally have no same-prefix wonder1.de alias.
   const legacyWithoutAlias = new Set(["https://filmschauspielschule.leonardomora.de/login/authworks/callback"])
   const entries = Object.values(oidcProjectBoundaryRegistry)
