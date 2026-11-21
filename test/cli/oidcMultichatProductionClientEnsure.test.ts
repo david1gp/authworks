@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
+import { oidcMultichatDevClientEnsure } from "../../src/features/oidc/cli/oidcMultichatDevClientEnsure.js"
 import { oidcMultichatDevelopmentClientEnsure } from "../../src/features/oidc/cli/oidcMultichatDevelopmentClientEnsure.js"
 import { oidcMultichatDevelopmentSecretRotate } from "../../src/features/oidc/cli/oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "../../src/features/oidc/cli/oidcMultichatProductionClientEnsure.js"
@@ -111,6 +112,55 @@ test("Multichat production and development clients are separate fixed confidenti
     expect(unrelatedAfter.success).toBe(true)
     if (!unrelatedAfter.success || unrelatedAfter.status !== "current" || unrelatedBefore.status !== "current") return
     expect(unrelatedAfter.data).toEqual(unrelatedBefore.data)
+  } finally {
+    await fixture.close()
+  }
+})
+
+test("Multichat dev servers get their own client, separate from the preview client", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const developmentEnvelopes: string[] = []
+    const development = await oidcMultichatDevelopmentClientEnsure({
+      credentialEnvelopeWrite: (envelope) => developmentEnvelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(development.success).toBe(true)
+
+    const devEnvelopes: string[] = []
+    const dev = await oidcMultichatDevClientEnsure({
+      credentialEnvelopeWrite: (envelope) => devEnvelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(dev).toMatchObject({ data: { action: "created" }, success: true })
+    expect(devEnvelopes).toHaveLength(1)
+    expect(devEnvelopes[0]).toContain('"kind":"authworks.multichat-dev-oidc-credential"')
+    const devCredential = JSON.parse(devEnvelopes[0] ?? "{}")
+    expect(devCredential.clientId).not.toBe(JSON.parse(developmentEnvelopes[0] ?? "{}").clientId)
+
+    const clients = await fixture.oidc.oidcClientList(fixture.realmId)
+    expect(clients.success).toBe(true)
+    if (!clients.success) return
+    const devClient = clients.data.items.find((client) => client.name === "Multichat dev")
+    const developmentClient = clients.data.items.find((client) => client.name === "Multichat development")
+    expect(devClient?.id).toBe(devCredential.clientId)
+    const origins = ["david", "leo", "mit", "tim"].map((user) => `https://${user}-multichat.wonder1.de`)
+    expect(devClient?.clientType).toBe("confidential")
+    expect(devClient?.redirectUris).toEqual(origins.map((origin) => `${origin}/login/authworks/callback`))
+    expect(devClient?.postLogoutRedirectUris).toEqual(origins.map((origin) => `${origin}/`))
+    expect(devClient?.additionalOrigins).toEqual(origins)
+    expect(devClient?.allowedScopes).toEqual(developmentClient?.allowedScopes)
+    expect(developmentClient?.postLogoutRedirectUris).toEqual([])
+
+    const second = await oidcMultichatDevClientEnsure({
+      credentialEnvelopeWrite: (envelope) => devEnvelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(second).toMatchObject({ data: { action: "unchanged" }, success: true })
+    expect(devEnvelopes).toHaveLength(1)
   } finally {
     await fixture.close()
   }

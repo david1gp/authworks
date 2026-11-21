@@ -16,6 +16,7 @@ import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecr
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
 import { oidcLeoConvexProductionClientEnsure } from "./oidcLeoConvexProductionClientEnsure.js"
+import { oidcMultichatDevClientEnsure } from "./oidcMultichatDevClientEnsure.js"
 import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
 import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
@@ -561,6 +562,25 @@ const oidcMultichatDevelopmentClientEnsureCommand = buildCommand({
   },
   parameters: { flags: {} },
   docs: { brief: "Ensure the fixed development Multichat client with a one-time machine credential handoff" },
+})
+
+const oidcMultichatDevClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatDevClientEnsure({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(result.errorMessage ?? "The dev Multichat client ensure failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The dev Multichat client ensure failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed Multichat per-user dev server client with a one-time machine credential handoff" },
 })
 
 function oidcProjectEnsureCommandCreate(projectSlug: string, environment: "production" | "development") {
@@ -1271,6 +1291,7 @@ export const oidcCliCommands = buildRouteMap({
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     multichatProductionEnsure: oidcMultichatProductionClientEnsureCommand,
     multichatDevelopmentEnsure: oidcMultichatDevelopmentClientEnsureCommand,
+    multichatDevEnsure: oidcMultichatDevClientEnsureCommand,
     authworksEventorenProductionEnsure: authworksEventorenProductionEnsureCommand,
     authworksEventorenDevelopmentEnsure: authworksEventorenDevelopmentEnsureCommand,
     authworksSolidConvexProductionEnsure: authworksSolidConvexProductionEnsureCommand,

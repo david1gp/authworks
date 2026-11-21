@@ -12,7 +12,25 @@ const oidcMultichatAllowedScopes = [
   "urn:zitadel:iam:user:resourceowner",
 ] as const
 
+// Per-user dev servers (`project-registry dev up multichat`) run on `https://<user>-multichat.wonder1.de`.
+const oidcMultichatDevOrigins = ["david", "leo", "mit", "tim"].map((user) => `https://${user}-multichat.wonder1.de`)
+
+type OidcMultichatClientConfiguration = {
+  readonly name: string
+  readonly redirectUris: readonly string[]
+  readonly postLogoutRedirectUris: readonly string[]
+  // Only managed when declared; the live preview client keeps its hand-set origin.
+  readonly additionalOrigins?: readonly string[]
+}
+
+// `development` is the client the wonder1 preview uses; `dev` is the separate client for the per-user dev servers.
 const oidcMultichatClientConfiguration = {
+  dev: {
+    name: "Multichat dev",
+    redirectUris: oidcMultichatDevOrigins.map((origin) => `${origin}/login/authworks/callback`),
+    postLogoutRedirectUris: oidcMultichatDevOrigins.map((origin) => `${origin}/`),
+    additionalOrigins: oidcMultichatDevOrigins,
+  },
   development: {
     name: "Multichat development",
     redirectUris: [
@@ -20,12 +38,14 @@ const oidcMultichatClientConfiguration = {
       "https://preview.multichat.leonardomora.de/login/authworks/callback",
       "https://multichat.wonder1.de/login/authworks/callback",
     ],
+    postLogoutRedirectUris: [],
   },
   production: {
     name: "Multichat production",
     redirectUris: ["https://multichat.contentoren.de/login/authworks/callback"],
+    postLogoutRedirectUris: [],
   },
-} as const
+} as const satisfies Record<string, OidcMultichatClientConfiguration>
 
 type OidcMultichatEnvironment = keyof typeof oidcMultichatClientConfiguration
 
@@ -55,7 +75,7 @@ export async function oidcMultichatClientEnsure(options: {
   }>
 > {
   const op = "oidcMultichatClientEnsure"
-  const configuration = oidcMultichatClientConfiguration[options.environment]
+  const configuration: OidcMultichatClientConfiguration = oidcMultichatClientConfiguration[options.environment]
   const target = await oidcMultichatClientFind({
     api: options.api,
     configuration,
@@ -68,8 +88,11 @@ export async function oidcMultichatClientEnsure(options: {
       allowedScopes: [...oidcMultichatAllowedScopes],
       clientType: "confidential",
       name: configuration.name,
-      postLogoutRedirectUris: [],
+      postLogoutRedirectUris: [...configuration.postLogoutRedirectUris],
       redirectUris: [...configuration.redirectUris],
+      ...(configuration.additionalOrigins === undefined
+        ? {}
+        : { additionalOrigins: [...configuration.additionalOrigins] }),
       requireConsent: false,
       trusted: true,
     })
@@ -128,7 +151,7 @@ export async function oidcMultichatClientEnsure(options: {
 
 async function oidcMultichatClientFind(options: {
   readonly api: OidcMultichatClientEnsureApi
-  readonly configuration: (typeof oidcMultichatClientConfiguration)[OidcMultichatEnvironment]
+  readonly configuration: OidcMultichatClientConfiguration
   readonly realmId: string
 }): Promise<Result<OidcClient | undefined>> {
   const matches: OidcClient[] = []
@@ -165,16 +188,19 @@ async function oidcMultichatClientFind(options: {
   return resultCreate(client)
 }
 
-function oidcMultichatClientUpdateCreate(
-  client: OidcClient,
-  configuration: (typeof oidcMultichatClientConfiguration)[OidcMultichatEnvironment],
-) {
+function oidcMultichatClientUpdateCreate(client: OidcClient, configuration: OidcMultichatClientConfiguration) {
   return {
     ...(client.name === configuration.name ? {} : { name: configuration.name }),
     ...(oidcMultichatClientArraysEqual(client.redirectUris, configuration.redirectUris)
       ? {}
       : { redirectUris: [...configuration.redirectUris] }),
-    ...(oidcMultichatClientArraysEqual(client.postLogoutRedirectUris, []) ? {} : { postLogoutRedirectUris: [] }),
+    ...(oidcMultichatClientArraysEqual(client.postLogoutRedirectUris, configuration.postLogoutRedirectUris)
+      ? {}
+      : { postLogoutRedirectUris: [...configuration.postLogoutRedirectUris] }),
+    ...(configuration.additionalOrigins === undefined ||
+    oidcMultichatClientArraysEqual(client.additionalOrigins, configuration.additionalOrigins)
+      ? {}
+      : { additionalOrigins: [...configuration.additionalOrigins] }),
     ...(oidcMultichatClientArraysEqual(client.allowedScopes, oidcMultichatAllowedScopes)
       ? {}
       : { allowedScopes: [...oidcMultichatAllowedScopes] }),
