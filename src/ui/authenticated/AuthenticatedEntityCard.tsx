@@ -17,7 +17,7 @@ export function AuthenticatedEntityCard(props: {
   readonly status?: JSX.Element
   readonly title: JSX.Element
 }) {
-  const state = authenticatedEntityCardStateCreate({ onActivate: () => props.onActivate })
+  const state = authenticatedEntityCardStateCreate({ href: () => props.href, onActivate: () => props.onActivate })
   return (
     <li
       data-entity-id={props.entityId}
@@ -29,8 +29,8 @@ export function AuthenticatedEntityCard(props: {
       role={!props.href && props.onActivate ? "button" : undefined}
       tabindex={!props.href && props.onActivate ? 0 : undefined}
       aria-label={!props.href && props.onActivate ? props.label : undefined}
-      onClick={!props.href && props.onActivate ? state.activate : undefined}
-      onKeyDown={!props.href && props.onActivate ? state.keyDown : undefined}
+      onClick={state.activate}
+      onKeyDown={state.keyDown}
     >
       <div class="flex min-w-0 items-center gap-1.5">
         {props.leading}
