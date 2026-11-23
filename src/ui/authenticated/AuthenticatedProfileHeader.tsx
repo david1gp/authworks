@@ -1,7 +1,7 @@
-import type { JSX } from "solid-js"
 import { children, For, Show } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import type { AuthenticatedProfileHeaderMeta } from "./authenticatedProfileHeaderMeta.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Profile header card: avatar slot, title, subtitle, chips row, label/value meta row, and an

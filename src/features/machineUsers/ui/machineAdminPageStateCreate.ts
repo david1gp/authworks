@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -159,24 +159,22 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
   // first page, otherwise the new list starts mid-page and can come back empty.
   const subjectSignature = () => `${options.screen()}:${options.machineUserId() ?? ""}`
   const appliedSubjectSignature = createSignalObject<string | undefined>(undefined)
-  createEffect(
-    on(reloadKey, () => {
-      const key = reloadKey()
-      if (key === loadedKey) return
-      loadedKey = key
-      const subject = subjectSignature()
-      if (appliedSubjectSignature.get() !== subject) {
-        appliedSubjectSignature.set(subject)
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
-        }
+  createEffect(reloadKey, () => {
+    const key = reloadKey()
+    if (key === loadedKey) return
+    loadedKey = key
+    const subject = subjectSignature()
+    if (appliedSubjectSignature.get() !== subject) {
+      appliedSubjectSignature.set(subject)
+      if (pageTokens.get().length > 0) {
+        pageTokens.set([])
+        return
       }
-      secretAcknowledged.set(false)
-      issuedSecret.set(undefined)
-      void load()
-    }),
-  )
+    }
+    secretAcknowledged.set(false)
+    issuedSecret.set(undefined)
+    void untrack(load)
+  })
 
   return {
     apiKeyCreate: async (machineUserId: string, input: MachineCredentialIssueInput) => {

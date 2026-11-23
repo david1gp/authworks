@@ -24,6 +24,7 @@ export function authenticatedUrlSearchParamWrite(key: string, value: string): vo
         if (value.length === 0) url.searchParams.delete(key)
         else url.searchParams.set(key, value)
         window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`)
+        window.dispatchEvent(new Event("authworks:url-search-replaced"))
       })
     }, 250),
   )

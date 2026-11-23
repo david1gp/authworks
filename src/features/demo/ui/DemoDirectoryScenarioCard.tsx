@@ -1,5 +1,4 @@
 import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
-import { A } from "@solidjs/router"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -29,9 +28,9 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
         </span>
       </div>
       <h3 class="mt-3 text-[0.9375rem] font-semibold tracking-tight">
-        <A class="hover:text-accent" href={props.scenario.path}>
+        <a class="hover:text-accent" href={props.scenario.path}>
           {ttc(props.scenario.title)}
-        </A>
+        </a>
       </h3>
       <p class="mt-1.5 flex-1 text-sm text-muted-foreground">{ttc(props.scenario.description)}</p>
       <div class="mt-4 border-t border-line-subtle pt-3">
@@ -44,7 +43,7 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
           ))}
         </div>
       </div>
-      <A
+      <a
         class="mt-4 inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-accent hover:text-accent-hover"
         href={props.scenario.path}
       >
@@ -52,7 +51,7 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
           ? messageTranslate("demo.directory.openDemo")
           : messageTranslate("demo.directory.previewFoundation")}
         <Icon class="size-4 shrink-0 transition-transform rtl:rotate-180" path={mdiArrowRight} />
-      </A>
+      </a>
     </article>
   )
 }

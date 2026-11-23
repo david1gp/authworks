@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** Groups settings rows with dividers. */
 export function AuthenticatedSettingsList(props: { readonly children: JSX.Element }) {

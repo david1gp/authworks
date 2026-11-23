@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Dense vertical stack for the body of an authenticated page. It is deliberately not a landmark:

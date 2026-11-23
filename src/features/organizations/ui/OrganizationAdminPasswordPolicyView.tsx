@@ -44,7 +44,7 @@ export function OrganizationAdminPasswordPolicyView(props: {
             </Label>
             <AuthenticatedInput
               id="password-policy-minimum-length"
-              inputMode="numeric"
+              inputmode="numeric"
               min={1}
               max={72}
               onInput={(event) => props.onMinimumLengthInput(Number(event.currentTarget.value))}
@@ -61,7 +61,7 @@ export function OrganizationAdminPasswordPolicyView(props: {
             </Label>
             <AuthenticatedInput
               id="password-policy-maximum-attempts"
-              inputMode="numeric"
+              inputmode="numeric"
               min={1}
               max={100}
               onInput={(event) => props.onMaximumAttemptsInput(Number(event.currentTarget.value))}
@@ -78,7 +78,7 @@ export function OrganizationAdminPasswordPolicyView(props: {
             </Label>
             <AuthenticatedInput
               id="password-policy-lockout-minutes"
-              inputMode="numeric"
+              inputmode="numeric"
               min={1}
               onInput={(event) => props.onLockoutMinutesInput(Number(event.currentTarget.value))}
               type="number"

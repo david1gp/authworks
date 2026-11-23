@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -102,16 +102,14 @@ const cacheWrite = (key: string, entries: readonly DirectoryEntry[]): void => {
  */
 export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersPageStateCreateOptions) {
   const adapter = options.adapter
-  const status = createSignalObject<DirectoryAdminUsersStatus>("loading")
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
   const validationMessage = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
-  const people = createSignalObject<readonly DirectoryEntry[]>([])
   const summary = createSignalObject<DirectoryOrganizationUserSummary | undefined>(undefined)
   const serviceAccounts = createSignalObject<readonly MachineUser[]>([])
   const invitations = createSignalObject<readonly OrganizationInvitation[]>([])
-  const invitationToken = createSignalObject<string | undefined>(options.invitationTokenSeed?.())
+  const invitationToken = createSignalObject<string | undefined>(untrack(() => options.invitationTokenSeed?.()))
   const serviceSecret = createSignalObject<DirectoryAdminServiceAccountIssue | undefined>(undefined)
   const createdUser = createSignalObject<User | undefined>(undefined)
   const nextPageToken = createSignalObject<string | undefined>(undefined)
@@ -128,6 +126,9 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     return query().scope ?? "organization"
   }
   const cacheKey = () => `${cacheSchemaName}.${options.realmId()}.${options.organizationId()}.${scope()}`
+  const cached = untrack(() => cacheRead(cacheKey()))
+  const people = createSignalObject<readonly DirectoryEntry[]>(cached ?? [])
+  const status = createSignalObject<DirectoryAdminUsersStatus>(cached?.length ? "ready" : "loading")
 
   const fail = (result: FailedResult) => {
     error.set(result.errorMessage)
@@ -213,23 +214,17 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
     return result.data
   }
 
-  const cached = cacheRead(cacheKey())
-  if (cached !== undefined && cached.length > 0) {
-    people.set(cached)
-    status.set("ready")
-  }
-
   const peopleFilterKey = () =>
     `${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${query().showDeleted ?? ""}`
   let lastPeopleFilterKey: string | undefined
   let lastEffectKey: string | undefined
-  let lastContextKey = `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
+  const contextKey = () => `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
+  let lastContextKey = untrack(contextKey)
   let requestSequence = 0
   const requestNext = () => {
     requestSequence += 1
     return requestSequence
   }
-  const contextKey = () => `${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}`
   const requestCurrent = (requestId: number, realmId: string, organizationId: string): boolean =>
     requestId === requestSequence && realmId === options.realmId() && organizationId === options.organizationId()
 
@@ -256,39 +251,37 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
   const effectKeyGet = () =>
     `${tab()}:${scope()}:${query().q ?? ""}:${query().role ?? ""}:${query().team ?? ""}:${query().sort ?? ""}:${query().dir ?? ""}:${query().showDeleted ?? ""}:${pageTokens.get().length}:${servicePageTokens.get().length}:${invitationPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.realmAdministrator()}:${options.reloadKey?.() ?? ""}`
 
-  createEffect(
-    on(effectKeyGet, (effectKey) => {
-      // Dialog visibility lives in `?dialog=`, which the key above deliberately excludes.
-      // `on` reruns for every `location.search` change, so without this guard opening or
-      // closing a dialog refetches the list and flashes the loading state behind it.
-      if (effectKey === lastEffectKey) return
-      lastEffectKey = effectKey
-      // A new tenant context invalidates every cursor, row, and one-time dialog secret:
-      // drop them before loading so the previous organization's data is never shown.
-      const nextContextKey = contextKey()
-      if (nextContextKey !== lastContextKey) {
-        lastContextKey = nextContextKey
-        lastPeopleFilterKey = peopleFilterKey()
-        contextReset()
-        // Resetting cursors changes the key above and would echo a second load; the
-        // recomputed key keeps that echo from refetching.
-        lastEffectKey = effectKeyGet()
-        void load()
+  createEffect(effectKeyGet, (effectKey) => {
+    // Dialog visibility lives in `?dialog=`, which the key above deliberately excludes.
+    // `on` reruns for every `location.search` change, so without this guard opening or
+    // closing a dialog refetches the list and flashes the loading state behind it.
+    if (effectKey === lastEffectKey) return
+    lastEffectKey = effectKey
+    // A new tenant context invalidates every cursor, row, and one-time dialog secret:
+    // drop them before loading so the previous organization's data is never shown.
+    const nextContextKey = contextKey()
+    if (nextContextKey !== lastContextKey) {
+      lastContextKey = nextContextKey
+      lastPeopleFilterKey = peopleFilterKey()
+      contextReset()
+      // Resetting cursors changes the key above and would echo a second load; the
+      // recomputed key keeps that echo from refetching.
+      lastEffectKey = effectKeyGet()
+      void load()
+      return
+    }
+    // A page cursor belongs to the filter that produced it: drop it before loading a new
+    // filter, otherwise the new list starts mid-page and can come back empty.
+    const filterKey = peopleFilterKey()
+    if (lastPeopleFilterKey !== filterKey) {
+      lastPeopleFilterKey = filterKey
+      if (pageTokens.get().length > 0) {
+        pageTokens.set([])
         return
       }
-      // A page cursor belongs to the filter that produced it: drop it before loading a new
-      // filter, otherwise the new list starts mid-page and can come back empty.
-      const filterKey = peopleFilterKey()
-      if (lastPeopleFilterKey !== filterKey) {
-        lastPeopleFilterKey = filterKey
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
-        }
-      }
-      void load()
-    }),
-  )
+    }
+    void load()
+  })
 
   return {
     createdUser: createdUser.get,

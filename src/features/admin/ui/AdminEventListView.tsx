@@ -101,7 +101,7 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
         />
         <AuthenticatedButton
           variant="outline"
-          aria-expanded={props.state.eventMoreFilters()}
+          aria-expanded={props.state.eventMoreFilters() ? "true" : "false"}
           onClick={props.state.eventMoreFiltersToggle}
         >
           {messageTranslate("admin.redesign.moreFilters")}

@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountSecurityView } from "./AccountSecurityView.js"
 import { accountSecurityProductionStateCreate } from "./accountSecurityProductionStateCreate.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountSecurityProductionAdapter(props: {
   readonly apiBaseUrl?: string

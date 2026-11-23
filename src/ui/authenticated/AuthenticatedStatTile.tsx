@@ -1,7 +1,6 @@
-import { A } from "@solidjs/router"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Compact KPI tile: label, prominent value, optional hint, and an optional link target that
@@ -38,7 +37,7 @@ export function AuthenticatedStatTile(props: {
       }
     >
       {(href) => (
-        <A
+        <a
           aria-label={props.label}
           class={classMerge(
             "block rounded-panel border border-line bg-surface p-4 compact:p-3 compact:rounded-lg shadow-panel transition-colors hover:border-line-strong hover:bg-surface-hover",
@@ -47,7 +46,7 @@ export function AuthenticatedStatTile(props: {
           href={href()}
         >
           {body}
-        </A>
+        </a>
       )}
     </Show>
   )

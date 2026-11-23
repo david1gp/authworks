@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "@solidjs/router"
-import { createEffect, on } from "solid-js"
+import { createEffect } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
@@ -57,11 +57,12 @@ export function organizationAdminScreenStateCreate(options: {
   const passwordPolicyDraftSignal = createSignalObject<PasswordPolicy | undefined>(undefined)
   const passwordPolicyValidationMessage = createSignalObject<string | undefined>(undefined)
   const domainClaimPending = createSignalObject(false)
+  let domainClaimInFlight = false
   const domainClaimDialogSchema = v.literal("claim")
   const domainClaimOpen = () =>
     v.safeParse(domainClaimDialogSchema, new URLSearchParams(location.search).get("domain-dialog")).success
   const domainClaimOpenSet = (open: boolean) => {
-    if (domainClaimPending.get()) return
+    if (domainClaimInFlight) return
     const params = new URLSearchParams(location.search)
     if (open) params.set("domain-dialog", "claim")
     else params.delete("domain-dialog")
@@ -102,29 +103,21 @@ export function organizationAdminScreenStateCreate(options: {
     scope: policyScope,
   })
 
-  createEffect(
-    on(options.page.organization, (organization) => {
-      form.detailName.set(organization?.name ?? "")
-      form.detailSlug.set(organization?.slug ?? "")
-    }),
-  )
-  createEffect(
-    on(options.page.branding, (loaded) => {
-      if (options.page.status() !== "ready") return
-      const stored = form.brandingLocalGet(options.page.organizationId())
-      form.branding.set(stored ?? loaded)
-    }),
-  )
-  createEffect(
-    on(options.page.policy, (loaded) => {
-      if (options.page.status() === "ready") policyDraftSignal.set(loaded)
-    }),
-  )
-  createEffect(
-    on(options.page.passwordPolicy, (loaded) => {
-      if (options.page.status() === "ready") passwordPolicyDraftSignal.set(loaded)
-    }),
-  )
+  createEffect(options.page.organization, (organization) => {
+    form.detailName.set(organization?.name ?? "")
+    form.detailSlug.set(organization?.slug ?? "")
+  })
+  createEffect(options.page.branding, (loaded) => {
+    if (options.page.status() !== "ready") return
+    const stored = form.brandingLocalGet(options.page.organizationId())
+    form.branding.set(stored ?? loaded)
+  })
+  createEffect(options.page.policy, (loaded) => {
+    if (options.page.status() === "ready") policyDraftSignal.set(loaded)
+  })
+  createEffect(options.page.passwordPolicy, (loaded) => {
+    if (options.page.status() === "ready") passwordPolicyDraftSignal.set(loaded)
+  })
 
   return {
     basePath,
@@ -156,11 +149,14 @@ export function organizationAdminScreenStateCreate(options: {
     domainClaimPending: domainClaimPending.get,
     domainClaimSubmit: async (event: SubmitEvent) => {
       event.preventDefault()
-      if (domainClaimPending.get()) return
+      if (domainClaimInFlight) return
       if (!form.validateDomainClaim()) return
+      domainClaimInFlight = true
       domainClaimPending.set(true)
-      const saved = await options.page.domainClaim(form.claimDomain.get(), form.claimPrimary.get())
-      domainClaimPending.set(false)
+      const saved = await options.page.domainClaim(form.claimDomain.get(), form.claimPrimary.get()).finally(() => {
+        domainClaimInFlight = false
+        domainClaimPending.set(false)
+      })
       if (!saved) return
       form.claimDomain.set("")
       form.claimPrimary.set(false)

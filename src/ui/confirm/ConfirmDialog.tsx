@@ -1,6 +1,6 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
-import Dialog from "@corvu/dialog"
+import Dialog from "@corvu-next/dialog"
 import { createEffect, onCleanup } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { AuthenticatedButton } from "../authenticated/AuthenticatedButton.js"
@@ -20,9 +20,7 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
 
   // Unmounting the dialog settles any open promise, so no caller waits on a gone screen.
   onCleanup(() => state.dispose())
-  createEffect(() => {
-    if (state.open()) onCleanup(confirmDialogStack.enter())
-  })
+  createEffect(state.open, (open) => (open ? confirmDialogStack.enter() : undefined))
 
   return (
     <Dialog onOpenChange={(open) => !open && state.cancel()} open={state.open()} role="alertdialog">

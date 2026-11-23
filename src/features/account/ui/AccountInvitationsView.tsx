@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -67,9 +66,9 @@ export function AccountInvitationsView(props: {
                   >
                     {(href) => (
                       <div>
-                        <A class="text-sm font-medium text-accent hover:underline" href={href()}>
+                        <a class="text-sm font-medium text-accent hover:underline" href={href()}>
                           {messageTranslate("account.access.invitationOpen")}
-                        </A>
+                        </a>
                       </div>
                     )}
                   </Show>
@@ -81,9 +80,9 @@ export function AccountInvitationsView(props: {
       </AccountStateBoundary>
 
       <div>
-        <A class="text-sm font-medium text-accent hover:underline" href={props.organizationsHref}>
+        <a class="text-sm font-medium text-accent hover:underline" href={props.organizationsHref}>
           {messageTranslate("shell.nav.organizations")}
-        </A>
+        </a>
       </div>
     </AuthenticatedPageBody>
   )

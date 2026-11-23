@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { AuthenticatedThemeToggle } from "../../../ui/authenticated/AuthenticatedThemeToggle.js"
@@ -14,23 +13,23 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
       <header class="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur">
         <div class="mx-auto flex h-12 max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
           <div class="flex min-w-0 items-center gap-3">
-            <A class="truncate text-sm font-semibold tracking-tight text-foreground" href="/demo">
+            <a class="truncate text-sm font-semibold tracking-tight text-foreground" href="/demo">
               {messageTranslate("app.name")}
-            </A>
+            </a>
           </div>
           <div class="flex min-w-0 items-center gap-2">
-            <A
+            <a
               class="hidden text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/login"
             >
               {messageTranslate("demo.nav.login")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin"
             >
               {messageTranslate("demo.nav.admin")}
-            </A>
+            </a>
             <Show when={!props.state.isWorkspace()}>
               <LanguageSelector class="authenticated-language-selector" />
               <AuthenticatedThemeToggle class="hidden sm:inline-flex" />

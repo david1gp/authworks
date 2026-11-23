@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -16,29 +15,29 @@ export function EmailDemoScreen(props: { state: EmailDemoState }) {
       <header class="border-b border-line bg-surface/90 backdrop-blur">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div class="flex min-w-0 items-center gap-4">
-            <A class="font-semibold tracking-tight" href="/demo">
+            <a class="font-semibold tracking-tight" href="/demo">
               {messageTranslate("app.name")}
-            </A>
+            </a>
           </div>
           <div class="flex min-w-0 items-center gap-2 sm:gap-3">
-            <A
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/login"
             >
               {messageTranslate("demo.nav.login")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/account"
             >
               {messageTranslate("demo.nav.account")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin"
             >
               {messageTranslate("demo.nav.admin")}
-            </A>
+            </a>
             <LanguageSelector />
             <ThemeButton />
           </div>

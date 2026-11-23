@@ -91,23 +91,25 @@ export function directoryRolesViewStateCreate(options: {
   const dialogOpen = () => dialog() !== undefined
 
   // Opening a dialog (re)seeds the form; the edit form tracks the stored role.
-  createEffect(() => {
-    if (!dialogOpen()) return
-    formError.set(undefined)
-    keyTouched.set(false)
-    if (isEditing()) {
-      const role = dialogRole()
-      displayName.set(role?.displayName ?? "")
-      key.set(role?.key ?? "")
-      group.set(role?.group ?? "")
-      projectId.set(dialogProjectId() ?? dialogProject()?.project.id ?? "")
-      return
-    }
-    displayName.set("")
-    key.set("")
-    group.set("")
-    projectId.set(dialogProjectId() ?? "")
-  })
+  createEffect(
+    () => {
+      if (!dialogOpen()) return undefined
+      const edit = isEditing()
+      return {
+        role: edit ? dialogRole() : undefined,
+        project: dialogProjectId() ?? (edit ? dialogProject()?.project.id : undefined),
+      }
+    },
+    (initial) => {
+      if (initial === undefined) return
+      formError.set(undefined)
+      keyTouched.set(false)
+      displayName.set(initial.role?.displayName ?? "")
+      key.set(initial.role?.key ?? "")
+      group.set(initial.role?.group ?? "")
+      projectId.set(initial.project ?? "")
+    },
+  )
 
   const displayNameInput = (value: string) => {
     displayName.set(value)

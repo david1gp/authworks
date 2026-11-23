@@ -1,4 +1,4 @@
-import { createEffect, on, onCleanup } from "solid-js"
+import { createEffect, onCleanup, untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { Event } from "../../events/public/eventSchema.js"
 import type { AdminActivityAdapter } from "./adminActivityAdapter.js"
@@ -17,16 +17,15 @@ export function adminActivityStateCreate(options: {
   const nextToken = createSignalObject<string | undefined>(undefined)
   let generation = 0
   let disposed = false
-  const load = async () => {
+  const load = async (token = tokens.get().at(-1)) => {
     const id = ++generation
     const realm = options.realmId()
     const organization = options.organizationId()
-    const token = tokens.get().at(-1)
     status.set("loading")
     error.set(undefined)
     events.set([])
     nextToken.set(undefined)
-    const query = { pageSize: options.pageSize ?? 20, ...(token === undefined ? {} : { pageToken: token }) }
+    const query = { pageSize: options.pageSize ?? 20, ...(token ? { pageToken: token } : {}) }
     const result =
       organization !== undefined
         ? await options.adapter.organizationList(realm, organization, query)
@@ -43,13 +42,11 @@ export function adminActivityStateCreate(options: {
     status.set(result.data.items.length === 0 ? "empty" : "ready")
   }
   createEffect(
-    on(
-      () => [options.realmId(), options.organizationId()] as const,
-      () => {
-        tokens.set([])
-        void load()
-      },
-    ),
+    () => `${options.realmId()}:${options.organizationId()}`,
+    () => {
+      tokens.set([])
+      void untrack(() => load(""))
+    },
   )
   onCleanup(() => {
     disposed = true
@@ -66,12 +63,13 @@ export function adminActivityStateCreate(options: {
       const token = nextToken.get()
       if (token === undefined || status.get() === "loading") return
       tokens.set([...tokens.get(), token])
-      void load()
+      void load(token)
     },
     pagePrevious: () => {
       if (tokens.get().length === 0 || status.get() === "loading") return
-      tokens.set(tokens.get().slice(0, -1))
-      void load()
+      const previous = tokens.get().slice(0, -1)
+      tokens.set(previous)
+      void load(previous.at(-1) ?? "")
     },
   }
 }

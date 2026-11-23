@@ -1,11 +1,14 @@
 import { mdiLoading } from "@adaptive-ds/mdi/mdiLoading.js"
-import { type Accessor, type JSX, splitProps } from "solid-js"
+import { omit } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { authenticatedButtonClassGet } from "./authenticatedButtonClassGet.js"
 import type { AuthenticatedButtonProps } from "./authenticatedButtonProps.js"
+import { type JSX } from "@solidjs/web"
 
-export function authenticatedButtonStateCreate(props: Accessor<AuthenticatedButtonProps>) {
-  const [local, rest] = splitProps(props(), [
+export function authenticatedButtonStateCreate(props: AuthenticatedButtonProps) {
+  const local = props
+  const rest = omit(
+    props,
     "icon",
     "iconRight",
     "iconClass",
@@ -21,7 +24,7 @@ export function authenticatedButtonStateCreate(props: Accessor<AuthenticatedButt
     "children",
     "type",
     "aria-disabled",
-  ])
+  )
   const blocked = () => Boolean(local.disabled || local.isLoading || local.validationMessage)
   const click: JSX.EventHandler<HTMLButtonElement, MouseEvent> = (event) => {
     if (blocked()) return
@@ -37,7 +40,7 @@ export function authenticatedButtonStateCreate(props: Accessor<AuthenticatedButt
     rest,
     local,
     click,
-    ariaDisabled: () => local["aria-disabled"] ?? blocked(),
+    ariaDisabled: () => local["aria-disabled"] ?? (blocked() ? "true" : "false"),
     class: () =>
       authenticatedButtonClassGet(
         local.validationMessage ? local.validationVariant : local.variant,

@@ -17,6 +17,7 @@ export function accountConsentsViewStateCreate(inputs: {
   const location = useLocation()
   const navigate = useNavigate()
   const revoking = createSignalObject(false)
+  let revocationInFlight = false
   const boundary = () => {
     const state = accountAccessBoundaryStateGet(inputs.status(), {
       emptyDetail: messageTranslate("account.access.consentEmpty"),
@@ -52,10 +53,15 @@ export function accountConsentsViewStateCreate(inputs: {
   const revokeDisabled = (clientId: string) =>
     !dialogOpen(clientId) || inputs.pendingId() !== undefined || revoking.get()
   const consentRevoke = async (clientId: string) => {
-    if (revokeDisabled(clientId)) return
+    if (revocationInFlight || revokeDisabled(clientId)) return
+    revocationInFlight = true
     revoking.set(true)
-    await inputs.onRevoke(clientId)
-    revoking.set(false)
+    try {
+      await inputs.onRevoke(clientId)
+    } finally {
+      revocationInFlight = false
+      revoking.set(false)
+    }
     // Cancellation and failure retain the details; only a removed consent clears its selection.
     if (
       !inputs.consents().some((consent) => consent.clientId === clientId) &&

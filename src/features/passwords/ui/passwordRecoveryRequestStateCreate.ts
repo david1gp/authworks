@@ -1,4 +1,4 @@
-import { createEffect, createMemo, onMount } from "solid-js"
+import { createEffect, createMemo, onSettled } from "solid-js"
 
 type PasswordRecoveryRequestStateCreateOptions = {
   readonly email: () => string
@@ -14,9 +14,9 @@ export function passwordRecoveryRequestStateCreate(options: PasswordRecoveryRequ
 
   const focusEmail = () => queueMicrotask(() => emailInput?.focus())
   const focusHeading = () => queueMicrotask(() => heading?.focus())
-  onMount(() => (options.step() === "email" ? focusEmail() : focusHeading()))
-  createEffect(() => {
-    if (options.step() === "email") {
+  onSettled(() => (options.step() === "email" ? focusEmail() : focusHeading()))
+  createEffect(options.step, (step) => {
+    if (step === "email") {
       focusEmail()
       return
     }

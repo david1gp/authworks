@@ -1,8 +1,8 @@
 import { mdiBrightnessAuto } from "@adaptive-ds/mdi/mdiBrightnessAuto.js"
 import { mdiWeatherNight } from "@adaptive-ds/mdi/mdiWeatherNight.js"
 import { mdiWhiteBalanceSunny } from "@adaptive-ds/mdi/mdiWhiteBalanceSunny.js"
-import { createEffect, createMemo, onCleanup, onMount } from "solid-js"
-import { isServer } from "solid-js/web"
+import { createEffect, createMemo, onSettled } from "solid-js"
+import { isServer } from "@solidjs/web"
 import * as v from "valibot"
 import { themeLocalStorageKey, themeSchema } from "#ui/interactive/theme/themeVariant.js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -33,30 +33,32 @@ export function loginFrameStateCreate<T extends Pick<LoginDiscovery, "branding">
     themePreferenceSave(value)
   }
 
-  createEffect(() => {
-    if (isServer) return
-    const selectedTheme = effectiveTheme()
-    document.documentElement.classList.toggle("dark", selectedTheme === "dark")
-    document.documentElement.dataset.theme = selectedTheme
-    document.documentElement.style.colorScheme = selectedTheme
-    document
-      .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-      ?.setAttribute("content", theme().backgroundColor)
-  })
+  createEffect(
+    () => [effectiveTheme(), theme().backgroundColor] as const,
+    ([selectedTheme, background]) => {
+      if (isServer) return
+      document.documentElement.classList.toggle("dark", selectedTheme === "dark")
+      document.documentElement.dataset.theme = selectedTheme
+      document.documentElement.style.colorScheme = selectedTheme
+      document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute("content", background)
+    },
+  )
 
-  createEffect(() => {
-    theme().logoUrl
-    assetFailed.set(false)
-  })
+  createEffect(
+    () => theme().logoUrl,
+    () => assetFailed.set(false),
+  )
 
-  createEffect(() => {
-    screen?.()
-    if (isServer) return
-    if (screen === undefined) return
-    queueMicrotask(() => content?.querySelector<HTMLHeadingElement>("h1[tabindex='-1']")?.focus())
-  })
+  createEffect(
+    () => screen?.(),
+    () => {
+      if (isServer) return
+      if (screen === undefined) return
+      queueMicrotask(() => content?.querySelector<HTMLHeadingElement>("h1[tabindex='-1']")?.focus())
+    },
+  )
 
-  onMount(() => {
+  onSettled(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)")
     const systemThemeApply = () => systemTheme.set(media.matches ? "dark" : "light")
     const preferenceLoad = () => preference.set(themePreferenceLoad())
@@ -68,10 +70,10 @@ export function loginFrameStateCreate<T extends Pick<LoginDiscovery, "branding">
     preferenceLoad()
     media.addEventListener("change", systemThemeApply)
     window.addEventListener("storage", storageApply)
-    onCleanup(() => {
+    return () => {
       media.removeEventListener("change", systemThemeApply)
       window.removeEventListener("storage", storageApply)
-    })
+    }
   })
 
   return {

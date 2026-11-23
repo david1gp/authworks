@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -161,21 +161,19 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${userPageTokens.get().length}`
   const appliedSubjectSignature = createSignalObject<string | undefined>(undefined)
   createEffect(
-    on(
-      () =>
-        `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${pageTokens.get().length}:${userPageTokens.get().length}`,
-      () => {
-        const subject = subjectSignature()
-        if (appliedSubjectSignature.get() !== subject) {
-          appliedSubjectSignature.set(subject)
-          if (pageTokens.get().length > 0) {
-            pageTokens.set([])
-            return
-          }
+    () =>
+      `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${pageTokens.get().length}:${userPageTokens.get().length}`,
+    () => {
+      const subject = subjectSignature()
+      if (appliedSubjectSignature.get() !== subject) {
+        appliedSubjectSignature.set(subject)
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
         }
-        void load()
-      },
-    ),
+      }
+      void untrack(load)
+    },
   )
 
   return {

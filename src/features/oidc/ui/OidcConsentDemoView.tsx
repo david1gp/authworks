@@ -1,6 +1,5 @@
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
-import { A } from "@solidjs/router"
 import { For, Match, Switch } from "solid-js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -32,9 +31,9 @@ export function OidcConsentDemoView(props: { readonly state: ReturnType<typeof o
             <AuthenticatedSection padded>
               <div class="grid gap-3">
                 <p class="text-sm">{messageTranslate("demo.consent.approved")}</p>
-                <A class="text-sm font-medium text-accent hover:underline" href="/demo">
+                <a class="text-sm font-medium text-accent hover:underline" href="/demo">
                   {messageTranslate("common.back")}
-                </A>
+                </a>
               </div>
             </AuthenticatedSection>
           </AuthenticatedPageBody>
@@ -44,9 +43,9 @@ export function OidcConsentDemoView(props: { readonly state: ReturnType<typeof o
             <AuthenticatedSection padded>
               <div class="grid gap-3">
                 <p class="text-sm">{messageTranslate("demo.consent.declined")}</p>
-                <A class="text-sm font-medium text-accent hover:underline" href="/demo">
+                <a class="text-sm font-medium text-accent hover:underline" href="/demo">
                   {messageTranslate("common.back")}
-                </A>
+                </a>
               </div>
             </AuthenticatedSection>
           </AuthenticatedPageBody>

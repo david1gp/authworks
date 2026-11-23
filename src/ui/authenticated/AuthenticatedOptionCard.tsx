@@ -28,8 +28,8 @@ export function AuthenticatedOptionCard(props: {
     // biome-ignore lint/a11y/noStaticElementInteractions: selectable card with explicit keyboard support
     // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-checked rides the explicit radio/checkbox role
     <div
-      aria-checked={props.selected ?? false}
-      aria-disabled={props.disabled}
+      aria-checked={(props.selected ?? false) ? "true" : "false"}
+      aria-disabled={props.disabled === undefined ? undefined : props.disabled ? "true" : "false"}
       aria-label={props.title}
       class={classMerge(
         "grid w-full gap-1.5 rounded-panel border p-4 text-start transition-colors",
@@ -47,7 +47,7 @@ export function AuthenticatedOptionCard(props: {
         }
       }}
       role={props.checkedRole ?? "radio"}
-      tabIndex={props.disabled ? -1 : 0}
+      tabindex={props.disabled ? -1 : 0}
     >
       <span class="flex items-center gap-2">
         <Show when={props.icon}>

@@ -89,7 +89,7 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
         </For>
       </AuthenticatedRecordList>
 
-      <Table aria-label={label} class={authenticatedTableClasses.tableWide} tabIndex={0}>
+      <Table aria-label={label} class={authenticatedTableClasses.tableWide} tabindex={0}>
         <TableHeader class={authenticatedTableClasses.header}>
           <TableRow>
             <TableHead class={authenticatedTableClasses.head}>

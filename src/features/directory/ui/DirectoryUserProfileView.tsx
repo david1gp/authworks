@@ -15,7 +15,7 @@ import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiShieldOutline } from "@adaptive-ds/mdi/mdiShieldOutline.js"
 import { mdiTwoFactorAuthentication } from "@adaptive-ds/mdi/mdiTwoFactorAuthentication.js"
-import { createEffect, ErrorBoundary, For, Show } from "solid-js"
+import { createEffect, Errored, For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
@@ -359,7 +359,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                   label={messageTranslate("admin.users.detailTitle")}
                 />
 
-                <ErrorBoundary
+                <Errored
                   fallback={<ProductionStatePanel detail={page().errorGet()} onRetry={page().reload} state="error" />}
                 >
                   <Show when={state.tab() === "overview"}>
@@ -371,7 +371,7 @@ export function DirectoryUserProfileView(props: { readonly state: DirectoryUserP
                   <Show when={state.tab() === "security"}>
                     <SecurityTab state={state} />
                   </Show>
-                </ErrorBoundary>
+                </Errored>
 
                 <EditProfileDialog state={state} />
                 <SetPasswordDialog state={state} />
@@ -531,7 +531,7 @@ function AccessTab(props: { readonly state: DirectoryUserProfileViewState }) {
             <Table
               aria-label={messageTranslate("admin.userProfile.membershipsTitle")}
               class={authenticatedTableClasses.tableWide}
-              tabIndex={0}
+              tabindex={0}
             >
               <TableHeader class={authenticatedTableClasses.header}>
                 <TableRow>
@@ -1277,17 +1277,15 @@ function AssignRolesDialog(props: { readonly state: DirectoryUserProfileViewStat
     const projects = page().projectsGet()
     if (projects.length > 0) await page().assignRolesLoad(projects[0]?.id ?? "")
   }
-  createEffect(() => {
-    if (!opened()) return
-    if (page().projectsGet().length === 0) {
-      void dialogProjectsLoad()
-      return
-    }
-    if (page().assignProjectId.get().length === 0) {
-      const first = page().projectsGet()[0]
-      if (first !== undefined) void page().assignRolesLoad(first.id)
-    }
-  })
+  createEffect(
+    () => (opened() ? page() : undefined),
+    (currentPage) => {
+      if (currentPage === undefined) return
+      const first = currentPage.projectsGet()[0]
+      if (first === undefined) void dialogProjectsLoad()
+      else if (currentPage.assignProjectId.get().length === 0) void currentPage.assignRolesLoad(first.id)
+    },
+  )
   const selected = () =>
     page()
       .projectRolesGet()
@@ -1320,7 +1318,7 @@ function AssignRolesDialog(props: { readonly state: DirectoryUserProfileViewStat
               <For each={dialogProjects()}>
                 {(project) => (
                   <button
-                    aria-selected={page().assignProjectId.get() === project.id}
+                    aria-selected={page().assignProjectId.get() === project.id ? "true" : "false"}
                     class={`flex items-center justify-between gap-2 rounded-control border px-3 py-2 text-left text-sm font-medium transition-colors ${
                       page().assignProjectId.get() === project.id
                         ? "border-accent/50 bg-accent-soft"

@@ -1,12 +1,12 @@
 import { mdiBrightnessAuto } from "@adaptive-ds/mdi/mdiBrightnessAuto.js"
 import { mdiWeatherNight } from "@adaptive-ds/mdi/mdiWeatherNight.js"
 import { mdiWhiteBalanceSunny } from "@adaptive-ds/mdi/mdiWhiteBalanceSunny.js"
-import { onMount } from "solid-js"
+import { onSettled } from "solid-js"
 import { themeInit, themeSet, themeSignal } from "#ui/interactive/theme/themeSignal.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 
 export function authenticatedThemeToggleStateCreate() {
-  onMount(themeInit)
+  onSettled(themeInit)
   return {
     options: [
       {

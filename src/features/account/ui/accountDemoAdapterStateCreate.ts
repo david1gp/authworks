@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router"
-import { type Accessor, createEffect } from "solid-js"
+import { type Accessor, createEffect, untrack } from "solid-js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import { accountDemoAdapterCreate } from "./accountDemoAdapterCreate.js"
 import { accountPageStateCreate } from "./accountPageStateCreate.js"
@@ -14,12 +14,11 @@ export function accountDemoAdapterStateCreate(
   const fixtureState = () => demoFixtureStateSelect(location.search, ["success", "loading", "error"])
   const page = accountPageStateCreate({
     adapter: accountDemoAdapterCreate(fixtureState),
-    initialStatus: fixtureState() === "loading" ? "loading" : undefined,
+    initialStatus: untrack(fixtureState) === "loading" ? "loading" : undefined,
     kind: kind(),
     onPasswordChanged: options.onPasswordChanged,
   })
-  createEffect(() => {
-    const selectedState = fixtureState()
+  createEffect(fixtureState, (selectedState) => {
     if (selectedState === "loading") {
       page.status.set("loading")
       return

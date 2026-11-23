@@ -5,8 +5,7 @@ export function authenticatedDialogStateCreate(open: () => boolean) {
   let openPreviously = open()
   let trigger: HTMLButtonElement | undefined
 
-  createEffect(() => {
-    const openNow = open()
+  createEffect(open, (openNow) => {
     if (openNow) trigger?.setAttribute("aria-controls", dialogId)
     else trigger?.removeAttribute("aria-controls")
     if (openPreviously && !openNow) queueMicrotask(() => trigger?.focus())

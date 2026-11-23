@@ -182,7 +182,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
           <Table
             aria-label={messageTranslate("admin.machine.users.title")}
             class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+            tabindex={0}
           >
             <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>

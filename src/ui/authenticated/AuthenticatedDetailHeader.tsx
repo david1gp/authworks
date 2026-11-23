@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** Detail page heading with optional navigation, actions, and facts. */
 export function AuthenticatedDetailHeader(props: {

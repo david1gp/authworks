@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { For } from "solid-js"
 import { BlueBulletPoint } from "#ui/static/lists/BlueBulletPoint.jsx"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
@@ -15,9 +14,9 @@ export function DemoDirectoryGroup(props: { group: DemoFixtureScenarioGroup }) {
           {(scenario) => (
             <div class="flex flex-row flex-nowrap content-center">
               <BlueBulletPoint />
-              <A class="break-all no-underline hover:underline" href={scenario.path}>
+              <a class="break-all no-underline hover:underline" href={scenario.path}>
                 {ttc(scenario.title)}
-              </A>
+              </a>
             </div>
           )}
         </For>

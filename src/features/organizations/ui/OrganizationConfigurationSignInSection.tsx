@@ -125,7 +125,7 @@ export function OrganizationConfigurationSignInSection(props: {
               <AuthenticatedInput
                 disabled={!props.canEdit}
                 id="configuration-policy-session-lifetime"
-                inputMode="numeric"
+                inputmode="numeric"
                 max={31536000}
                 min={1}
                 onInput={(event) => props.screen.policySessionLifetimeSet(event.currentTarget.value)}
@@ -146,7 +146,7 @@ export function OrganizationConfigurationSignInSection(props: {
                     <AuthenticatedInput
                       disabled={!props.canEdit}
                       id={`configuration-policy-${field.key}`}
-                      inputMode="numeric"
+                      inputmode="numeric"
                       max={31536000}
                       min={1}
                       onInput={(event) => props.screen.policyLifetimeSet(field.key, event.currentTarget.value)}

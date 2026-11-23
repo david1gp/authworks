@@ -1,6 +1,5 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
@@ -98,12 +97,12 @@ export function AccountInvitationView(props: {
         </section>
       </Show>
       <Show when={state.continuationVisible()}>
-        <A
+        <a
           class="w-fit rounded-control px-3 py-2 text-sm text-accent hover:bg-surface-hover"
           href={state.continuationHref()}
         >
           {messageTranslate("shell.nav.organizations")}
-        </A>
+        </a>
       </Show>
     </div>
   )

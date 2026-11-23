@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ConfirmRequest } from "../../../ui/confirm/confirmStateCreate.js"
@@ -165,10 +165,8 @@ export function directoryUserProfilePageStateCreate(
   }
 
   createEffect(
-    on(
-      () => `${options.userId() ?? ""}:${options.realmId()}:${options.organizationId()}:${options.reloadKey?.() ?? ""}`,
-      () => void load(),
-    ),
+    () => `${options.userId() ?? ""}:${options.realmId()}:${options.organizationId()}:${options.reloadKey?.() ?? ""}`,
+    () => void untrack(load),
   )
 
   const confirmed = async (request: ConfirmRequest) => (await options.confirm(request)) === true

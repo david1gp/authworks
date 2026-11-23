@@ -1,7 +1,6 @@
 import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
 import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
-import { A } from "@solidjs/router"
-import { For, type JSX, Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
@@ -10,6 +9,7 @@ import type { AuthenticatedDataTableColumn } from "./authenticatedDataTableColum
 import type { AuthenticatedDataTableSort } from "./authenticatedDataTableSort.js"
 import { authenticatedDataTableStateCreate } from "./authenticatedDataTableStateCreate.js"
 import { authenticatedTableClasses } from "./authenticatedTableClasses.js"
+import { type JSX } from "@solidjs/web"
 
 function AuthenticatedDataTableHeaderCell<T>(props: {
   readonly activeSort: AuthenticatedDataTableSort | undefined
@@ -82,9 +82,9 @@ function AuthenticatedDataTableBodyRow<T>(props: {
               }
             >
               {(href) => (
-                <A class="block rounded-sm" href={href()}>
+                <a class="block rounded-sm" href={href()}>
                   {column.cell(props.row)}
-                </A>
+                </a>
               )}
             </Show>
           </td>

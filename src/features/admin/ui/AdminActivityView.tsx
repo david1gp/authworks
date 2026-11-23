@@ -17,7 +17,7 @@ export function AdminActivityView(props: Parameters<typeof adminActivityViewStat
         eyebrow={`${state.scope()} · ${state.contextLabel()}`}
       />
       <AuthenticatedSection label={messageTranslate("shell.nav.activity")}>
-        <div aria-busy={state.status() === "loading"} aria-live="polite">
+        <div aria-busy={state.status() === "loading" ? "true" : "false"} aria-live="polite">
           <Show
             when={state.status() === "ready"}
             fallback={

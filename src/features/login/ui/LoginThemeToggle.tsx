@@ -19,7 +19,7 @@ export function LoginThemeToggle(props: LoginThemeToggleProps) {
         {(option) => (
           <button
             aria-label={option.label()}
-            aria-pressed={option.pressed()}
+            aria-pressed={option.pressed() ? "true" : "false"}
             class="login-theme-toggle-button"
             onClick={option.onSelect}
             title={option.label()}

@@ -1,4 +1,3 @@
-import type { JSX } from "solid-js"
 import { Match, Show, Switch } from "solid-js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AccountFactorsSection } from "./AccountFactorsSection.js"
@@ -11,6 +10,7 @@ import { AccountSecurityManagement } from "./AccountSecurityManagement.js"
 import { AccountSessionsSection } from "./AccountSessionsSection.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountSecurityView(props: {
   readonly passwordAction?: JSX.Element

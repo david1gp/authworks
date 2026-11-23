@@ -1,6 +1,7 @@
-import type { JSX } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { authenticatedCardClasses } from "./authenticatedCardClasses.js"
+import { type JSX } from "@solidjs/web"
+
 export function AuthenticatedCardList(props: {
   readonly children?: JSX.Element
   readonly class?: string

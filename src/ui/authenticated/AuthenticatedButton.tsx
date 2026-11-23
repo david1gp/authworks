@@ -4,7 +4,7 @@ import type { AuthenticatedButtonProps } from "./authenticatedButtonProps.js"
 import { authenticatedButtonStateCreate } from "./authenticatedButtonStateCreate.js"
 
 export function AuthenticatedButton(props: AuthenticatedButtonProps) {
-  const state = authenticatedButtonStateCreate(() => props)
+  const state = authenticatedButtonStateCreate(props)
   return (
     <button
       {...state.rest}

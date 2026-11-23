@@ -63,7 +63,7 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
                     </Show>
                     <time
                       class="col-span-2 text-xs tabular-nums text-muted-foreground sm:col-span-1 sm:text-right"
-                      dateTime={authenticatedIsoDateTimeGet(item.occurredAt)}
+                      datetime={authenticatedIsoDateTimeGet(item.occurredAt)}
                     >
                       {localeDateFormat(item.occurredAt, { dateStyle: "medium", timeStyle: "short" })}
                     </time>

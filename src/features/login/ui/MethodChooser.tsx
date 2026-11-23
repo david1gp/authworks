@@ -48,7 +48,7 @@ export function MethodChooser(props: MethodChooserProps) {
           {messageTranslate("login.chooser.orChooseMethod")}
         </p>
       </Show>
-      <div class="login-chooser-groups" classList={{ "mt-6": !state.hasRecentAccounts() }}>
+      <div class={["login-chooser-groups", { "mt-6": !state.hasRecentAccounts() }]}>
         <Show when={state.ownMethods().length > 0}>
           <ul class="login-chooser-list">
             <For each={state.ownMethods()}>

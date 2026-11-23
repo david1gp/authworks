@@ -3,7 +3,7 @@ import { mdiAccountRemoveOutline } from "@adaptive-ds/mdi/mdiAccountRemoveOutlin
 import { mdiLockOpenOutline } from "@adaptive-ds/mdi/mdiLockOpenOutline.js"
 import { mdiMonitorCellphone } from "@adaptive-ds/mdi/mdiMonitorCellphone.js"
 import { mdiShieldLockOutline } from "@adaptive-ds/mdi/mdiShieldLockOutline.js"
-import { onMount } from "solid-js"
+import { onSettled } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { AccountSectionNavItem } from "./accountSectionNavItem.js"
 import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
@@ -11,7 +11,7 @@ import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
 export function accountSectionNavStateCreate(locationHash?: () => string) {
   const currentHash = createSignalObject(typeof window === "undefined" ? "" : window.location.hash)
 
-  onMount(() => {
+  onSettled(() => {
     if (locationHash !== undefined) return
     const hashChange = () => currentHash.set(window.location.hash)
     window.addEventListener("hashchange", hashChange)

@@ -1,9 +1,9 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { authenticatedSignInAgainNavigate } from "../../../ui/authenticated/authenticatedSignInAgainNavigate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { ImpersonationAdminStatus } from "./impersonationAdminStatusSchema.js"
+import { type JSX } from "@solidjs/web"
 
 /** Renders the shared loading, error, denied, assurance, and nested-rejected states. */
 export function ImpersonationAdminStateBoundary(props: {

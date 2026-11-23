@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -201,20 +201,18 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const sessionListSignature = () => sessionSearch()
   const appliedSessionListSignature = createSignalObject("")
   createEffect(
-    on(
-      () =>
-        `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${whatsappWindow()}:${options.reloadKey?.() ?? ""}`,
-      () => {
-        if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
-          appliedSessionListSignature.set(sessionListSignature())
-          if (pageTokens.get().length > 0) {
-            pageTokens.set([])
-            return
-          }
+    () =>
+      `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${whatsappWindow()}:${options.reloadKey?.() ?? ""}`,
+    () => {
+      if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
+        appliedSessionListSignature.set(sessionListSignature())
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
         }
-        void load()
-      },
-    ),
+      }
+      void untrack(load)
+    },
   )
 
   return {

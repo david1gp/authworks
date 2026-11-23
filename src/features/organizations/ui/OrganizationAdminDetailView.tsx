@@ -2,7 +2,6 @@ import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
-import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -158,9 +157,9 @@ export function OrganizationAdminDetailView(props: {
 
               <AuthenticatedSection
                 actions={
-                  <A class="text-xs font-medium text-accent hover:underline" href={props.membershipsHref}>
+                  <a class="text-xs font-medium text-accent hover:underline" href={props.membershipsHref}>
                     {messageTranslate("admin.organizations.memberships.title")}
-                  </A>
+                  </a>
                 }
                 title={messageTranslate("admin.organizations.memberships.title")}
               >
@@ -201,7 +200,7 @@ export function OrganizationAdminDetailView(props: {
                   <Table
                     aria-label={messageTranslate("admin.organizations.memberships.title")}
                     class={authenticatedTableClasses.tableWide}
-                    tabIndex={0}
+                    tabindex={0}
                   >
                     <TableHeader class={authenticatedTableClasses.header}>
                       <TableRow>
@@ -242,12 +241,12 @@ export function OrganizationAdminDetailView(props: {
 
               <AuthenticatedSection title={messageTranslate("shell.nav.machineUsers")}>
                 <div class="flex flex-wrap gap-2 px-4 py-3">
-                  <A class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
+                  <a class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
                     {messageTranslate("shell.nav.machineUsers")}
-                  </A>
-                  <A class="text-xs font-medium text-accent hover:underline" href={props.machineCredentialsHref}>
+                  </a>
+                  <a class="text-xs font-medium text-accent hover:underline" href={props.machineCredentialsHref}>
                     {messageTranslate("shell.nav.credentialsTokens")}
-                  </A>
+                  </a>
                 </div>
               </AuthenticatedSection>
               <AuthenticatedSection title={messageTranslate("admin.configuration.dangerTitle")}>

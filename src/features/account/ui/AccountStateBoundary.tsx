@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Shared loading, empty, error, and inaccessible frame for the self-service account pages. Loading

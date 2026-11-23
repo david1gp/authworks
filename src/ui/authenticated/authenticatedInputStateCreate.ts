@@ -1,6 +1,8 @@
-import { type Accessor, type ComponentProps, splitProps } from "solid-js"
+import { omit } from "solid-js"
+import { type ComponentProps } from "@solidjs/web"
 
-export function authenticatedInputStateCreate(props: Accessor<ComponentProps<"input">>) {
-  const [local, rest] = splitProps(props(), ["class"])
+export function authenticatedInputStateCreate(props: ComponentProps<"input">) {
+  const local = props
+  const rest = omit(props, "class")
   return { local, rest }
 }

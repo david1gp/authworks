@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
@@ -12,15 +12,13 @@ export function projectAdminOverviewTabStateCreate(options: {
   const projectAccessRequired = createSignalObject(false)
 
   createEffect(
-    on(
-      () => options.page.project(),
-      (project) => {
-        if (project === undefined) return
-        name.set(project.name)
-        authorizationRequired.set(project.authorizationRequired)
-        projectAccessRequired.set(project.projectAccessRequired)
-      },
-    ),
+    () => options.page.project(),
+    (project) => {
+      if (project === undefined) return
+      name.set(project.name)
+      authorizationRequired.set(project.authorizationRequired)
+      projectAccessRequired.set(project.projectAccessRequired)
+    },
   )
 
   return {

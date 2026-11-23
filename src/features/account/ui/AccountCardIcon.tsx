@@ -15,11 +15,13 @@ export function AccountCardIcon(props: {
   return (
     <span
       aria-hidden="true"
-      class="relative inline-flex shrink-0"
-      classList={{
-        "text-accent": (props.tone ?? "accent") === "accent",
-        "text-danger": props.tone === "danger",
-      }}
+      class={[
+        "relative inline-flex shrink-0",
+        {
+          "text-accent": (props.tone ?? "accent") === "accent",
+          "text-danger": props.tone === "danger",
+        },
+      ]}
     >
       <Icon aria-hidden="true" class="size-8 sm:size-9" path={props.path} />
       <Show when={props.badge}>

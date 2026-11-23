@@ -1,8 +1,8 @@
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
-import { A, useLocation, useNavigate } from "@solidjs/router"
-import { createEffect, For, type JSX, Show } from "solid-js"
+import { useLocation, useNavigate } from "@solidjs/router"
+import { createEffect, For, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -13,6 +13,7 @@ import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/a
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionIdentityMenu } from "../../../ui/production/ProductionIdentityMenu.js"
 import { adminDemoAppStateCreate } from "./adminDemoAppStateCreate.js"
+import { type JSX } from "@solidjs/web"
 
 function adminDemoHrefFor(access: () => string, href: string): string {
   const current = access()
@@ -40,22 +41,22 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
     <div class={authenticatedNavigationClasses.frame}>
       <div class={authenticatedNavigationClasses.brandRow}>
         <AuthenticatedBrandMark />
-        <A class={authenticatedNavigationClasses.brandLink} href="/demo/admin" onClick={state.destinationSelect}>
+        <a class={authenticatedNavigationClasses.brandLink} href="/demo/admin" onClick={state.destinationSelect}>
           {messageTranslate("app.name")}
-        </A>
+        </a>
         <Show when={state.collapseVisible()}>
           <AdminDemoSidebarToggle state={state} />
         </Show>
       </div>
       <nav aria-label={messageTranslate("admin.navigation.label")} class={authenticatedNavigationClasses.nav}>
-        <A
+        <a
           class={`${authenticatedNavigationClasses.link} ${authenticatedNavigationClasses.linkInactive} mb-1`}
           href="/demo"
           onClick={state.destinationSelect}
         >
           <Icon class="rtl:-scale-x-100" path={mdiArrowLeft} />
           <span class="truncate">{messageTranslate("demo.nav.label")}</span>
-        </A>
+        </a>
         <For each={state.navigationGroups()}>
           {(group) => (
             <section class={authenticatedNavigationClasses.groupSection}>
@@ -63,7 +64,7 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
               <div class="grid">
                 <For each={group.items}>
                   {(item) => (
-                    <A
+                    <a
                       aria-current={state.isActive(item.href) ? "page" : undefined}
                       class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
                       href={hrefFor(item.href)}
@@ -71,7 +72,7 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
                     >
                       <Icon path={item.icon} />
                       <span class="truncate">{item.label}</span>
-                    </A>
+                    </a>
                   )}
                 </For>
               </div>
@@ -105,11 +106,14 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
   const state = adminDemoAppStateCreate()
   const location = useLocation()
   const navigate = useNavigate()
-  createEffect(() => {
-    const asParam = state.access() === "realm-admin" ? "" : `?as=${state.access()}`
-    const redirect = demoAdminRedirectTable[location.pathname]
-    if (redirect !== undefined) navigate(`${redirect}${asParam}`, { replace: true })
-  })
+  createEffect(
+    () => [state.access(), location.pathname] as const,
+    ([access, pathname]) => {
+      const asParam = access === "realm-admin" ? "" : `?as=${access}`
+      const redirect = demoAdminRedirectTable[pathname]
+      if (redirect !== undefined) navigate(`${redirect}${asParam}`, { replace: true })
+    },
+  )
   return (
     <div class="authenticated-canvas min-h-dvh">
       <Sidebar
@@ -132,20 +136,22 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
       />
       <main
         data-density="compact"
-        class="min-h-dvh transition-[margin] [&_section>*]:min-w-0"
-        classList={{ [authenticatedNavigationClasses.contentOffset]: state.sidebar.openDesktop.get() }}
+        class={[
+          "min-h-dvh transition-[margin] [&_section>*]:min-w-0",
+          { [authenticatedNavigationClasses.contentOffset]: state.sidebar.openDesktop.get() },
+        ]}
       >
         <Show when={state.topBarVisible()}>
           <div class={authenticatedNavigationClasses.topBar}>
             <AdminDemoSidebarToggle state={state} />
-            <A class={authenticatedNavigationClasses.headerBrand} href="/demo/admin">
+            <a class={authenticatedNavigationClasses.headerBrand} href="/demo/admin">
               <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
               <span class={authenticatedNavigationClasses.brandLink}>{messageTranslate("app.name")}</span>
-            </A>
+            </a>
           </div>
         </Show>
         <div class={authenticatedNavigationClasses.content}>
-          <AuthenticatedDensityContext.Provider value="compact">{props.children}</AuthenticatedDensityContext.Provider>
+          <AuthenticatedDensityContext value="compact">{props.children}</AuthenticatedDensityContext>
         </div>
       </main>
     </div>

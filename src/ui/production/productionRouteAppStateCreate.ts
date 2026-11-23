@@ -48,10 +48,13 @@ export function productionRouteAppStateCreate(
     })
   }
 
-  createEffect(() => {
-    if (guardState().status !== "anonymous") return
-    window.location.assign(productionLoginRedirectUrlCreate(window.location))
-  })
+  createEffect(
+    () => guardState().status,
+    (status) => {
+      if (status !== "anonymous") return
+      window.location.assign(productionLoginRedirectUrlCreate(window.location))
+    },
+  )
 
   return {
     api,

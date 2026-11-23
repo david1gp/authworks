@@ -1,4 +1,4 @@
-import { createEffect, createMemo, onCleanup, onMount } from "solid-js"
+import { createEffect, createMemo, onCleanup, onSettled } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 
 type PasswordResetStateCreateOptions = {
@@ -22,15 +22,18 @@ export function passwordResetStateCreate(options: PasswordResetStateCreateOption
   const validationFocus = (message: string | undefined) => {
     if (message !== undefined && options.step() === "ready") focusPassword()
   }
-  onMount(() => {
+  onSettled(() => {
     if (options.step() === "ready") focusPassword()
     else focusHeading()
   })
-  createEffect(() => {
-    if (options.step() === "ready") focusPassword()
-    else focusHeading()
-    validationFocus(options.validationMessage())
-  })
+  createEffect(
+    () => [options.step(), options.validationMessage()] as const,
+    ([step, validation]) => {
+      if (step === "ready") focusPassword()
+      else focusHeading()
+      validationFocus(validation)
+    },
+  )
   onCleanup(() => {
     options.onNewPassword("")
     options.onConfirmPassword("")

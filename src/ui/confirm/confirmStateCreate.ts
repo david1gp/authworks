@@ -19,12 +19,15 @@ type PendingConfirmation = ConfirmRequest & { readonly settle: (confirmed: boole
  */
 export function confirmStateCreate() {
   const pending = createSignalObject<PendingConfirmation | undefined>(undefined)
+  // Resolve requests against the current event state, even before Solid commits the UI update.
+  let current: PendingConfirmation | undefined
 
   const settle = (confirmed: boolean) => {
-    const current = pending.get()
-    if (current === undefined) return
+    const request = current
+    if (request === undefined) return
+    current = undefined
     pending.set(undefined)
-    current.settle(confirmed)
+    request.settle(confirmed)
   }
 
   return {
@@ -35,7 +38,8 @@ export function confirmStateCreate() {
       new Promise<boolean>((resolve) => {
         // A superseded request is declined, so no caller is ever left waiting.
         settle(false)
-        pending.set({ ...(typeof request === "string" ? { message: request } : request), settle: resolve })
+        current = { ...(typeof request === "string" ? { message: request } : request), settle: resolve }
+        pending.set(current)
       }),
     /**
      * Declines an open prompt because the dialog rendering it went away. A screen that

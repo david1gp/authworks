@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** One label/value pair rendered by the dense authenticated field list. */
 export type AuthenticatedField = {

@@ -1,4 +1,3 @@
-import type { JSX } from "solid-js"
 import { AccountFactorsSection } from "./AccountFactorsSection.js"
 import { AccountIdentitiesSection } from "./AccountIdentitiesSection.js"
 import { AccountPasswordSection } from "./AccountPasswordSection.js"
@@ -6,6 +5,7 @@ import { AccountPasskeysSection } from "./AccountPasskeysSection.js"
 import { AccountRecoveryCodesSection } from "./AccountRecoveryCodesSection.js"
 import { accountSecuritySectionIds } from "./accountSecuritySectionIds.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountSecurityManagement(props: {
   readonly passwordAction?: JSX.Element

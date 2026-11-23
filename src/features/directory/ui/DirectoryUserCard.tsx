@@ -1,7 +1,6 @@
 import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { AuthenticatedAvatar } from "../../../ui/authenticated/AuthenticatedAvatar.js"
 import { AuthenticatedCopyButton } from "../../../ui/authenticated/AuthenticatedCopyButton.js"
@@ -36,7 +35,7 @@ export function DirectoryUserCard(props: {
       }
       title={
         <span class="flex min-w-0 items-center gap-1">
-          <A
+          <a
             class="min-w-0 truncate after:absolute after:inset-0"
             href={props.href}
             aria-label={messageTranslate("admin.users.directoryOpenProfile", {
@@ -44,7 +43,7 @@ export function DirectoryUserCard(props: {
             })}
           >
             {props.entry.user.displayName ?? props.entry.user.userName}
-          </A>
+          </a>
           <span class="relative z-10">
             <AuthenticatedCopyButton
               label={messageTranslate("admin.users.displayName")}

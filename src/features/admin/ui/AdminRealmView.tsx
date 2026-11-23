@@ -7,7 +7,7 @@ import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { mdiPencilOutline } from "@adaptive-ds/mdi/mdiPencilOutline.js"
 import { mdiShieldAccountOutline } from "@adaptive-ds/mdi/mdiShieldAccountOutline.js"
 import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
-import { A, useLocation, useNavigate } from "@solidjs/router"
+import { useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -221,9 +221,9 @@ export function AdminRealmView(props: {
               <AuthenticatedSection
                 title={messageTranslate("admin.redesign.recentAuditEvents")}
                 actions={
-                  <A class="text-xs font-medium text-accent hover:underline" href={`${props.basePath}/events`}>
+                  <a class="text-xs font-medium text-accent hover:underline" href={`${props.basePath}/events`}>
                     {messageTranslate("admin.redesign.viewAll")}
-                  </A>
+                  </a>
                 }
               >
                 <Show

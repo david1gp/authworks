@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
@@ -19,7 +18,7 @@ export function AuthenticatedSubNav(props: {
       <div class="flex gap-1.5 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">
         <For each={props.items}>
           {(item) => (
-            <A
+            <a
               aria-current={item.value === props.active ? "page" : undefined}
               class={classMerge(
                 "flex min-w-0 shrink-0 items-center gap-2.5 rounded-control border px-3 py-2.5 text-start transition-colors lg:w-full",
@@ -51,7 +50,7 @@ export function AuthenticatedSubNav(props: {
                   )}
                 </Show>
               </span>
-            </A>
+            </a>
           )}
         </For>
       </div>

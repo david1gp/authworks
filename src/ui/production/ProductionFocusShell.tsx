@@ -1,10 +1,10 @@
-import type { JSX } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { AuthenticatedBrandMark } from "../authenticated/AuthenticatedBrandMark.js"
 import { AuthenticatedThemeToggle } from "../authenticated/AuthenticatedThemeToggle.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { productionFocusShellStateCreate } from "./productionFocusShellStateCreate.js"
+import { type JSX } from "@solidjs/web"
 
 export function ProductionFocusShell(props: { readonly children: JSX.Element; readonly title: string }) {
   const state = productionFocusShellStateCreate()

@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
@@ -46,7 +46,7 @@ export function accountAccessProductionStateCreate(
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : undefined
   }
-  const localViewedOrganizationId = createSignalObject<string | undefined>(activeOrganizationId())
+  const localViewedOrganizationId = createSignalObject<string | undefined>(untrack(activeOrganizationId))
   const viewedOrganizationId = options.viewedOrganizationId ?? localViewedOrganizationId.get
   let viewedOrganizationExplicit = false
   const realmId = () => {
@@ -58,14 +58,18 @@ export function accountAccessProductionStateCreate(
   const viewedOrganization = () => accountOrganizationMeGet(organizations.get(), viewedOrganizationId())
   const viewedEffectiveAccessGroup = () =>
     accountEffectiveAccessGroupGet(effectiveAccessGroups(), viewedOrganizationId())
-  const viewedOrganizationSynchronize = () => {
+  const viewedOrganizationSynchronize = (
+    available = organizations.get(),
+    active = activeOrganizationId(),
+    currentStatus = status.get(),
+  ) => {
     const current = viewedOrganizationId()
-    if (status.get() === "loading" && viewedOrganizationExplicit) return
-    if (viewedOrganizationExplicit && accountOrganizationMeGet(organizations.get(), current) === undefined)
+    if (currentStatus === "loading" && viewedOrganizationExplicit) return
+    if (viewedOrganizationExplicit && accountOrganizationMeGet(available, current) === undefined)
       viewedOrganizationExplicit = false
     const next = accountViewedOrganizationIdResolve({
-      activeOrganizationId: activeOrganizationId(),
-      organizations: organizations.get(),
+      activeOrganizationId: active,
+      organizations: available,
       viewedOrganizationExplicit,
       viewedOrganizationId: current,
     })
@@ -155,24 +159,33 @@ export function accountAccessProductionStateCreate(
   }
 
   createEffect(
-    on(() => {
+    () => {
       const organizationScoped = screen() === "organizations" || screen() === "effective-access"
       const organization = organizationScoped ? session.guard.organization : undefined
       const organizationId = typeof organization === "object" ? organization.organizationId : ""
       return `${realmId()}:${screen()}:${token()}:${organizationId}`
-    }, load),
+    },
+    () => {
+      void untrack(load)
+    },
   )
-  if (options.viewedOrganizationId === undefined) createEffect(viewedOrganizationSynchronize)
+  if (options.viewedOrganizationId === undefined) {
+    createEffect(
+      () => [organizations.get(), activeOrganizationId(), status.get()] as const,
+      (source) => untrack(() => viewedOrganizationSynchronize(...source)),
+    )
+  }
   return {
     activeOrganizationId,
     consentRevoke: async (clientId: string) => {
       if (!(await confirmation.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId })))) return
       const succeeded = await mutate(`consent:${clientId}`, () => api.consentRevoke(realmId(), clientId))
       if (!succeeded) return
-      consents.set(consents.get().filter((item) => item.clientId !== clientId))
+      const remaining = consents.get().filter((item) => item.clientId !== clientId)
+      consents.set(remaining)
       noticeOrganizationId.set(undefined)
       notice.set("revoked")
-      status.set(consents.get().length === 0 ? "empty" : "ready")
+      status.set(remaining.length === 0 ? "empty" : "ready")
     },
     consents: consents.get,
     confirmation,

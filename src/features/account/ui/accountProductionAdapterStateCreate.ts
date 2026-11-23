@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, on } from "solid-js"
+import { type Accessor, createEffect } from "solid-js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
@@ -105,13 +105,11 @@ export function accountProductionAdapterStateCreate(
     onPasswordChanged: options.onPasswordChanged,
   })
   createEffect(
-    on(
-      kind,
-      () => {
-        void page.load(true)
-      },
-      { defer: true },
-    ),
+    kind,
+    () => {
+      void page.load(true)
+    },
+    { defer: true },
   )
   return page
 }

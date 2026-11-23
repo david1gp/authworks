@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -70,6 +70,7 @@ export function organizationAdminPageStateCreate(options: {
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
+  let domainClaimInFlight = false
   const domainClaimError = createSignalObject<string | undefined>(undefined)
   const organizations = createSignalObject<Organization[]>([])
   const organization = createSignalObject<Organization | undefined>(undefined)
@@ -86,7 +87,7 @@ export function organizationAdminPageStateCreate(options: {
   const passwordPolicy = createSignalObject<PasswordPolicy>({ ...passwordPolicyDefaults })
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<string[]>([])
-  const invitationToken = createSignalObject<string | undefined>(options.initialInvitationToken?.())
+  const invitationToken = createSignalObject<string | undefined>(untrack(() => options.initialInvitationToken?.()))
 
   const fail = (failure: { code?: string; errorMessage: string; statusCode?: number }) => {
     error.set(failure.errorMessage)
@@ -225,21 +226,19 @@ export function organizationAdminPageStateCreate(options: {
   const listSignature = () => `${options.listSearch?.() ?? ""}:${options.listStatus?.() ?? ""}`
   const appliedListSignature = createSignalObject("")
   createEffect(
-    on(
-      () =>
-        `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}:${listSignature()}`,
-      () => {
-        if (options.screen() === "organizations" && appliedListSignature.get() !== listSignature()) {
-          appliedListSignature.set(listSignature())
-          if (pageTokens.get().length > 0) {
-            pageTokens.set([])
-            return
-          }
+    () =>
+      `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}:${listSignature()}`,
+    () => {
+      if (options.screen() === "organizations" && appliedListSignature.get() !== listSignature()) {
+        appliedListSignature.set(listSignature())
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
         }
-        invitationToken.set(options.initialInvitationToken?.())
-        void load()
-      },
-    ),
+      }
+      invitationToken.set(options.initialInvitationToken?.())
+      void untrack(load)
+    },
   )
 
   return {
@@ -254,11 +253,14 @@ export function organizationAdminPageStateCreate(options: {
     },
     domainDiscover: (domain: string) => mutate("domain:discover", () => options.adapter.domainDiscover(domain)),
     domainClaim: async (domain: string, isPrimary: boolean) => {
-      if (pendingId.get() !== undefined) return false
+      if (domainClaimInFlight || pendingId.get() !== undefined) return false
+      domainClaimInFlight = true
       pendingId.set("domain:claim")
       domainClaimError.set(undefined)
-      const claimed = await options.adapter.domainClaim(options.organizationId(), { domain, isPrimary })
-      pendingId.set(undefined)
+      const claimed = await options.adapter.domainClaim(options.organizationId(), { domain, isPrimary }).finally(() => {
+        domainClaimInFlight = false
+        pendingId.set(undefined)
+      })
       // Claim errors belong to the open form, not the page boundary: replacing the
       // page with an error would unmount the dialog and discard the retry journey.
       if (!claimed.success) {

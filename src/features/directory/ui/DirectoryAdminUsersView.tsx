@@ -1,4 +1,4 @@
-import { A, useLocation, useNavigate } from "@solidjs/router"
+import { useLocation, useNavigate } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -315,7 +315,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
           <fieldset class="flex flex-wrap items-center gap-1.5">
             <legend class="sr-only">{messageTranslate("admin.users.directoryRole")}</legend>
             <AuthenticatedButton
-              aria-pressed={activeRole() === undefined}
+              aria-pressed={activeRole() === undefined ? "true" : "false"}
               icon={directoryRoleIconGet("all")}
               onClick={() => roleSet(undefined)}
               variant={activeRole() === undefined ? "filledBlue" : "outline"}
@@ -326,7 +326,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
             <For each={roleFilters}>
               {(role) => (
                 <AuthenticatedButton
-                  aria-pressed={activeRole() === role}
+                  aria-pressed={activeRole() === role ? "true" : "false"}
                   icon={directoryRoleIconGet(role)}
                   onClick={() => roleSet(activeRole() === role ? undefined : role)}
                   variant={activeRole() === role ? "filledBlue" : "outline"}
@@ -338,7 +338,7 @@ export function DirectoryAdminUsersView(props: { readonly state: DirectoryAdminU
             </For>
           </fieldset>
           <AuthenticatedButton
-            aria-pressed={showDeletedActive()}
+            aria-pressed={showDeletedActive() ? "true" : "false"}
             icon={authenticatedIconRegistry.directoryTeamDelete}
             onClick={() => showDeletedSet(!showDeletedActive())}
             variant={showDeletedActive() ? "filledBlue" : "outline"}
@@ -564,7 +564,7 @@ function ServiceAccountsSection(props: {
             <Table
               aria-label={messageTranslate("admin.users.directoryTabServiceAccounts")}
               class={authenticatedTableClasses.tableWide}
-              tabIndex={0}
+              tabindex={0}
             >
               <TableHeader class={authenticatedTableClasses.header}>
                 <TableRow>
@@ -588,18 +588,18 @@ function ServiceAccountsSection(props: {
                     <TableRow class={authenticatedTableClasses.row}>
                       <TableCell class={authenticatedTableClasses.cell}>
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <A
+                          <a
                             class="font-medium text-accent hover:underline"
                             href={`${props.state.basePath}/machine-users/${account.id}`}
                           >
                             {account.displayName}
-                          </A>
-                          <A
+                          </a>
+                          <a
                             class="text-xs font-medium text-accent hover:underline"
                             href={`${props.state.basePath}/machine-credentials?machineUserId=${encodeURIComponent(account.id)}`}
                           >
                             {messageTranslate("shell.nav.credentialsTokens")}
-                          </A>
+                          </a>
                         </div>
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.identifier}>{account.userName}</TableCell>
@@ -639,20 +639,20 @@ function ServiceAccountsSection(props: {
                       />
                     }
                     title={
-                      <A
+                      <a
                         class="truncate text-accent hover:underline"
                         href={`${props.state.basePath}/machine-users/${account.id}`}
                       >
                         {account.displayName}
-                      </A>
+                      </a>
                     }
                     actions={
-                      <A
+                      <a
                         class="text-xs font-medium text-accent hover:underline"
                         href={`${props.state.basePath}/machine-credentials?machineUserId=${encodeURIComponent(account.id)}`}
                       >
                         {messageTranslate("shell.nav.credentialsTokens")}
-                      </A>
+                      </a>
                     }
                   />
                 )}
@@ -765,7 +765,7 @@ function InvitationsSection(props: { state: DirectoryAdminUsersViewState }) {
           <Table
             aria-label={messageTranslate("admin.organizations.invitations.title")}
             class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+            tabindex={0}
           >
             <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>
@@ -1088,9 +1088,9 @@ function CreateUserDialog(props: { state: DirectoryAdminUsersViewState }) {
         <Show when={page().createdUser()}>
           {(user) => (
             <p class="text-sm text-success" role="status">
-              <A class="font-medium text-accent hover:underline" href={`${props.state.basePath}/users/${user().id}`}>
+              <a class="font-medium text-accent hover:underline" href={`${props.state.basePath}/users/${user().id}`}>
                 {messageTranslate("admin.users.created", { userName: user().userName })}
-              </A>
+              </a>
             </p>
           )}
         </Show>
@@ -1343,7 +1343,7 @@ function TeamsList(props: {
         <Table
           aria-label={messageTranslate("admin.teams.title")}
           class={authenticatedTableClasses.tableWide}
-          tabIndex={0}
+          tabindex={0}
         >
           <TableHeader class={authenticatedTableClasses.header}>
             <TableRow>
@@ -1358,13 +1358,13 @@ function TeamsList(props: {
               {(team) => (
                 <TableRow class={authenticatedTableClasses.row}>
                   <TableCell class={authenticatedTableClasses.cell}>
-                    <A
+                    <a
                       aria-label={messageTranslate("admin.teams.openTeam", { name: team.name })}
                       class="font-medium text-accent hover:underline"
                       href={teamsHref(props.state.basePath, window.location.search, team.slug)}
                     >
                       {team.name}
-                    </A>
+                    </a>
                   </TableCell>
                   <TableCell class={authenticatedTableClasses.cell}>
                     <span class="font-mono text-xs">{team.slug}</span>
@@ -1380,7 +1380,7 @@ function TeamsList(props: {
             </For>
             <TableRow class={authenticatedTableClasses.row}>
               <TableCell class={authenticatedTableClasses.cell}>
-                <A
+                <a
                   aria-label={messageTranslate("admin.teams.openTeam", {
                     name: messageTranslate("admin.teams.unassignedTitle"),
                   })}
@@ -1388,7 +1388,7 @@ function TeamsList(props: {
                   href={teamsHref(props.state.basePath, window.location.search, "unassigned")}
                 >
                   {messageTranslate("admin.teams.unassignedTitle")}
-                </A>
+                </a>
               </TableCell>
               <TableCell class={authenticatedTableClasses.cell}>
                 <span class="font-mono text-xs">{messageTranslate("admin.teams.unassignedSlug")}</span>
@@ -1416,13 +1416,13 @@ function TeamsList(props: {
               ]}
               meta={[memberCountText(team.memberCount)]}
               title={
-                <A
+                <a
                   aria-label={messageTranslate("admin.teams.openTeam", { name: team.name })}
                   class="truncate text-accent hover:underline"
                   href={teamsHref(props.state.basePath, window.location.search, team.slug)}
                 >
                   {team.name}
-                </A>
+                </a>
               }
             />
           )}
@@ -1436,12 +1436,12 @@ function TeamsList(props: {
           ]}
           meta={[memberCountText(teams().unassignedCount())]}
           title={
-            <A
+            <a
               class="truncate text-accent hover:underline"
               href={teamsHref(props.state.basePath, window.location.search, "unassigned")}
             >
               {messageTranslate("admin.teams.unassignedTitle")}
-            </A>
+            </a>
           }
         />
       </AuthenticatedRecordList>
@@ -1500,9 +1500,9 @@ function TeamDetailBody(props: {
         <AuthenticatedSection>
           <AuthenticatedEmptyState
             actions={
-              <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+              <a class="text-sm font-medium text-accent hover:underline" href={backHref()}>
                 {messageTranslate("admin.teams.backToTeams")}
-              </A>
+              </a>
             }
             description={messageTranslate("common.error")}
             icon={directoryTabIconGet("teams")}
@@ -1551,9 +1551,9 @@ function TeamDetailBody(props: {
           >
             <div class="grid gap-2">
               <p>
-                <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+                <a class="text-sm font-medium text-accent hover:underline" href={backHref()}>
                   {`← ${messageTranslate("admin.teams.backToTeams")}`}
-                </A>
+                </a>
               </p>
               <div class="flex flex-wrap items-center gap-1.5">
                 <AuthenticatedChip label={current().slug} tone="neutral" />
@@ -1631,7 +1631,7 @@ function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; 
           <Table
             aria-label={messageTranslate("admin.teams.members")}
             class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+            tabindex={0}
           >
             <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>
@@ -1654,12 +1654,12 @@ function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; 
                     <TableCell class={authenticatedTableClasses.cell}>
                       <span class="flex min-w-0 items-center gap-2">
                         <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
-                        <A
+                        <a
                           class="truncate font-medium text-accent hover:underline"
                           href={`${props.state.basePath}/users/${entry.user.id}`}
                         >
                           {memberName(entry)}
-                        </A>
+                        </a>
                         <Show when={team().leader.userId === entry.user.id}>
                           <AuthenticatedChip label={messageTranslate("admin.teams.leaderBadge")} tone="accent" />
                         </Show>
@@ -1731,12 +1731,12 @@ function TeamMembersList(props: { readonly state: DirectoryAdminUsersViewState; 
                   </Show>
                 }
                 title={
-                  <A
+                  <a
                     class="truncate text-accent hover:underline"
                     href={`${props.state.basePath}/users/${entry.user.id}`}
                   >
                     {memberName(entry)}
-                  </A>
+                  </a>
                 }
               />
             )}
@@ -1853,9 +1853,9 @@ function UnassignedDetail(props: { readonly state: DirectoryAdminUsersViewState 
         title={messageTranslate("admin.teams.unassignedTitle")}
       >
         <p>
-          <A class="text-sm font-medium text-accent hover:underline" href={backHref()}>
+          <a class="text-sm font-medium text-accent hover:underline" href={backHref()}>
             {messageTranslate("admin.teams.backToTeams")}
-          </A>
+          </a>
         </p>
         <Show when={teams().validationMessage()}>
           {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
@@ -1898,7 +1898,7 @@ function UnassignedDetail(props: { readonly state: DirectoryAdminUsersViewState 
               <Table
                 aria-label={messageTranslate("admin.teams.unassignedTitle")}
                 class={authenticatedTableClasses.tableWide}
-                tabIndex={0}
+                tabindex={0}
               >
                 <TableHeader class={authenticatedTableClasses.header}>
                   <TableRow>
@@ -1923,12 +1923,12 @@ function UnassignedDetail(props: { readonly state: DirectoryAdminUsersViewState 
                         <TableCell class={authenticatedTableClasses.cell}>
                           <span class="flex min-w-0 items-center gap-2">
                             <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
-                            <A
+                            <a
                               class="truncate font-medium text-accent hover:underline"
                               href={`${props.state.basePath}/users/${entry.user.id}`}
                             >
                               {memberName(entry)}
-                            </A>
+                            </a>
                           </span>
                         </TableCell>
                         <TableCell class={authenticatedTableClasses.cell}>
@@ -1971,12 +1971,12 @@ function UnassignedDetail(props: { readonly state: DirectoryAdminUsersViewState 
                     title={
                       <span class="flex items-center gap-2">
                         <AuthenticatedAvatar name={memberName(entry)} size="sm" src={entry.user.pictureUrl} />
-                        <A
+                        <a
                           class="truncate text-accent hover:underline"
                           href={`${props.state.basePath}/users/${entry.user.id}`}
                         >
                           {memberName(entry)}
-                        </A>
+                        </a>
                       </span>
                     }
                   />

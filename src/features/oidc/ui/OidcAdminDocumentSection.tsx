@@ -1,8 +1,8 @@
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * One read-only protocol document: a summary body plus the raw JSON behind a disclosure. It offers

@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -111,10 +111,8 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
   }
 
   createEffect(
-    on(
-      () => `${options.targetUserId?.() ?? ""}:${options.reloadKey?.() ?? ""}`,
-      () => void load(),
-    ),
+    () => `${options.targetUserId?.() ?? ""}:${options.reloadKey?.() ?? ""}`,
+    () => void load(),
   )
 
   return {

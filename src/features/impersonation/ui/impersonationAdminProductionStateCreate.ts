@@ -1,5 +1,5 @@
 import { useLocation, useSearchParams } from "@solidjs/router"
-import { onMount } from "solid-js"
+import { onSettled } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
@@ -19,7 +19,7 @@ export function impersonationAdminProductionStateCreate() {
   }
   const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
   const realmId = createSignalObject(fallbackRealmId())
-  onMount(() => {
+  onSettled(() => {
     void productionRealmIdResolve({
       baseUrl,
       domain: typeof window === "undefined" ? "localhost" : window.location.hostname,

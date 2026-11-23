@@ -41,7 +41,7 @@ export function EmailPreviewPage(props: { fixture: EmailPreviewFixture }) {
           <iframe
             class="h-[520px] w-full bg-white sm:h-[640px] xl:h-[720px]"
             sandbox=""
-            referrerPolicy="no-referrer"
+            referrerpolicy="no-referrer"
             srcdoc={props.fixture.message.html}
             title={`${messageTranslate(props.fixture.titleKey)} — ${messageTranslate("email.preview.html")}`}
           />

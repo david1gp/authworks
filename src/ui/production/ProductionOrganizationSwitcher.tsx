@@ -1,7 +1,7 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
 import { mdiUnfoldMoreHorizontal } from "@adaptive-ds/mdi/mdiUnfoldMoreHorizontal.js"
-import Popover from "@corvu/popover"
+import Popover from "@corvu-next/popover"
 import { For, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
@@ -96,7 +96,7 @@ export function ProductionOrganizationSwitcher(props: {
           placement="bottom-start"
         >
           <Popover.Trigger
-            aria-busy={props.pending}
+            aria-busy={props.pending ? "true" : "false"}
             aria-haspopup="listbox"
             class={classMerge(
               authenticatedNavigationClasses.organizationCard,
@@ -135,7 +135,7 @@ export function ProductionOrganizationSwitcher(props: {
                     {messageTranslate("shell.nav.realmGroup")}
                   </p>
                   <button
-                    aria-selected={props.activeScope === "realm"}
+                    aria-selected={props.activeScope === "realm" ? "true" : "false"}
                     class={authenticatedNavigationClasses.organizationOption}
                     data-admin-context-option="realm"
                     disabled={props.pending}
@@ -182,7 +182,9 @@ export function ProductionOrganizationSwitcher(props: {
                 >
                   {(organization) => (
                     <button
-                      aria-selected={props.activeScope === "organization" && state.isActive(organization.id)}
+                      aria-selected={
+                        props.activeScope === "organization" && state.isActive(organization.id) ? "true" : "false"
+                      }
                       class={authenticatedNavigationClasses.organizationOption}
                       data-admin-context-option="organization"
                       onClick={() => state.select(organization.id)}

@@ -1,8 +1,8 @@
 import { mdiInboxOutline } from "@adaptive-ds/mdi/mdiInboxOutline.js"
-import type { JSX } from "solid-js"
 import { children, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type JSX } from "@solidjs/web"
 
 /** Centered panel for empty collections: icon, title, description, optional action slot. */
 export function AuthenticatedEmptyState(props: {

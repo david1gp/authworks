@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** One label/value pair rendered in the profile header meta row. */
 export type AuthenticatedProfileHeaderMeta = {

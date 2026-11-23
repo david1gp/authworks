@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { AuthenticatedCopyButton } from "./AuthenticatedCopyButton.js"
+import { type JSX } from "@solidjs/web"
 
 export function AuthenticatedCopyField(props: {
   readonly adornment?: JSX.Element

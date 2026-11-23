@@ -1,4 +1,4 @@
-import { createEffect, onCleanup } from "solid-js"
+import { createEffect } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedSelectAriaControlsApply } from "./authenticatedSelectAriaControlsApply.js"
 
@@ -22,13 +22,13 @@ export function authenticatedSelectStateCreate() {
     })
   }
 
-  createEffect(() => {
+  createEffect(container.get, (element) => {
     apply()
-    const trigger = container.get()?.querySelector("button")
+    const trigger = element?.querySelector("button")
     if (trigger === null || trigger === undefined) return
     const observer = new MutationObserver(apply)
     observer.observe(trigger, { attributeFilter: ["aria-controls"] })
-    onCleanup(() => observer.disconnect())
+    return () => observer.disconnect()
   })
 
   return {

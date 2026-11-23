@@ -1,6 +1,6 @@
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
-import Dialog from "@corvu/dialog"
-import { children, type JSX, Show } from "solid-js"
+import Dialog from "@corvu-next/dialog"
+import { children, Show } from "solid-js"
 import type { ButtonVariant } from "#ui/interactive/button/buttonCva.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
@@ -10,6 +10,7 @@ import { AuthenticatedButton } from "./AuthenticatedButton.js"
 import { authenticatedDialogClasses } from "./authenticatedDialogClasses.js"
 import { authenticatedDialogStateCreate } from "./authenticatedDialogStateCreate.js"
 import { authenticatedDialogTriggerClassGet } from "./authenticatedDialogTriggerClassGet.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Modal dialog for authenticated pages. It uses authenticated surface tokens and only points the

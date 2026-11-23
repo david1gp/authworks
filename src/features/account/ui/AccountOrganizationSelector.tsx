@@ -53,7 +53,7 @@ export function AccountOrganizationSelector(props: {
             return (
               <Button
                 aria-controls={props.panelId}
-                aria-selected={selected()}
+                aria-selected={selected() ? "true" : "false"}
                 class={classMerge(
                   "shrink-0 gap-2 rounded-control border px-3.5 py-2 text-sm whitespace-nowrap shadow-none focus-visible:ring-accent",
                   selected()
@@ -65,7 +65,7 @@ export function AccountOrganizationSelector(props: {
                 onKeyDown={state.tabKeyDown}
                 ref={(element) => state.tabRefSet(id(), element)}
                 role="tab"
-                tabIndex={state.tabIndexGet(id())}
+                tabindex={state.tabIndexGet(id())}
                 type="button"
                 variant="none"
               >

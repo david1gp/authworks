@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** Compact authenticated page heading with optional eyebrow, description, metadata strip, and actions. */
 export function AuthenticatedPageHeader(props: {

@@ -1,7 +1,7 @@
-import type { JSX } from "solid-js"
 import { children, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Hairline authenticated panel with an optional dense title bar. Content is unpadded by default so

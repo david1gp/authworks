@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js"
 import { children, Show } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Dense filter/action bar. Search and filters sit at the start, a live result summary and actions at

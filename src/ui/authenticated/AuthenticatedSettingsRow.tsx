@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /** Label and control row for use within an AuthenticatedSettingsList. */
 export function AuthenticatedSettingsRow(props: {

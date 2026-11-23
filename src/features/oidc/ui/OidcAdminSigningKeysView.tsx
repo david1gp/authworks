@@ -111,7 +111,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
           <Table
             aria-label={messageTranslate("admin.oidc.keys.title")}
             class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+            tabindex={0}
           >
             <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>

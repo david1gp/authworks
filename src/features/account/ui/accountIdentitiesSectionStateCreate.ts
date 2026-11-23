@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "@solidjs/router"
-import { type Accessor, createEffect, on } from "solid-js"
+import { type Accessor, createEffect, untrack } from "solid-js"
 import * as v from "valibot"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import {
@@ -89,13 +89,17 @@ export function accountIdentitiesSectionStateCreate(security: Accessor<IdentityS
   // A callback can arrive after the user closes the picker or collapses the card. Keep explicit
   // confirmation reachable in a dialog, without ever linking as a side effect of opening it.
   createEffect(
-    on(
-      () => security().identityLinkConfirmation(),
-      (confirmation) => {
-        if (confirmation !== undefined && !linkDialogOpen()) selectionReplace(undefined, true)
-      },
-    ),
+    () => security().identityLinkConfirmation(),
+    (confirmation) => {
+      if (confirmation !== undefined) {
+        untrack(() => {
+          if (!linkDialogOpen()) selectionReplace(undefined, true)
+        })
+      }
+    },
   )
+
+  let linkConfirmationInFlight = false
 
   return {
     availableProviders,
@@ -111,8 +115,18 @@ export function accountIdentitiesSectionStateCreate(security: Accessor<IdentityS
     identityValue,
     linkAvailable,
     linkConfirm: async () => {
-      if (security().pendingId() !== undefined || security().identityLinkConfirmation() === undefined) return
-      await security().identityLinkConfirm()
+      if (
+        linkConfirmationInFlight ||
+        security().pendingId() !== undefined ||
+        security().identityLinkConfirmation() === undefined
+      )
+        return
+      linkConfirmationInFlight = true
+      try {
+        await security().identityLinkConfirm()
+      } finally {
+        linkConfirmationInFlight = false
+      }
       if (security().identityLinkConfirmation() === undefined && security().error() === undefined) {
         selectionReplace(undefined, false)
       }

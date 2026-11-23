@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -131,21 +131,19 @@ export function directoryRolesPageStateCreate(options: {
   }
 
   createEffect(
-    on(
-      () => options.cacheKey(),
-      () => {
-        const cached = cacheRead()
-        if (cached !== undefined) {
-          summary.set(cached.summary)
-          organizationRoles.set(cached.organizationRoles)
-          entries.set(cached.entries)
-          status.set(cached.entries.length === 0 ? "empty" : "ready")
-          void load(true)
-          return
-        }
-        void load(false)
-      },
-    ),
+    () => options.cacheKey(),
+    () => {
+      const cached = cacheRead()
+      if (cached !== undefined) {
+        summary.set(cached.summary)
+        organizationRoles.set(cached.organizationRoles)
+        entries.set(cached.entries)
+        status.set(cached.entries.length === 0 ? "empty" : "ready")
+        void load(true)
+        return
+      }
+      void load(false)
+    },
   )
 
   return {

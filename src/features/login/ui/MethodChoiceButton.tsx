@@ -27,12 +27,12 @@ export function MethodChoiceButton(props: MethodChoiceButtonProps) {
   const apple = () => props.method === "external-identity" && props.providerType === "apple"
   return (
     <Button
-      classList={{ "border-accent ring-1 ring-inset ring-accent": props.lastUsed && !apple() }}
-      class={
+      class={[
         apple()
           ? "w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left"
-          : "w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left hover:bg-surface-hover"
-      }
+          : "w-full min-h-[66px] min-w-0 justify-start gap-3.5 rounded-[10px] border-line px-[15px] py-3 text-left hover:bg-surface-hover",
+        { "border-accent ring-1 ring-inset ring-accent": props.lastUsed && !apple() },
+      ]}
       disabled={props.pending}
       onClick={props.onClick}
       type="button"

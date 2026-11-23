@@ -1,9 +1,8 @@
-import { A } from "@solidjs/router"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { authenticatedCardClasses } from "./authenticatedCardClasses.js"
 import { authenticatedEntityCardStateCreate } from "./authenticatedEntityCardStateCreate.js"
+import { type JSX } from "@solidjs/web"
 
 export function AuthenticatedEntityCard(props: {
   readonly actions?: JSX.Element
@@ -28,7 +27,7 @@ export function AuthenticatedEntityCard(props: {
         props.class,
       )}
       role={!props.href && props.onActivate ? "button" : undefined}
-      tabIndex={!props.href && props.onActivate ? 0 : undefined}
+      tabindex={!props.href && props.onActivate ? 0 : undefined}
       aria-label={!props.href && props.onActivate ? props.label : undefined}
       onClick={!props.href && props.onActivate ? state.activate : undefined}
       onKeyDown={!props.href && props.onActivate ? state.keyDown : undefined}
@@ -38,9 +37,9 @@ export function AuthenticatedEntityCard(props: {
         <div class="min-w-0 flex-1 text-sm font-semibold">
           <Show when={props.href} fallback={props.title}>
             {(href) => (
-              <A href={href()} aria-label={props.label} class="after:absolute after:inset-0">
+              <a href={href()} aria-label={props.label} class="after:absolute after:inset-0">
                 {props.title}
-              </A>
+              </a>
             )}
           </Show>
         </div>

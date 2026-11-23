@@ -1,3 +1,4 @@
+import { untrack } from "solid-js"
 import { useLocation, useNavigate } from "@solidjs/router"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
@@ -19,7 +20,7 @@ export function loginDemoStateCreate() {
   const navigate = useNavigate()
   const resolved = () => loginPathResolve(location.pathname, loginDemoBasePath)
   const fixtureState = () => resolved()?.state ?? demoFixtureStateSelect(location.search, loginDemoStates)
-  const initialState = loginDemoInitialStateResolve(resolved()?.screen, fixtureState())
+  const initialState = untrack(() => loginDemoInitialStateResolve(resolved()?.screen, fixtureState()))
   const page = loginPageStateCreate({
     adapter: loginDemoAdapterCreate({ fixtureState, onResume: () => navigate(`${loginDemoBasePath}/signed-in`) }),
     basePath: loginDemoBasePath,

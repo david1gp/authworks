@@ -1,5 +1,4 @@
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -16,9 +15,9 @@ export function AccountWorkspaceToolbar(props: {
     <div class="flex shrink-0 flex-wrap items-center gap-2" data-account-toolbar>
       <Show when={props.administrationHref}>
         {(href) => (
-          <A class="rounded-control px-2 py-1 text-sm text-accent hover:bg-surface-hover" href={href()}>
+          <a class="rounded-control px-2 py-1 text-sm text-accent hover:bg-surface-hover" href={href()}>
             {messageTranslate("admin.navigation.label")}
-          </A>
+          </a>
         )}
       </Show>
       {/* The source contract's <LanguageSelector /> now carries the authenticated pill class. */}
@@ -28,14 +27,14 @@ export function AccountWorkspaceToolbar(props: {
         <ThemeButton />
       </div>
       <div class="border-l border-line-subtle pl-1.5 sm:pl-2">
-        <A
+        <a
           aria-label={messageTranslate("common.signOut")}
           class="grid size-7 shrink-0 place-items-center rounded-control text-accent transition-colors hover:bg-surface-hover hover:text-accent-hover"
           href="/login/logout"
           title={messageTranslate("common.signOut")}
         >
           <Icon path={mdiLogout} />
-        </A>
+        </a>
       </div>
     </div>
   )

@@ -1,8 +1,7 @@
 import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
-import Popover from "@corvu/popover"
-import { A } from "@solidjs/router"
+import Popover from "@corvu-next/popover"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedAvatar } from "../authenticated/AuthenticatedAvatar.js"
@@ -43,10 +42,10 @@ export function ProductionIdentityMenu(props: {
           </p>
           <div class="grid gap-0.5 p-1">
             <Show when={props.showProfile}>
-              <A class={authenticatedNavigationClasses.identityMenuOption} href="/account" onClick={state.select}>
+              <a class={authenticatedNavigationClasses.identityMenuOption} href="/account" onClick={state.select}>
                 <Icon aria-hidden="true" class="size-4 shrink-0" path={mdiAccountOutline} />
                 <span class="min-w-0 flex-1 truncate">{messageTranslate("shell.nav.profile")}</span>
-              </A>
+              </a>
             </Show>
             <div class={authenticatedNavigationClasses.identityMenuPreferences}>
               <p class={authenticatedNavigationClasses.identityMenuCaption}>{messageTranslate("common.language")}</p>
@@ -55,10 +54,10 @@ export function ProductionIdentityMenu(props: {
             </div>
             <Show when={props.signOutHref}>
               {(href) => (
-                <A class={authenticatedNavigationClasses.identityMenuOption} href={href()} onClick={state.select}>
+                <a class={authenticatedNavigationClasses.identityMenuOption} href={href()} onClick={state.select}>
                   <Icon aria-hidden="true" class="size-4 shrink-0 rtl:-scale-x-100" path={mdiLogout} />
                   <span class="min-w-0 flex-1 truncate">{messageTranslate("common.signOut")}</span>
-                </A>
+                </a>
               )}
             </Show>
           </div>

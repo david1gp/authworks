@@ -39,10 +39,12 @@ export function AccountProfileIdentityStrip(props: {
               title={messageTranslate("account.profile.displayName")}
             />
             <span
-              class="min-w-0 break-words"
-              classList={{
-                "font-normal text-muted-foreground": !props.displayName,
-              }}
+              class={[
+                "min-w-0 break-words",
+                {
+                  "font-normal text-muted-foreground": !props.displayName,
+                },
+              ]}
             >
               {props.displayName || messageTranslate("account.profile.notSet")}
             </span>
@@ -76,10 +78,12 @@ export function AccountProfileIdentityStrip(props: {
                 title={messageTranslate("account.profile.email")}
               />
               <span
-                class="min-w-0 break-all"
-                classList={{
-                  "text-muted-foreground": !props.email,
-                }}
+                class={[
+                  "min-w-0 break-all",
+                  {
+                    "text-muted-foreground": !props.email,
+                  },
+                ]}
               >
                 {props.email || messageTranslate("account.profile.emailMissing")}
               </span>

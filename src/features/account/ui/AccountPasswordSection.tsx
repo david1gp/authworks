@@ -1,9 +1,9 @@
 import { mdiLockReset } from "@adaptive-ds/mdi/mdiLockReset.js"
-import type { JSX } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import { accountPasswordSectionStateCreate } from "./accountPasswordSectionStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountPasswordSection(props: {
   readonly action?: JSX.Element

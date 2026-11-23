@@ -1,9 +1,9 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { AccountCardIcon } from "./AccountCardIcon.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Collapsed-by-default account disclosure. The card variant keeps a subject's icon, current value,
@@ -68,12 +68,14 @@ export function AccountDisclosure(
                 <Show when={props.status}>
                   {(status) => (
                     <span
-                      class="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-medium"
-                      classList={{
-                        "bg-success-soft text-success": props.statusTone === "success",
-                        "bg-danger-soft text-danger": props.statusTone === "danger",
-                        "bg-muted text-muted-foreground": !props.statusTone || props.statusTone === "neutral",
-                      }}
+                      class={[
+                        "inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-medium",
+                        {
+                          "bg-success-soft text-success": props.statusTone === "success",
+                          "bg-danger-soft text-danger": props.statusTone === "danger",
+                          "bg-muted text-muted-foreground": !props.statusTone || props.statusTone === "neutral",
+                        },
+                      ]}
                     >
                       {status()}
                     </span>

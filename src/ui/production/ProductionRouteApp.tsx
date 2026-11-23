@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router"
-import { createEffect, ErrorBoundary, Match, Show, Switch } from "solid-js"
+import { createEffect, Errored, Match, Show, Switch } from "solid-js"
 import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
 import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
@@ -30,8 +30,7 @@ import type { ProductionRouteContract } from "./productionRouteContract.js"
 export function ProductionRouteApp(props: { readonly route: ProductionRouteContract }) {
   const state = productionRouteAppStateCreate(() => props.route)
   const navigate = useNavigate()
-  createEffect(() => {
-    const target = state.redirectTarget()
+  createEffect(state.redirectTarget, (target) => {
     if (target !== undefined) navigate(target, { replace: true })
   })
   // The hosted login owns its own branded shell and resolves its realm through runtime discovery,
@@ -84,7 +83,7 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "authenticated"}>
-            <ErrorBoundary
+            <Errored
               fallback={
                 <ProductionFocusShell title={messageTranslate(screen().title)}>
                   <ProductionStatePanel state="error" />
@@ -111,7 +110,7 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                   </div>
                 </ProductionAuthenticatedShell>
               </Show>
-            </ErrorBoundary>
+            </Errored>
           </Match>
         </Switch>
       )}

@@ -1,5 +1,5 @@
 import { mdiDotsVertical } from "@adaptive-ds/mdi/mdiDotsVertical.js"
-import Popover from "@corvu/popover"
+import Popover from "@corvu-next/popover"
 import { For, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
@@ -43,7 +43,7 @@ export function AuthenticatedActionMenu(props: {
             <For each={props.items}>
               {(item) => (
                 <Popover.Close
-                  aria-disabled={item.disabled}
+                  aria-disabled={item.disabled === undefined ? undefined : item.disabled ? "true" : "false"}
                   aria-label={item.label}
                   class={classMerge(
                     "flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-start text-[0.8125rem] font-medium transition-colors",

@@ -239,7 +239,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                         <AuthenticatedInput
                           class="pe-7"
                           id="policy-session-lifetime"
-                          inputMode="numeric"
+                          inputmode="numeric"
                           max={31536000}
                           min={1}
                           onInput={(event) => props.onSessionLifetimeInput(event.currentTarget.value)}
@@ -264,7 +264,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                             <AuthenticatedInput
                               class="pe-7"
                               id={`policy-${field.key}`}
-                              inputMode="numeric"
+                              inputmode="numeric"
                               max={31536000}
                               min={1}
                               onInput={(event) => props.onMfaLifetimeInput(field.key, event.currentTarget.value)}

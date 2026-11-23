@@ -1,4 +1,3 @@
-import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 import { LinkTextExternal } from "#ui/interactive/link/LinkText.jsx"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
@@ -9,6 +8,7 @@ import type { LoginDiscovery } from "./loginAdapter.js"
 import { loginBackgroundNameGet } from "./loginBackgroundNameGet.js"
 import { loginFrameStateCreate } from "./loginFrameStateCreate.js"
 import { loginLegalSegmentsGet } from "./loginLegalSegmentsGet.js"
+import { type JSX } from "@solidjs/web"
 
 type LoginFrameProps = {
   readonly bootstrap: LoginDiscovery
@@ -37,7 +37,7 @@ export function LoginFrame(props: LoginFrameProps) {
       }}
     >
       <main class="login-frame">
-        <section aria-busy={props.busy} class="login-card">
+        <section aria-busy={props.busy === undefined ? undefined : props.busy ? "true" : "false"} class="login-card">
           <BrandHeader
             name={state.bootstrap().organization.name}
             logoUrl={state.assetUrl()}

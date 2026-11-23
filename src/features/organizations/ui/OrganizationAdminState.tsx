@@ -1,9 +1,9 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { authenticatedSignInAgainNavigate } from "../../../ui/authenticated/authenticatedSignInAgainNavigate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
+import { type JSX } from "@solidjs/web"
 
 /** Renders the shared loading, empty, error, denied, and assurance states for administration pages. */
 export function OrganizationAdminState(props: {

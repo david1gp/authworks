@@ -1,4 +1,4 @@
-import { createEffect, onCleanup, onMount } from "solid-js"
+import { createEffect, onCleanup, onSettled, untrack } from "solid-js"
 import * as v from "valibot"
 import type { Result, ResultErr } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -56,10 +56,11 @@ type LoginPageStateOptions = {
  * so screen transitions, validation, and error wording stay identical across both.
  */
 export function loginPageStateCreate(options: LoginPageStateOptions) {
-  const initialDiscovery = options.initialDiscovery?.()
-  const initialStatus = options.initialStatus?.()
+  const initialDiscovery = untrack(() => options.initialDiscovery?.())
+  const initialStatus = untrack(() => options.initialStatus?.())
   const status = createSignalObject<LoginViewStatus>(initialStatus ?? "loading")
-  const activeScreen = createSignalObject<LoginScreen>(options.screen())
+  let selectedScreen = untrack(options.screen)
+  const activeScreen = createSignalObject<LoginScreen>(selectedScreen)
   const discovery = createSignalObject<LoginDiscovery | undefined>(initialDiscovery)
   const errorMessage = createSignalObject<string | undefined>(undefined)
   const validationMessage = createSignalObject<string | undefined>(undefined)
@@ -74,13 +75,13 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const newPassword = createSignalObject("")
   const confirmPassword = createSignalObject("")
   const recoveryResetStep = createSignalObject<"loading" | "ready" | "invalid-link" | "complete">(
-    options.recoveryResetInitialStep?.() ?? "ready",
+    untrack(() => options.recoveryResetInitialStep?.() ?? "ready"),
   )
   const displayName = createSignalObject("")
   const userName = createSignalObject("")
   const challengeId = createSignalObject("")
-  const challengeToken = createSignalObject(options.initialMfaChallengeToken?.() ?? "")
-  const selectedProviderId = createSignalObject<string | undefined>(options.initialProviderId?.())
+  const challengeToken = createSignalObject(untrack(() => options.initialMfaChallengeToken?.() ?? ""))
+  const selectedProviderId = createSignalObject<string | undefined>(untrack(() => options.initialProviderId?.()))
   const resendAt = createSignalObject(0)
   const resendCountdown = createSignalObject(0)
   const emailOtpNotice = createSignalObject<string | undefined>(undefined)
@@ -91,7 +92,9 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const totpSetup = createSignalObject<
     { readonly enrollmentId: string; readonly otpauthUri: string; readonly secret: string } | undefined
   >(undefined)
-  const providerStatus = createSignalObject<ExternalIdentityLoginStatus>(options.initialProviderSubroute?.() ?? "ready")
+  const providerStatus = createSignalObject<ExternalIdentityLoginStatus>(
+    untrack(() => options.initialProviderSubroute?.() ?? "ready"),
+  )
   const passkeyStatus = createSignalObject<PasskeyAuthenticationStatus>(
     options.initialPasskeyStatus?.() ?? (options.screen() === "mfa-passkey" ? "mfa-continuation" : "ready"),
   )
@@ -106,7 +109,9 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const whatsappOtpStartRetryCountdown = createSignalObject(0)
   const whatsappOtpVerifyRetryAt = createSignalObject(0)
   const whatsappOtpVerifyRetryCountdown = createSignalObject(0)
-  const whatsappAvailabilityRefreshing = createSignalObject(false)
+  const whatsappAvailabilityRefreshVersion = createSignalObject(0)
+  let whatsappAvailabilityRefreshing = false
+  let whatsappRefreshVersion = 0
   const mfaSetupUnavailable = () => options.initialMfaSetupUnavailable?.() ?? false
   let identifierInput: HTMLInputElement | undefined
   let passwordInput: HTMLInputElement | undefined
@@ -124,7 +129,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   let whatsappOtpVerifyRetryTimer: ReturnType<typeof setTimeout> | undefined
   let lifecycleHeading: HTMLHeadingElement | undefined
   let requestedScreen: LoginScreen | undefined
-  let synchronizedRouteScreen = activeScreen.get()
+  let synchronizedRouteScreen = selectedScreen
   let screenFocusRequest = 0
   let lifecycleHeadingFocusRequest = 0
 
@@ -204,15 +209,15 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     clearTimeout(resendTimer)
     resendTimer = undefined
   }
-  const resendCountdownUpdate = () => {
+  const resendCountdownUpdate = (retryAt = resendAt.get()) => {
     resendTimerStop()
-    const remaining = emailOtpResendCountdownGet(resendAt.get())
+    const remaining = emailOtpResendCountdownGet(retryAt)
     resendCountdown.set(remaining)
     if (remaining > 0) resendTimer = setTimeout(resendCountdownUpdate, 1_000)
   }
   const resendAtSet = (nextRetryAt: number) => {
     resendAt.set(nextRetryAt)
-    resendCountdownUpdate()
+    resendCountdownUpdate(nextRetryAt)
   }
 
   const mfaEmailOtpResendTimerStop = () => {
@@ -220,15 +225,15 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     clearTimeout(mfaEmailOtpResendTimer)
     mfaEmailOtpResendTimer = undefined
   }
-  const mfaEmailOtpResendCountdownUpdate = () => {
+  const mfaEmailOtpResendCountdownUpdate = (retryAt = mfaEmailOtpResendAt.get()) => {
     mfaEmailOtpResendTimerStop()
-    const remaining = emailOtpResendCountdownGet(mfaEmailOtpResendAt.get())
+    const remaining = emailOtpResendCountdownGet(retryAt)
     mfaEmailOtpResendCountdown.set(remaining)
     if (remaining > 0) mfaEmailOtpResendTimer = setTimeout(mfaEmailOtpResendCountdownUpdate, 1_000)
   }
   const mfaEmailOtpResendAtSet = (nextRetryAt: number) => {
     mfaEmailOtpResendAt.set(nextRetryAt)
-    mfaEmailOtpResendCountdownUpdate()
+    mfaEmailOtpResendCountdownUpdate(nextRetryAt)
   }
 
   const whatsappOtpResendTimerStop = () => {
@@ -236,49 +241,50 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     clearTimeout(whatsappOtpResendTimer)
     whatsappOtpResendTimer = undefined
   }
-  const whatsappOtpResendCountdownUpdate = () => {
+  const whatsappOtpResendCountdownUpdate = (retryAt = whatsappOtpResendAt.get()) => {
     whatsappOtpResendTimerStop()
-    const remaining = emailOtpResendCountdownGet(whatsappOtpResendAt.get())
+    const remaining = emailOtpResendCountdownGet(retryAt)
     whatsappOtpResendCountdown.set(remaining)
     if (remaining > 0) whatsappOtpResendTimer = setTimeout(whatsappOtpResendCountdownUpdate, 1_000)
   }
   const whatsappOtpResendAtSet = (nextRetryAt: number) => {
     whatsappOtpResendAt.set(nextRetryAt)
-    whatsappOtpResendCountdownUpdate()
+    whatsappOtpResendCountdownUpdate(nextRetryAt)
   }
   const whatsappOtpStartRetryTimerStop = () => {
     if (whatsappOtpStartRetryTimer === undefined) return
     clearTimeout(whatsappOtpStartRetryTimer)
     whatsappOtpStartRetryTimer = undefined
   }
-  const whatsappOtpStartRetryCountdownUpdate = () => {
+  const whatsappOtpStartRetryCountdownUpdate = (retryAt = whatsappOtpStartRetryAt.get()) => {
     whatsappOtpStartRetryTimerStop()
-    const remaining = emailOtpResendCountdownGet(whatsappOtpStartRetryAt.get())
+    const remaining = emailOtpResendCountdownGet(retryAt)
     whatsappOtpStartRetryCountdown.set(remaining)
     if (remaining > 0) whatsappOtpStartRetryTimer = setTimeout(whatsappOtpStartRetryCountdownUpdate, 1_000)
   }
   const whatsappOtpStartRetryAtSet = (nextRetryAt: number) => {
     whatsappOtpStartRetryAt.set(nextRetryAt)
-    whatsappOtpStartRetryCountdownUpdate()
+    whatsappOtpStartRetryCountdownUpdate(nextRetryAt)
   }
   const whatsappOtpVerifyRetryTimerStop = () => {
     if (whatsappOtpVerifyRetryTimer === undefined) return
     clearTimeout(whatsappOtpVerifyRetryTimer)
     whatsappOtpVerifyRetryTimer = undefined
   }
-  const whatsappOtpVerifyRetryCountdownUpdate = () => {
+  const whatsappOtpVerifyRetryCountdownUpdate = (retryAt = whatsappOtpVerifyRetryAt.get()) => {
     whatsappOtpVerifyRetryTimerStop()
-    const remaining = emailOtpResendCountdownGet(whatsappOtpVerifyRetryAt.get())
+    const remaining = emailOtpResendCountdownGet(retryAt)
     whatsappOtpVerifyRetryCountdown.set(remaining)
     if (remaining > 0) whatsappOtpVerifyRetryTimer = setTimeout(whatsappOtpVerifyRetryCountdownUpdate, 1_000)
   }
   const whatsappOtpVerifyRetryAtSet = (nextRetryAt: number) => {
     whatsappOtpVerifyRetryAt.set(nextRetryAt)
-    whatsappOtpVerifyRetryCountdownUpdate()
+    whatsappOtpVerifyRetryCountdownUpdate(nextRetryAt)
   }
 
   const go = (screen: LoginScreen, refreshChooser = true) => {
-    const previousScreen = activeScreen.get()
+    const previousScreen = selectedScreen
+    selectedScreen = screen
     requestedScreen = screen === synchronizedRouteScreen ? undefined : screen
     activeScreen.set(screen)
     errorMessage.set(undefined)
@@ -409,12 +415,13 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     return promise
   }
   const whatsappAvailabilityRefresh = () => {
-    if (whatsappAvailabilityRefreshing.get()) return
-    whatsappAvailabilityRefreshing.set(true)
-    void loadForced().then(
-      () => whatsappAvailabilityRefreshing.set(false),
-      () => whatsappAvailabilityRefreshing.set(false),
-    )
+    if (whatsappAvailabilityRefreshing) return
+    whatsappAvailabilityRefreshing = true
+    const complete = () => {
+      whatsappAvailabilityRefreshing = false
+      whatsappAvailabilityRefreshVersion.set(++whatsappRefreshVersion)
+    }
+    void loadForced().then(complete, complete)
   }
 
   const passwordSubmit = async (event: SubmitEvent) => {
@@ -604,8 +611,9 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       go("whatsapp-otp")
       return
     }
-    code.set(code.get().replace(/\D/g, "").slice(0, 6))
-    if (!whatsappOtpCodeValid()) {
+    const normalizedCode = code.get().replace(/\D/g, "").slice(0, 6)
+    code.set(normalizedCode)
+    if (!/^\d{6}$/.test(normalizedCode)) {
       invalid(messageTranslate("login.error.codeRequired"))
       queueMicrotask(() => whatsappOtpCodeInput?.focus())
       return
@@ -615,7 +623,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       fail(messageTranslate("common.error"))
       return
     }
-    const submittedCode = code.get()
+    const submittedCode = normalizedCode
     const outcome = await run(
       () => verify(whatsappOtpChallengeId.get(), submittedCode),
       (result) => {
@@ -887,30 +895,33 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     interactionContinue()
   }
 
-  onMount(() => {
-    if (initialStatus !== undefined && discovery.get() === undefined) return
-    void load()
+  onSettled(() => {
+    if (initialStatus !== undefined && initialDiscovery === undefined) return
+    void untrack(load)
   })
-  createEffect(() => {
-    const routeScreen = options.screen()
-    if (routeScreen !== "whatsapp-otp" && routeScreen !== "whatsapp-otp-code") return
-    if (whatsappAvailabilityRefreshing.get()) return
-    const found = discovery.get()
-    if (found === undefined) return
-    if (found.policy.allowWhatsappOtp === true && options.adapter.whatsappOtpAvailable?.() === true) return
-    if (activeScreen.get() === "chooser" && requestedScreen === "chooser") return
-    go("chooser", false)
-  })
-  createEffect(() => {
-    if (options.screen() !== "register") return
-    const found = discovery.get()
-    if (found === undefined) return
-    if (found.policy.allowRegistration !== false) return
-    if (activeScreen.get() === "chooser" && requestedScreen === "chooser") return
-    go("chooser", false)
-  })
-  createEffect(() => {
-    const routeScreen = options.screen()
+  createEffect(
+    () => {
+      const routeScreen = options.screen()
+      if (routeScreen !== "whatsapp-otp" && routeScreen !== "whatsapp-otp-code") return false
+      whatsappAvailabilityRefreshVersion.get()
+      if (whatsappAvailabilityRefreshing) return false
+      const found = discovery.get()
+      return (
+        found !== undefined &&
+        !(found.policy.allowWhatsappOtp === true && options.adapter.whatsappOtpAvailable?.() === true)
+      )
+    },
+    (unavailable) => {
+      if (unavailable && requestedScreen !== "chooser") go("chooser", false)
+    },
+  )
+  createEffect(
+    () => options.screen() === "register" && discovery.get()?.policy.allowRegistration === false,
+    (unavailable) => {
+      if (unavailable && requestedScreen !== "chooser") go("chooser", false)
+    },
+  )
+  createEffect(options.screen, (routeScreen) => {
     const routeWasRequested = requestedScreen !== undefined
     if (requestedScreen !== undefined) {
       if (routeScreen !== requestedScreen) return
@@ -919,20 +930,28 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     if (routeScreen === synchronizedRouteScreen) return
     const previousRouteScreen = synchronizedRouteScreen
     synchronizedRouteScreen = routeScreen
+    selectedScreen = routeScreen
     activeScreen.set(routeScreen)
     const enteredWhatsapp =
       (routeScreen === "whatsapp-otp" || routeScreen === "whatsapp-otp-code") &&
       previousRouteScreen !== "whatsapp-otp" &&
       previousRouteScreen !== "whatsapp-otp-code"
-    if (!routeWasRequested && enteredWhatsapp) whatsappAvailabilityRefresh()
+    if (!routeWasRequested && enteredWhatsapp) untrack(whatsappAvailabilityRefresh)
   })
-  createEffect(() => {
-    const currentScreen = activeScreen.get()
-    if (currentScreen === "recovery-reset") recoveryResetStep.set(options.recoveryResetInitialStep?.() ?? "ready")
-    if (currentScreen === "recovery-complete") recoveryResetStep.set("complete")
-  })
-  createEffect(() => {
-    const screen = activeScreen.get()
+  createEffect(
+    () => {
+      const currentScreen = activeScreen.get()
+      return [
+        currentScreen,
+        currentScreen === "recovery-reset" ? options.recoveryResetInitialStep?.() : undefined,
+      ] as const
+    },
+    ([currentScreen, step]) => {
+      if (currentScreen === "recovery-reset") recoveryResetStep.set(step ?? "ready")
+      if (currentScreen === "recovery-complete") recoveryResetStep.set("complete")
+    },
+  )
+  createEffect(activeScreen.get, (screen) => {
     const focusRequest = ++screenFocusRequest
     if (
       screen !== "email-otp" &&
@@ -949,8 +968,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       if (screen === "whatsapp-otp-code") whatsappOtpCodeInput?.focus()
     })
   })
-  createEffect(() => {
-    const currentStatus = status.get()
+  createEffect(status.get, (currentStatus) => {
     const focusRequest = ++lifecycleHeadingFocusRequest
     if (currentStatus !== "loading" && currentStatus !== "continuing" && currentStatus !== "fatal") return
     queueMicrotask(() => {

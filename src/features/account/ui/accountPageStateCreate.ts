@@ -1,4 +1,4 @@
-import { type Accessor, onMount } from "solid-js"
+import { type Accessor, onSettled } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -100,6 +100,11 @@ export function accountPageStateCreate(options: {
   const deletionConfirmation = createSignalObject("")
   const deletionDialogOpen = createSignalObject(false)
   const deletionPending = createSignalObject(false)
+  let deletionInFlight = false
+  const deletionPendingSet = (value: boolean) => {
+    deletionInFlight = value
+    deletionPending.set(value)
+  }
   const phoneAddDialogOpen = createSignalObject(false)
   const phoneCandidate = createSignalObject("")
   const phoneChallengeId = createSignalObject<string | undefined>(undefined)
@@ -328,20 +333,20 @@ export function accountPageStateCreate(options: {
   }
   const accountDelete = async (event: SubmitEvent) => {
     event.preventDefault()
-    if (!deletionDialogOpen.get() || deletionPending.get() || status.get() !== "ready") return
+    if (!deletionDialogOpen.get() || deletionInFlight || status.get() !== "ready") return
     validationMessage.set(undefined)
     if (deletionConfirmation.get() !== user.get()?.email) {
       validationMessage.set(messageTranslate("account.delete.emailMismatch"))
       return
     }
-    deletionPending.set(true)
+    deletionPendingSet(true)
     if (!(await confirmation.confirm(messageTranslate("account.delete.warning")))) {
-      deletionPending.set(false)
+      deletionPendingSet(false)
       return
     }
     status.set("loading")
     const result = await options.adapter.deleteAccount()
-    deletionPending.set(false)
+    deletionPendingSet(false)
     if (!result.success) return resultFail(result)
     userApply(result.data.user)
     deletionConfirmation.set("")
@@ -599,7 +604,7 @@ export function accountPageStateCreate(options: {
     emailStatus.set("success")
   }
 
-  onMount(() => {
+  onSettled(() => {
     void (async () => {
       await load()
       if (typeof window === "undefined") return

@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { Show, useContext } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { AuthenticatedDensityContext } from "./AuthenticatedDensityContext.js"
 import { authenticatedRelativeTimeStateCreate } from "./authenticatedRelativeTimeStateCreate.js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Relative timestamp (`5 minutes ago`) that exposes the absolute local time in its `title` and
@@ -23,7 +23,7 @@ export function AuthenticatedRelativeTime(props: {
   return (
     <Show when={state.text()} fallback={props.fallback}>
       {(text) => (
-        <time class={classMerge("tabular-nums", props.class)} dateTime={state.dateTime()} title={state.absolute()}>
+        <time class={classMerge("tabular-nums", props.class)} datetime={state.dateTime()} title={state.absolute()}>
           {text()}
         </time>
       )}

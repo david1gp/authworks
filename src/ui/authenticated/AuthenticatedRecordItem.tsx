@@ -1,7 +1,7 @@
-import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 import { AuthenticatedFieldList } from "./AuthenticatedFieldList.js"
 import type { AuthenticatedField } from "./authenticatedField.js"
+import { type JSX } from "@solidjs/web"
 
 /** One stacked record inside {@link AuthenticatedRecordList}: title, status badges, fields, actions. */
 export function AuthenticatedRecordItem(props: {

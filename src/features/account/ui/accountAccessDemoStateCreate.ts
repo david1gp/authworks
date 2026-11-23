@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router"
-import { createEffect } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -139,7 +139,7 @@ export function accountAccessDemoStateCreate(
   const invitations = createSignalObject([invitationFixture])
   const effectiveAccess = createSignalObject([...effectiveAccessFixtures])
   const activeOrganizationId = createSignalObject("northwind")
-  const localViewedOrganizationId = createSignalObject<string | undefined>(activeOrganizationId.get())
+  const localViewedOrganizationId = createSignalObject<string | undefined>(untrack(activeOrganizationId.get))
   const viewedOrganizationId = options.viewedOrganizationId ?? localViewedOrganizationId.get
   let viewedOrganizationExplicit = false
   const notice = createSignalObject<string | undefined>(undefined)
@@ -195,7 +195,11 @@ export function accountAccessDemoStateCreate(
             : invitations.get()
     return statusFor(collection)
   }
-  if (options.viewedOrganizationId === undefined) createEffect(viewedOrganizationSynchronize)
+  if (options.viewedOrganizationId === undefined)
+    createEffect(
+      () => [availableOrganizations(), activeOrganizationId.get()],
+      () => untrack(viewedOrganizationSynchronize),
+    )
   return {
     activeOrganizationId: activeOrganizationId.get,
     consentRevoke: async (clientId: string) => {

@@ -22,8 +22,8 @@ export function AccountProfilePictureField(props: {
   readonly url: string
 }) {
   const state = accountProfilePictureFieldStateCreate({
-    onRemove: props.onRemove,
-    onUpload: props.onUpload,
+    onRemove: () => props.onRemove(),
+    onUpload: (file) => props.onUpload(file),
     status: () => props.status,
     url: () => props.url,
   })
@@ -60,7 +60,7 @@ export function AccountProfilePictureField(props: {
           disabled={state.busy()}
           onChange={state.onFileInputChange}
           ref={state.fileInputSet}
-          tabIndex={-1}
+          tabindex={-1}
           type="file"
         />
         <div class="grid justify-items-center gap-3">
@@ -79,7 +79,7 @@ export function AccountProfilePictureField(props: {
           </div>
           {/* biome-ignore lint/a11y/useSemanticElements: the drag target also opens the native file picker */}
           <div
-            aria-disabled={state.busy()}
+            aria-disabled={state.busy() ? "true" : "false"}
             aria-label={messageTranslate("account.profile.pictureChoose")}
             class={`grid w-full cursor-pointer justify-items-center gap-2 rounded-panel border-2 border-dashed p-5 text-center focus-visible:ring-2 focus-visible:ring-primary ${state.isDragging() ? "border-primary bg-primary/5" : "border-line"}`}
             onClick={state.openFilePicker}
@@ -89,7 +89,7 @@ export function AccountProfilePictureField(props: {
             onDrop={state.onDrop}
             onKeyDown={state.onKeyDown}
             role="button"
-            tabIndex={state.busy() ? -1 : 0}
+            tabindex={state.busy() ? -1 : 0}
           >
             <Icon class="size-8 text-accent" path={mdiCloudUploadOutline} />
             <span class="text-sm">{messageTranslate("account.profile.pictureDropHint")}</span>

@@ -48,10 +48,7 @@ function AdminWhatsappQuotaBar(props: {
 
 function AdminWhatsappSenderCard(props: { readonly card: WhatsappSenderCard }) {
   return (
-    <div
-      class="rounded-panel border border-line bg-surface p-4 shadow-panel"
-      classList={{ "opacity-60": props.card.dimmed }}
-    >
+    <div class={["rounded-panel border border-line bg-surface p-4 shadow-panel", { "opacity-60": props.card.dimmed }]}>
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="min-w-0">
           <p class="truncate text-[0.9375rem] font-semibold tracking-tight">{props.card.sessionName}</p>
@@ -140,7 +137,7 @@ export function AdminWhatsappView(props: { readonly state: ReturnType<typeof adm
           <For each={view.windowOptions()}>
             {(option) => (
               <Button
-                aria-pressed={view.windowSelected(option.value)}
+                aria-pressed={view.windowSelected(option.value) ? "true" : "false"}
                 class={classMerge(
                   "shrink-0 gap-2 rounded-control border px-3.5 py-2 text-sm whitespace-nowrap shadow-none focus-visible:ring-accent",
                   view.windowSelected(option.value)

@@ -16,7 +16,7 @@ export function AuthenticatedThemeToggle(props: { readonly class?: string }) {
         {(option) => (
           <button
             aria-label={option.label()}
-            aria-pressed={option.pressed()}
+            aria-pressed={option.pressed() ? "true" : "false"}
             title={option.label()}
             class={classMerge(
               "grid size-7 shrink-0 place-items-center rounded-full transition-colors",

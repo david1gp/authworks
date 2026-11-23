@@ -1,4 +1,4 @@
-import { createEffect, onCleanup, onMount } from "solid-js"
+import { createEffect, onCleanup, onSettled } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 
 type PasswordChangeRequiredStateCreateOptions = {
@@ -28,8 +28,8 @@ export function passwordChangeRequiredStateCreate(options: PasswordChangeRequire
     focus(() => newPasswordInput)
   }
 
-  onMount(() => focus(() => currentPasswordInput))
-  createEffect(() => validationFocus(options.validationMessage()))
+  onSettled(() => focus(() => currentPasswordInput))
+  createEffect(options.validationMessage, validationFocus)
   onCleanup(() => {
     options.onCurrentPassword("")
     options.onNewPassword("")

@@ -1,4 +1,4 @@
-import { createEffect, on, onCleanup } from "solid-js"
+import { createEffect, onCleanup } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
@@ -274,8 +274,8 @@ export function accountSecurityProductionStateCreate(options: {
     if (pendingId.get()?.startsWith("totp:remove:step-up") === true) pendingId.set(undefined)
     totpRemoveStepUpReset()
   }
-  const totpRemoveExecute = async (enrollmentId?: string): Promise<boolean> => {
-    if (pendingId.get() !== undefined) return false
+  const totpRemoveExecute = async (enrollmentId?: string, afterStepUp = false): Promise<boolean> => {
+    if (!afterStepUp && pendingId.get() !== undefined) return false
     pendingId.set("totp:remove")
     error.set(undefined)
     const result = await api.totpRemove(options.realmId(), enrollmentId === undefined ? {} : { enrollmentId })
@@ -319,8 +319,7 @@ export function accountSecurityProductionStateCreate(options: {
       return false
     }
     totpRemoveStepUpReset()
-    pendingId.set(undefined)
-    return totpRemoveExecute(enrollmentId)
+    return totpRemoveExecute(enrollmentId, true)
   }
   const identityStepUpReset = () => {
     identityStepUpGeneration += 1
@@ -485,16 +484,14 @@ export function accountSecurityProductionStateCreate(options: {
   }
 
   createEffect(
-    on(
-      () => `${options.realmId()}:${options.screen()}`,
-      () => {
-        oneTimeCodes.set([])
-        totpFlowReset()
-        totpRemoveStepUpCancel()
-        identityStepUpCancel()
-        void load()
-      },
-    ),
+    () => `${options.realmId()}:${options.screen()}`,
+    () => {
+      oneTimeCodes.set([])
+      totpFlowReset()
+      totpRemoveStepUpCancel()
+      identityStepUpCancel()
+      void load()
+    },
   )
 
   return {

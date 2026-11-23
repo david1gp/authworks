@@ -1,5 +1,5 @@
 import type { Result } from "#result"
-import { createEffect, on } from "solid-js"
+import { createEffect } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -74,32 +74,30 @@ export function oidcAdminClientDetailViewStateCreate(options: {
   }
 
   createEffect(
-    on(
-      () => options.page.client(),
-      (client) => {
-        if (client === undefined) return
-        name.set(client.name)
-        redirectUris.set(client.redirectUris.join("\n"))
-        postLogoutRedirectUris.set(client.postLogoutRedirectUris.join("\n"))
-        additionalOrigins.set(client.additionalOrigins.join("\n"))
-        scopes.set([...client.allowedScopes])
-        accessTokenRoleAssertion.set(client.accessTokenRoleAssertion)
-        idTokenUserinfoAssertion.set(client.idTokenUserinfoAssertion)
-        idTokenRoleAssertion.set(client.idTokenRoleAssertion)
-        projectId.set(client.projectId ?? "")
-        applicationId.set(client.applicationId ?? "")
-        accessTokenLifetimeSeconds.set(lifetimeText(client.accessTokenLifetimeSeconds))
-        idTokenLifetimeSeconds.set(lifetimeText(client.idTokenLifetimeSeconds))
-        refreshTokenIdleLifetimeSeconds.set(lifetimeText(client.refreshTokenIdleLifetimeSeconds))
-        refreshTokenAbsoluteLifetimeSeconds.set(lifetimeText(client.refreshTokenAbsoluteLifetimeSeconds))
-        grantTypes.set([...client.grantTypes])
-        responseTypes.set([...client.responseTypes])
-        devMode.set(client.devMode)
-        requireConsent.set(client.requireConsent)
-        trusted.set(client.trusted)
-        void applicationsLoad(client.projectId ?? "")
-      },
-    ),
+    () => options.page.client(),
+    (client) => {
+      if (client === undefined) return
+      name.set(client.name)
+      redirectUris.set(client.redirectUris.join("\n"))
+      postLogoutRedirectUris.set(client.postLogoutRedirectUris.join("\n"))
+      additionalOrigins.set(client.additionalOrigins.join("\n"))
+      scopes.set([...client.allowedScopes])
+      accessTokenRoleAssertion.set(client.accessTokenRoleAssertion)
+      idTokenUserinfoAssertion.set(client.idTokenUserinfoAssertion)
+      idTokenRoleAssertion.set(client.idTokenRoleAssertion)
+      projectId.set(client.projectId ?? "")
+      applicationId.set(client.applicationId ?? "")
+      accessTokenLifetimeSeconds.set(lifetimeText(client.accessTokenLifetimeSeconds))
+      idTokenLifetimeSeconds.set(lifetimeText(client.idTokenLifetimeSeconds))
+      refreshTokenIdleLifetimeSeconds.set(lifetimeText(client.refreshTokenIdleLifetimeSeconds))
+      refreshTokenAbsoluteLifetimeSeconds.set(lifetimeText(client.refreshTokenAbsoluteLifetimeSeconds))
+      grantTypes.set([...client.grantTypes])
+      responseTypes.set([...client.responseTypes])
+      devMode.set(client.devMode)
+      requireConsent.set(client.requireConsent)
+      trusted.set(client.trusted)
+      void applicationsLoad(client.projectId ?? "")
+    },
   )
 
   return {

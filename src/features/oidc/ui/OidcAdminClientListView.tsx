@@ -196,7 +196,7 @@ export function OidcAdminClientListView(props: {
             <Table
               aria-label={messageTranslate("admin.oidc.clients.title")}
               class={authenticatedTableClasses.tableWide}
-              tabIndex={0}
+              tabindex={0}
             >
               <TableHeader class={authenticatedTableClasses.header}>
                 <TableRow>

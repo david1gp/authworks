@@ -10,8 +10,10 @@ export function LoginPanelHeader(props: {
   return (
     <>
       <h1
-        class="text-balance text-2xl font-semibold tracking-tight"
-        classList={{ "outline-none": (props.headingTabIndex ?? -1) === -1 }}
+        class={[
+          "text-balance text-2xl font-semibold tracking-tight",
+          { "outline-none": (props.headingTabIndex ?? -1) === -1 },
+        ]}
         id={props.headingId}
         ref={(element) => props.headingRegister?.(element)}
         tabindex={props.headingTabIndex ?? -1}

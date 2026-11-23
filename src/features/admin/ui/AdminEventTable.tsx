@@ -88,7 +88,7 @@ export function AdminEventTable(props: { readonly state: ReturnType<typeof admin
                           ? messageTranslate("admin.events.hide")
                           : messageTranslate("admin.events.show")
                       }
-                      aria-expanded={props.state.expandedEventId() === item.id}
+                      aria-expanded={props.state.expandedEventId() === item.id ? "true" : "false"}
                       onClick={() => props.state.eventExpandToggle(item.id)}
                       variant="outline"
                     />
@@ -96,7 +96,7 @@ export function AdminEventTable(props: { readonly state: ReturnType<typeof admin
                 </TableRow>
                 <Show when={props.state.expandedEventId() === item.id}>
                   <TableRow class={authenticatedTableClasses.row}>
-                    <TableCell class="px-3 py-2" colSpan={5}>
+                    <TableCell class="px-3 py-2" colspan={5}>
                       <p class="mb-1.5 text-xs text-muted-foreground">
                         {messageTranslate("admin.events.redactionNotice")}
                       </p>

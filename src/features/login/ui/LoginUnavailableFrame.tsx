@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
 import { LoginThemeToggle } from "./LoginThemeToggle.js"
 import { loginBackgroundNameGet } from "./loginBackgroundNameGet.js"
 import { loginUnavailableFrameStateCreate } from "./loginUnavailableFrameStateCreate.js"
+import { type JSX } from "@solidjs/web"
 
 /** Login shell used before or instead of realm discovery, when no branding is available yet. */
 export function LoginUnavailableFrame(props: {
@@ -24,7 +24,10 @@ export function LoginUnavailableFrame(props: {
       }}
     >
       <main class="login-frame">
-        <section aria-busy={props.busy} class="login-card p-5 sm:p-10">
+        <section
+          aria-busy={props.busy === undefined ? undefined : props.busy ? "true" : "false"}
+          class="login-card p-5 sm:p-10"
+        >
           {props.children}
         </section>
         <header class="login-controls">

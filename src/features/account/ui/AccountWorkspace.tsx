@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountSectionAnchorHeading } from "./AccountSectionAnchorHeading.js"
 import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountWorkspace(props: {
   readonly access: JSX.Element

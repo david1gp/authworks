@@ -1,8 +1,8 @@
-import type { JSX } from "solid-js"
 import { ProductionApiProvider } from "./ProductionApiProvider.js"
 import { ProductionSessionProvider } from "./ProductionSessionProvider.js"
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
+import { type JSX } from "@solidjs/web"
 
 export function ProductionApplicationProviders(props: {
   readonly api: ProductionApiContextValue

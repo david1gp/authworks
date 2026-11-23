@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { For } from "solid-js"
 import { BlueBulletPoint } from "#ui/static/lists/BlueBulletPoint.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -14,9 +13,9 @@ export function EmailDemoDirectory() {
             {(fixture) => (
               <div class="flex flex-row flex-nowrap content-center">
                 <BlueBulletPoint />
-                <A class="break-all no-underline hover:underline" href={`/demo/emails/${fixture.id}`}>
+                <a class="break-all no-underline hover:underline" href={`/demo/emails/${fixture.id}`}>
                   {messageTranslate(fixture.titleKey)}
-                </A>
+                </a>
               </div>
             )}
           </For>

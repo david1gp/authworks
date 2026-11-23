@@ -3,7 +3,6 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -57,13 +56,13 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
   const projectGroup = (entry: DirectoryRolesProjectEntry) => (
     <AuthenticatedSection label={entry.project.name}>
       <div class="flex flex-wrap items-center gap-2 border-b border-line-subtle px-4 py-2">
-        <A
+        <a
           class="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
           href={state.projectHref(entry.project.id)}
         >
           {entry.project.name}
           <Icon aria-hidden="true" class="size-4" path={mdiArrowRight} />
-        </A>
+        </a>
         <AuthenticatedChip
           label={messageTranslate(entry.owned ? "admin.roles.projects.owned" : "admin.roles.projects.shared")}
           tone={entry.owned ? "accent" : "neutral"}
@@ -112,7 +111,7 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
           </For>
         </AuthenticatedRecordList>
 
-        <Table aria-label={entry.project.name} class={authenticatedTableClasses.tableWide} tabIndex={0}>
+        <Table aria-label={entry.project.name} class={authenticatedTableClasses.tableWide} tabindex={0}>
           <TableHeader class={authenticatedTableClasses.header}>
             <TableRow>
               <TableHead class={authenticatedTableClasses.head}>
@@ -188,7 +187,7 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
             <div class="divide-y divide-line-subtle">
               <For each={page().organizationRoles()}>
                 {(role) => (
-                  <A
+                  <a
                     aria-label={`${role.name} · ${directoryRolesMemberCountLabel(page().memberCount(role.id) ?? 0)}`}
                     class="flex min-w-0 items-center gap-3 px-4 py-2 text-[13px] hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-accent"
                     href={state.usersHref(role.id)}
@@ -201,7 +200,7 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
                     <span class="ml-auto hidden truncate text-xs text-muted-foreground sm:block">
                       {messageTranslate(`admin.roles.orgRole.${role.id}.description`)}
                     </span>
-                  </A>
+                  </a>
                 )}
               </For>
             </div>
@@ -221,13 +220,13 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
                     title={messageTranslate("admin.roles.empty.title")}
                   />
                   <div class="mt-3 flex justify-center">
-                    <A
+                    <a
                       class="inline-flex items-center gap-1.5 rounded-control border border-line bg-surface px-3.5 py-2 text-sm font-medium hover:border-line-strong"
                       href={state.projectsHref()}
                     >
                       <Icon aria-hidden="true" class="size-4" path={mdiArrowRight} />
                       {messageTranslate("admin.roles.empty.createProjects")}
-                    </A>
+                    </a>
                   </div>
                 </div>
               </AuthenticatedSection>

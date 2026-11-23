@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, onCleanup } from "solid-js"
+import { type Accessor, createEffect, onCleanup, untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedImageFallbackStateCreate } from "../../../ui/authenticated/authenticatedImageFallbackStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -18,7 +18,6 @@ export function accountProfilePictureFieldStateCreate(options: {
   const validationMessage = createSignalObject<string | undefined>(undefined)
   const picture = authenticatedImageFallbackStateCreate(() => previewUrl.get() || options.url())
   let fileInput: HTMLInputElement | undefined
-  let previousStatus: AccountPictureViewStatus = options.status()
   const busy = () => options.status() === "uploading" || options.status() === "removing"
   const hasPicture = () => (previewUrl.get() || options.url()).length > 0
   const previewClear = () => {
@@ -56,10 +55,8 @@ export function accountProfilePictureFieldStateCreate(options: {
     if (!open.get() || busy() || !options.url()) return
     options.onRemove()
   }
-  createEffect(() => {
-    const current = options.status()
-    if ((previousStatus === "uploading" || previousStatus === "removing") && current === "success") openChange(false)
-    previousStatus = current
+  createEffect(options.status, (current, previous) => {
+    if ((previous === "uploading" || previous === "removing") && current === "success") untrack(() => openChange(false))
   })
   onCleanup(previewClear)
   const openFilePicker = () => {

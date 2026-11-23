@@ -1,6 +1,5 @@
 import { mdiAccountSwitchOutline } from "@adaptive-ds/mdi/mdiAccountSwitchOutline.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -43,9 +42,9 @@ export function ImpersonationAdminBanner(props: {
             {messageTranslate("admin.impersonation.expiringSoon")}
           </span>
         </Show>
-        <A class="text-xs font-medium underline underline-offset-2" href={props.eventsHref}>
+        <a class="text-xs font-medium underline underline-offset-2" href={props.eventsHref}>
           {messageTranslate("admin.impersonation.auditLink")}
-        </A>
+        </a>
         <AuthenticatedButton disabled={props.pending} icon={mdiLogout} onClick={props.onEnd} variant="outline">
           {messageTranslate("admin.impersonation.end")}
         </AuthenticatedButton>

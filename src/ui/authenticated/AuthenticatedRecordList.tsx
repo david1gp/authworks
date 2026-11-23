@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 /**
  * Narrow-viewport counterpart to the dense authenticated table. Rows become stacked records so every

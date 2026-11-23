@@ -1,8 +1,8 @@
 import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { type JSX } from "@solidjs/web"
 
 export function AccountSecurityStatus(props: {
   readonly action?: JSX.Element

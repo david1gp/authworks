@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router"
-import { createEffect, createSignal, on, onCleanup } from "solid-js"
+import { createEffect, createSignal } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
@@ -24,11 +24,11 @@ export function impersonationAdminShellBannerStateCreate(options: {
   }
   const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
   const realmId = createSignalObject(fallbackRealmId())
-  createEffect(() => {
+  createEffect(fallbackRealmId, (fallback) => {
     void productionRealmIdResolve({
       baseUrl,
       domain: typeof window === "undefined" ? "localhost" : window.location.hostname,
-      fallbackRealmId: fallbackRealmId(),
+      fallbackRealmId: fallback,
     }).then(realmId.set)
   })
   const adapter = impersonationAdminProductionAdapterCreate({
@@ -39,21 +39,30 @@ export function impersonationAdminShellBannerStateCreate(options: {
   const pending = createSignalObject(false)
   const [now, nowSet] = createSignal(Date.now())
 
-  createEffect(
-    on(realmId.get, async (realm) => {
-      if (realm.length === 0) return active.set(null)
-      const result = await adapter.activeGet()
+  createEffect(realmId.get, (realm) => {
+    if (realm.length === 0) {
+      active.set(null)
+      return
+    }
+    let current = true
+    void adapter.activeGet().then((result) => {
       // A failed probe simply means no banner; it must never block the surrounding page.
-      active.set(result.success ? result.data : null)
-    }),
-  )
+      if (current) active.set(result.success ? result.data : null)
+    })
+    return () => {
+      current = false
+    }
+  })
 
   // The countdown is only ticked while an impersonation is actually active.
-  createEffect(() => {
-    if (active.get() === null) return
-    const timer = setInterval(() => nowSet(Date.now()), 1_000)
-    onCleanup(() => clearInterval(timer))
-  })
+  createEffect(
+    () => active.get() !== null,
+    (running) => {
+      if (!running) return
+      const timer = setInterval(() => nowSet(Date.now()), 1_000)
+      return () => clearInterval(timer)
+    },
+  )
 
   const location = useLocation()
 

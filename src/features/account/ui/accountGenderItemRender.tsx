@@ -2,9 +2,9 @@ import { mdiGenderFemale } from "@adaptive-ds/mdi/mdiGenderFemale.js"
 import { mdiGenderMale } from "@adaptive-ds/mdi/mdiGenderMale.js"
 import { mdiGenderNonBinary } from "@adaptive-ds/mdi/mdiGenderNonBinary.js"
 import { mdiHelpCircleOutline } from "@adaptive-ds/mdi/mdiHelpCircleOutline.js"
-import type { JSX } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { accountGenderValueText } from "./accountGenderValueText.js"
+import { type JSX } from "@solidjs/web"
 
 function accountGenderIconPathGet(value: string): string {
   if (value === "woman") return mdiGenderFemale

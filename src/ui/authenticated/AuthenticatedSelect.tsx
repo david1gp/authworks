@@ -7,7 +7,7 @@ import { authenticatedSelectNativeStateCreate } from "./authenticatedSelectNativ
 import type { AuthenticatedSelectProps } from "./authenticatedSelectProps.js"
 
 export function AuthenticatedSelect(props: AuthenticatedSelectProps) {
-  const state = authenticatedSelectNativeStateCreate(() => props)
+  const state = authenticatedSelectNativeStateCreate(props)
   return (
     <div class="relative w-full min-w-0">
       <select

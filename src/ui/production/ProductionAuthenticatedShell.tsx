@@ -1,7 +1,6 @@
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
-import { A } from "@solidjs/router"
-import { For, type JSX, Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -18,6 +17,7 @@ import { ProductionOrganizationSwitcher } from "./ProductionOrganizationSwitcher
 import { ProductionOrganizationTile } from "./ProductionOrganizationTile.js"
 import { productionAuthenticatedShellStateCreate } from "./productionAuthenticatedShellStateCreate.js"
 import type { ProductionNavigationItem } from "./productionNavigationItem.js"
+import { type JSX } from "@solidjs/web"
 
 type ProductionAuthenticatedShellState = ReturnType<typeof productionAuthenticatedShellStateCreate>
 
@@ -52,7 +52,7 @@ function ProductionSidebarFooter(props: { readonly state: ProductionAuthenticate
 
 function ProductionContextualNavigation(props: { readonly state: ProductionAuthenticatedShellState }) {
   const navigationLink = (item: ProductionNavigationItem) => (
-    <A
+    <a
       aria-current={props.state.isItemActive(item.href) ? "page" : undefined}
       class={authenticatedNavigationLinkClassGet(props.state.isItemActive(item.href))}
       href={item.href}
@@ -60,7 +60,7 @@ function ProductionContextualNavigation(props: { readonly state: ProductionAuthe
     >
       <Icon path={item.icon} />
       <span class="truncate">{messageTranslate(item.label)}</span>
-    </A>
+    </a>
   )
   return (
     <div class={authenticatedNavigationClasses.frame}>
@@ -158,7 +158,7 @@ export function ProductionAuthenticatedShell(props: {
               when={state.adminScope() === "organization" ? state.activeOrganization() : undefined}
             >
               {(organization) => (
-                <A class={authenticatedNavigationClasses.headerBrand} href={state.homeHref()}>
+                <a class={authenticatedNavigationClasses.headerBrand} href={state.homeHref()}>
                   <ProductionOrganizationTile
                     imageUrl={organization().imageUrl}
                     label={organization().label}
@@ -175,7 +175,7 @@ export function ProductionAuthenticatedShell(props: {
                       {organization().label}
                     </span>
                   </span>
-                </A>
+                </a>
               )}
             </Show>
           </div>
@@ -189,9 +189,9 @@ export function ProductionAuthenticatedShell(props: {
               : authenticatedNavigationClasses.content
           }
         >
-          <AuthenticatedDensityContext.Provider value={props.kind === "admin" ? "compact" : "comfortable"}>
+          <AuthenticatedDensityContext value={props.kind === "admin" ? "compact" : "comfortable"}>
             {props.children}
-          </AuthenticatedDensityContext.Provider>
+          </AuthenticatedDensityContext>
         </main>
       </div>
     </div>

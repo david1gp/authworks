@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router"
 import { For } from "solid-js"
 import { BlueBulletPoint } from "#ui/static/lists/BlueBulletPoint.jsx"
 import { PageWrapper } from "#ui/static/page/PageWrapper.jsx"
@@ -57,9 +56,9 @@ function DemoHubSectionLinks(props: { links: readonly DemoHubLink[] }) {
         {(link) => (
           <div class="flex flex-row flex-nowrap content-center">
             <BlueBulletPoint />
-            <A class="break-all no-underline hover:underline" href={link.href}>
+            <a class="break-all no-underline hover:underline" href={link.href}>
               {link.label()}
-            </A>
+            </a>
           </div>
         )}
       </For>
@@ -73,43 +72,43 @@ export function DemoHub() {
       <header class="border-b border-line bg-surface/90 backdrop-blur">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div class="flex min-w-0 items-center gap-4">
-            <A class="font-semibold tracking-tight" href="/demo">
+            <a class="font-semibold tracking-tight" href="/demo">
               {messageTranslate("app.name")}
-            </A>
+            </a>
             <span class="hidden h-5 w-px bg-line sm:block" />
             <span class="hidden text-sm text-muted-foreground sm:block">{messageTranslate("demo.nav.hub")}</span>
           </div>
           <div class="flex min-w-0 items-center gap-2 sm:gap-3">
-            <A
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/login"
             >
               {messageTranslate("demo.nav.login")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/account"
             >
               {messageTranslate("demo.nav.account")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/invitations"
             >
               {messageTranslate("shell.nav.invitations")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/consent"
             >
               {messageTranslate("shell.nav.applicationConsent")}
-            </A>
-            <A
+            </a>
+            <a
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin/users"
             >
               {messageTranslate("demo.nav.admin")}
-            </A>
+            </a>
             <LanguageSelector />
             <ThemeButton />
           </div>

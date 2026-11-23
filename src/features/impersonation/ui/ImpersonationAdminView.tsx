@@ -1,5 +1,4 @@
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
-import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
@@ -47,9 +46,9 @@ export function ImpersonationAdminView(props: {
             <AuthenticatedSection
               actions={
                 <>
-                  <A class="text-xs font-medium text-accent hover:underline" href={state.eventsHref(props.basePath)}>
+                  <a class="text-xs font-medium text-accent hover:underline" href={state.eventsHref(props.basePath)}>
                     {messageTranslate("admin.impersonation.auditLink")}
-                  </A>
+                  </a>
                   <AuthenticatedButton
                     disabled={state.pendingId() !== undefined}
                     icon={mdiLogout}

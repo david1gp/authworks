@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ConfirmRequest } from "../../../ui/confirm/confirmStateCreate.js"
@@ -144,20 +144,18 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
   const listSignature = () => `${options.listSearch?.() ?? ""}:${options.listStatus?.() ?? ""}`
   const appliedListSignature = createSignalObject("")
   createEffect(
-    on(
-      () =>
-        `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}:${listSignature()}`,
-      () => {
-        if (options.screen() === "projects" && appliedListSignature.get() !== listSignature()) {
-          appliedListSignature.set(listSignature())
-          if (pageTokens.get().length > 0) {
-            pageTokens.set([])
-            return
-          }
+    () =>
+      `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}:${listSignature()}`,
+    () => {
+      if (options.screen() === "projects" && appliedListSignature.get() !== listSignature()) {
+        appliedListSignature.set(listSignature())
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
         }
-        void load()
-      },
-    ),
+      }
+      void untrack(load)
+    },
   )
 
   return {

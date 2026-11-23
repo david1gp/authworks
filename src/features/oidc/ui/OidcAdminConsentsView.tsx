@@ -105,7 +105,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
           <Table
             aria-label={messageTranslate("admin.oidc.consents.title")}
             class={authenticatedTableClasses.tableWide}
-            tabIndex={0}
+            tabindex={0}
           >
             <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>

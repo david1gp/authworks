@@ -2,7 +2,7 @@ import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountSecurityView } from "./AccountSecurityView.js"
 import { accountSecurityDemoStateCreate } from "./accountSecurityDemoStateCreate.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
-import type { JSX } from "solid-js"
+import { type JSX } from "@solidjs/web"
 
 export function AccountSecurityDemoAdapter(props: {
   readonly passwordAction?: JSX.Element

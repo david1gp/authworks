@@ -1,4 +1,4 @@
-import { createEffect, on } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ConfirmRequest } from "../../../ui/confirm/confirmStateCreate.js"
@@ -188,12 +188,10 @@ export function directoryRealmAdministratorsPageStateCreate(options: {
   }
 
   createEffect(
-    on(
-      () => `${options.realmId}:${options.reloadKey?.() ?? ""}`,
-      () => {
-        void load()
-      },
-    ),
+    () => `${options.realmId}:${options.reloadKey?.() ?? ""}`,
+    () => {
+      void untrack(load)
+    },
   )
 
   return {

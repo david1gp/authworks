@@ -1,4 +1,4 @@
-import { render } from "solid-js/web"
+import { render } from "@solidjs/web"
 import { languageInitialize } from "./i18n/model/languageInitialize.js"
 import { productionApplicationContextsCreate } from "./production/productionApplicationContextsCreate.js"
 import { productionShellContextDefault } from "./production/productionShellContextDefault.js"

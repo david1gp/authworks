@@ -1,4 +1,4 @@
-import { onMount } from "solid-js"
+import { onSettled } from "solid-js"
 import type { ResultErr } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -95,7 +95,7 @@ export function oidcConsentProductionStateCreate(options: OidcConsentProductionS
     status.set(statusFromResult(result))
   }
 
-  onMount(() => {
+  onSettled(() => {
     void load()
   })
 

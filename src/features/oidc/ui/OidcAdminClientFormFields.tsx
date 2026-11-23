@@ -180,7 +180,7 @@ export function OidcAdminClientFormFields(props: {
                 <AuthenticatedInput
                   class="pr-6"
                   id={`${props.idPrefix}-access-lifetime`}
-                  inputMode="numeric"
+                  inputmode="numeric"
                   placeholder={messageTranslate("admin.oidc.clients.serverDefault")}
                   onInput={(event) => props.accessTokenLifetimeSeconds.set(event.currentTarget.value)}
                   value={props.accessTokenLifetimeSeconds.get()}
@@ -198,7 +198,7 @@ export function OidcAdminClientFormFields(props: {
                 <AuthenticatedInput
                   class="pr-6"
                   id={`${props.idPrefix}-id-token-lifetime`}
-                  inputMode="numeric"
+                  inputmode="numeric"
                   placeholder={messageTranslate("admin.oidc.clients.serverDefault")}
                   onInput={(event) => props.idTokenLifetimeSeconds.set(event.currentTarget.value)}
                   value={props.idTokenLifetimeSeconds.get()}
@@ -216,7 +216,7 @@ export function OidcAdminClientFormFields(props: {
                 <AuthenticatedInput
                   class="pr-6"
                   id={`${props.idPrefix}-refresh-idle-lifetime`}
-                  inputMode="numeric"
+                  inputmode="numeric"
                   placeholder={messageTranslate("admin.oidc.clients.serverDefault")}
                   onInput={(event) => props.refreshTokenIdleLifetimeSeconds.set(event.currentTarget.value)}
                   value={props.refreshTokenIdleLifetimeSeconds.get()}
@@ -234,7 +234,7 @@ export function OidcAdminClientFormFields(props: {
                 <AuthenticatedInput
                   class="pr-6"
                   id={`${props.idPrefix}-refresh-absolute-lifetime`}
-                  inputMode="numeric"
+                  inputmode="numeric"
                   placeholder={messageTranslate("admin.oidc.clients.serverDefault")}
                   onInput={(event) => props.refreshTokenAbsoluteLifetimeSeconds.set(event.currentTarget.value)}
                   value={props.refreshTokenAbsoluteLifetimeSeconds.get()}
