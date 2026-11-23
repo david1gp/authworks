@@ -21,11 +21,6 @@ import { platformTestkitCreate } from "../../src/platform/testkit/platformTestki
 type ConsentStateCreate =
   typeof import("../../src/features/oidc/ui/oidcConsentProductionStateCreate.js")["oidcConsentProductionStateCreate"]
 
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
-
 let createRoot: typeof import("solid-js").createRoot
 let consentStateCreate: ConsentStateCreate
 

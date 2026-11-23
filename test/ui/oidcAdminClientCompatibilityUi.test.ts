@@ -1,4 +1,4 @@
-import { createRoot, createSignal } from "solid-js"
+import { flush as flushSync, createRoot, createSignal } from "solid-js"
 import { describe, expect, test } from "bun:test"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { OidcClient } from "../../src/features/oidc/public/oidcClientSchema.js"
@@ -52,13 +52,20 @@ describe("OIDC client compatibility form state", () => {
       searchSet: () => undefined,
     })
 
+    flushSync()
     state.name.set("Compatibility client")
+    flushSync()
     state.redirectUris.set("https://portal.example/callback")
+    flushSync()
     state.idTokenUserinfoAssertion.set(true)
+    flushSync()
     state.accessTokenRoleAssertion.set(true)
+    flushSync()
     state.additionalOrigins.set("https://console.example\nhttps://admin.example")
+    flushSync()
     await state.createSubmit(submitEvent)
 
+    flushSync()
     expect(requests[0]).toMatchObject({
       accessTokenRoleAssertion: true,
       additionalOrigins: ["https://console.example", "https://admin.example"],
@@ -87,16 +94,21 @@ describe("OIDC client compatibility form state", () => {
     })
 
     await Promise.resolve()
+    flushSync()
     expect(state.detail.accessTokenRoleAssertion.get()).toBe(true)
     expect(state.detail.idTokenUserinfoAssertion.get()).toBe(true)
     expect(state.detail.additionalOrigins.get()).toBe("https://console.example")
 
     state.detail.accessTokenRoleAssertion.set(false)
+    flushSync()
     state.detail.idTokenUserinfoAssertion.set(false)
+    flushSync()
     state.detail.additionalOrigins.set("")
+    flushSync()
     state.detail.settingsSubmit(submitEvent)
     await Promise.resolve()
 
+    flushSync()
     expect(request).toMatchObject({
       accessTokenRoleAssertion: false,
       additionalOrigins: [],
@@ -110,6 +122,7 @@ describe("OIDC client compatibility form state", () => {
       idTokenUserinfoAssertion: false,
     })
     await Promise.resolve()
+    flushSync()
     expect(state.detail.additionalOrigins.get()).toBe("")
     state.dispose()
   })
@@ -172,25 +185,37 @@ describe("OIDC client project and policy form state", () => {
     })
     await flush()
 
+    flushSync()
     expect([...state.projects()]).toHaveLength(1)
     state.name.set("Portal client")
+    flushSync()
     state.redirectUris.set("https://portal.example/callback")
+    flushSync()
     state.projectSelect(projectFixture.id)
     await flush()
+    flushSync()
     expect(applicationProjects).toEqual([projectFixture.id])
     expect([...state.applications()].map((application) => application.id)).toEqual([applicationFixture.id])
     state.applicationSelect(applicationFixture.id)
+    flushSync()
     state.accessTokenLifetimeSeconds.set("300")
+    flushSync()
     state.idTokenLifetimeSeconds.set("600")
+    flushSync()
     state.refreshTokenIdleLifetimeSeconds.set("3600")
+    flushSync()
     state.refreshTokenAbsoluteLifetimeSeconds.set("7200")
     state.grantToggle("refresh_token")
+    flushSync()
     state.devMode.set(true)
+    flushSync()
     state.idTokenRoleAssertion.set(true)
     state.scopeToggle("urn:zitadel:iam:user:resourceowner")
+    flushSync()
     await state.createSubmit(submitEvent)
 
     const request = requests[0] as Record<string, unknown>
+    flushSync()
     expect(request).toMatchObject({
       accessTokenLifetimeSeconds: 300,
       applicationId: applicationFixture.id,
@@ -229,10 +254,14 @@ describe("OIDC client project and policy form state", () => {
       searchSet: () => undefined,
     })
 
+    flushSync()
     state.name.set("Portal client")
+    flushSync()
     state.redirectUris.set("https://portal.example/callback")
+    flushSync()
     await state.createSubmit(submitEvent)
 
+    flushSync()
     expect(requests).toHaveLength(1)
     const request = requests[0] as Record<string, unknown>
     for (const key of [
@@ -290,12 +319,16 @@ describe("OIDC client project and policy form state", () => {
       searchSet: () => undefined,
     })
 
+    flushSync()
     state.projectSelect(projectFixture.id)
     await flush()
+    flushSync()
     state.applicationSelect(applicationFixture.id)
+    flushSync()
     state.projectSelect("")
     await flush()
 
+    flushSync()
     expect(state.applicationId.get()).toBe("")
     expect([...state.applications()]).toHaveLength(0)
     expect(applicationProjects).toEqual([projectFixture.id])
@@ -313,6 +346,7 @@ describe("OIDC client project and policy form state", () => {
       return { detail, dispose }
     })
 
+    flushSync()
     currentClientSet({
       ...client,
       accessTokenLifetimeSeconds: 300,
@@ -328,6 +362,7 @@ describe("OIDC client project and policy form state", () => {
     })
     await flush()
 
+    flushSync()
     expect(state.detail.projectId.get()).toBe(projectFixture.id)
     expect(state.detail.applicationId.get()).toBe(applicationFixture.id)
     expect(state.detail.accessTokenLifetimeSeconds.get()).toBe("300")
@@ -365,10 +400,13 @@ describe("OIDC client project and policy form state", () => {
     })
     await flush()
 
+    flushSync()
     state.detail.projectSelect("")
+    flushSync()
     state.detail.settingsSubmit(submitEvent)
     await flush()
 
+    flushSync()
     expect(request).toMatchObject({ applicationId: null, projectId: null })
     state.dispose()
   })
@@ -391,10 +429,13 @@ describe("OIDC client project and policy form state", () => {
     })
     await flush()
 
+    flushSync()
     state.detail.refreshTokenIdleLifetimeSeconds.set("0")
+    flushSync()
     state.detail.settingsSubmit(submitEvent)
     await flush()
 
+    flushSync()
     expect(calls).toBe(0)
     expect(state.detail.formError()).toBeDefined()
     state.dispose()

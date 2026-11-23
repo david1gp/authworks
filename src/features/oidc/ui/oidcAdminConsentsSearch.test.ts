@@ -1,13 +1,8 @@
-import { describe, expect, mock, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { UserListQuery } from "../../users/public/userListQuerySchema.js"
 import { oidcAdminDemoAdapterCreate } from "./oidcAdminDemoAdapterCreate.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so search and cursor changes trigger reloads.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot, createSignal }, { oidcAdminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./oidcAdminPageStateCreate.js"),

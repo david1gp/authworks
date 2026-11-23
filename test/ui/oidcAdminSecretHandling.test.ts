@@ -18,6 +18,7 @@ const sessionStorageCreate = (): Storage => {
 const sessionStorage = sessionStorageCreate()
 
 mock.module("solid-js", () => ({
+  untrack: <T>(read: () => T) => read(),
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const

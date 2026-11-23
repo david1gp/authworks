@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { accountDemoUserFixture } from "../../src/features/account/ui/accountDemoUserFixture.js"
@@ -34,23 +34,30 @@ describe("account phone-change state", () => {
     const loaded = await adapter.loadUser()
     if (!loaded.success) throw new Error("Expected demo user")
     state.user.set(loaded.data.user)
+    flush()
     state.displayName.set("Avery Updated")
+    flush()
     state.gender.set("woman")
 
+    flush()
     await state.profileSubmit(submitEvent)
 
+    flush()
     expect(state.user.get()?.profile.gender).toBe("woman")
     expect(Object.hasOwn(submitted, "picture")).toBe(false)
 
     await state.pictureUpload(new File([new Uint8Array([1])], "avatar.webp", { type: "image/webp" }))
+    flush()
     expect(state.pictureStatus.get()).toBe("success")
     expect(state.pictureUrl.get()).toContain("avery.stone_demo.webp")
     expect(state.user.get()?.profile.picture?.contentType).toBe("image/webp")
 
     const removal = state.pictureRemove()
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await removal
+    flush()
     expect(state.pictureStatus.get()).toBe("success")
     expect(state.pictureUrl.get()).toBe("")
     expect(state.user.get()?.profile.picture).toBeUndefined()
@@ -72,11 +79,13 @@ describe("account phone-change state", () => {
     })
 
     await state.pictureUpload(new File([new Uint8Array([1])], "avatar.svg", { type: "image/svg+xml" }))
+    flush()
     expect(uploads).toBe(0)
     expect(state.pictureStatus.get()).toBe("error")
     expect(state.pictureErrorMessage.get()).toBe("Choose a JPEG, PNG, WebP, or GIF image.")
 
     await state.pictureUpload(new File([new Uint8Array(512 * 1024 + 1)], "avatar.png", { type: "image/png" }))
+    flush()
     expect(uploads).toBe(0)
     expect(state.pictureErrorMessage.get()).toBe("Choose an image of at most 512 KiB.")
   })
@@ -96,11 +105,15 @@ describe("account phone-change state", () => {
       initialStatus: "ready",
       kind: "profile",
     })
+    flush()
     state.displayName.set("Avery Updated")
+    flush()
     state.gender.set("x".repeat(65))
 
+    flush()
     await state.profileSubmit(submitEvent)
 
+    flush()
     expect(submittedGender).toBe("x".repeat(65))
     expect(state.validationMessage.get()).toBeUndefined()
     expect(state.status.get()).toBe("success")
@@ -128,19 +141,25 @@ describe("account phone-change state", () => {
     if (!loaded.success) throw new Error("Expected demo user")
     state.user.set(loaded.data.user)
 
+    flush()
     state.phoneCandidate.set(replacement)
+    flush()
     const start = state.phoneChangeStart(submitEvent)
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await start
 
+    flush()
     expect(state.user.get()?.phoneNumber).toBe(accountDemoUserFixture.phoneNumber)
     expect(state.phoneChallengeId.get()).toBe("account-demo-phone-change")
     expect(calls).toEqual([{ input: { phoneNumber: replacement }, name: "start" }])
 
     state.phoneCode.set("123456")
+    flush()
     await state.phoneChangeVerify(submitEvent)
 
+    flush()
     expect(state.user.get()?.phoneNumber).toBe(replacement)
     expect(state.user.get()?.phoneNumberVerifiedAt).toBe(accountDemoUserFixture.updatedAt + 60_000)
     expect(state.phoneStatus.get()).toBe("success")
@@ -156,18 +175,25 @@ describe("account phone-change state", () => {
     const loaded = await adapter.loadUser()
     if (!loaded.success) throw new Error("Expected demo user")
     state.user.set(loaded.data.user)
+    flush()
     state.phoneAddDialogOpenSet(true)
+    flush()
     state.phoneCandidate.set("+14155552672")
+    flush()
 
     const start = state.phoneChangeStart(submitEvent)
+    flush()
     expect(state.confirmation.open()).toBe(true)
     const leave = confirmDialogStack.enter()
+    flush()
     expect(confirmDialogStack.active()).toBe(true)
 
     state.confirmation.accept()
     leave()
+    flush()
     expect(confirmDialogStack.active()).toBe(false)
     await start
+    flush()
     expect(state.phoneAddDialogOpen.get()).toBe(true)
     expect(state.phoneChallengeId.get()).toBe("account-demo-phone-change")
     expect(state.phoneCandidate.get()).toBe("+14155552672")
@@ -186,15 +212,23 @@ describe("account phone-change state", () => {
       kind: "profile",
     })
 
+    flush()
     state.phoneCandidate.set("+14155550000")
+    flush()
     state.phoneChallengeId.set("stale-challenge")
+    flush()
     state.phoneCode.set("123456")
+    flush()
     state.phoneErrorMessage.set("stale error")
+    flush()
     state.phoneValidationMessage.set("stale validation")
+    flush()
     state.phoneStatus.set("code")
+    flush()
 
     await state.load(true)
 
+    flush()
     expect(state.user.get()?.phoneNumber).toBe(refreshedUser.phoneNumber)
     expect(state.phoneCandidate.get()).toBe("")
     expect(state.phoneChallengeId.get()).toBeUndefined()
@@ -221,19 +255,27 @@ describe("account phone-change state", () => {
       kind: "profile",
     })
 
+    flush()
     state.phoneCandidate.set("4155552672")
+    flush()
     await state.phoneChangeStart(submitEvent)
+    flush()
     expect(calls).toBe(0)
     expect(state.phoneValidationMessage.get()).toBe("Enter a valid phone number in E.164 format.")
 
     state.phoneCandidate.set("+14155552672")
+    flush()
     await state.phoneChangeStart(submitEvent)
+    flush()
     await state.phoneChangeResend()
+    flush()
     expect(calls).toBe(2)
     expect(state.phoneChallengeId.get()).toBe("account-demo-phone-change")
 
     state.phoneCode.set("123")
+    flush()
     await state.phoneChangeVerify(submitEvent)
+    flush()
     expect(calls).toBe(2)
     expect(state.phoneValidationMessage.get()).toBe("Enter the six-digit verification code.")
   })
@@ -248,10 +290,13 @@ describe("account phone-change state", () => {
     try {
       const adapter = accountDemoAdapterCreate(() => "error")
       const state = stateCreate({ adapter, initialStatus: "ready", kind: "profile" })
+      flush()
       state.phoneCandidate.set("+14155552672")
+      flush()
 
       await state.phoneChangeStart(submitEvent)
 
+      flush()
       expect(fetchCalled).toBe(false)
       expect(state.status.get()).toBe("ready")
       expect(state.phoneStatus.get()).toBe("error")
@@ -287,12 +332,17 @@ describe("account phone-change state", () => {
       initialStatus: "ready",
       kind: "profile",
     })
+    flush()
     state.user.set({ ...accountDemoUserFixture, phoneNumber: undefined, phoneNumberVerifiedAt: undefined })
+    flush()
     state.phoneAddDialogOpenSet(true)
+    flush()
     state.phoneCandidate.set("+14155552672")
+    flush()
 
     await state.phoneChangeStart(submitEvent)
 
+    flush()
     expect(calls).toEqual([
       { input: { phoneNumber: "+14155552672" }, name: "start" },
       { input: { phoneNumber: "+14155552672" }, name: "save" },
@@ -330,14 +380,19 @@ describe("account phone-change state", () => {
     const loaded = await adapter.loadUser()
     if (!loaded.success) throw new Error("Expected demo user")
     state.user.set(loaded.data.user)
+    flush()
     state.phoneAddDialogOpenSet(true)
+    flush()
     state.phoneCandidate.set(accountDemoUserFixture.phoneNumber ?? "+14155552671")
+    flush()
 
     const start = state.phoneChangeStart(submitEvent)
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await start
 
+    flush()
     expect(saves).toBe(0)
     expect(state.user.get()?.phoneNumber).toBe(accountDemoUserFixture.phoneNumber)
     expect(state.user.get()?.phoneNumberVerifiedAt).toBe(accountDemoUserFixture.phoneNumberVerifiedAt)
@@ -360,21 +415,33 @@ describe("account phone-change state", () => {
     }
 
     const startState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    flush()
     startState.phoneCandidate.set("+14155552672")
+    flush()
     await startState.phoneChangeStart(submitEvent)
+    flush()
     expect(startState.status.get()).toBe("expired")
 
     const resendState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    flush()
     resendState.phoneCandidate.set("+14155552672")
+    flush()
     resendState.phoneChallengeId.set("challenge")
+    flush()
     await resendState.phoneChangeResend()
+    flush()
     expect(resendState.status.get()).toBe("expired")
 
     const verifyState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    flush()
     verifyState.phoneCandidate.set("+14155552672")
+    flush()
     verifyState.phoneChallengeId.set("challenge")
+    flush()
     verifyState.phoneCode.set("123456")
+    flush()
     await verifyState.phoneChangeVerify(submitEvent)
+    flush()
     expect(verifyState.status.get()).toBe("expired")
   })
 })
@@ -388,6 +455,7 @@ function stateCreate(options: Parameters<typeof accountPageStateCreate>[0]) {
   if (dispose === undefined) throw new Error("Account page state root did not provide a disposer.")
   if (options.initialStatus !== undefined && options.initialStatus !== "loading")
     state.status.set(options.initialStatus)
+  flush()
   cleanups.push(dispose)
   return state
 }

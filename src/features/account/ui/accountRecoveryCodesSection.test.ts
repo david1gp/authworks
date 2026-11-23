@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import { accountPasswordSectionStateCreate } from "./accountPasswordSectionStateCreate.js"
@@ -23,12 +23,16 @@ test("password card reflects configured and missing method state and alerts whil
     expect(state.summaryStatus()).toBe("Not configured")
     expect(state.summaryValue()).toBe("No password set")
     expect(state.summaryTone()).toBe("danger")
-    available.set(true)
-    expect(state.summaryStatus()).toBe("Configured")
-    expect(state.summaryValue()).toBe("Password set")
-    expect(state.summaryTone()).toBe("success")
-    dispose()
-  })
+    return () => {
+      flush()
+      available.set(true)
+      flush()
+      expect(state.summaryStatus()).toBe("Configured")
+      expect(state.summaryValue()).toBe("Password set")
+      expect(state.summaryTone()).toBe("success")
+      dispose()
+    }
+  })()
 })
 
 test("recovery codes card alerts while no backup codes remain and confirms when codes are available", () => {
@@ -50,11 +54,15 @@ test("recovery codes card alerts while no backup codes remain and confirms when 
 
     expect(state.summaryStatus()).toBe("Not configured")
     expect(state.summaryTone()).toBe("danger")
-    remaining.set(3)
-    expect(state.summaryStatus()).toBe("Configured")
-    expect(state.summaryTone()).toBe("success")
-    dispose()
-  })
+    return () => {
+      flush()
+      remaining.set(3)
+      flush()
+      expect(state.summaryStatus()).toBe("Configured")
+      expect(state.summaryTone()).toBe("success")
+      dispose()
+    }
+  })()
 })
 
 test("password and recovery codes are distinct collapsed cards with their own status", async () => {
@@ -64,6 +72,7 @@ test("password and recovery codes are distinct collapsed cards with their own st
     ),
   )
 
+  flush()
   expect(files[0]).toContain("<AccountPasswordSection action={props.passwordAction} state={props.state} />")
   expect(files[0]).toContain("<AccountRecoveryCodesSection state={props.state} />")
   for (const source of files.slice(1)) {
@@ -80,6 +89,7 @@ test("generation and one-time acknowledgement remain inside the recovery dialog"
   const dialog = section.slice(section.indexOf("<AuthenticatedDialog"), section.indexOf("</AuthenticatedDialog>"))
   const presentation = await Bun.file(new URL("./accountRecoveryCodesSectionStateCreate.ts", import.meta.url)).text()
 
+  flush()
   expect(dialog).toContain('title={messageTranslate("shell.nav.recoveryCodes")}')
   expect(dialog).toContain('messageTranslate("account.recovery.remaining"')
   expect(dialog).toContain("onClick={props.state.recoveryCodesGenerate}")

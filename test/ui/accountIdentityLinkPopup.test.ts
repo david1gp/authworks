@@ -1,5 +1,5 @@
 import { afterEach, expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { accountSecurityProductionStateCreate } from "../../src/features/account/ui/accountSecurityProductionStateCreate.js"
 
 const cleanups: (() => void)[] = []
@@ -68,6 +68,7 @@ const linkStartResponse = () =>
 test("a link failure message from the provider popup surfaces the error", async () => {
   const fixture = fixtureCreate((url) => (url.includes("/link/start") ? linkStartResponse() : undefined))
   await fixture.state.identityLinkStart("provider-github")
+  flush()
   expect(fixture.popup.location.href).toContain("https://github.com/login/oauth/authorize")
   expect(fixture.state.pendingId()).toBe("identity:link:provider-github")
 
@@ -77,6 +78,7 @@ test("a link failure message from the provider popup surfaces the error", async 
     messageNonce: "message-nonce",
     providerId: "provider-github",
   })
+  flush()
   expect(fixture.state.error()).toContain("denied")
   expect(fixture.state.pendingId()).toBeUndefined()
   expect(fixture.state.identityLinkConfirmation()).toBeUndefined()
@@ -85,10 +87,12 @@ test("a link failure message from the provider popup surfaces the error", async 
 test("closing the provider window without completing surfaces a retry error", async () => {
   const fixture = fixtureCreate((url) => (url.includes("/link/start") ? linkStartResponse() : undefined))
   await fixture.state.identityLinkStart("provider-github")
+  flush()
   expect(fixture.state.pendingId()).toBe("identity:link:provider-github")
 
   fixture.popup.closed = true
   await new Promise<void>((resolve) => setTimeout(resolve, 800))
+  flush()
   expect(fixture.state.error()).toContain("closed before linking")
   expect(fixture.state.pendingId()).toBeUndefined()
 }, 15000)

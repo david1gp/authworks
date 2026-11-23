@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import { accountPasskeysSectionStateCreate } from "./accountPasskeysSectionStateCreate.js"
@@ -24,13 +24,17 @@ test("passkey card summary reflects the current count and alerts while no passke
     expect(state.summaryValue()).toBe("0 passkeys configured")
     expect(state.summaryStatus()).toBe("Not configured")
     expect(state.summaryTone()).toBe("danger")
-    passkeys.set([credential("one"), credential("two")])
-    expect(state.summaryValue()).toBe("2 passkeys configured")
-    expect(state.summaryStatus()).toBe("Configured")
-    expect(state.summaryTone()).toBe("success")
-    expect(passkeys.get()).toHaveLength(2)
-    dispose()
-  })
+    return () => {
+      flush()
+      passkeys.set([credential("one"), credential("two")])
+      flush()
+      expect(state.summaryValue()).toBe("2 passkeys configured")
+      expect(state.summaryStatus()).toBe("Configured")
+      expect(state.summaryTone()).toBe("success")
+      expect(passkeys.get()).toHaveLength(2)
+      dispose()
+    }
+  })()
 })
 
 test("passkey item and setup dialogs select independently and removed items cannot remain open", () => {
@@ -38,28 +42,39 @@ test("passkey item and setup dialogs select independently and removed items cann
     const passkeys = createSignalObject([credential("one"), credential("two")])
     const state = accountPasskeysSectionStateCreate(passkeys.get)
 
-    state.dialogOpenChange("one", true)
-    expect(state.dialogOpen("one")).toBe(true)
-    expect(state.dialogOpen("two")).toBe(false)
-    state.addDialogOpenChange(true)
-    expect(state.dialogOpen("one")).toBe(false)
-    expect(state.addDialogOpen()).toBe(true)
-    state.dialogOpenChange("two", true)
-    expect(state.addDialogOpen()).toBe(false)
-    expect(state.dialogOpen("two")).toBe(true)
-    passkeys.set([credential("one")])
-    expect(state.dialogOpen("two")).toBe(false)
-    state.dialogOpenChange("two", false)
-    state.dialogOpenChange("one", true)
-    expect(state.dialogOpen("one")).toBe(true)
-    state.dialogOpenChange("one", false)
-    expect(state.dialogOpen("one")).toBe(false)
-    dispose()
-  })
+    return () => {
+      flush()
+      state.dialogOpenChange("one", true)
+      flush()
+      expect(state.dialogOpen("one")).toBe(true)
+      expect(state.dialogOpen("two")).toBe(false)
+      state.addDialogOpenChange(true)
+      flush()
+      expect(state.dialogOpen("one")).toBe(false)
+      expect(state.addDialogOpen()).toBe(true)
+      state.dialogOpenChange("two", true)
+      flush()
+      expect(state.addDialogOpen()).toBe(false)
+      expect(state.dialogOpen("two")).toBe(true)
+      passkeys.set([credential("one")])
+      flush()
+      expect(state.dialogOpen("two")).toBe(false)
+      state.dialogOpenChange("two", false)
+      flush()
+      state.dialogOpenChange("one", true)
+      flush()
+      expect(state.dialogOpen("one")).toBe(true)
+      state.dialogOpenChange("one", false)
+      flush()
+      expect(state.dialogOpen("one")).toBe(false)
+      dispose()
+    }
+  })()
 })
 
 test("passkey rows open management dialogs and setup and removal actions stay inside dialogs", async () => {
   const source = await Bun.file(new URL("./AccountPasskeysSection.tsx", import.meta.url)).text()
+  flush()
   expect(source).toContain('summary={messageTranslate("shell.nav.passkeys")}')
   expect(source).toContain("status={state.summaryStatus()}")
   expect(source).toContain("value={state.summaryValue()}")

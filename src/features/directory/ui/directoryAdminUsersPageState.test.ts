@@ -1,4 +1,5 @@
-import { describe, expect, mock, test } from "bun:test"
+import { flush as flushSync } from "solid-js"
+import { describe, expect, test } from "bun:test"
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -7,11 +8,6 @@ import type { DirectoryEntry } from "../public/directoryEntrySchema.js"
 import type { DirectoryUserListResponse } from "../public/directoryUserListSchema.js"
 import type { DirectoryAdminAdapter } from "./directoryAdminAdapter.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so the reactive list reload is exercised.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot, createSignal }, { directoryAdminUsersPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./directoryAdminUsersPageStateCreate.js"),
@@ -80,21 +76,26 @@ describe("directory admin users page reload", () => {
       })
       return { dispose, page, search, setSearch }
     })
+    flushSync()
     expect(search()).toBe("")
     await flush()
+    flushSync()
     expect(calls.list).toBe(1)
 
     // Opening the invite dialog only adds `?dialog=`; the list must stay put.
     setSearch("?dialog=invite")
     await flush()
+    flushSync()
     expect(calls.list).toBe(1)
 
     // Same for the create-user dialog and for closing the dialog again.
     setSearch("?dialog=create-user")
     await flush()
+    flushSync()
     expect(calls.list).toBe(1)
     setSearch("")
     await flush()
+    flushSync()
     expect(calls.list).toBe(1)
     dispose()
   })
@@ -115,10 +116,12 @@ describe("directory admin users page reload", () => {
       return { dispose, page, search, setSearch }
     })
     await flush()
+    flushSync()
     expect(calls.list).toBe(1)
 
     setSearch("?q=ada")
     await flush()
+    flushSync()
     expect(calls.list).toBe(2)
     dispose()
   })
@@ -145,9 +148,12 @@ test("invitation creation exposes an encoded redemption link until acknowledged"
       search: () => "",
     }),
   }))
+  flushSync()
   await page.invitationCreateSubmit({ email: "user@example.com", roles: ["member"] })
+  flushSync()
   expect(page.invitationLink()).toBe("https://auth.example/invitations/accept?token=a%2Bb%2F%26+%3F%23")
   page.invitationTokenAcknowledge()
+  flushSync()
   expect(page.invitationLink()).toBeUndefined()
   expect(page.invitationToken()).toBeUndefined()
   expect(acknowledged).toBe(true)
@@ -269,14 +275,19 @@ describe("directory admin users organization context", () => {
     })
     await flush()
     // Creation starts a reload whose summary remains pending; the token is already visible.
+    flushSync()
     void page.invitationCreateSubmit({ email: "a@example.com", roles: ["member"] })
     await flush()
+    flushSync()
     expect(page.invitationToken()).toBe("secret-a")
     expect(page.scope()).toBe("organization")
     activeOrg = "b"
+    flushSync()
     organizationSet("b")
+    flushSync()
     adminSet(true)
     await flush()
+    flushSync()
     expect(page.realmAdministrator()).toBe(true)
     expect(page.scope()).toBe("all")
     expect(page.invitationToken()).toBeUndefined()
@@ -284,6 +295,7 @@ describe("directory admin users organization context", () => {
     expect(page.summary()?.total).toBe(2)
     resolveSummary?.(resultCreate({ roles: { admin: 0, guest: 0, member: 99, owner: 0 }, total: 99 }))
     await flush()
+    flushSync()
     expect(page.summary()?.total).toBe(2)
     dispose()
   })
@@ -318,10 +330,12 @@ describe("directory admin users organization context", () => {
     })
     await flush()
     const action = page.invitationRevoke("invitation-a", "a@example.com")
+    flushSync()
     organizationSet("b")
     await flush()
     confirmResolve?.(true)
     await action
+    flushSync()
     expect(revoked).toEqual([])
     dispose()
   })
@@ -356,13 +370,16 @@ describe("directory admin users organization context", () => {
       return { dispose, organizationSet, page }
     })
     await flush()
+    flushSync()
     expect(seenOrgs).toEqual(["organization-a"])
     expect(page.status()).toBe("loading")
 
     // The operator switches organizations while the first list is still in flight.
     activeOrg = "organization-b"
+    flushSync()
     organizationSet("organization-b")
     await flush()
+    flushSync()
     expect(seenOrgs).toEqual(["organization-a", "organization-b"])
     expect(page.status()).toBe("ready")
     expect(page.people().map((entry) => entry.user.userName)).toEqual(["beya.asante"])
@@ -371,6 +388,7 @@ describe("directory admin users organization context", () => {
     // The delayed organization A response arrives last and must not repaint organization B.
     resolveOrgA?.(resultCreate({ items: [{ ...orgEntry("organization-a", "ada.osei") }] }))
     await flush()
+    flushSync()
     expect(page.status()).toBe("ready")
     expect(page.people().map((entry) => entry.user.userName)).toEqual(["beya.asante"])
     dispose()
@@ -398,13 +416,17 @@ describe("directory admin users organization context", () => {
       return { dispose, organizationSet, page }
     })
     await flush()
+    flushSync()
     expect(page.people()).toHaveLength(1)
     page.pageNext()
+    flushSync()
     expect(page.previousPageAvailable()).toBe(true)
 
     activeOrg = "organization-b"
+    flushSync()
     organizationSet("organization-b")
     await flush()
+    flushSync()
     expect(page.previousPageAvailable()).toBe(false)
     expect(page.people().map((entry) => entry.user.userName)).toEqual(["ada.osei"])
     dispose()
@@ -443,11 +465,13 @@ describe("directory admin users organization context", () => {
       return { dispose, page, searchSet }
     })
     await flush()
+    flushSync()
     expect(page.status()).toBe("error")
     expect(page.error()).toBe("The service accounts could not be loaded.")
 
     searchSet("?tab=invitations")
     await flush()
+    flushSync()
     expect(page.status()).toBe("permission-denied")
     expect(page.error()).toBe("You do not manage this organization.")
     expect(page.invitations()).toHaveLength(0)
@@ -455,10 +479,12 @@ describe("directory admin users organization context", () => {
     // Retry after the outage recovers: the tab shows the empty state instead of the error.
     searchSet("?tab=service-accounts")
     await flush()
+    flushSync()
     expect(page.status()).toBe("error")
     recovered = true
     page.reload()
     await flush()
+    flushSync()
     expect(page.status()).toBe("empty")
     expect(page.error()).toBeUndefined()
     dispose()

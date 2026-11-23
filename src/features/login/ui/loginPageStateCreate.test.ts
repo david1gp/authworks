@@ -1,3 +1,4 @@
+import { flush } from "solid-js"
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test"
 import { Window } from "happy-dom"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -10,11 +11,6 @@ import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
 import { loginDemoAdapterCreate } from "./loginDemoAdapterCreate.js"
 
 type LoginPageStateCreate = typeof import("./loginPageStateCreate.js")["loginPageStateCreate"]
-
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 
 let createRoot: typeof import("solid-js").createRoot
 let createSignal: typeof import("solid-js").createSignal
@@ -34,8 +30,9 @@ const previousGlobals = new Map<string, unknown>()
 const cleanups: Array<() => void> = []
 
 const flushEffects = async () => {
-  await Promise.resolve()
-  await Promise.resolve()
+  flush()
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+  flush()
 }
 
 const stateCreate = (
@@ -95,14 +92,17 @@ describe("loginPageStateCreate lifecycle focus", () => {
     await flushEffects()
 
     state.go("password")
+    flush()
     expect(state.screen()).toBe("password")
 
     routeSet("email-otp")
     await flushEffects()
+    flush()
     expect(state.screen()).toBe("password")
 
     routeSet("password")
     await flushEffects()
+    flush()
     expect(state.screen()).toBe("password")
   })
 
@@ -130,16 +130,20 @@ describe("loginPageStateCreate lifecycle focus", () => {
 
     state.go("email-otp")
     await flushEffects()
+    flush()
     expect(emailFocusCount).toBe(1)
     state.go("email-otp")
     await flushEffects()
+    flush()
     expect(emailFocusCount).toBe(1)
 
     state.go("email-otp-code")
     await flushEffects()
+    flush()
     expect(codeFocusCount).toBe(1)
     state.go("email-otp-code")
     await flushEffects()
+    flush()
     expect(codeFocusCount).toBe(1)
   })
 
@@ -157,25 +161,32 @@ describe("loginPageStateCreate lifecycle focus", () => {
     state.lifecycleHeadingRegister(heading)
 
     await flushEffects()
+    flush()
     expect(focusCount).toBe(1)
     state.go("password")
     await flushEffects()
+    flush()
     expect(focusCount).toBe(1)
   })
 
   test("renders signed-in after a pending password submission navigates synchronously", async () => {
     const [route, routeSet] = createSignal<LoginScreen>("password")
     const state = stateCreate(route, "ready", () => routeSet("signed-in"))
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("demo-password")
 
+    flush()
     const submission = state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(state.pending()).toBe(true)
     expect(state.screen()).toBe("password")
 
     await submission
     await flushEffects()
 
+    flush()
     expect(route()).toBe("signed-in")
     expect(state.screen()).toBe("signed-in")
     expect(state.pending()).toBe(false)
@@ -186,6 +197,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
     const state = stateCreate(route, "ready", () => routeSet("signed-in"))
     await flushEffects()
 
+    flush()
     const selecting = state.recentAccountSelect({
       authenticationMethod: "password",
       identifier: "alex@acme.example",
@@ -193,10 +205,12 @@ describe("loginPageStateCreate lifecycle focus", () => {
       lastUsedAt: 10,
       sessionId: "session-alex",
     })
+    flush()
     expect(state.pending()).toBe(true)
     await selecting
     await flushEffects()
 
+    flush()
     expect(state.identifier.get()).toBe("alex@acme.example")
     expect(route()).toBe("signed-in")
     expect(state.screen()).toBe("signed-in")
@@ -207,6 +221,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
     const state = stateCreate(route, "ready", undefined, "error")
     await flushEffects()
 
+    flush()
     const selecting = state.recentAccountSelect({
       authenticationMethod: "password",
       identifier: "alex@acme.example",
@@ -216,6 +231,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await selecting
 
+    flush()
     expect(state.identifier.get()).toBe("alex@acme.example")
     expect(state.screen()).toBe("password")
     expect(state.pending()).toBe(false)
@@ -228,6 +244,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
 
     await state.passkeyAuthenticate()
 
+    flush()
     expect(state.passkeyStatus()).toBe("permission-denied")
     expect(state.errorMessage()).toBe(englishCatalog["login.passkey.permissionDenied"])
     expect(state.pending()).toBe(false)
@@ -256,9 +273,12 @@ describe("loginPageStateCreate lifecycle focus", () => {
     )
     await flushEffects()
 
+    flush()
     state.mfaCodeSet("123456")
+    flush()
     await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(verifyCount).toBe(0)
     expect(route()).toBe("mfa-email-otp")
     expect(state.screen()).toBe("mfa-email-otp")
@@ -290,11 +310,15 @@ describe("loginPageStateCreate lifecycle focus", () => {
     await flushEffects()
 
     await state.mfaEmailOtpSend()
+    flush()
     routeSet("mfa-email-otp-code")
     await flushEffects()
+    flush()
     state.mfaCodeSet("123456")
+    flush()
     await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(verifiedChallengeId).toBe("mfa-email-challenge-1")
     expect(resumed).toBe(1)
   })
@@ -318,12 +342,16 @@ describe("loginPageStateCreate lifecycle focus", () => {
     await flushEffects()
 
     await state.mfaEmailOtpSend()
+    flush()
     routeSet("mfa-email-otp-code")
     await flushEffects()
     await state.mfaEmailOtpResend()
+    flush()
     state.mfaCodeSet("654321")
+    flush()
     await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(resentChallengeId).toBe("mfa-email-challenge-1")
     expect(verifiedChallengeId).toBe("mfa-email-challenge-2")
   })
@@ -354,9 +382,12 @@ describe("loginPageStateCreate lifecycle focus", () => {
     )
     await flushEffects()
 
+    flush()
     state.mfaCodeSet("123456")
+    flush()
     await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(completedToken).toBe(seededToken)
     expect(resumed).toBe(1)
   })
@@ -393,27 +424,36 @@ describe("loginPageStateCreate lifecycle focus", () => {
     )
     await flushEffects()
 
+    flush()
     state.phoneNumber.set("14155552671")
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(state.whatsappOtpPhoneNumberValid()).toBe(false)
     expect(state.validationMessage()).toBe("Enter a valid phone number in E.164 format.")
     expect(startedPhoneNumber).toBe("")
 
     state.phoneNumber.set(" +14155552671 ")
+    flush()
     expect(state.whatsappOtpPhoneNumberValid()).toBe(true)
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(startedPhoneNumber).toBe("+14155552671")
     expect(state.screen()).toBe("whatsapp-otp-code")
     routeSet("whatsapp-otp-code")
 
+    flush()
     state.whatsappOtpCodeSet("654321")
     await state.whatsappOtpResend()
+    flush()
     expect(resentChallengeId).toBe("wa-challenge-1")
     expect(state.code.get()).toBe("")
     state.whatsappOtpCodeSet("12x3456")
+    flush()
     expect(state.code.get()).toBe("123456")
     expect(state.whatsappOtpCodeValid()).toBe(true)
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(verifiedCode).toBe("123456")
     expect(resumed).toBe(1)
   })
@@ -431,11 +471,15 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.phoneNumber.set("+14155552671")
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     state.whatsappOtpCodeSet("654321")
     await state.whatsappOtpResend()
 
+    flush()
     expect(state.whatsappOtpResendCountdown()).toBeGreaterThan(0)
     expect(state.whatsappOtpResendAllowed()).toBe(false)
     expect(state.code.get()).toBe("654321")
@@ -456,10 +500,14 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.phoneNumber.set(" +14155552671 ")
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(startCount).toBe(1)
     expect(state.phoneNumber.get()).toBe("+14155552671")
     expect(state.whatsappOtpStartRetryCountdown()).toBeGreaterThan(0)
@@ -484,14 +532,21 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.phoneNumber.set("+14155552671")
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     routeSet("whatsapp-otp-code")
     await flushEffects()
+    flush()
     state.whatsappOtpCodeSet("654321")
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(verifyCount).toBe(1)
     expect(state.code.get()).toBe("654321")
     expect(state.whatsappOtpVerifyRetryCountdown()).toBeGreaterThan(0)
@@ -507,10 +562,14 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.newPassword.set("Recovered Horse 12")
+    flush()
     state.confirmPassword.set("Recovered Horse 12")
+    flush()
     await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.recoveryResetStep()).toBe("invalid-link")
     expect(state.errorMessage()).toBe("This password reset link is invalid or has expired.")
     expect(state.newPassword.get()).toBe("")
@@ -529,10 +588,14 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.newPassword.set("short password")
+    flush()
     state.confirmPassword.set("short password")
+    flush()
     await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.recoveryResetStep()).toBe("ready")
     expect(state.errorMessage()).toBe(englishCatalog["login.recovery.policyRejected"])
     expect(state.newPassword.get()).toBe("short password")
@@ -552,10 +615,14 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     state.newPassword.set("Recovered Horse 12")
+    flush()
     state.confirmPassword.set("Recovered Horse 12")
+    flush()
     await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.recoveryResetStep()).toBe("ready")
     expect(state.errorMessage()).toBe("This recovery request cannot be completed right now.")
     expect(state.newPassword.get()).toBe("Recovered Horse 12")
@@ -576,13 +643,16 @@ describe("loginPageStateCreate lifecycle focus", () => {
     })
     await flushEffects()
 
+    flush()
     expect(state.methods()).toContain("whatsapp-otp")
     state.go("chooser")
     await flushEffects()
+    flush()
     expect(state.methods()).not.toContain("whatsapp-otp")
     state.go("password")
     state.go("chooser")
     await flushEffects()
+    flush()
     expect(state.methods()).toContain("whatsapp-otp")
   })
 
@@ -649,16 +719,20 @@ describe("loginPageStateCreate lifecycle focus", () => {
     )
     await flushEffects()
 
+    flush()
     routeSet("whatsapp-otp")
     await flushEffects()
+    flush()
     expect(discoveryCount).toBe(1)
     expect(state.screen()).toBe("chooser")
     expect(navigated).toEqual(["/demo/login/chooser"])
 
     routeSet("chooser")
     await flushEffects()
+    flush()
     routeSet("whatsapp-otp")
     await flushEffects()
+    flush()
     expect(discoveryCount).toBe(2)
     expect(state.screen()).toBe("whatsapp-otp")
     expect(navigated).toEqual(["/demo/login/chooser"])
@@ -683,10 +757,14 @@ describe("loginPageStateCreate item-26 polish", () => {
     )
     await flushEffects()
 
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("old-password")
+    flush()
     await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.screen()).toBe("password-change-required")
     expect(navigated).toEqual(["/demo/login/password/change-required"])
     expect(resumed).toEqual([])
@@ -723,16 +801,24 @@ describe("loginPageStateCreate item-26 polish", () => {
     )
     await flushEffects()
 
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("old-password")
+    flush()
     await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(state.screen()).toBe("password-change-required")
 
     state.password.set("old-password")
+    flush()
     state.newPassword.set("new-password-1")
+    flush()
     state.confirmPassword.set("new-password-1")
+    flush()
     await state.passwordChangeSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.screen()).toBe("mfa")
     expect(navigated.at(-1)).toBe("/demo/login/mfa")
     expect(resumed).toEqual([])
@@ -753,16 +839,24 @@ describe("loginPageStateCreate item-26 polish", () => {
     )
     await flushEffects()
 
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("old-password")
+    flush()
     await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(state.screen()).toBe("password-change-required")
 
     state.password.set("old-password")
+    flush()
     state.newPassword.set("new-password-1")
+    flush()
     state.confirmPassword.set("new-password-1")
+    flush()
     await state.passwordChangeSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(resumed).toEqual(["resumed"])
   })
 
@@ -780,6 +874,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     )
     await flushEffects()
 
+    flush()
     expect(state.screen()).toBe("chooser")
     expect(navigated).toEqual(["/demo/login/chooser"])
   })
@@ -792,6 +887,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     )
     await flushEffects()
 
+    flush()
     expect(state.screen()).toBe("register")
     expect(navigated).toEqual([])
   })
@@ -809,6 +905,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     const state = stateCreate(route, "ready", undefined, "success", {}, reordered)
     await flushEffects()
 
+    flush()
     expect(state.mfaFactors()).toEqual(["passkey", "totp", "recovery_code"])
   })
 
@@ -825,6 +922,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     const state = stateCreate(route, "ready", undefined, "success", {}, restricted)
     await flushEffects()
 
+    flush()
     expect(state.mfaFactors()).toEqual(["totp", "recovery_code"])
   })
 
@@ -833,6 +931,7 @@ describe("loginPageStateCreate item-26 polish", () => {
     const state = stateCreate(route)
     await flushEffects()
 
+    flush()
     expect(state.mfaFactors()).toEqual(["passkey", "totp", "email_otp", "recovery_code"])
   })
 
@@ -844,10 +943,14 @@ describe("loginPageStateCreate item-26 polish", () => {
     })
     await flushEffects()
 
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("weak")
+    flush()
     await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.errorMessage()).toBe("Choose a password that meets the requirements.")
   })
 
@@ -859,10 +962,14 @@ describe("loginPageStateCreate item-26 polish", () => {
     })
     await flushEffects()
 
+    flush()
     state.identifier.set("alex@acme.example")
+    flush()
     state.password.set("demo-password")
+    flush()
     await state.passwordSubmit({ preventDefault: () => {} } as SubmitEvent)
 
+    flush()
     expect(state.errorMessage()).toBe("The session request failed.")
   })
 })

@@ -3,6 +3,7 @@ import { describe, expect, mock, test } from "bun:test"
 // The Solid runtime is not resolvable under the test condition, so signals are
 // stubbed the same way the neighboring machine-admin state tests stub them.
 mock.module("solid-js", () => ({
+  untrack: <T>(read: () => T) => read(),
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const

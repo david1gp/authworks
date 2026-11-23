@@ -4,7 +4,7 @@ import { unlink } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 import type { AccountEffectiveAccessGroup } from "../../src/features/account/public/accountEffectiveAccessGroupSchema.js"
 import type { OrganizationMe } from "../../src/features/organizations/public/organizationMeSchema.js"
 
@@ -15,18 +15,13 @@ const globalValues = globalThis as unknown as Record<string, unknown>
 const globalNames = ["window", "document", "Node", "Element", "HTMLElement", "SVGElement", "Text"] as const
 const previousGlobals = new Map<string, unknown>()
 const compiledViewPath = join(import.meta.dirname, `.account-organization-access-view-${randomUUID()}.mjs`)
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 
 let accountOrganizationAccessView: AccountOrganizationAccessView
 let createComponent: typeof import("solid-js").createComponent
 
 beforeAll(async () => {
   const sourceRoot = resolve(import.meta.dirname, "../../")
-  const plugin = solid()
+  const plugin = solid().find((entry) => entry.name === "solid")!
   const transform = plugin.transform
   if (transform === undefined) throw new Error("Solid plugin did not expose a transform hook.")
   const transformHook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
@@ -49,7 +44,7 @@ beforeAll(async () => {
   }
   const build = await Bun.build({
     entrypoints: [resolve(sourceRoot, "src/features/account/ui/AccountOrganizationAccessView.tsx")],
-    external: ["solid-js", "solid-js/web"],
+    external: ["solid-js", "@solidjs/web"],
     format: "esm",
     plugins: [
       {
@@ -166,7 +161,7 @@ const renderView = async (
 ) => {
   const browserWindow = domSetup()
   accountOrganizationAccessView ??= (await import(pathToFileURL(compiledViewPath).href)).AccountOrganizationAccessView
-  const render = (await import("solid-js/web")).render
+  const render = (await import("@solidjs/web")).render
   const root = browserWindow.document.createElement("div")
   browserWindow.document.body.append(root)
   const organizations = [

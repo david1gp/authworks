@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { accountDemoAdapterCreate } from "../../src/features/account/ui/accountDemoAdapterCreate.js"
 import { accountPageStateCreate } from "../../src/features/account/ui/accountPageStateCreate.js"
 
@@ -20,21 +20,27 @@ describe("account email-address state", () => {
     const state = stateCreate({ adapter, initialStatus: "ready", kind: "email" })
     await state.load(true)
 
+    flush()
     expect(state.emailAddresses.get()).toMatchObject([
       { email: "avery.stone@example.com", isPrimary: true, verified: true },
       { email: "avery.secondary@example.com", isPrimary: false, verified: false },
     ])
 
     state.emailCandidate.set("avery.new@example.com")
+    flush()
     await state.emailAddressAddStart(submitEvent)
+    flush()
     expect(state.emailChallengeId.get()).toBe("account-demo-email-address-add")
     expect(state.emailStatus.get()).toBe("code")
 
     await state.emailAddressAddResend()
+    flush()
     expect(state.emailStatus.get()).toBe("code")
     state.emailToken.set("demo-email-address-token-000000000000000000000")
+    flush()
     await state.emailAddressAddVerify(submitEvent)
 
+    flush()
     expect(state.emailAddresses.get()).toContainEqual(
       expect.objectContaining({ email: "avery.new@example.com", isPrimary: false, verified: true }),
     )
@@ -59,27 +65,36 @@ describe("account email-address state", () => {
     await state.load(true)
 
     await state.emailAddressRemove("account-demo-email-primary")
+    flush()
     expect(removeCalls).toBe(0)
     expect(state.emailAddresses.get()).toHaveLength(2)
 
     await state.emailAddressPrimarySet("account-demo-email-secondary")
+    flush()
     expect(state.user.get()?.email).toBe("avery.stone@example.com")
     expect(state.emailAddresses.get().find((address) => address.id === "account-demo-email-secondary")?.isPrimary).toBe(
       false,
     )
 
     state.emailCandidate.set("avery.new@example.com")
+    flush()
     await state.emailAddressAddStart(submitEvent)
+    flush()
     state.emailToken.set("demo-email-address-token-000000000000000000000")
+    flush()
     await state.emailAddressAddVerify(submitEvent)
+    flush()
     await state.emailAddressPrimarySet("account-demo-email-3")
+    flush()
     expect(state.user.get()?.email).toBe("avery.new@example.com")
     expect(state.emailAddresses.get().find((address) => address.id === "account-demo-email-3")?.isPrimary).toBe(true)
 
     const removal = state.emailAddressRemove("account-demo-email-primary")
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await removal
+    flush()
     expect(removeCalls).toBe(1)
     expect(state.emailAddresses.get()).toHaveLength(2)
   })
@@ -104,15 +119,22 @@ describe("account email-address state", () => {
       kind: "email",
     })
 
+    flush()
     state.emailCandidate.set("not-an-email")
+    flush()
     await state.emailAddressAddStart(submitEvent)
+    flush()
     expect(starts).toBe(0)
     expect(state.emailValidationMessage.get()).toBe("Enter a valid email address.")
 
     state.emailCandidate.set("avery.new@example.com")
+    flush()
     await state.emailAddressAddStart(submitEvent)
+    flush()
     state.emailToken.set("too-short")
+    flush()
     await state.emailAddressAddVerify(submitEvent)
+    flush()
     expect(starts).toBe(1)
     expect(verifies).toBe(0)
     expect(state.emailValidationMessage.get()).toBe("Enter the verification token from the email.")
@@ -142,6 +164,7 @@ describe("account email-address state", () => {
     })
     await new Promise<void>((resolve) => setTimeout(resolve, 0))
 
+    flush()
     expect(state.emailStatus.get()).toBe("code")
     expect(replaceStateCalls).toEqual(["/account?tab=profile&locale=en#profile"])
   })

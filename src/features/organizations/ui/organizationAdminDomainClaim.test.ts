@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test"
-import { createEffect, createRoot } from "solid-js"
+import { flush, createEffect, createRoot } from "solid-js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
@@ -11,8 +11,6 @@ const navigate = mock((href: string) => {
   location.search = new URL(href, "https://auth.example.com").search
 })
 mock.module("@solidjs/router", () => ({ useLocation: () => location, useNavigate: () => navigate }))
-const solidRuntimePath = "solid-js/dist/dev.js"
-mock.module("solid-js", () => import(solidRuntimePath))
 const { organizationAdminScreenStateCreate } = await import("./organizationAdminScreenStateCreate.js")
 
 function fixtureCreate() {
@@ -32,8 +30,8 @@ function fixtureCreate() {
     screen: () => "configuration",
   })
   const ready = new Promise<void>((resolve) => {
-    createEffect(() => {
-      if (page.status() === "ready") resolve()
+    createEffect(page.status, (status) => {
+      if (status === "ready") resolve()
     })
   })
   const state = organizationAdminScreenStateCreate({
@@ -65,17 +63,24 @@ for (const [code, message] of [
     try {
       await fixture.ready
       const { state, page } = fixture
+      flush()
       state.domainClaimOpenSet(true)
+      flush()
       state.form.claimDomain.set("claim.example.com")
+      flush()
       state.form.claimPrimary.set(true)
       const event = { preventDefault: mock(() => {}) } as unknown as SubmitEvent
+      flush()
       const submission = state.domainClaimSubmit(event)
+      flush()
       expect(state.domainClaimPending()).toBe(true)
       expect(state.domainClaimOpen()).toBe(true)
       expect(state.form.claimDomain.get()).toBe("claim.example.com")
       expect(state.form.claimPrimary.get()).toBe(true)
       state.domainClaimOpenSet(false)
+      flush()
       await state.domainClaimSubmit(event)
+      flush()
       expect(await page.domainClaim("duplicate.example.com", false)).toBe(false)
       expect(fixture.claim).toHaveBeenCalledTimes(1)
       expect(fixture.claim).toHaveBeenLastCalledWith(page.organizationId(), {
@@ -85,6 +90,7 @@ for (const [code, message] of [
       expect(state.domainClaimOpen()).toBe(true)
       fixture.resolveClaim(resultErrorCodedCreate("domainClaim", message, code))
       await submission
+      flush()
       expect(state.domainClaimPending()).toBe(false)
       expect(page.status()).toBe("ready")
       expect(page.domainClaimError()).toBe(message)
@@ -93,12 +99,14 @@ for (const [code, message] of [
       expect(state.form.claimPrimary.get()).toBe(true)
 
       const retry = state.domainClaimSubmit(event)
+      flush()
       expect(page.domainClaimError()).toBeUndefined()
       expect(fixture.claim).toHaveBeenCalledTimes(2)
       fixture.resolveClaim(
         await fixture.adapter.domainClaim(page.organizationId(), { domain: "claim.example.com", isPrimary: true }),
       )
       await retry
+      flush()
       expect(state.domainClaimOpen()).toBe(false)
       expect(state.domainClaimPending()).toBe(false)
       expect(state.form.claimDomain.get()).toBe("")
@@ -117,10 +125,14 @@ test("domain claim URL state rejects unknown dialog values and validation never 
     location.search = "?domain-dialog=unknown"
     expect(state.domainClaimOpen()).toBe(false)
     state.domainClaimOpenSet(true)
-    void state.domainClaimSubmit({ preventDefault: () => {} } as SubmitEvent)
-    expect(claim).not.toHaveBeenCalled()
-    expect(state.domainClaimOpen()).toBe(true)
-    expect(state.form.validationMessage.get()).toBeDefined()
-    dispose()
-  })
+    return () => {
+      flush()
+      void state.domainClaimSubmit({ preventDefault: () => {} } as SubmitEvent)
+      flush()
+      expect(claim).not.toHaveBeenCalled()
+      expect(state.domainClaimOpen()).toBe(true)
+      expect(state.form.validationMessage.get()).toBeDefined()
+      dispose()
+    }
+  })()
 })

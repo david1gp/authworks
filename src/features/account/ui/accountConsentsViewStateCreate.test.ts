@@ -1,5 +1,5 @@
 import { afterAll, expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { ProductionSessionContextValue } from "../../../ui/production/productionSessionContextValue.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
@@ -73,79 +73,110 @@ test("consent summaries reflect current counts and distinguish unknown or inacce
   createRoot((dispose) => {
     const fixture = fixtureCreate()
     expect(fixture.state.summaryValue()).toBe("2 application consents")
-    fixture.consents.set([consentCreate(productionId)])
-    expect(fixture.state.summaryValue()).toBe("1 application consent")
-    fixture.status.set("loading")
-    expect(fixture.state.summaryValue()).toBe("Loading")
-    expect(fixture.state.boundary().state).toBe("loading")
-    fixture.error.set("Unable to load consents")
-    fixture.status.set("error")
-    expect(fixture.state.summaryValue()).toBe("This account information could not be loaded.")
-    expect(fixture.state.boundary()).toEqual({ detail: "Unable to load consents", state: "error" })
-    fixture.status.set("permission-denied")
-    expect(fixture.state.summaryValue()).toBe("Unavailable")
-    expect(fixture.state.boundary().state).toBe("inaccessible")
-    fixture.status.set("expired")
-    expect(fixture.state.summaryValue()).toBe("Unavailable")
-    fixture.consents.set([])
-    fixture.status.set("empty")
-    expect(fixture.state.summaryValue()).toBe("0 application consents")
-    expect(fixture.state.boundary().state).toBe("ready")
-    expect(fixture.onRevoke).not.toHaveBeenCalled()
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.consents.set([consentCreate(productionId)])
+      flush()
+      expect(fixture.state.summaryValue()).toBe("1 application consent")
+      fixture.status.set("loading")
+      flush()
+      expect(fixture.state.summaryValue()).toBe("Loading")
+      expect(fixture.state.boundary().state).toBe("loading")
+      fixture.error.set("Unable to load consents")
+      flush()
+      fixture.status.set("error")
+      flush()
+      expect(fixture.state.summaryValue()).toBe("This account information could not be loaded.")
+      expect(fixture.state.boundary()).toEqual({ detail: "Unable to load consents", state: "error" })
+      fixture.status.set("permission-denied")
+      flush()
+      expect(fixture.state.summaryValue()).toBe("Unavailable")
+      expect(fixture.state.boundary().state).toBe("inaccessible")
+      fixture.status.set("expired")
+      flush()
+      expect(fixture.state.summaryValue()).toBe("Unavailable")
+      fixture.consents.set([])
+      flush()
+      fixture.status.set("empty")
+      flush()
+      expect(fixture.state.summaryValue()).toBe("0 application consents")
+      expect(fixture.state.boundary().state).toBe("ready")
+      expect(fixture.onRevoke).not.toHaveBeenCalled()
+      dispose()
+    }
+  })()
 })
 
 test("individual consent dialogs preserve other query state and the anchor without mutating data", () => {
   createRoot((dispose) => {
     const fixture = fixtureCreate()
-    fixture.state.dialogOpenChange("analytics-dashboard", true)
-    expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
-    expect(fixture.state.dialogOpen(productionId)).toBe(false)
-    fixture.state.dialogOpenChange(productionId, true)
-    fixture.state.dialogOpenChange("analytics-dashboard", false)
-    expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(false)
-    expect(fixture.state.dialogOpen(productionId)).toBe(true)
-    fixture.state.dialogOpenChange(productionId, false)
-    expect(fixture.search.get()).toBe("?fixture=keep&accountSession=other")
-    expect(
-      fixture.navigations.every(({ to, options }) => to.endsWith("#access") && options.replace && !options.scroll),
-    ).toBe(true)
-    expect(fixture.consents.get()).toHaveLength(2)
-    expect(fixture.onRevoke).not.toHaveBeenCalled()
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.state.dialogOpenChange("analytics-dashboard", true)
+      flush()
+      expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
+      expect(fixture.state.dialogOpen(productionId)).toBe(false)
+      fixture.state.dialogOpenChange(productionId, true)
+      flush()
+      fixture.state.dialogOpenChange("analytics-dashboard", false)
+      flush()
+      expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(false)
+      expect(fixture.state.dialogOpen(productionId)).toBe(true)
+      fixture.state.dialogOpenChange(productionId, false)
+      flush()
+      expect(fixture.search.get()).toBe("?fixture=keep&accountSession=other")
+      expect(
+        fixture.navigations.every(({ to, options }) => to.endsWith("#access") && options.replace && !options.scroll),
+      ).toBe(true)
+      expect(fixture.consents.get()).toHaveLength(2)
+      expect(fixture.onRevoke).not.toHaveBeenCalled()
+      dispose()
+    }
+  })()
 })
 
 test("URL-held dialogs support demo slugs and production IDs but reject missing, invalid and removed clients", () => {
   createRoot((dispose) => {
     const fixture = fixtureCreate("?accountConsent=analytics-dashboard")
     expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
-    fixture.search.set(`?accountConsent=${productionId}`)
-    expect(fixture.state.dialogOpen(productionId)).toBe(true)
-    fixture.status.set("loading")
-    expect(fixture.state.dialogOpen(productionId)).toBe(false)
-    fixture.state.dialogOpenChange("analytics-dashboard", true)
-    expect(fixture.navigations).toHaveLength(0)
-    fixture.status.set("ready")
-    fixture.consents.set([])
-    expect(fixture.state.dialogOpen(productionId)).toBe(false)
-    for (const search of ["?accountConsent=", "?accountConsent=missing", "?accountConsent=%3Cscript%3E"]) {
-      fixture.search.set(search)
-      expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(false)
+    return () => {
+      flush()
+      fixture.search.set(`?accountConsent=${productionId}`)
+      flush()
+      expect(fixture.state.dialogOpen(productionId)).toBe(true)
+      fixture.status.set("loading")
+      flush()
+      expect(fixture.state.dialogOpen(productionId)).toBe(false)
+      fixture.state.dialogOpenChange("analytics-dashboard", true)
+      flush()
+      expect(fixture.navigations).toHaveLength(0)
+      fixture.status.set("ready")
+      flush()
+      fixture.consents.set([])
+      flush()
+      expect(fixture.state.dialogOpen(productionId)).toBe(false)
+      for (const search of ["?accountConsent=", "?accountConsent=missing", "?accountConsent=%3Cscript%3E"]) {
+        fixture.search.set(search)
+        expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(false)
+      }
+      fixture.state.dialogOpenChange("missing", true)
+      flush()
+      expect(fixture.navigations).toHaveLength(0)
+      dispose()
     }
-    fixture.state.dialogOpenChange("missing", true)
-    expect(fixture.navigations).toHaveLength(0)
-    dispose()
-  })
+  })()
 })
 
 test("revocation requires an open consent dialog and blocks pending and duplicate confirmation requests", async () => {
   await createRoot(async (dispose) => {
     const fixture = fixtureCreate()
+    flush()
     await fixture.state.consentRevoke("analytics-dashboard")
+    flush()
     fixture.state.dialogOpenChange("analytics-dashboard", true)
+    flush()
     fixture.pendingId.set("consent:other")
+    flush()
     await fixture.state.consentRevoke("analytics-dashboard")
     fixture.pendingId.set(undefined)
     let finish: () => void = () => {}
@@ -155,13 +186,17 @@ test("revocation requires an open consent dialog and blocks pending and duplicat
           finish = resolve
         }),
     )
+    flush()
     const revoke = fixture.state.consentRevoke("analytics-dashboard")
     await fixture.state.consentRevoke("analytics-dashboard")
+    flush()
+    flush()
     await fixture.state.consentRevoke(productionId)
     expect(fixture.onRevoke).toHaveBeenCalledTimes(1)
     expect(fixture.state.revokeDisabled("analytics-dashboard")).toBe(true)
     finish()
     await revoke
+    flush()
     expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
     expect(fixture.state.revokeDisabled("analytics-dashboard")).toBe(false)
     dispose()
@@ -169,28 +204,37 @@ test("revocation requires an open consent dialog and blocks pending and duplicat
 })
 
 test("failed revocation retains its selection for retry and success only clears the revoked client's dialog", async () => {
-  await createRoot(async (dispose) => {
+  await createRoot((dispose) => {
     const fixture = fixtureCreate()
-    fixture.state.dialogOpenChange("analytics-dashboard", true)
-    fixture.onRevoke.mockImplementation(async () => {
-      fixture.error.set("Revocation failed")
-      fixture.status.set("error")
-    })
-    await fixture.state.consentRevoke("analytics-dashboard")
-    expect(fixture.search.get()).toContain("accountConsent=analytics-dashboard")
-    expect(fixture.consents.get()).toHaveLength(2)
-    expect(fixture.state.boundary().detail).toBe("Revocation failed")
-    fixture.status.set("ready")
-    expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
-    fixture.onRevoke.mockImplementation(async (id) => {
-      fixture.state.dialogOpenChange(productionId, true)
-      fixture.consents.set(fixture.consents.get().filter((consent) => consent.clientId !== id))
-    })
-    await fixture.state.consentRevoke("analytics-dashboard")
-    expect(fixture.state.dialogOpen(productionId)).toBe(true)
-    expect(fixture.search.get()).toContain(`accountConsent=${productionId}`)
-    dispose()
-  })
+    return async () => {
+      flush()
+      fixture.state.dialogOpenChange("analytics-dashboard", true)
+      flush()
+      fixture.onRevoke.mockImplementation(async () => {
+        fixture.error.set("Revocation failed")
+        flush()
+        fixture.status.set("error")
+      })
+      await fixture.state.consentRevoke("analytics-dashboard")
+      flush()
+      expect(fixture.search.get()).toContain("accountConsent=analytics-dashboard")
+      expect(fixture.consents.get()).toHaveLength(2)
+      expect(fixture.state.boundary().detail).toBe("Revocation failed")
+      fixture.status.set("ready")
+      flush()
+      expect(fixture.state.dialogOpen("analytics-dashboard")).toBe(true)
+      fixture.onRevoke.mockImplementation(async (id) => {
+        fixture.state.dialogOpenChange(productionId, true)
+        flush()
+        fixture.consents.set(fixture.consents.get().filter((consent) => consent.clientId !== id))
+      })
+      await fixture.state.consentRevoke("analytics-dashboard")
+      flush()
+      expect(fixture.state.dialogOpen(productionId)).toBe(true)
+      expect(fixture.search.get()).toContain(`accountConsent=${productionId}`)
+      dispose()
+    }
+  })()
 })
 
 for (const mode of ["demo", "production"] as const) {
@@ -211,8 +255,6 @@ for (const mode of ["demo", "production"] as const) {
           mode === "demo"
             ? accountAccessDemoStateCreate(() => "consents")
             : accountAccessProductionStateCreate(() => "consents", { session })
-        await Promise.resolve()
-        await Promise.resolve()
         const state = accountConsentsViewStateCreate({
           consents: access.consents,
           error: access.error,
@@ -220,23 +262,31 @@ for (const mode of ["demo", "production"] as const) {
           pendingId: access.pendingId,
           status: access.status,
         })
+        await new Promise<void>((resolve) => setTimeout(resolve, 0))
+        flush()
         const clientId = access.consents()[0]!.clientId
         const originalCount = access.consents().length
         const previousApiCalls = apiRevoke.mock.calls.length
+        flush()
         state.dialogOpenChange(clientId, true)
+        flush()
         expect(access.confirmation.open()).toBe(false)
         expect(apiRevoke.mock.calls.length).toBe(previousApiCalls)
         const canceled = state.consentRevoke(clientId)
+        flush()
         expect(access.confirmation.message()).toBe(`Revoke access for ${clientId}?`)
         access.confirmation.cancel()
         await canceled
+        flush()
         expect(access.consents()).toHaveLength(originalCount)
         expect(state.dialogOpen(clientId)).toBe(true)
         expect(apiRevoke.mock.calls.length).toBe(previousApiCalls)
         const accepted = state.consentRevoke(clientId)
+        flush()
         expect(access.confirmation.open()).toBe(true)
         access.confirmation.accept()
         await accepted
+        flush()
         expect(access.consents()).toHaveLength(originalCount - 1)
         expect(access.consents().some((consent) => consent.clientId === clientId)).toBe(false)
         expect(access.notice()).toBe("revoked")

@@ -4,7 +4,7 @@ import { unlink } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 
 const globalValues = globalThis as unknown as Record<string, unknown>
 const globalNames = [
@@ -20,16 +20,9 @@ const globalNames = [
 const previousGlobals = new Map<string, unknown>()
 const compiledTablePath = join(import.meta.dirname, `.authenticated-row-link-table-${randomUUID()}.mjs`)
 const compiledTilePath = join(import.meta.dirname, `.authenticated-row-link-tile-${randomUUID()}.mjs`)
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 
 let dataTable: typeof import("../../src/ui/authenticated/AuthenticatedDataTable.js")["AuthenticatedDataTable"]
 let statTile: typeof import("../../src/ui/authenticated/AuthenticatedStatTile.js")["AuthenticatedStatTile"]
-let memoryRouter: typeof import("@solidjs/router")["MemoryRouter"]
-let routeComponent: typeof import("@solidjs/router")["Route"]
 let createComponent: typeof import("solid-js").createComponent
 
 const domSetup = () => {
@@ -72,7 +65,7 @@ beforeAll(async () => {
 
 const beforeAllCompile = async () => {
   const sourceRoot = resolve(import.meta.dirname, "../../")
-  const plugin = solid()
+  const plugin = solid().find((entry) => entry.name === "solid")!
   const transform = plugin.transform
   if (transform === undefined) throw new Error("Solid plugin did not expose a transform hook.")
   const transformHook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
@@ -131,13 +124,13 @@ const beforeAllCompile = async () => {
   })
   const tableBuild = await Bun.build({
     entrypoints: [resolve(sourceRoot, "src/ui/authenticated/AuthenticatedDataTable.tsx")],
-    external: ["solid-js", "solid-js/web", "@solidjs/router"],
+    external: ["solid-js", "@solidjs/web", "@solidjs/router"],
     format: "esm",
     plugins: [pluginFactory("authenticated-row-link-table")],
   })
   const tileBuild = await Bun.build({
     entrypoints: [resolve(sourceRoot, "src/ui/authenticated/AuthenticatedStatTile.tsx")],
-    external: ["solid-js", "solid-js/web", "@solidjs/router"],
+    external: ["solid-js", "@solidjs/web", "@solidjs/router"],
     format: "esm",
     plugins: [pluginFactory("authenticated-row-link-tile")],
   })
@@ -154,7 +147,6 @@ const beforeAllCompile = async () => {
   ;({ AuthenticatedStatTile: statTile } = (await import(pathToFileURL(compiledTilePath).href)) as {
     readonly AuthenticatedStatTile: typeof statTile
   })
-  ;({ MemoryRouter: memoryRouter, Route: routeComponent } = await import("@solidjs/router"))
   ;({ createComponent } = await import("solid-js"))
 }
 
@@ -167,7 +159,7 @@ afterAll(async () => {
 describe("authenticated row links", () => {
   test("data-table row links keep their full href instead of collapsing to true", async () => {
     const browserWindow = domSetup()
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const root = browserWindow.document.createElement("div")
     browserWindow.document.body.append(root)
     const columns = [
@@ -185,18 +177,7 @@ describe("authenticated row links", () => {
         rowKey: (row: { readonly id: string }) => row.id,
         rows: [{ id: "01900000-0000-7000-8000-000000000021", name: "Ada Osei" }],
       })
-    const dispose = render(
-      () =>
-        createComponent(memoryRouter, {
-          get children() {
-            return createComponent(routeComponent, {
-              component: tableView,
-              path: "/",
-            })
-          },
-        }),
-      root as unknown as Parameters<typeof render>[1],
-    )
+    const dispose = render(tableView, root as unknown as Parameters<typeof render>[1])
     await Promise.resolve()
     const anchor = root.querySelector("tbody a")
     expect(anchor?.getAttribute("href")).toBe("/demo/admin/users/01900000-0000-7000-8000-000000000021")
@@ -207,7 +188,7 @@ describe("authenticated row links", () => {
 
   test("stat tiles keep their full href instead of collapsing to true", async () => {
     const browserWindow = domSetup()
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const root = browserWindow.document.createElement("div")
     browserWindow.document.body.append(root)
     const tileView = () =>
@@ -216,18 +197,7 @@ describe("authenticated row links", () => {
         label: "Realm",
         value: "Realm",
       })
-    const dispose = render(
-      () =>
-        createComponent(memoryRouter, {
-          get children() {
-            return createComponent(routeComponent, {
-              component: tileView,
-              path: "/",
-            })
-          },
-        }),
-      root as unknown as Parameters<typeof render>[1],
-    )
+    const dispose = render(tileView, root as unknown as Parameters<typeof render>[1])
     await Promise.resolve()
     const anchor = root.querySelector("a")
     expect(anchor?.getAttribute("href")).toBe("/admin/realm")

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot, createSignal } from "solid-js"
+import { flush as flushSync, createRoot, createSignal } from "solid-js"
 import { createResult, createResultError } from "#result"
 import type { EventListResponse } from "../../events/public/eventListResponseSchema.js"
 import type { AdminActivityAdapter } from "./adminActivityAdapter.js"
@@ -27,10 +27,12 @@ test("organization errors never fall back to the IAM feed; changing to IAM loads
     return { dispose, select, state: adminActivityStateCreate({ adapter, realmId: () => "r", organizationId }) }
   })
   await flush()
+  flushSync()
   expect(scope.state.status()).toBe("error")
   expect(calls).toEqual(["A"])
   scope.select(undefined)
   await flush()
+  flushSync()
   expect(calls).toEqual(["A", "realm"])
   expect(scope.state.status()).toBe("empty")
   scope.dispose()
@@ -51,10 +53,12 @@ test("late organization A response cannot overwrite B", async () => {
     const [organizationId, select] = createSignal<string | undefined>("A")
     return { dispose, select, state: adminActivityStateCreate({ adapter, realmId: () => "r", organizationId }) }
   })
+  flushSync()
   scope.select("B")
   await flush()
   resolveA(createResult({ items: [] }))
   await flush()
+  flushSync()
   expect(scope.state.hasNextPage()).toBe(true)
   scope.dispose()
 })
@@ -80,12 +84,15 @@ test("pagination goes forward and backward and retry repeats the failed page", a
   await flush()
   scope.state.pageNext()
   await flush()
+  flushSync()
   expect(scope.state.status()).toBe("error")
   scope.state.retry()
   await flush()
+  flushSync()
   expect(scope.state.hasPreviousPage()).toBe(true)
   scope.state.pagePrevious()
   await flush()
+  flushSync()
   expect(calls).toEqual([undefined, "next", "next", undefined])
   scope.dispose()
 })

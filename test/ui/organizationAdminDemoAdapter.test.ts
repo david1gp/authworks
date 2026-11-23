@@ -4,8 +4,25 @@ import * as v from "valibot"
 let currentObserver: (() => void) | null = null
 
 mock.module("solid-js", () => ({
-  createEffect: (fn: () => void) => {
-    fn()
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    let first = true
+    let previous: unknown
+    const run = () => {
+      const previousObserver = currentObserver
+      currentObserver = run
+      let next: unknown
+      try {
+        next = compute()
+      } finally {
+        currentObserver = previousObserver
+      }
+      if (!first && Object.is(next, previous)) return
+      const skip = first && options?.defer
+      first = false
+      previous = next
+      if (!skip) apply(next)
+    }
+    run()
   },
   createSignal: <T>(initial: T) => {
     let value = initial
@@ -21,21 +38,7 @@ mock.module("solid-js", () => ({
     }
     return [get, set] as const
   },
-  on: (deps: () => unknown, fn: () => void) => {
-    return () => {
-      let prevKey: unknown = Symbol("initial")
-      const checkAndRun = () => {
-        currentObserver = checkAndRun
-        const currentKey = deps()
-        currentObserver = null
-        if (currentKey !== prevKey) {
-          prevKey = currentKey
-          fn()
-        }
-      }
-      checkAndRun()
-    }
-  },
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const { demoAdminOrganizationDomains } = await import("../../src/features/demo/demoAdminOrganizationDomains.js")

@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 
 mock.module("@solidjs/router", () => ({
   useLocation: () => ({ hash: "", pathname: "/account", search: "" }),
@@ -36,6 +36,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(disclosure).toContain('readonly variant: "card"')
     expect(disclosure).toContain("readonly icon: string")
     expect(disclosure).toContain('readonly iconTone?: "accent" | "danger"')
@@ -62,6 +63,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountCardIcon.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(cardIcon).toContain("relative inline-flex shrink-0")
     expect(cardIcon).not.toContain("size-11")
     expect(cardIcon).not.toContain("rounded-xl")
@@ -83,6 +85,7 @@ describe("account workspace", () => {
   test("creates account section navigation items targeting workspace section anchors", () => {
     const state = accountSectionNavStateCreate(() => "")
     const items = state.items()
+    flush()
     expect(items.map((item) => item.id)).toEqual([
       accountWorkspaceSectionIds.profile,
       accountWorkspaceSectionIds.security,
@@ -108,6 +111,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountSectionAnchorHeading.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(heading).toContain("href={`#${props.id}`}")
     expect(heading).toContain("id={`account-workspace-${props.id}-title`}")
     expect(heading).toContain("focus-visible:ring-2")
@@ -117,6 +121,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(workspace.match(/<AccountSectionAnchorHeading/g)).toHaveLength(5)
     expect(workspace).not.toContain("Description")
     expect(workspace).not.toContain("description=")
@@ -131,6 +136,7 @@ describe("account workspace", () => {
       new URL("../../src/ui/production/ProductionAuthenticatedShell.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(shell).not.toContain("AccountSectionNav")
     // The account shell renders no top bar; the language/theme/sign-out toolbar lives inline with
     // the Profile header inside the workspace so it aligns with the content below.
@@ -140,12 +146,14 @@ describe("account workspace", () => {
     const workspace = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
+    flush()
     expect(workspace).toContain("profileActions")
     expect(workspace).toContain("{props.profileActions}")
 
     const toolbar = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceToolbar.tsx", import.meta.url),
     ).text()
+    flush()
     expect(toolbar).toContain("data-account-toolbar")
     expect(toolbar).toContain("<LanguageSelector />")
     expect(toolbar).toContain("<ThemeButton />")
@@ -164,6 +172,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/accountWorkspaceProductionAdapterStateCreate.ts", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain("const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)")
     expect(source).toContain("securityProgress={state.securityProgress}")
     // The profile slot mounts one overview adapter. The email and phone cards live inside it, so
@@ -189,6 +198,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(screen).toContain("<AccountWorkspaceDemoAdapter />")
     expect(demoWorkspace).toContain("<AccountWorkspace")
     expect(demoWorkspace).toContain('kind="overview"')
@@ -221,6 +231,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountOrganizationAccessView.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(production).toContain("<AccountOrganizationAccessProductionAdapter />")
     expect(production).not.toContain('screen="organizations"')
     expect(production).not.toContain('screen="effective-access"')
@@ -244,6 +255,7 @@ describe("account workspace", () => {
     )
     const [view, panel, demo, production, destination, invitations] = files
 
+    flush()
     expect(view).toContain('variant="card"')
     expect(view).toContain("<AccountOrganizationSelector")
     expect(destination).toContain("<AccountOrganizationAccessProductionAdapter />")
@@ -261,6 +273,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain("<AccountProfileIdentityStrip")
     expect(source).not.toContain("account.profile.signInTitle")
     expect(source).not.toContain("account.profile.signInDescription")
@@ -275,6 +288,7 @@ describe("account workspace", () => {
     ).text()
 
     // Each summary carries a current value; details and edit controls stay inside the card body.
+    flush()
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain('value={state.personalSummary() || messageTranslate("account.profile.notSet")}')
@@ -299,6 +313,7 @@ describe("account workspace", () => {
     const progress = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url),
     ).text()
+    flush()
     expect(overview).toContain("<AccountProfilePictureField")
     expect(overview).not.toContain("<AccountDisclosure")
     expect(overview).toContain("rounded-panel")
@@ -312,6 +327,7 @@ describe("account workspace", () => {
     const pictureField = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfilePictureField.tsx", import.meta.url),
     ).text()
+    flush()
     expect(pictureField).toContain("props.url && !state.pictureFailed()")
     expect(pictureField).toContain('"hidden justify-items-center gap-2 sm:grid sm:justify-items-end"')
     // The strip stacks on mobile with the picture first and switches to a two-column
@@ -353,6 +369,7 @@ describe("account workspace", () => {
     const copy = await Bun.file(
       new URL("../../src/features/account/ui/AccountIdentityCopyButton.tsx", import.meta.url),
     ).text()
+    flush()
     expect(copy).toContain("<ButtonIconOnly")
     expect(copy).toContain('aria-label={messageTranslate("account.profile.copy"')
     expect(copy).toContain('aria-live="polite"')
@@ -366,6 +383,7 @@ describe("account workspace", () => {
       new URL("../../src/ui/production/ProductionAuthenticatedShell.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(shell).toContain("max-w-[1760px]")
     expect(shell).not.toContain("max-w-[1400px]")
     expect(shell).toContain("px-4 py-4 sm:px-6")
@@ -373,6 +391,7 @@ describe("account workspace", () => {
     const workspace = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
+    flush()
     expect(workspace).toContain("max-w-7xl")
   })
 
@@ -383,9 +402,10 @@ describe("account workspace", () => {
 
     // Exactly one native file input, visually hidden, removed from the tab order, and hidden from
     // the accessibility tree so it is not exposed as a second "Choose a picture file" button.
+    flush()
     expect(source.match(/type="file"/g)).toHaveLength(1)
     expect(source).toContain('class="sr-only"')
-    expect(source).toContain("tabIndex={-1}")
+    expect(source).toContain("tabindex={-1}")
     expect(source).toContain('aria-hidden="true"')
     expect(source).not.toMatch(/<input[^>]*aria-label/s)
     expect(source).toContain("<AuthenticatedDialog")
@@ -396,7 +416,7 @@ describe("account workspace", () => {
     expect(source.match(/role="button"/g)).toHaveLength(1)
     expect(source.match(/onClick=\{state\.openFilePicker\}/g)).toHaveLength(1)
     expect(source).toContain("onKeyDown={state.onKeyDown}")
-    expect(source).toContain("tabIndex={state.busy() ? -1 : 0}")
+    expect(source).toContain("tabindex={state.busy() ? -1 : 0}")
     // Replacement and removal states remain available.
     expect(source).toContain('messageTranslate("account.profile.pictureChange")')
     expect(source).toContain('messageTranslate("account.profile.pictureRemove")')
@@ -406,10 +426,12 @@ describe("account workspace", () => {
     let hash = "#security"
     const state = accountSectionNavStateCreate(() => hash)
 
+    flush()
     expect(state.isActive(accountWorkspaceSectionIds.profile)).toBe(false)
     expect(state.isActive(accountWorkspaceSectionIds.security)).toBe(true)
 
     hash = "#danger-zone"
+    flush()
     expect(state.isActive(accountWorkspaceSectionIds.security)).toBe(false)
     expect(state.isActive(accountWorkspaceSectionIds.dangerZone)).toBe(true)
   })
@@ -417,6 +439,7 @@ describe("account workspace", () => {
   test("marks Profile current when the account page has no hash", () => {
     const state = accountSectionNavStateCreate(() => "")
 
+    flush()
     expect(state.isActive(accountWorkspaceSectionIds.profile)).toBe(true)
     expect(state.isActive(accountWorkspaceSectionIds.security)).toBe(false)
   })
@@ -424,6 +447,7 @@ describe("account workspace", () => {
   test("renders no page-level heading since the shell header is removed", async () => {
     const source = await Bun.file(new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url)).text()
 
+    flush()
     expect(source).not.toContain("<h1")
     expect(source).not.toContain('messageTranslate("shell.nav.account")')
     expect(source).not.toContain("AuthenticatedPageHeader")
@@ -434,6 +458,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain("const state = accountFactorsSectionStateCreate(() => props.state)")
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('summary={messageTranslate("account.factors.authenticator")}')
@@ -470,6 +495,7 @@ describe("account workspace", () => {
     expect(source).toContain("<Show when={props.state.totpSetup()}>")
     expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(3)
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
+    flush()
     expect(catalog).toContain('"account.factors.authenticator": "Authenticator"')
     expect(catalog).toContain('"account.status.configured": "Configured"')
     expect(catalog).toContain('"account.status.notConfigured": "Not configured"')
@@ -493,6 +519,7 @@ describe("account workspace", () => {
     const workspace = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
+    flush()
     expect(workspace.match(/screen="overview"/g)).toHaveLength(1)
     expect(workspace).toContain("passwordActionOnly")
     expect(workspace).toContain("hasPassword={() => state.security.methods().password.available}")
@@ -506,6 +533,7 @@ describe("account workspace", () => {
     const passkeys = await Bun.file(
       new URL("../../src/features/account/ui/AccountPasskeysSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(passkeys.match(/onClick=\{props\.state\.passkeyAdd\}/g)).toHaveLength(1)
     // The add action lives in the cohesive card header and is not rendered twice.
     expect(passkeys).not.toContain("AuthenticatedToolbar")
@@ -514,24 +542,28 @@ describe("account workspace", () => {
     const factors = await Bun.file(
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(factors.match(/triggerLabel=\{messageTranslate\("account\.factors\.addTotp"\)\}/g)).toHaveLength(1)
     expect(factors).toContain("state.renameRemove(enrollment.id)")
 
     const identities = await Bun.file(
       new URL("../../src/features/account/ui/AccountIdentitiesSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(identities.match(/onClick=\{\(\) => props\.state\.identityLinkStart\(provider\.id\)\}/g)).toHaveLength(1)
     expect(identities).toContain('messageTranslate("account.identities.empty")')
 
     const phone = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfilePhoneSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(phone.match(/onSubmit=\{props\.onStart\}/g)).toHaveLength(1)
     expect(phone).toContain('messageTranslate("account.profile.verificationPending")')
 
     const email = await Bun.file(
       new URL("../../src/features/account/ui/AccountEmailAddressView.tsx", import.meta.url),
     ).text()
+    flush()
     expect(email.match(/onSubmit=\{props\.onAddStart\}/g)).toHaveLength(1)
     expect(email.match(/onClick=\{\(\) => props\.onPrimarySet\(address\.id\)\}/g)).toHaveLength(1)
     expect(email.match(/onClick=\{\(\) => props\.onRemove\(address\.id\)\}/g)).toHaveLength(1)
@@ -559,6 +591,7 @@ describe("account workspace", () => {
     ).text()
 
     // One parent grid: email addresses left, phone numbers right at desktop widths, stacked below lg.
+    flush()
     expect(profile).toContain("lg:grid-cols-2")
     expect(profile.indexOf("<AccountEmailAddressView")).toBeLessThan(profile.indexOf("<AccountProfilePhoneSection"))
     // The phone section is no longer a second, separately placed block further down the page.
@@ -594,6 +627,7 @@ describe("account workspace", () => {
     ).text()
 
     // The overview row shows the email card, so its state loads the address list too.
+    flush()
     expect(state).toContain('loadKind === "email" || loadKind === "overview"')
     expect(state).toContain("options.adapter.emailAddressList()")
   })
@@ -601,6 +635,7 @@ describe("account workspace", () => {
   test("removes the contact-method filler empty-state copy from the catalog", async () => {
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
 
+    flush()
     expect(catalog).not.toContain("No verified phone number added")
     expect(catalog).not.toContain("account.profile.phoneNotAdded")
     expect(catalog).toContain('"account.profile.phoneNumbers": "Phone numbers"')
@@ -612,6 +647,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain("const emailAddDialogOpenSet = (open: boolean) => {")
     expect(source).toContain("if (!open) emailAddressAddCancel()")
     expect(source).toContain("const phoneAddDialogOpenSet = (open: boolean) => {")
@@ -628,6 +664,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountPasswordView.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(view).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
     expect(view.match(/<AuthenticatedDialog/g)).toHaveLength(1)
     expect(view).toContain("onOpenChange={props.onDialogOpenChange}")
@@ -640,6 +677,7 @@ describe("account workspace", () => {
     const state = await Bun.file(
       new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
     ).text()
+    flush()
     expect(state).toContain("const passwordDialogOpenSet = (open: boolean) => {")
     expect(state).toContain('currentPassword.set("")')
     expect(state).toContain('newPassword.set("")')
@@ -654,6 +692,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspaceDevicesApplications.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(groupedContent).toContain("lg:grid-cols-2")
     expect(groupedContent).toContain('class="min-w-0 lg:col-span-2"')
     expect(source).toContain(
@@ -670,6 +709,7 @@ describe("account workspace", () => {
     const workspace = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
+    flush()
     expect(workspace).toContain('messageTranslate("account.workspace.devicesTitle")')
   })
 
@@ -684,6 +724,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountSessionsSection.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(group.indexOf("{props.activity}")).toBeLessThan(group.indexOf("{props.sessions}"))
     expect(group).not.toContain("<AccountDisclosure")
     expect(activity.match(/<AccountDisclosure/g)).toHaveLength(1)
@@ -730,6 +771,7 @@ describe("account workspace", () => {
     const sessions = source.indexOf('screen="sessions"')
     const refreshTokens = source.indexOf('screen="refresh-tokens"')
 
+    flush()
     expect(securityHistory).toBeGreaterThan(-1)
     expect(sessions).toBeGreaterThan(securityHistory)
     expect(refreshTokens).toBeGreaterThan(sessions)
@@ -737,6 +779,7 @@ describe("account workspace", () => {
     const historySource = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityHistorySection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(historySource).toContain('summary={messageTranslate("shell.nav.securityHistory")}')
     expect(historySource).toContain("<AccountDisclosure")
     expect(historySource).toContain("sm:grid-cols-[auto_minmax(0,1fr)_auto]")
@@ -747,6 +790,7 @@ describe("account workspace", () => {
     const sessionsSource = await Bun.file(
       new URL("../../src/features/account/ui/AccountSessionsSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(sessionsSource).toContain('summary={messageTranslate("shell.nav.sessionsDevices")}')
     expect(sessionsSource).toContain("<AccountDisclosure")
     expect(sessionsSource).toContain("<AuthenticatedDialog")
@@ -756,12 +800,14 @@ describe("account workspace", () => {
     const refreshTokensSource = await Bun.file(
       new URL("../../src/features/account/ui/AccountRefreshTokensSection.tsx", import.meta.url),
     ).text()
+    flush()
     expect(refreshTokensSource).toContain("state.tokensRevokeAll(props.state.refreshTokensRevokeAll)")
     expect(refreshTokensSource).toContain("state.tokenRevoke(token.familyId, props.state.refreshTokenRevoke)")
     expect(refreshTokensSource).toContain('summary={messageTranslate("shell.nav.applications")}')
     expect(refreshTokensSource).not.toContain("ProductionStatePanel")
 
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
+    flush()
     expect(catalog).toContain('"shell.nav.securityHistory": "Recent security activity"')
     expect(catalog).not.toContain("Review recent security activity for this account")
   })
@@ -772,6 +818,7 @@ describe("account workspace", () => {
     ).text()
 
     // Organizations use one fieldset-like outline; access sources are divided rows rather than nested cards.
+    flush()
     expect(source).toContain('<fieldset class="min-w-0 rounded-panel border border-line')
     expect(source).toContain("<legend")
     expect(source).toContain("divide-y divide-line-subtle")
@@ -790,6 +837,7 @@ describe("account workspace", () => {
 
     // A native details/summary pair is collapsed by default and keyboard-operable without script.
     // Cards may opt into an initially expanded state through the controlled `open` prop.
+    flush()
     expect(disclosure).toContain("<details")
     expect(disclosure).toContain("<summary")
     expect(disclosure).toContain("open={props.open}")
@@ -802,6 +850,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountDeleteView.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain("icon={mdiAccountRemoveOutline}")
@@ -839,6 +888,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountDeleteView.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(workspace).toContain('title={messageTranslate("account.workspace.devicesTitle")}')
     expect(workspace).not.toContain('description={messageTranslate("account.workspace.dangerDescription")}')
     expect(organizations).toContain('summary={messageTranslate("shell.nav.organizations")}')
@@ -864,6 +914,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountAccessProductionAdapter.tsx", import.meta.url),
     ).text()
 
+    flush()
     expect(source).toContain('organizationsHref="/account#access"')
   })
 
@@ -897,6 +948,7 @@ describe("account workspace", () => {
     const switcher = await Bun.file(
       new URL("../../src/ui/production/ProductionOrganizationSwitcher.tsx", import.meta.url),
     ).text()
+    flush()
     expect(switcher).toContain("<ProductionOrganizationTile")
     expect(switcher).toContain("state.activeImageUrl()")
     expect(switcher).toContain("state.imageUrl(organization.id)")
@@ -904,6 +956,7 @@ describe("account workspace", () => {
     const tile = await Bun.file(
       new URL("../../src/ui/production/ProductionOrganizationTile.tsx", import.meta.url),
     ).text()
+    flush()
     expect(tile).toContain("<img")
     expect(tile).toContain("onError={fallback.onError}")
     expect(tile).toContain("authenticatedInitialsGet(props.label)")
@@ -911,6 +964,7 @@ describe("account workspace", () => {
     const shell = await Bun.file(
       new URL("../../src/ui/production/ProductionAuthenticatedShell.tsx", import.meta.url),
     ).text()
+    flush()
     expect(shell).not.toContain("AuthenticatedBrandMark")
     expect(shell).not.toContain('messageTranslate("app.name")')
     expect(shell).toContain("state.activeOrganization()")

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { accountSecurityProductionStateCreate } from "../../src/features/account/ui/accountSecurityProductionStateCreate.js"
 
 const originalFetch = globalThis.fetch
@@ -86,24 +86,33 @@ describe("account security external identity state", () => {
       screen: () => "factors",
     })
 
+    flush()
     state.totpDialogOpenSet(true)
+    flush()
     expect(state.totpDialogOpen()).toBe(true)
     expect(state.pendingId()).toBe("totp:start")
     await waitFor(() => state.totpError() !== undefined)
+    flush()
     expect(state.totpSetup()).toBeUndefined()
 
     state.totpSetupDismiss()
+    flush()
     expect(state.totpDialogOpen()).toBe(false)
     expect(state.totpError()).toBeUndefined()
     state.codeInput({ currentTarget: { value: "654321" } } as InputEvent & { currentTarget: HTMLInputElement })
+    flush()
     state.totpDialogOpenSet(true)
+    flush()
     expect(state.code()).toBe("")
     await waitFor(() => state.totpSetup() !== undefined)
+    flush()
     expect(state.totpSetup()?.secret).toBe("JBSWY3DPEHPK3PXP")
 
     state.codeInput({ currentTarget: { value: "123456" } } as InputEvent & { currentTarget: HTMLInputElement })
+    flush()
     await state.totpConfirm()
 
+    flush()
     expect(state.totpDialogOpen()).toBe(false)
     expect(state.totpSetup()).toBeUndefined()
     expect(state.code()).toBe("")
@@ -206,10 +215,12 @@ describe("account security external identity state", () => {
       realmId: () => "realm-one",
       screen: () => "identities",
     })
+    flush()
     expect(state.identityProviders().map((provider) => provider.id)).toEqual(["provider-google"])
     expect(state.identityProviderLinked("provider-google")).toBe(false)
 
     await state.identityLinkStart("provider-google")
+    flush()
     expect(popup.location.href).toContain("https://accounts.example.test/authorize")
     const callback = {
       confirmationToken: "confirmation-token",
@@ -243,22 +254,26 @@ describe("account security external identity state", () => {
       origin: "https://auth.example.test",
       source: popup,
     } as unknown as MessageEvent<unknown>)
+    flush()
     expect(state.identityLinkConfirmation()).toBeUndefined()
     messageHandler?.({
       data: callback,
       origin: "https://auth.example.test",
       source: popup as unknown as Window,
     } as unknown as MessageEvent<unknown>)
+    flush()
     expect(state.identityLinkConfirmation()).toMatchObject({ kind: "link_confirmation" })
     messageHandler?.({
       data: callback,
       origin: "https://auth.example.test",
       source: popup,
     } as unknown as MessageEvent<unknown>)
+    flush()
     expect(state.identityLinkConfirmation()).toMatchObject({ confirmationToken: "confirmation-token" })
 
     await state.identityLinkConfirm()
 
+    flush()
     expect(state.identityLinkConfirmation()).toBeUndefined()
     expect(state.identityProviderLinked("provider-google")).toBe(true)
   })
@@ -300,12 +315,15 @@ describe("account security external identity state", () => {
       realmId: () => "realm-one",
       screen: () => "refresh-tokens",
     })
+    flush()
     expect(state.refreshTokens()).toHaveLength(1)
     expect(state.refreshTokens()[0]).not.toHaveProperty("tokenHash")
     const revocation = state.refreshTokenRevoke("01900000-0000-7000-8000-000000000032")
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await revocation
+    flush()
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
 
@@ -352,18 +370,22 @@ describe("account security external identity state", () => {
       realmId: () => "realm-one",
       screen: () => "refresh-tokens",
     })
+    flush()
     expect(state.refreshTokens()).toHaveLength(1)
     expect(state.refreshTokensNextPageToken()).toBe("cursor-1")
     await state.refreshTokensLoadMore()
+    flush()
     expect(state.refreshTokens().map((item) => item.clientName)).toEqual(["First application", "Second application"])
     expect(state.refreshTokensNextPageToken()).toBeUndefined()
     expect(queries.slice(0, 2)).toEqual(["?pageSize=10", "?pageSize=10&pageToken=cursor-1"])
 
     const revocation = state.refreshTokensRevokeAll()
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await revocation
     await waitFor(() => state.refreshTokens()[0]?.status === "revoked")
+    flush()
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
 
@@ -400,12 +422,14 @@ describe("account security external identity state", () => {
       realmId: () => "realm-one",
       screen: () => "security-history",
     })
+    flush()
     expect(state.securityHistory()).toEqual([
       { category: "sessions", displayCode: "session.created", id: "history-1", occurredAt: 2 },
     ])
     expect(state.securityHistoryNextPageToken()).toBe("cursor-1")
     expect(state.securityHistory()[0]).not.toHaveProperty("actorId")
     await state.securityHistoryLoadMore()
+    flush()
     expect(state.securityHistory().map((item) => item.id)).toEqual(["history-1", "history-2"])
     expect(state.securityHistoryNextPageToken()).toBeUndefined()
     expect(pageSizes).toEqual([10, 10])
@@ -474,17 +498,21 @@ describe("account security external identity state", () => {
       realmId: () => "realm-one",
       screen: () => "factors",
     })
+    flush()
     expect(await state.totpRename("totp-enrollment", "Work account")).toBe(true)
     expect(state.methods().totp.enrollments[0]?.label).toBe("Work account")
 
     const removal = state.totpRemove("totp-enrollment")
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
+    flush()
     expect(await removal).toBe(false)
     expect(state.totpRemoveStepUpChallenge()?.challenge.purpose).toBe("step_up")
     state.totpRemoveStepUpCodeInput({ currentTarget: { value: "123456" } } as InputEvent & {
       currentTarget: HTMLInputElement
     })
+    flush()
     expect(await state.totpRemoveStepUpComplete({ code: state.totpRemoveStepUpCode() })).toBe(true)
     expect(state.methods().totp.enrolled).toBe(false)
     expect(state.totpRemoveStepUpChallenge()).toBeUndefined()

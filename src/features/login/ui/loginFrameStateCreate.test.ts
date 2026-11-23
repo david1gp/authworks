@@ -1,12 +1,8 @@
+import { flush } from "solid-js"
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test"
 import { Window } from "happy-dom"
 
 type LoginFrameStateCreate = typeof import("./loginFrameStateCreate.js")["loginFrameStateCreate"]
-
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 
 let createRoot: typeof import("solid-js").createRoot
 let loginFrameStateCreate: LoginFrameStateCreate
@@ -72,6 +68,7 @@ function stateCreate(storage: Storage) {
     }
     previousGlobals.clear()
   })
+  flush()
   return state
 }
 
@@ -88,6 +85,7 @@ describe("loginFrameStateCreate theme preference", () => {
 
     expect(state.effectiveTheme()).toBe("dark")
     lightOption.onSelect()
+    flush()
     expect(state.effectiveTheme()).toBe("light")
     expect(storage.getItem("theme")).toBe("light")
   })
@@ -103,6 +101,7 @@ describe("loginFrameStateCreate theme preference", () => {
     )
     const state = stateCreate(storage)
 
+    flush()
     expect(state.effectiveTheme()).toBe("light")
   })
 
@@ -120,6 +119,7 @@ describe("loginFrameStateCreate theme preference", () => {
     if (darkOption === undefined) throw new Error("Dark theme option was not created.")
 
     expect(() => darkOption.onSelect()).not.toThrow()
+    flush()
     expect(state.effectiveTheme()).toBe("dark")
   })
 })

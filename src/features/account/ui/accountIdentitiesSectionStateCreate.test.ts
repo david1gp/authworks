@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import ts from "typescript"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
@@ -15,12 +15,6 @@ mock.module("@solidjs/router", () => ({
   useLocation: () => location,
   useNavigate: () => navigate,
 }))
-
-// Bun keeps module mocks for the whole test run, and other suites replace `solid-js` with
-// hand-written stubs whose `createSignal`, `createEffect` and `on` never react to a change.
-// Bind the real runtime so the provider-callback effect under test behaves like in production.
-const solidRuntimePath = "solid-js/dist/dev.js"
-mock.module("solid-js", () => import(solidRuntimePath))
 
 const { accountIdentitiesSectionStateCreate } = await import("./accountIdentitiesSectionStateCreate.js")
 
@@ -66,10 +60,12 @@ function fixtureCreate(initialSearch = "?fixture=empty") {
   const error = createSignalObject<string | undefined>(undefined)
   const linkConfirm = mock(async () => {
     confirmation.set(undefined)
+    flush()
     linkProvider.set(undefined)
   })
   const linkCancel = mock(() => {
     confirmation.set(undefined)
+    flush()
     linkProvider.set(undefined)
   })
   const navigations: { to: string; options: { replace?: boolean; scroll?: boolean } }[] = []
@@ -117,14 +113,18 @@ test("linked identity summary updates its count, status, and alert tone without 
     expect(fixture.state.summaryValue()).toBe("2 linked identities")
     expect(fixture.state.summaryStatus()).toBe("Configured")
     expect(fixture.state.summaryTone()).toBe("success")
-    fixture.identities.set([])
-    expect(fixture.state.summaryValue()).toBe("0 linked identities")
-    expect(fixture.state.summaryStatus()).toBe("Not configured")
-    expect(fixture.state.summaryTone()).toBe("danger")
-    expect(fixture.linkConfirm).not.toHaveBeenCalled()
-    expect(fixture.linkCancel).not.toHaveBeenCalled()
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.identities.set([])
+      flush()
+      expect(fixture.state.summaryValue()).toBe("0 linked identities")
+      expect(fixture.state.summaryStatus()).toBe("Not configured")
+      expect(fixture.state.summaryTone()).toBe("danger")
+      expect(fixture.linkConfirm).not.toHaveBeenCalled()
+      expect(fixture.linkCancel).not.toHaveBeenCalled()
+      dispose()
+    }
+  })()
 })
 
 test("identity dialogs select individual accounts and preserve unrelated query state and the section anchor", () => {
@@ -132,53 +132,72 @@ test("identity dialogs select individual accounts and preserve unrelated query s
     const fixture = fixtureCreate()
     expect(fixture.state.dialogOpen("one")).toBe(false)
     expect(fixture.state.linkDialogOpen()).toBe(false)
-    fixture.state.dialogOpenChange("one", true)
-    expect(fixture.state.dialogOpen("one")).toBe(true)
-    expect(fixture.state.dialogOpen("two")).toBe(false)
-    fixture.state.dialogOpenChange("two", true)
-    expect(fixture.state.dialogOpen("one")).toBe(false)
-    expect(fixture.state.dialogOpen("two")).toBe(true)
-    fixture.state.dialogOpenChange("one", false)
-    expect(fixture.state.dialogOpen("two")).toBe(true)
-    fixture.state.linkDialogOpenChange(true)
-    expect(fixture.state.dialogOpen("two")).toBe(false)
-    expect(fixture.state.linkDialogOpen()).toBe(true)
-    fixture.state.dialogOpenChange("one", true)
-    expect(fixture.state.linkDialogOpen()).toBe(false)
-    fixture.identities.set([identityCreate("two")])
-    expect(fixture.state.dialogOpen("one")).toBe(false)
-    fixture.state.dialogOpenChange("one", false)
-    expect(fixture.search.get()).toBe("?fixture=empty")
-    expect(
-      fixture.navigations.every(({ to, options }) => to.endsWith("#security") && options.replace && !options.scroll),
-    ).toBe(true)
-    expect(fixture.linkConfirm).not.toHaveBeenCalled()
-    expect(fixture.linkCancel).not.toHaveBeenCalled()
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.state.dialogOpenChange("one", true)
+      flush()
+      expect(fixture.state.dialogOpen("one")).toBe(true)
+      expect(fixture.state.dialogOpen("two")).toBe(false)
+      fixture.state.dialogOpenChange("two", true)
+      flush()
+      expect(fixture.state.dialogOpen("one")).toBe(false)
+      expect(fixture.state.dialogOpen("two")).toBe(true)
+      fixture.state.dialogOpenChange("one", false)
+      flush()
+      expect(fixture.state.dialogOpen("two")).toBe(true)
+      fixture.state.linkDialogOpenChange(true)
+      flush()
+      expect(fixture.state.dialogOpen("two")).toBe(false)
+      expect(fixture.state.linkDialogOpen()).toBe(true)
+      fixture.state.dialogOpenChange("one", true)
+      flush()
+      expect(fixture.state.linkDialogOpen()).toBe(false)
+      fixture.identities.set([identityCreate("two")])
+      flush()
+      expect(fixture.state.dialogOpen("one")).toBe(false)
+      fixture.state.dialogOpenChange("one", false)
+      flush()
+      expect(fixture.search.get()).toBe("?fixture=empty")
+      expect(
+        fixture.navigations.every(({ to, options }) => to.endsWith("#security") && options.replace && !options.scroll),
+      ).toBe(true)
+      expect(fixture.linkConfirm).not.toHaveBeenCalled()
+      expect(fixture.linkCancel).not.toHaveBeenCalled()
+      dispose()
+    }
+  })()
 })
 
 test("URL dialog selections are validated, reloadable, and never create unsupported link capabilities", () => {
   createRoot((dispose) => {
     const fixture = fixtureCreate("?accountIdentity=two")
     expect(fixture.state.dialogOpen("two")).toBe(true)
-    fixture.search.set("?accountIdentity=&accountIdentityLink=invalid")
-    expect(fixture.state.dialogOpen("one")).toBe(false)
-    expect(fixture.state.linkDialogOpen()).toBe(false)
-    expect(fixture.state.availableProviders().map((provider) => provider.id)).toEqual(["google"])
-    fixture.providers.set([providerCreate("github"), providerCreate("off", false)])
-    fixture.search.set("?accountIdentityLink=open")
-    expect(fixture.state.linkAvailable()).toBe(false)
-    expect(fixture.state.linkDialogOpen()).toBe(false)
-    fixture.state.linkDialogOpenChange(true)
-    expect(fixture.navigations).toHaveLength(0)
-    fixture.providers.set([])
-    expect(fixture.state.linkAvailable()).toBe(false)
-    fixture.linkProvider.set("github")
-    expect(fixture.state.linkAvailable()).toBe(true)
-    expect(fixture.state.linkDialogOpen()).toBe(true)
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.search.set("?accountIdentity=&accountIdentityLink=invalid")
+      flush()
+      expect(fixture.state.dialogOpen("one")).toBe(false)
+      expect(fixture.state.linkDialogOpen()).toBe(false)
+      expect(fixture.state.availableProviders().map((provider) => provider.id)).toEqual(["google"])
+      fixture.providers.set([providerCreate("github"), providerCreate("off", false)])
+      flush()
+      fixture.search.set("?accountIdentityLink=open")
+      flush()
+      expect(fixture.state.linkAvailable()).toBe(false)
+      expect(fixture.state.linkDialogOpen()).toBe(false)
+      fixture.state.linkDialogOpenChange(true)
+      flush()
+      expect(fixture.navigations).toHaveLength(0)
+      fixture.providers.set([])
+      flush()
+      expect(fixture.state.linkAvailable()).toBe(false)
+      fixture.linkProvider.set("github")
+      flush()
+      expect(fixture.state.linkAvailable()).toBe(true)
+      expect(fixture.state.linkDialogOpen()).toBe(true)
+      dispose()
+    }
+  })()
 })
 
 test("identity dialog labels resolve provider names and retain every existing account-value fallback", () => {
@@ -186,15 +205,19 @@ test("identity dialog labels resolve provider names and retain every existing ac
     const fixture = fixtureCreate()
     const identity = identityCreate("one")
     expect(fixture.state.identityTitle(identity)).toBe("Manage github provider account (one@example.com)")
-    fixture.providers.set([])
-    expect(fixture.state.identityLabel(identity)).toBe("github")
-    expect(fixture.state.identityValue({ ...identity, email: undefined, username: "username" })).toBe("username")
-    expect(fixture.state.identityValue({ ...identity, email: undefined, displayName: "Display name" })).toBe(
-      "Display name",
-    )
-    expect(fixture.state.identityValue({ ...identity, email: undefined })).toBe("subject-one")
-    dispose()
-  })
+    return () => {
+      flush()
+      fixture.providers.set([])
+      flush()
+      expect(fixture.state.identityLabel(identity)).toBe("github")
+      expect(fixture.state.identityValue({ ...identity, email: undefined, username: "username" })).toBe("username")
+      expect(fixture.state.identityValue({ ...identity, email: undefined, displayName: "Display name" })).toBe(
+        "Display name",
+      )
+      expect(fixture.state.identityValue({ ...identity, email: undefined })).toBe("subject-one")
+      dispose()
+    }
+  })()
 })
 
 test("provider callbacks reopen a hidden link dialog without confirming, and closing preserves the popup flow", async () => {
@@ -202,22 +225,30 @@ test("provider callbacks reopen a hidden link dialog without confirming, and clo
     const fixture = fixtureCreate()
     await Promise.resolve()
     fixture.linkProvider.set("google")
+    flush()
     fixture.pending.set("identity:link:google")
     fixture.state.linkDialogOpenChange(true)
+    flush()
     fixture.state.linkDialogOpenChange(false)
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(false)
     expect(fixture.linkCancel).not.toHaveBeenCalled()
     fixture.pending.set(undefined)
+    flush()
     fixture.confirmation.set({ kind: "link_confirmation", confirmationToken: "private-token", expiresAt: 100 })
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(true)
     expect(fixture.state.linkProviderLabel()).toBe("google provider")
     expect(fixture.search.get()).not.toContain("private-token")
     expect(fixture.linkConfirm).not.toHaveBeenCalled()
     fixture.state.linkDialogOpenChange(false)
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(false)
     expect(fixture.confirmation.get()).toBeDefined()
     fixture.state.linkDialogOpenChange(true)
+    flush()
     fixture.state.linkCancel()
+    flush()
     expect(fixture.linkCancel).toHaveBeenCalledTimes(1)
     expect(fixture.state.linkDialogOpen()).toBe(false)
     expect(fixture.confirmation.get()).toBeUndefined()
@@ -230,28 +261,38 @@ test("explicit link confirmation retains failures, blocks duplicate pending cont
     const fixture = fixtureCreate()
     await Promise.resolve()
     fixture.linkProvider.set("google")
+    flush()
     fixture.confirmation.set({ kind: "link_confirmation", confirmationToken: "private-token", expiresAt: 100 })
+    flush()
     fixture.linkConfirm.mockImplementation(async () => {
       fixture.error.set("Provider rejected the link")
     })
     await fixture.state.linkConfirm()
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(true)
     expect(fixture.confirmation.get()).toBeDefined()
     fixture.pending.set("identity:link:confirm")
+    flush()
     fixture.state.linkDialogOpenChange(false)
     await fixture.state.linkConfirm()
+    flush()
     fixture.state.linkCancel()
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(true)
     expect(fixture.linkConfirm).toHaveBeenCalledTimes(1)
     expect(fixture.linkCancel).not.toHaveBeenCalled()
     fixture.pending.set(undefined)
+    flush()
     fixture.linkConfirm.mockImplementation(async () => {
       fixture.error.set(undefined)
+      flush()
       fixture.identities.set([...fixture.identities.get(), identityCreate("new", "google")])
       fixture.confirmation.set(undefined)
+      flush()
       fixture.linkProvider.set(undefined)
     })
     await fixture.state.linkConfirm()
+    flush()
     expect(fixture.state.linkDialogOpen()).toBe(false)
     expect(fixture.state.count()).toBe(3)
     expect(fixture.search.get()).toBe("?fixture=empty")
@@ -284,6 +325,7 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
     return undefined
   }
   const card = elements.find((element) => name(element) === "AccountDisclosure")
+  flush()
   expect(card).toBeDefined()
   expect(card?.openingElement.getText(tree)).toContain('summary={messageTranslate("shell.nav.linkedIdentities")}')
   expect(card?.openingElement.getText(tree)).toContain("status={state.summaryStatus()}")
@@ -291,6 +333,7 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
   expect(card?.openingElement.getText(tree)).not.toContain("account.identities.description")
   expect(card?.getText(tree)).toContain('messageTranslate("account.identities.description")')
   const dialogs = elements.filter((element) => name(element) === "AuthenticatedDialog")
+  flush()
   expect(dialogs).toHaveLength(3)
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("title={state.identityTitle(identity)}")
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("open={state.dialogOpen(identity.id)}")
@@ -301,6 +344,7 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
   expect(ancestor(dialogs[1]!, "Show")?.openingElement.getText(tree)).toContain("when={state.linkAvailable()}")
   const list = ancestor(dialogs[1]!, "ul")!
   const rows = list.children.filter((child) => ts.isJsxElement(child))
+  flush()
   expect(rows.at(-1)).toBe(ancestor(dialogs[1]!, "Show"))
   expect(actions.map((action) => action.initializer?.getText(tree))).toEqual([
     "{() => props.state.identityUnlink(identity.providerId, identity.externalSubject)}",

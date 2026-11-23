@@ -4,12 +4,8 @@ import { unlink } from "node:fs/promises"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 mock.module("#ui/static/icon/Icon.jsx", () => ({ Icon: () => document.createElement("svg") }))
 
 const runId = randomUUID()
@@ -25,7 +21,7 @@ afterAll(async () => {
 
 async function compileSource(pathname: string, outPath: string): Promise<void> {
   const sourcePath = new URL(pathname, import.meta.url)
-  const transform = solid().transform
+  const transform = solid().find((entry) => entry.name === "solid")?.transform
   if (transform === undefined) throw new Error("Solid plugin did not expose a transform hook.")
   const hook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
     code: string,
@@ -67,7 +63,7 @@ test("the language selector applies the chosen catalog and restores the previous
     const { LanguageProbe } = await import(pathToFileURL(probePath).href)
     const { i18nStore } = await import("../../src/ui/i18n/model/i18nStore.js")
     const { createComponent } = await import("solid-js")
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     i18nStore.language.set("en")
     i18nStore.dictionary.set({})
 

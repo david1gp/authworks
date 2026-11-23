@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot, createSignal } from "solid-js"
+import { flush, createRoot, createSignal } from "solid-js"
 import { accountEffectiveAccessGroupGet } from "../../src/features/account/model/accountEffectiveAccessGroupGet.js"
 import { accountEffectiveAccessGroupsCreate } from "../../src/features/account/model/accountEffectiveAccessGroupsCreate.js"
 import { accountOrganizationMeGet } from "../../src/features/account/model/accountOrganizationMeGet.js"
@@ -149,6 +149,7 @@ describe("account organization switch state", () => {
     })
     await states.profile.load(true)
     await waitFor(() => requests.organizations === 1 && requests.effectiveAccess === 1)
+    flush()
     expect(requests.profile).toBe(1)
     const profileState = states.profile
     const profileSignal = profileState.user
@@ -158,6 +159,7 @@ describe("account organization switch state", () => {
     await states.organizations.organizationSwitch(fieldNotesId)
     await waitFor(() => requests.organizations === 2 && requests.effectiveAccess === 2)
 
+    flush()
     expect(requests.profile).toBe(1)
     expect(states.profile).toBe(profileState)
     expect(states.profile.user).toBe(profileSignal)
@@ -210,12 +212,15 @@ describe("account organization switch state", () => {
     })
     await waitFor(() => effectiveAccessRequests === 1)
 
+    flush()
     setOrganization({ organizationId: fieldNotesId, status: "available" })
     await waitFor(() => effectiveAccessRequests === 2 && state.status() === "empty")
+    flush()
     expect(state.effectiveAccessNextPageToken()).toBeUndefined()
 
     first.resolve(Response.json({ items: [], nextPageToken: "stale-page" }))
     await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    flush()
     expect(state.effectiveAccessNextPageToken()).toBeUndefined()
   })
 
@@ -276,9 +281,11 @@ describe("account organization switch state", () => {
     })
     await waitFor(() => organizationRequests === 1 && effectiveAccessRequests === 1)
 
+    flush()
     setOrganization({ organizationId: fieldNotesId, status: "available" })
     await waitFor(() => organizationRequests === 2 && effectiveAccessRequests === 2)
 
+    flush()
     expect(states.organizations.organizations()).toEqual([])
     expect(states.effectiveAccess.effectiveAccess()).toEqual([])
     expect(states.effectiveAccess.effectiveAccessNextPageToken()).toBeUndefined()
@@ -294,6 +301,7 @@ describe("account organization switch state", () => {
     )
     await waitFor(() => states.organizations.status() === "ready" && states.effectiveAccess.status() === "ready")
 
+    flush()
     expect(states.organizations.organizations()).toEqual([organizations[1]!])
     expect(states.effectiveAccess.effectiveAccess()).toEqual([
       effectiveAccessEntryCreate("effective-new", organizations[1]!),
@@ -309,6 +317,7 @@ describe("account organization switch state", () => {
     )
     await new Promise<void>((resolve) => setTimeout(resolve, 0))
 
+    flush()
     expect(states.organizations.organizations()).toEqual([organizations[1]!])
     expect(states.effectiveAccess.effectiveAccess()).toEqual([
       effectiveAccessEntryCreate("effective-new", organizations[1]!),
@@ -365,9 +374,11 @@ describe("account organization switch state", () => {
 
     const stalePagination = state.effectiveAccessLoadMore()
     await waitFor(() => effectiveAccessRequests === 2)
+    flush()
     setOrganization({ organizationId: fieldNotesId, status: "available" })
     await waitFor(() => effectiveAccessRequests === 3 && state.status() === "ready")
 
+    flush()
     expect(state.effectiveAccess()).toEqual([effectiveAccessEntryCreate("effective-new", organizations[1]!)])
     expect(state.effectiveAccessNextPageToken()).toBeUndefined()
 
@@ -379,6 +390,7 @@ describe("account organization switch state", () => {
     )
     await stalePagination
 
+    flush()
     expect(state.effectiveAccess()).toEqual([effectiveAccessEntryCreate("effective-new", organizations[1]!)])
     expect(state.effectiveAccessNextPageToken()).toBeUndefined()
   })
@@ -439,6 +451,7 @@ describe("account organization switch state", () => {
 
     await state.organizationSwitch(fieldNotesId)
 
+    flush()
     expect(state.activeOrganizationId()).toBe(fieldNotesId)
     expect(state.consents()).toBe(consentsBeforeSwitch)
     expect(state.consents()).toEqual([consent])
@@ -482,9 +495,11 @@ describe("account organization switch state", () => {
     })
     await waitFor(() => state.status() === "ready")
 
+    flush()
     state.viewedOrganizationSelect(fieldNotesId)
     await state.organizationSwitch(fieldNotesId)
 
+    flush()
     expect(organizationSelectCalls).toBe(1)
     expect(state.activeOrganizationId()).toBe(northwindId)
     expect(state.viewedOrganizationId()).toBe(fieldNotesId)
@@ -529,8 +544,10 @@ describe("account organization switch state", () => {
     })
     await waitFor(() => state.organizations.status() === "ready")
 
+    flush()
     state.organizationSelect(fieldNotesId)
 
+    flush()
     expect(state.organizations.activeOrganizationId()).toBe(northwindId)
     expect(state.organizations.viewedOrganizationId()).toBe(fieldNotesId)
     expect(state.effectiveAccess.viewedOrganizationId()).toBe(fieldNotesId)
@@ -538,6 +555,7 @@ describe("account organization switch state", () => {
       Response.json({ items: [effectiveAccessEntryCreate("effective-field-notes", organizations[1]!)] }),
     )
     await waitFor(() => state.effectiveAccess.status() === "ready")
+    flush()
     expect(state.effectiveAccess.viewedEffectiveAccessGroup()?.entries).toEqual([
       effectiveAccessEntryCreate("effective-field-notes", organizations[1]!),
     ])
@@ -587,10 +605,12 @@ describe("account organization switch state", () => {
     })
     await waitFor(() => state.status() === "ready")
 
+    flush()
     expect(state.viewedOrganizationId()).toBe(northwindId)
     expect(state.viewedOrganization()).toEqual(organizations[0])
 
     state.viewedOrganizationSelect(fieldNotesId)
+    flush()
     expect(state.viewedOrganizationId()).toBe(fieldNotesId)
     expect(state.viewedOrganization()).toEqual(organizations[1])
     expect(state.activeOrganizationId()).toBe(northwindId)
@@ -598,15 +618,18 @@ describe("account organization switch state", () => {
 
     setOrganization({ organizationId: fieldNotesId, status: "available" })
     await waitFor(() => organizationRequests === 2 && state.status() === "ready")
+    flush()
     expect(state.viewedOrganizationId()).toBe(fieldNotesId)
 
     setOrganization({ organizationId: northwindId, status: "available" })
     await waitFor(() => organizationRequests === 3 && state.status() === "ready")
+    flush()
     expect(state.viewedOrganizationId()).toBe(fieldNotesId)
 
     state.viewedOrganizationSelect(fieldNotesId)
     state.reload()
-    await waitFor(() => organizationRequests === 4 && state.status() === "ready")
+    await waitFor(() => organizationRequests === 4 && state.organizations().length === 1)
+    flush()
     expect(state.viewedOrganizationId()).toBe(northwindId)
     expect(state.viewedOrganization()).toEqual(organizations[0])
   })
@@ -617,6 +640,7 @@ describe("account organization switch state", () => {
       effectiveAccessEntryCreate("effective-northwind", organizations[0]!),
     ])
 
+    flush()
     expect(accountOrganizationMeGet(organizations, fieldNotesId)).toBe(organizations[1])
     expect(accountEffectiveAccessGroupGet(groups, fieldNotesId)).toEqual({
       entries: [effectiveAccessEntryCreate("effective-field-notes", organizations[1]!)],

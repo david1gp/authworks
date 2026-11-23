@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { accountProfilePictureFieldStateCreate } from "../../src/features/account/ui/accountProfilePictureFieldStateCreate.js"
 
 describe("account profile picture field state", () => {
@@ -20,23 +20,32 @@ describe("account profile picture field state", () => {
           preventDefault: () => undefined,
           stopPropagation: () => undefined,
         } as unknown as DragEvent)
-      state.openChange(true)
-      drop(new File(["bad"], "bad.txt", { type: "text/plain" }))
-      expect(state.validationMessage()).toBeTruthy()
-      expect(state.selectedFile()).toBeUndefined()
-      drop(new File([new Uint8Array(512 * 1024 + 1)], "big.png", { type: "image/png" }))
-      expect(state.validationMessage()).toBeTruthy()
-      expect(state.selectedFile()).toBeUndefined()
-      drop(new File(["valid"], "good.png", { type: "image/png" }))
-      expect(state.validationMessage()).toBeUndefined()
-      expect(state.selectedFile()?.name).toBe("good.png")
-      state.openChange(false)
-      expect(state.selectedFile()).toBeUndefined()
-      expect(state.previewUrl()).toBe("https://assets.example.com/current.png")
-      state.save()
-      expect(uploaded).toBe(false)
-      dispose()
-    })
+      return () => {
+        flush()
+        state.openChange(true)
+        flush()
+        drop(new File(["bad"], "bad.txt", { type: "text/plain" }))
+        flush()
+        expect(state.validationMessage()).toBeTruthy()
+        expect(state.selectedFile()).toBeUndefined()
+        drop(new File([new Uint8Array(512 * 1024 + 1)], "big.png", { type: "image/png" }))
+        flush()
+        expect(state.validationMessage()).toBeTruthy()
+        expect(state.selectedFile()).toBeUndefined()
+        drop(new File(["valid"], "good.png", { type: "image/png" }))
+        flush()
+        expect(state.validationMessage()).toBeUndefined()
+        expect(state.selectedFile()?.name).toBe("good.png")
+        state.openChange(false)
+        flush()
+        expect(state.selectedFile()).toBeUndefined()
+        expect(state.previewUrl()).toBe("https://assets.example.com/current.png")
+        state.save()
+        flush()
+        expect(uploaded).toBe(false)
+        dispose()
+      }
+    })()
   })
   test("initializes with empty picture state when URL is empty", () => {
     createRoot((dispose) => {
@@ -68,16 +77,21 @@ describe("account profile picture field state", () => {
       expect(state.pictureFailed()).toBe(false)
 
       // When image fails to load, pictureFailed becomes true while hasPicture remains true
-      state.onPictureError()
-      expect(state.hasPicture()).toBe(true)
-      expect(state.pictureFailed()).toBe(true)
+      return () => {
+        flush()
+        state.onPictureError()
+        flush()
+        expect(state.hasPicture()).toBe(true)
+        expect(state.pictureFailed()).toBe(true)
 
-      // When URL changes, preview state recovers
-      url = "https://assets.example.com/avatar-new.png"
-      expect(state.hasPicture()).toBe(true)
-      expect(state.pictureFailed()).toBe(false)
-      dispose()
-    })
+        // When URL changes, preview state recovers
+        url = "https://assets.example.com/avatar-new.png"
+        flush()
+        expect(state.hasPicture()).toBe(true)
+        expect(state.pictureFailed()).toBe(false)
+        dispose()
+      }
+    })()
   })
 
   test("permits file replacement and picker activation when picture has failed to load", () => {
@@ -99,39 +113,50 @@ describe("account profile picture field state", () => {
         url: () => "https://assets.example.com/broken-avatar.png",
       })
       state.fileInputSet(input)
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
 
-      // Simulate image failing to load
-      state.onPictureError()
-      expect(state.hasPicture()).toBe(true)
-      expect(state.pictureFailed()).toBe(true)
+        // Simulate image failing to load
+        flush()
+        state.onPictureError()
+        flush()
+        expect(state.hasPicture()).toBe(true)
+        expect(state.pictureFailed()).toBe(true)
 
-      // File picker can still be opened via method and keyboard
-      state.openFilePicker()
-      expect(clicked).toBe(true)
+        // File picker can still be opened via method and keyboard
+        state.openFilePicker()
+        flush()
+        expect(clicked).toBe(true)
 
-      clicked = false
-      state.onKeyDown({
-        key: "Enter",
-        preventDefault: () => undefined,
-      } as KeyboardEvent)
-      expect(clicked).toBe(true)
+        clicked = false
+        flush()
+        state.onKeyDown({
+          key: "Enter",
+          preventDefault: () => undefined,
+        } as KeyboardEvent)
+        flush()
+        expect(clicked).toBe(true)
 
-      // Dropping a replacement file works even when picture load failed
-      const file = new File(["new avatar content"], "replacement.png", { type: "image/png" })
-      const dropEvent = {
-        dataTransfer: { files: [file] },
-        preventDefault: () => undefined,
-        stopPropagation: () => undefined,
-      } as unknown as DragEvent
+        // Dropping a replacement file works even when picture load failed
+        const file = new File(["new avatar content"], "replacement.png", { type: "image/png" })
+        const dropEvent = {
+          dataTransfer: { files: [file] },
+          preventDefault: () => undefined,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent
 
-      state.onDrop(dropEvent)
-      expect(state.selectedFile()).toBe(file)
-      expect(uploadedFile).toBeUndefined()
-      state.save()
-      expect(uploadedFile).toBe(file)
-      dispose()
-    })
+        flush()
+        state.onDrop(dropEvent)
+        flush()
+        expect(state.selectedFile()).toBe(file)
+        expect(uploadedFile).toBeUndefined()
+        state.save()
+        flush()
+        expect(uploadedFile).toBe(file)
+        dispose()
+      }
+    })()
   })
 
   test("manages drag state transitions and ignores drag leave within child elements", () => {
@@ -142,52 +167,62 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
 
-      let prevented = false
-      let stopped = false
-      const dragEvent = {
-        preventDefault: () => {
-          prevented = true
-        },
-        stopPropagation: () => {
-          stopped = true
-        },
-      } as unknown as DragEvent
+        let prevented = false
+        let stopped = false
+        const dragEvent = {
+          preventDefault: () => {
+            prevented = true
+          },
+          stopPropagation: () => {
+            stopped = true
+          },
+        } as unknown as DragEvent
 
-      state.onDragEnter(dragEvent)
-      expect(state.isDragging()).toBe(true)
-      expect(prevented).toBe(true)
-      expect(stopped).toBe(true)
+        flush()
+        state.onDragEnter(dragEvent)
+        flush()
+        expect(state.isDragging()).toBe(true)
+        expect(prevented).toBe(true)
+        expect(stopped).toBe(true)
 
-      state.onDragOver(dragEvent)
-      expect(state.isDragging()).toBe(true)
+        state.onDragOver(dragEvent)
+        flush()
+        expect(state.isDragging()).toBe(true)
 
-      // Drag leave with relatedTarget inside currentTarget should not clear dragging
-      const child = { id: "child" } as unknown as Node
-      const parent = {
-        contains: (target: Node | null) => target === child,
-      } as unknown as HTMLElement
+        // Drag leave with relatedTarget inside currentTarget should not clear dragging
+        const child = { id: "child" } as unknown as Node
+        const parent = {
+          contains: (target: Node | null) => target === child,
+        } as unknown as HTMLElement
 
-      state.onDragLeave({
-        currentTarget: parent,
-        preventDefault: () => undefined,
-        relatedTarget: child,
-        stopPropagation: () => undefined,
-      } as unknown as DragEvent)
-      expect(state.isDragging()).toBe(true)
+        flush()
+        state.onDragLeave({
+          currentTarget: parent,
+          preventDefault: () => undefined,
+          relatedTarget: child,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent)
+        flush()
+        expect(state.isDragging()).toBe(true)
 
-      // Drag leave outside should clear dragging
-      const outside = { id: "outside" } as unknown as Node
-      state.onDragLeave({
-        currentTarget: parent,
-        preventDefault: () => undefined,
-        relatedTarget: outside,
-        stopPropagation: () => undefined,
-      } as unknown as DragEvent)
-      expect(state.isDragging()).toBe(false)
-      dispose()
-    })
+        // Drag leave outside should clear dragging
+        const outside = { id: "outside" } as unknown as Node
+        flush()
+        state.onDragLeave({
+          currentTarget: parent,
+          preventDefault: () => undefined,
+          relatedTarget: outside,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent)
+        flush()
+        expect(state.isDragging()).toBe(false)
+        dispose()
+      }
+    })()
   })
 
   test("handles drop and triggers upload with dropped file", () => {
@@ -201,23 +236,29 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
 
-      const file = new File(["test image content"], "avatar.png", { type: "image/png" })
-      const dropEvent = {
-        dataTransfer: { files: [file] },
-        preventDefault: () => undefined,
-        stopPropagation: () => undefined,
-      } as unknown as DragEvent
+        const file = new File(["test image content"], "avatar.png", { type: "image/png" })
+        const dropEvent = {
+          dataTransfer: { files: [file] },
+          preventDefault: () => undefined,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent
 
-      state.onDrop(dropEvent)
-      expect(state.isDragging()).toBe(false)
-      expect(state.selectedFile()).toBe(file)
-      expect(uploadedFile).toBeUndefined()
-      state.save()
-      expect(uploadedFile).toBe(file)
-      dispose()
-    })
+        flush()
+        state.onDrop(dropEvent)
+        flush()
+        expect(state.isDragging()).toBe(false)
+        expect(state.selectedFile()).toBe(file)
+        expect(uploadedFile).toBeUndefined()
+        state.save()
+        flush()
+        expect(uploadedFile).toBe(file)
+        dispose()
+      }
+    })()
   })
 
   test("handles file input change and triggers upload", () => {
@@ -231,22 +272,28 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
 
-      const file = new File(["content"], "profile.webp", { type: "image/webp" })
-      const input = {
-        files: [file],
-        value: "profile.webp",
-      } as unknown as HTMLInputElement
+        const file = new File(["content"], "profile.webp", { type: "image/webp" })
+        const input = {
+          files: [file],
+          value: "profile.webp",
+        } as unknown as HTMLInputElement
 
-      state.onFileInputChange({ currentTarget: input } as unknown as Event)
-      expect(state.selectedFile()).toBe(file)
-      expect(uploadedFile).toBeUndefined()
-      state.save()
-      expect(uploadedFile).toBe(file)
-      expect(input.value).toBe("")
-      dispose()
-    })
+        flush()
+        state.onFileInputChange({ currentTarget: input } as unknown as Event)
+        flush()
+        expect(state.selectedFile()).toBe(file)
+        expect(uploadedFile).toBeUndefined()
+        state.save()
+        flush()
+        expect(uploadedFile).toBe(file)
+        expect(input.value).toBe("")
+        dispose()
+      }
+    })()
   })
 
   test("triggers file picker on click and keyboard activation", () => {
@@ -265,34 +312,43 @@ describe("account profile picture field state", () => {
         url: () => "",
       })
       state.fileInputSet(input)
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
+        flush()
 
-      state.openFilePicker()
-      expect(clicked).toBe(true)
+        state.openFilePicker()
+        flush()
+        expect(clicked).toBe(true)
 
-      clicked = false
-      let defaultPrevented = false
-      state.onKeyDown({
-        key: "Enter",
-        preventDefault: () => {
-          defaultPrevented = true
-        },
-      } as KeyboardEvent)
-      expect(defaultPrevented).toBe(true)
-      expect(clicked).toBe(true)
+        clicked = false
+        let defaultPrevented = false
+        flush()
+        state.onKeyDown({
+          key: "Enter",
+          preventDefault: () => {
+            defaultPrevented = true
+          },
+        } as KeyboardEvent)
+        flush()
+        expect(defaultPrevented).toBe(true)
+        expect(clicked).toBe(true)
 
-      clicked = false
-      defaultPrevented = false
-      state.onKeyDown({
-        key: " ",
-        preventDefault: () => {
-          defaultPrevented = true
-        },
-      } as KeyboardEvent)
-      expect(defaultPrevented).toBe(true)
-      expect(clicked).toBe(true)
-      dispose()
-    })
+        clicked = false
+        defaultPrevented = false
+        flush()
+        state.onKeyDown({
+          key: " ",
+          preventDefault: () => {
+            defaultPrevented = true
+          },
+        } as KeyboardEvent)
+        flush()
+        expect(defaultPrevented).toBe(true)
+        expect(clicked).toBe(true)
+        dispose()
+      }
+    })()
   })
 
   test("blocks file picker, upload, and drag operations when busy", () => {
@@ -315,27 +371,36 @@ describe("account profile picture field state", () => {
         url: () => "",
       })
       state.fileInputSet(input)
-      state.openChange(true)
+      return () => {
+        flush()
+        state.openChange(true)
 
-      expect(state.busy()).toBe(true)
+        flush()
+        expect(state.busy()).toBe(true)
 
-      state.openFilePicker()
-      expect(clicked).toBe(false)
+        state.openFilePicker()
+        flush()
+        expect(clicked).toBe(false)
 
-      const file = new File(["data"], "photo.jpg", { type: "image/jpeg" })
-      state.onDrop({
-        dataTransfer: { files: [file] },
-        preventDefault: () => undefined,
-        stopPropagation: () => undefined,
-      } as unknown as DragEvent)
-      expect(uploaded).toBe(false)
+        const file = new File(["data"], "photo.jpg", { type: "image/jpeg" })
+        flush()
+        state.onDrop({
+          dataTransfer: { files: [file] },
+          preventDefault: () => undefined,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent)
+        flush()
+        expect(uploaded).toBe(false)
 
-      status = "removing"
-      expect(state.busy()).toBe(true)
-      state.openFilePicker()
-      expect(clicked).toBe(false)
-      dispose()
-    })
+        status = "removing"
+        flush()
+        expect(state.busy()).toBe(true)
+        state.openFilePicker()
+        flush()
+        expect(clicked).toBe(false)
+        dispose()
+      }
+    })()
   })
 
   test("allows upload and removal only while the picture dialog is open", () => {
@@ -360,27 +425,40 @@ describe("account profile picture field state", () => {
           stopPropagation: () => undefined,
         } as unknown as DragEvent)
 
-      drop()
-      state.save()
-      state.remove()
-      expect(state.selectedFile()).toBeUndefined()
-      expect(uploads).toBe(0)
-      expect(removals).toBe(0)
+      return () => {
+        flush()
+        drop()
+        flush()
+        state.save()
+        flush()
+        state.remove()
+        flush()
+        expect(state.selectedFile()).toBeUndefined()
+        expect(uploads).toBe(0)
+        expect(removals).toBe(0)
 
-      state.openChange(true)
-      drop()
-      state.save()
-      state.remove()
-      expect(uploads).toBe(1)
-      expect(removals).toBe(1)
+        state.openChange(true)
+        flush()
+        drop()
+        flush()
+        state.save()
+        flush()
+        state.remove()
+        flush()
+        expect(uploads).toBe(1)
+        expect(removals).toBe(1)
 
-      state.openChange(false)
-      expect(state.selectedFile()).toBeUndefined()
-      state.save()
-      state.remove()
-      expect(uploads).toBe(1)
-      expect(removals).toBe(1)
-      dispose()
-    })
+        state.openChange(false)
+        flush()
+        expect(state.selectedFile()).toBeUndefined()
+        state.save()
+        flush()
+        state.remove()
+        flush()
+        expect(uploads).toBe(1)
+        expect(removals).toBe(1)
+        dispose()
+      }
+    })()
   })
 })

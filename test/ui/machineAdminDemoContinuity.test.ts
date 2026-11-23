@@ -3,8 +3,25 @@ import { beforeEach, describe, expect, mock, test } from "bun:test"
 let currentObserver: (() => void) | null = null
 
 mock.module("solid-js", () => ({
-  createEffect: (fn: () => void) => {
-    fn()
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    let first = true
+    let previous: unknown
+    const run = () => {
+      const previousObserver = currentObserver
+      currentObserver = run
+      let next: unknown
+      try {
+        next = compute()
+      } finally {
+        currentObserver = previousObserver
+      }
+      if (!first && Object.is(next, previous)) return
+      const skip = first && options?.defer
+      first = false
+      previous = next
+      if (!skip) apply(next)
+    }
+    run()
   },
   createSignal: <T>(initial: T) => {
     let value = initial
@@ -20,17 +37,7 @@ mock.module("solid-js", () => ({
     }
     return [get, set] as const
   },
-  on: (deps: () => unknown, fn: () => void) => {
-    return () => {
-      const run = () => {
-        currentObserver = run
-        deps()
-        currentObserver = null
-        fn()
-      }
-      run()
-    }
-  },
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [{ machineAdminDemoAdapterCreate }, { machineAdminDemoRecordStore }, { machineAdminPageStateCreate }] =

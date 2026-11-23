@@ -3,12 +3,15 @@ import { describe, expect, mock, test } from "bun:test"
 // The Solid runtime is not resolvable under the test condition, so the primitives the
 // administration state creators use are replaced with equivalent non-reactive behaviour.
 mock.module("solid-js", () => ({
-  createEffect: (effect: (previous?: unknown) => unknown) => effect(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [

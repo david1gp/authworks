@@ -12,7 +12,10 @@ mock.module("@solidjs/router", () => ({
 }))
 
 mock.module("solid-js", () => ({
-  createEffect: (effect: (previous?: unknown) => unknown) => effect(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [
@@ -23,7 +26,7 @@ mock.module("solid-js", () => ({
       },
     ] as const
   },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [{ adminDemoAdapterCreate }, { adminDemoStateCreate }, { i18nStore }, { translationCsvParse }] =

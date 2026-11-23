@@ -4,13 +4,9 @@ import { unlink } from "node:fs/promises"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 
 const compiledPath = join(import.meta.dirname, `.authenticated-tabs-${randomUUID()}.mjs`)
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 mock.module("#ui/static/icon/Icon.jsx", () => ({ Icon: () => document.createElement("svg") }))
 mock.module("#ui/utils/classMerge.js", () => ({
   classMerge: (...values: unknown[]) => values.filter(Boolean).join(" "),
@@ -23,7 +19,7 @@ afterAll(async () => {
 
 test("section navigation exposes ordinary links and identifies the current page", async () => {
   const sourcePath = new URL("../../src/ui/authenticated/AuthenticatedTabs.tsx", import.meta.url)
-  const transform = solid().transform
+  const transform = solid().find((entry) => entry.name === "solid")?.transform
   if (transform === undefined) throw new Error("Solid plugin did not expose a transform hook.")
   const hook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
     code: string,
@@ -45,7 +41,7 @@ test("section navigation exposes ordinary links and identifies the current page"
   try {
     const { AuthenticatedTabs } = await import(pathToFileURL(compiledPath).href)
     const { createComponent } = await import("solid-js")
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const root = browser.document.createElement("div")
     const dispose = render(
       () =>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot, createSignal } from "solid-js"
+import { flush, createRoot, createSignal } from "solid-js"
 import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 import type { UserCurrentResponse } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import type { User } from "../../src/features/users/public/userSchema.js"
@@ -78,12 +78,19 @@ describe("account production adapter state", () => {
 
     const state = stateCreate(() => "overview")
     await state.load(true)
+    flush()
     state.profileDialogOpenSet(true)
+    flush()
     state.displayName.set("Unsaved name")
+    flush()
     state.firstName.set("Unsaved first name")
+    flush()
     state.gender.set("woman")
+    flush()
     state.preferredLanguage.set("de")
+    flush()
     state.profileDialogOpenSet(false)
+    flush()
     expect(state.profileDialogOpen.get()).toBe(false)
     expect(state.displayName.get()).toBe("Avery Stone")
     expect(state.firstName.get()).toBe("")
@@ -139,6 +146,7 @@ describe("account production adapter state", () => {
     }
 
     const userRequests = requests.filter((request) => request.path === `/realms/${realmId}/me`)
+    flush()
     expect(userRequests).toHaveLength(kinds.length * 2)
     expect(userRequests.every((request) => request.method === "GET")).toBe(true)
     expect(userRequests.every((request) => request.cache === "no-store")).toBe(true)
@@ -166,6 +174,7 @@ describe("account production adapter state", () => {
     const firstLoad = state.load(true)
     const secondLoad = state.load(true)
     await waitFor(() => requests.length === 1)
+    flush()
     expect(requests[0]?.ifModifiedSince).toBeNull()
     first.resolve(
       Response.json({
@@ -175,6 +184,7 @@ describe("account production adapter state", () => {
     )
     await firstLoad
     await waitFor(() => requests.length === 2)
+    flush()
     expect(requests[1]?.ifModifiedSince).toBeNull()
     second.resolve(
       Response.json({
@@ -184,6 +194,7 @@ describe("account production adapter state", () => {
     )
     await secondLoad
 
+    flush()
     expect(state.user.get()).toEqual(secondUser)
   })
 
@@ -219,20 +230,27 @@ describe("account production adapter state", () => {
 
     const state = stateCreate(() => "profile")
     await state.load(true)
+    flush()
     state.profileDialogOpenSet(true)
+    flush()
     state.displayName.set("Updated Avery Stone")
+    flush()
     const profileSubmit = state.profileSubmit({ preventDefault: () => undefined } as SubmitEvent)
     await waitFor(() => requests.some((request) => request.method === "PATCH"))
+    flush()
     expect(state.profileSaving.get()).toBe(true)
     state.profileDialogOpenSet(false)
+    flush()
     expect(state.profileDialogOpen.get()).toBe(true)
     const reload = state.load(true)
+    flush()
     expect(requests.filter((request) => request.method === "GET")).toHaveLength(1)
     mutation.resolve(Response.json({ user: updatedUser }))
     await profileSubmit
     await reload
 
     const userRequests = requests.filter((request) => request.method === "GET")
+    flush()
     expect(userRequests).toHaveLength(2)
     expect(userRequests.every((request) => request.ifModifiedSince === null)).toBe(true)
     expect(state.user.get()).toEqual(updatedUser)
@@ -283,6 +301,7 @@ describe("account production adapter state", () => {
     boundarySession.realms = [{ id: secondRealmId, label: "Other identity" }]
     await state.load(true)
 
+    flush()
     expect(paths).toEqual([`/realms/${realmId}/me`, `/realms/${secondRealmId}/me`])
     expect(state.user.get()).toEqual(secondUser)
   })
@@ -380,18 +399,28 @@ describe("account production adapter state", () => {
       })
     })
     await state.load(true)
+    flush()
     state.phoneCandidate.set(candidatePhoneNumber)
+    flush()
     const firstStart = state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    flush()
     state.confirmation.accept()
     await firstStart
+    flush()
     await state.phoneChangeResend()
+    flush()
     state.phoneCode.set("123456")
+    flush()
     await state.phoneChangeVerify({ preventDefault: () => undefined } as SubmitEvent)
+    flush()
     state.phoneCandidate.set(candidatePhoneNumber)
+    flush()
     const secondStart = state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    flush()
     state.confirmation.accept()
     await secondStart
 
+    flush()
     expect(requests).toEqual([
       {
         body: { phoneNumber: candidatePhoneNumber },
@@ -452,27 +481,33 @@ describe("account production adapter state", () => {
     const state = stateCreate(kind)
     await state.load(true)
     await waitFor(() => state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me"])
 
     setKind("email")
     await waitFor(() => requests.length === 3 && state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me", "me", "emails"])
 
     setKind("password")
     await waitFor(() => requests.length === 4 && state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me", "me", "emails", "me"])
 
     setKind("delete")
     await waitFor(() => requests.length === 5 && state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me", "me", "emails", "me", "me"])
 
     setKind("overview")
     await waitFor(() => requests.length === 7 && state.status.get() === "ready")
     // The overview page shows the email card, so it loads the address list like the email page.
+    flush()
     expect(requests).toEqual(["me", "me", "emails", "me", "me", "me", "emails"])
 
     setKind("profile")
     await waitFor(() => requests.length === 8 && state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me", "me", "emails", "me", "me", "me", "emails", "me"])
   })
 
@@ -504,6 +539,7 @@ describe("account production adapter state", () => {
     const firstLoad = state.load(true)
     await waitFor(() => requests.length === 1)
 
+    flush()
     setKind("email")
     await Promise.resolve()
     first.resolve(
@@ -515,6 +551,7 @@ describe("account production adapter state", () => {
     await firstLoad
     await waitFor(() => requests.length === 2)
 
+    flush()
     expect(requests).toEqual(["me", "me"])
     expect(state.status.get()).toBe("loading")
     expect(state.user.get()).toBeUndefined()
@@ -527,6 +564,7 @@ describe("account production adapter state", () => {
     )
     await waitFor(() => requests.length === 3 && state.status.get() === "ready")
 
+    flush()
     expect(requests).toEqual(["me", "me", "emails"])
     expect(state.user.get()).toEqual(secondUser)
   })
@@ -567,13 +605,16 @@ describe("account production adapter state", () => {
     )
     await waitFor(() => requests.length === 2)
 
+    flush()
     setKind("password")
     await waitFor(() => requests.length === 3)
+    flush()
     expect(requests).toEqual(["me", "emails", "me"])
     expect(state.status.get()).toBe("loading")
 
     firstEmails.resolve(Response.json({ items: [] }))
     await firstLoad
+    flush()
     expect(state.status.get()).toBe("loading")
 
     second.resolve(
@@ -583,6 +624,7 @@ describe("account production adapter state", () => {
       } satisfies UserCurrentResponse),
     )
     await waitFor(() => state.status.get() === "ready")
+    flush()
     expect(requests).toEqual(["me", "emails", "me"])
     expect(state.user.get()).toEqual(secondUser)
   })

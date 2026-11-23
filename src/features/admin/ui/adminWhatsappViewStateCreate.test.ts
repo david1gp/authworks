@@ -1,15 +1,11 @@
-import { describe, expect, mock, test } from "bun:test"
+import { flush } from "solid-js"
+import { describe, expect, test } from "bun:test"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import type { WhatsappOtpUsageQuery } from "../../whatsappOtp/public/whatsappOtpUsageQuerySchema.js"
 import type { WhatsappOtpUsageResponse } from "../../whatsappOtp/public/whatsappOtpUsageResponseSchema.js"
 import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminDemoWhatsappUsageFixture } from "./adminDemoWhatsappUsageFixture.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so initial loads and reactive accessors are exercised.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot, createSignal }, { adminWhatsappViewStateCreate }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminWhatsappViewStateCreate.js"),
@@ -23,6 +19,7 @@ const flushLoads = async () => {
 describe("whatsapp usage view state", () => {
   test("derives request and delivery tiles from the usage response", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
+    flush()
     expect(state.tiles().map((tile) => tile.value)).toEqual([9, 87, 21, 105, 2, 4])
     expect(state.tiles().every((tile) => tile.label.length > 0)).toBe(true)
   })
@@ -30,6 +27,7 @@ describe("whatsapp usage view state", () => {
   test("renders quota fills from sent over limit and clamps the range", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
     const [nearLimit, unhealthy, idle] = state.senderCards()
+    flush()
     expect(nearLimit?.hour.percent).toBe(90)
     expect(nearLimit?.hour.width).toBe("90%")
     expect(nearLimit?.hour.line).toBe("18 sent · 2 left of 20")
@@ -47,12 +45,14 @@ describe("whatsapp usage view state", () => {
       limits: { dailyPerSender: 0, hourlyPerSender: 0 },
     }
     const state = adminWhatsappViewStateCreate({ usage: () => zeroLimit })
+    flush()
     expect(state.senderCards()[0]?.hour.percent).toBe(100)
     expect(state.senderCards()[0]?.day.percent).toBe(100)
   })
 
   test("sorts purpose entries by count and keeps unknown purpose names as-is", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
+    flush()
     expect(state.purposeEntries()).toEqual([
       { count: 72, name: "sign_in" },
       { count: 25, name: "registration" },
@@ -62,15 +62,18 @@ describe("whatsapp usage view state", () => {
 
   test("reports the tightest remaining daily quota and hides the hint without senders", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
+    flush()
     expect(state.tightestRemaining()).toBe(36)
     expect(state.remainingHint()).toBe("36 sends left on the tightest sender")
     const empty = adminWhatsappViewStateCreate({ usage: () => undefined })
+    flush()
     expect(empty.tightestRemaining()).toBeUndefined()
     expect(empty.remainingHint()).toBeUndefined()
   })
 
   test("labels recent delivery statuses with the matching tone", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => undefined })
+    flush()
     expect(state.recentStatusGet("sent")).toEqual({ label: "Sent", tone: "success" })
     expect(state.recentStatusGet("failed")).toEqual({ label: "Failed", tone: "danger" })
     expect(state.recentStatusGet("blocked")).toEqual({ label: "Blocked", tone: "warning" })
@@ -78,6 +81,7 @@ describe("whatsapp usage view state", () => {
 
   test("derives phone and code cells from the recent rows", () => {
     const state = adminWhatsappViewStateCreate({ usage: () => adminDemoWhatsappUsageFixture })
+    flush()
     expect(state.recentRows().map((row) => row.phone)).toEqual([
       "+491700000001",
       "+491700000002",
@@ -116,6 +120,7 @@ describe("whatsapp usage view state", () => {
       ],
     }
     const state = adminWhatsappViewStateCreate({ usage: () => legacy })
+    flush()
     expect(state.recentRows()).toHaveLength(1)
     expect(state.recentRows()[0]?.phone).toBe("a3f9c2e1")
     expect(state.recentRows()[0]?.code).toBe("—")
@@ -123,6 +128,7 @@ describe("whatsapp usage view state", () => {
 
   test("marks the active window option and defaults to 24h", () => {
     const day = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "24h" })
+    flush()
     expect(day.windowOptions()).toEqual([
       { label: "Last 24 hours", value: "24h" },
       { label: "Last 3 days", value: "3d" },
@@ -131,10 +137,12 @@ describe("whatsapp usage view state", () => {
     expect(day.windowSelected("24h")).toBe(true)
     expect(day.windowSelected("3d")).toBe(false)
     const week = adminWhatsappViewStateCreate({ usage: () => undefined, window: () => "7d" })
+    flush()
     expect(week.windowOptions().map((option) => option.value)).toEqual(["24h", "3d", "7d"])
     expect(week.windowSelected("7d")).toBe(true)
     expect(week.windowSelected("24h")).toBe(false)
     const fallback = adminWhatsappViewStateCreate({ usage: () => undefined })
+    flush()
     expect(fallback.windowSelected("24h")).toBe(true)
     expect(fallback.windowSelected("7d")).toBe(false)
   })
@@ -143,9 +151,11 @@ describe("whatsapp usage view state", () => {
     const [window, setWindow] = createSignal<WhatsappOtpUsageQuery["window"]>("24h")
     const state = adminWhatsappViewStateCreate({ usage: () => undefined, window })
     const before = state.windowOptions()
+    flush()
     expect(state.windowSelected("24h")).toBe(true)
     setWindow("7d")
     const after = state.windowOptions()
+    flush()
     expect(after).toHaveLength(before.length)
     expect(after.map((option, index) => option === before[index])).toEqual([true, true, true])
     expect(state.windowSelected("7d")).toBe(true)
@@ -215,6 +225,7 @@ describe("whatsapp usage page state", () => {
       page: adminPageStateCreate({ adapter, confirm: () => false, screen: () => "realm" }),
     }))
     await flushLoads()
+    flush()
     expect(page.status()).toBe("ready")
     expect(page.whatsappUsage()?.totals.sentLastDay).toBe(105)
     dispose()
@@ -258,9 +269,11 @@ describe("whatsapp usage window", () => {
       }),
     }))
     await flushLoads()
+    flush()
     expect(page.whatsappUsage()?.recent).toHaveLength(5)
     setSearch("?window=7d")
     await flushLoads()
+    flush()
     expect(page.whatsappWindow()).toBe("7d")
     expect(page.whatsappUsage()?.recent).toHaveLength(7)
     dispose()
@@ -284,13 +297,16 @@ describe("whatsapp usage window", () => {
         page: adminPageStateCreate({ adapter, confirm: () => false, screen: () => "whatsapp" }),
       }))
       await flushLoads()
+      flush()
       expect(page.whatsappUsage()?.recent).toHaveLength(5)
       page.whatsappWindowSet("7d")
       await flushLoads()
+      flush()
       expect(page.whatsappWindow()).toBe("7d")
       expect(page.whatsappUsage()?.recent).toHaveLength(7)
       // The debounced URL write lands after the refetch; the param survives reloads.
       await new Promise((resolve) => setTimeout(resolve, 350))
+      flush()
       expect(replaced.at(-1)).toContain("window=7d")
       dispose()
     } finally {

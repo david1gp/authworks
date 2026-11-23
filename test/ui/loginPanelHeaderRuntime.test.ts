@@ -1,13 +1,14 @@
+import { flush } from "solid-js"
 import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { readFile, unlink } from "node:fs/promises"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import type { JSX } from "solid-js"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 import type { LoginScreen } from "../../src/features/login/model/loginScreenSchema.js"
 import { loginDemoAdapterCreate } from "../../src/features/login/ui/loginDemoAdapterCreate.js"
+import { type JSX } from "@solidjs/web"
 
 type LoginPanelHeader = (props: {
   readonly description?: string
@@ -45,15 +46,10 @@ let show: (props: {
   readonly when: () => boolean
 }) => JSX.Element
 
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
-
 beforeAll(async () => {
   const sourcePath = new URL("../../src/features/login/ui/LoginPanelHeader.tsx", import.meta.url)
   const source = await readFile(sourcePath, "utf8")
-  const plugin = solid()
+  const plugin = solid().find((entry) => entry.name === "solid")!
   const transform = plugin.transform
   if (transform === undefined) throw new Error("Solid plugin did not expose a transform hook.")
   const transformHook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
@@ -112,7 +108,7 @@ const domRestore = () => {
 describe("LoginPanelHeader client runtime", () => {
   test("lets a pending recovery request resolve to the sent route", async () => {
     const browserWindow = domSetup()
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const root = browserWindow.document.createElement("div")
     const renderRoot = root as unknown as Parameters<typeof render>[1]
     browserWindow.document.body.append(root)
@@ -136,18 +132,23 @@ describe("LoginPanelHeader client runtime", () => {
     }
 
     let dispose: (() => void) | undefined
+    flush()
     expect(() => {
       dispose = render(() => createComponent(recoveryPath, {}), renderRoot)
     }).not.toThrow()
 
     if (page === undefined) throw new Error("The recovery page state was not created.")
     page.email.set("alex@example.com")
+    flush()
     const request = page.recoverySubmit({ preventDefault: () => {} } as SubmitEvent)
+    flush()
     expect(page.pending()).toBe(true)
     await request
+    flush()
     expect(route()).toBe("recovery-sent")
     await Promise.resolve()
     const heading = root.querySelector("h1")
+    flush()
     expect(heading?.textContent).toBe("Recovery email sent")
     expect(heading?.getAttribute("tabindex")).toBe("-1")
     dispose?.()
@@ -156,7 +157,7 @@ describe("LoginPanelHeader client runtime", () => {
 
   test("registers the recovery heading so navigation focus remains automatic", async () => {
     const browserWindow = domSetup()
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const root = browserWindow.document.createElement("div")
     const renderRoot = root as unknown as Parameters<typeof render>[1]
     browserWindow.document.body.append(root)
@@ -186,6 +187,7 @@ describe("LoginPanelHeader client runtime", () => {
 
     await Promise.resolve()
     const heading = root.querySelector("h1") as unknown as HTMLHeadingElement | undefined
+    flush()
     expect(registered as unknown).toBe(heading as unknown)
     if (registered === undefined) throw new Error("The recovery heading was not registered.")
     expect(browserWindow.document.activeElement as unknown).toBe(registered as unknown)

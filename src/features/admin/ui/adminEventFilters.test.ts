@@ -1,15 +1,10 @@
-import { describe, expect, mock, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { EventListQuery } from "../../events/public/eventListQuerySchema.js"
 import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminEventFiltersParse } from "./adminEventFiltersSchema.js"
 import { adminEventFiltersToQuery } from "./adminEventFiltersSchema.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so the filter-driven reload is exercised.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminPageStateCreate.js"),

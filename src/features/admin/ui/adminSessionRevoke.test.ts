@@ -1,14 +1,9 @@
-import { describe, expect, mock, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminDemoUserSessionsFixture } from "./adminDemoUserSessionsFixture.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so the initial load and the post-revoke refetch are exercised.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminPageStateCreate.js"),

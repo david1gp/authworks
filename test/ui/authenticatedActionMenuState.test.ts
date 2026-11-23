@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 
 const [{ authenticatedActionMenuStateCreate }, { productionOrganizationSwitcherStateCreate }] = await Promise.all([
   import("../../src/ui/authenticated/authenticatedActionMenuStateCreate.js"),
@@ -12,32 +12,41 @@ test("menu actions run only after the popover restores focus, so a dialog opened
   const closed: boolean[] = []
   const state = authenticatedActionMenuStateCreate({ onOpenChange: (open) => closed.push(open) })
   let ran = 0
+  flush()
   state.select({ onSelect: () => ran++ })()
+  flush()
   expect(closed).toEqual([false])
   expect(ran).toBe(0)
   state.finalFocus()
+  flush()
   expect(ran).toBe(0)
   await tick()
+  flush()
   expect(ran).toBe(1)
   // The safety timer must not run the action a second time.
   await tick(300)
+  flush()
   expect(ran).toBe(1)
 })
 
 test("menu actions still run when the popover never reports final focus", async () => {
   const state = authenticatedActionMenuStateCreate({ onOpenChange: () => {} })
   let ran = 0
+  flush()
   state.select({ onSelect: () => ran++ })()
   await tick(300)
+  flush()
   expect(ran).toBe(1)
 })
 
 test("disabled menu actions never run", async () => {
   const state = authenticatedActionMenuStateCreate({ onOpenChange: () => {} })
   let ran = 0
+  flush()
   state.select({ disabled: true, onSelect: () => ran++ })()
   state.finalFocus()
   await tick(300)
+  flush()
   expect(ran).toBe(0)
 })
 
@@ -58,15 +67,20 @@ test("the organization switcher filters by name and selects an organization", ()
     expect(state.activeLabel()).toBe("Acme Corporation")
     expect(state.activeInitials()).toBe("AC")
     expect(state.searchVisible()).toBe(true)
-    state.queryInput({ currentTarget: { value: "north" } } as InputEvent & { currentTarget: HTMLInputElement })
-    expect(state.filtered().map((item) => item.id)).toEqual(["b"])
-    state.select("b")
-    expect(selected).toEqual(["b"])
-    // Selecting closes the menu and clears the filter.
-    expect(state.open()).toBe(false)
-    expect(state.query()).toBe("")
-    dispose()
-  })
+    return () => {
+      flush()
+      state.queryInput({ currentTarget: { value: "north" } } as InputEvent & { currentTarget: HTMLInputElement })
+      flush()
+      expect(state.filtered().map((item) => item.id)).toEqual(["b"])
+      state.select("b")
+      flush()
+      expect(selected).toEqual(["b"])
+      // Selecting closes the menu and clears the filter.
+      expect(state.open()).toBe(false)
+      expect(state.query()).toBe("")
+      dispose()
+    }
+  })()
 })
 
 test("the organization switcher forwards the current organization selection from realm scope", () => {
@@ -82,11 +96,15 @@ test("the organization switcher forwards the current organization selection from
       },
       organizations: () => [{ id: "a", label: "Acme" }],
     })
-    state.select("a")
-    expect(selected).toEqual(["a"])
-    expect(scope).toBe("organization")
-    dispose()
-  })
+    return () => {
+      flush()
+      state.select("a")
+      flush()
+      expect(selected).toEqual(["a"])
+      expect(scope).toBe("organization")
+      dispose()
+    }
+  })()
 })
 
 test("the organization switcher does not open while switching is disabled", () => {

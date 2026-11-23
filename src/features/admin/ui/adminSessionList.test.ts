@@ -1,4 +1,5 @@
-import { describe, expect, mock, test } from "bun:test"
+import { flush } from "solid-js"
+import { describe, expect, test } from "bun:test"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
@@ -7,11 +8,6 @@ import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminDemoUserSessionsFixture } from "./adminDemoUserSessionsFixture.js"
 import { adminSessionProductionAdapterCreate } from "./adminSessionProductionAdapterCreate.js"
 
-// Plain `bun test` resolves Solid's server runtime, whose effects do not run.
-// Use the real client runtime so initial loads and reactive pagination are exercised.
-const solidRuntimePath = "../../../../node_modules/solid-js/dist/solid.js"
-const solidRuntime = await import(solidRuntimePath)
-mock.module("solid-js", () => solidRuntime)
 const [{ createRoot, createSignal }, { adminPageStateCreate }] = await Promise.all([
   import("solid-js"),
   import("./adminPageStateCreate.js"),
@@ -48,7 +44,7 @@ describe("administrator session list", () => {
         screen: () => "sessions",
       }),
     }))
-    await Promise.resolve()
+    await solidFlush()
     expect(page.status()).toBe(expectedStatus)
     expect(page.sessions()).toEqual(fixtureState === "success" ? adminDemoUserSessionsFixture : [])
     expect(currentProbed).toBe(false)
@@ -76,16 +72,19 @@ describe("administrator session list", () => {
         screen: () => "sessions",
       }),
     }))
-    await Promise.resolve()
+    await solidFlush()
+    flush()
     expect(page.hasNextPage()).toBe(true)
     expect(page.hasPreviousPage()).toBe(false)
     page.pageNext()
-    await Promise.resolve()
+    await solidFlush()
+    flush()
     expect(page.status()).toBe("empty")
     expect(page.hasNextPage()).toBe(false)
     expect(page.hasPreviousPage()).toBe(true)
     page.pagePrevious()
-    await Promise.resolve()
+    await solidFlush()
+    flush()
     expect(page.status()).toBe("ready")
     expect(queries).toEqual([{ pageSize: 2 }, { pageSize: 2, pageToken: "next-sessions" }, { pageSize: 2 }])
     dispose()
@@ -103,16 +102,20 @@ describe("administrator session list", () => {
     let realmId = "realm-one"
     const adapter = adminSessionProductionAdapterCreate({ api, realmId: () => realmId })
     const result = await adapter.sessionList({ pageSize: 2, pageToken: "previous-sessions" })
+    flush()
     expect(result.success).toBe(true)
     if (result.success) expect(result.data.nextPageToken).toBe("next-sessions")
     const request = requests[0]
+    flush()
     expect(request?.credentials).toBe("include")
     const url = new URL(request?.url ?? "")
+    flush()
     expect(url.pathname).toBe("/realms/realm-one/admin/sessions")
     expect(url.searchParams.get("pageSize")).toBe("2")
     expect(url.searchParams.get("pageToken")).toBe("previous-sessions")
     realmId = ""
     const missingRealm = await adapter.sessionList()
+    flush()
     expect(missingRealm.success).toBe(false)
     expect(requests).toHaveLength(1)
   })
@@ -136,6 +139,7 @@ describe("administrator session list", () => {
       }),
     }))
     await solidFlush()
+    flush()
     expect(queries).toEqual([{ pageSize: 20, search: "ALEX" }])
     // The server already filtered and sorted; the view renders the loaded page as-is.
     expect(page.sessions()).toEqual(reversed)
@@ -170,13 +174,16 @@ describe("administrator session list", () => {
       }),
     }))
     await solidFlush()
+    flush()
     expect(queries).toEqual([{ pageSize: 2 }])
     page.pageNext()
     await solidFlush()
+    flush()
     expect(queries).toEqual([{ pageSize: 2 }, { pageSize: 2, pageToken: "next-sessions" }])
     expect(page.hasPreviousPage()).toBe(true)
     setSearch("alex")
     await solidFlush()
+    flush()
     expect(page.hasPreviousPage()).toBe(false)
     expect(page.sessions()).toEqual([firstSession])
     expect(queries.at(-1)).toEqual({ pageSize: 2, search: "alex" })
@@ -186,19 +193,24 @@ describe("administrator session list", () => {
   test("demo adapter filters sessions by the search query", async () => {
     const adapter = adminDemoAdapterCreate(() => "success")
     const unfiltered = await adapter.sessionList()
+    flush()
     expect(unfiltered.success).toBe(true)
     if (unfiltered.success) expect(unfiltered.data.items).toHaveLength(2)
     const byName = await adapter.sessionList({ search: "aLeX" })
+    flush()
     expect(byName.success).toBe(true)
     if (byName.success)
       expect(byName.data.items.map((item) => item.id).sort()).toEqual(["session-admin-desktop", "session-admin-mobile"])
     const byIp = await adapter.sessionList({ search: "192.0.2.10" })
+    flush()
     expect(byIp.success).toBe(true)
     if (byIp.success) expect(byIp.data.items.map((item) => item.id)).toEqual(["session-admin-desktop"])
     const byRegion = await adapter.sessionList({ search: "california" })
+    flush()
     expect(byRegion.success).toBe(true)
     if (byRegion.success) expect(byRegion.data.items.map((item) => item.id)).toEqual(["session-admin-mobile"])
     const noMatch = await adapter.sessionList({ search: "no-such-session" })
+    flush()
     expect(noMatch.success).toBe(true)
     if (noMatch.success) expect(noMatch.data.items).toHaveLength(0)
   })

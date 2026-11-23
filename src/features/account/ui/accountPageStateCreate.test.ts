@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { Window } from "happy-dom"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { UserExportResponse } from "../../users/public/userExportResponseSchema.js"
@@ -39,48 +39,66 @@ describe("account deletion dialog state", () => {
   test("requires an open dialog, matching email and the existing confirmation before deletion", async () => {
     const { state, deleteCalls } = deletionStateCreate()
     await state.load(true)
+    flush()
     state.deletionConfirmation.set(state.user.get()?.email ?? "")
+    flush()
     await state.accountDelete(submitEvent)
+    flush()
     expect(deleteCalls()).toBe(0)
 
     state.deletionDialogOpenSet(true)
+    flush()
     state.deletionConfirmation.set("wrong@example.com")
+    flush()
     await state.accountDelete(submitEvent)
+    flush()
     expect(state.validationMessage.get()).toBe("The email address does not match.")
     expect(state.confirmation.open()).toBe(false)
     expect(deleteCalls()).toBe(0)
 
     state.deletionConfirmation.set(state.user.get()?.email ?? "")
+    flush()
     const cancelled = state.accountDelete(submitEvent)
+    flush()
     expect(state.confirmation.open()).toBe(true)
     expect(state.deletionPending.get()).toBe(true)
     state.deletionDialogOpenSet(false)
+    flush()
     expect(state.deletionDialogOpen.get()).toBe(true)
     state.confirmation.cancel()
     await cancelled
+    flush()
     expect(state.deletionPending.get()).toBe(false)
     expect(state.deletionDialogOpen.get()).toBe(true)
     expect(deleteCalls()).toBe(0)
 
     state.deletionDialogOpenSet(false)
+    flush()
     expect(state.deletionConfirmation.get()).toBe("")
     expect(state.validationMessage.get()).toBeUndefined()
     state.deletionDialogOpenSet(true)
+    flush()
     expect(state.deletionConfirmation.get()).toBe("")
   })
 
   test("blocks duplicate submissions while confirming and shows success only after accepting", async () => {
     const { state, deleteCalls } = deletionStateCreate()
     await state.load(true)
+    flush()
     state.deletionDialogOpenSet(true)
+    flush()
     state.deletionConfirmation.set(state.user.get()?.email ?? "")
+    flush()
 
     const submitted = state.accountDelete(submitEvent)
+    flush()
     await state.accountDelete(submitEvent)
+    flush()
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await submitted
 
+    flush()
     expect(deleteCalls()).toBe(1)
     expect(state.status.get()).toBe("success")
     expect(state.user.get()?.state).toBe("deleted")
@@ -100,16 +118,22 @@ describe("account deletion dialog state", () => {
       })
     })
     await retryState.load(true)
+    flush()
     retryState.deletionDialogOpenSet(true)
+    flush()
     retryState.deletionConfirmation.set(retryState.user.get()?.email ?? "")
+    flush()
     const submitted = retryState.accountDelete(submitEvent)
+    flush()
     retryState.confirmation.accept()
     await submitted
 
+    flush()
     expect(retryState.status.get()).toBe("error")
     expect(retryState.errorMessage.get()).toBeTruthy()
     expect(retryState.deletionPending.get()).toBe(false)
     await retryState.load(true)
+    flush()
     expect(retryState.status.get()).toBe("ready")
     expect(retryState.deletionDialogOpen.get()).toBe(false)
     expect(retryState.deletionConfirmation.get()).toBe("")
@@ -131,9 +155,13 @@ describe("account password change", () => {
         },
       })
     })
+    flush()
     state.newPassword.set("new-password-12")
+    flush()
     state.confirmPassword.set("new-password-12")
+    flush()
     await state.passwordSubmit(submitEvent)
+    flush()
     expect(state.status.get()).toBe("success")
     expect(notifications).toBe(1)
   })
@@ -152,9 +180,13 @@ describe("account password change", () => {
         },
       })
     })
+    flush()
     state.newPassword.set("new-password-12")
+    flush()
     state.confirmPassword.set("new-password-12")
+    flush()
     await state.passwordSubmit(submitEvent)
+    flush()
     expect(state.status.get()).toBe("error")
     expect(notifications).toBe(0)
   })
@@ -231,6 +263,7 @@ describe("account export download", () => {
 
       await state.exportDownload()
 
+      flush()
       expect(exportCalls).toBe(1)
       expect(state.exportPending.get()).toBe(false)
       expect(state.exportError.get()).toBeUndefined()
@@ -258,6 +291,7 @@ describe("account export download", () => {
 
     await state.exportDownload()
 
+    flush()
     expect(state.exportPending.get()).toBe(false)
     expect(state.exportError.get()).toBe("The export failed.")
   })
@@ -272,6 +306,7 @@ describe("account export download", () => {
 
     await state.exportDownload()
 
+    flush()
     expect(state.exportPending.get()).toBe(false)
     expect(state.exportError.get()).toBe("The data export is unavailable right now.")
   })

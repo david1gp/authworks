@@ -1,12 +1,15 @@
 import { afterAll, expect, mock, test } from "bun:test"
 
 mock.module("solid-js", () => ({
-  createEffect: (effect: () => void) => effect(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [

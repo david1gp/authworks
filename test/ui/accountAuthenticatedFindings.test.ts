@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot, createSignal } from "solid-js"
+import { flush, createRoot, createSignal } from "solid-js"
 
 const [
   { authenticatedDialogStateCreate },
@@ -32,13 +32,16 @@ test("a controlled authenticated dialog restores focus after closing", async () 
     state.triggerRegister(trigger)
   })
   await Promise.resolve()
+  flush()
   openSet(true)
   await Promise.resolve()
+  flush()
   expect(attributes.has("aria-controls")).toBe(true)
   openSet(false)
   await Promise.resolve()
   await Promise.resolve()
 
+  flush()
   expect(attributes.has("aria-controls")).toBe(false)
   expect(focusCalls).toBe(1)
   dispose?.()
@@ -50,17 +53,23 @@ test("an unreachable picture URL degrades to the placeholder and recovers for a 
     const picture = authenticatedImageFallbackStateCreate(() => url)
     expect(picture.failed()).toBe(false)
 
-    picture.onError()
-    expect(picture.failed()).toBe(true)
+    return () => {
+      flush()
+      picture.onError()
+      flush()
+      expect(picture.failed()).toBe(true)
 
-    // A replacement picture must be attempted again rather than inherit the previous failure.
-    url = "https://assets.example.com/avery-updated.png"
-    expect(picture.failed()).toBe(false)
+      // A replacement picture must be attempted again rather than inherit the previous failure.
+      url = "https://assets.example.com/avery-updated.png"
+      flush()
+      expect(picture.failed()).toBe(false)
 
-    url = ""
-    expect(picture.failed()).toBe(true)
-    dispose()
-  })
+      url = ""
+      flush()
+      expect(picture.failed()).toBe(true)
+      dispose()
+    }
+  })()
 })
 
 test("a closed select trigger keeps no aria-controls reference and restores it when reopened", () => {
@@ -72,15 +81,18 @@ test("a closed select trigger keeps no aria-controls reference and restores it w
   } as unknown as Element
 
   const closed = authenticatedSelectAriaControlsApply({ open: false, trigger })
+  flush()
   expect(closed).toBe("listbox-1")
   expect(attributes.has("aria-controls")).toBe(false)
 
   const opened = authenticatedSelectAriaControlsApply({ open: true, rememberedId: closed, trigger })
+  flush()
   expect(opened).toBe("listbox-1")
   expect(attributes.get("aria-controls")).toBe("listbox-1")
 
   // Reopening must not overwrite the id the vendored trigger writes itself.
   attributes.set("aria-controls", "listbox-2")
+  flush()
   expect(authenticatedSelectAriaControlsApply({ open: true, rememberedId: "listbox-1", trigger })).toBe("listbox-1")
   expect(attributes.get("aria-controls")).toBe("listbox-2")
 })

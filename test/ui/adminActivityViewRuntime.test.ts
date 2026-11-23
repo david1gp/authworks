@@ -1,24 +1,21 @@
+import { flush } from "solid-js"
 import { afterAll, beforeAll, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { unlink } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
-import solid from "vite-plugin-solid"
+import solid from "@solidjs/vite-plugin"
 import { createResult, createResultError } from "#result"
 import type { AdminActivityAdapter } from "../../src/features/admin/ui/adminActivityAdapter.js"
 import { adminDemoEventFixtures } from "../../src/features/admin/ui/adminDemoEventFixtures.js"
 
 const compiledPath = join(import.meta.dirname, `.activity-${randomUUID()}.mjs`)
-const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
-const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-mock.module("solid-js/web", () => import(solidWebRuntimePath))
 let View: typeof import("../../src/features/admin/ui/AdminActivityView.js")["AdminActivityView"]
 
 beforeAll(async () => {
   const root = resolve(import.meta.dirname, "../..")
-  const transform = solid().transform!
+  const transform = solid().find((entry) => entry.name === "solid")?.transform!
   const hook = (typeof transform === "function" ? transform : transform.handler) as unknown as (
     code: string,
     path: string,
@@ -31,7 +28,7 @@ beforeAll(async () => {
   }
   const build = await Bun.build({
     entrypoints: [resolve(root, "src/features/admin/ui/AdminActivityView.tsx")],
-    external: ["solid-js", "solid-js/web"],
+    external: ["solid-js", "@solidjs/web"],
     format: "esm",
     plugins: [
       {
@@ -80,7 +77,7 @@ test("Activity renders scope, readable records, safe disclosures and working cur
   try {
     View = (await import(pathToFileURL(compiledPath).href)).AdminActivityView
     const { createComponent } = await import("solid-js")
-    const { render } = await import("solid-js/web")
+    const { render } = await import("@solidjs/web")
     const calls: (string | undefined)[] = []
     const event = {
       ...adminDemoEventFixtures[0]!,
@@ -118,8 +115,10 @@ test("Activity renders scope, readable records, safe disclosures and working cur
       await Promise.resolve()
     }
     const root = mount(adapter)
+    flush()
     expect(root.querySelector('[data-content-state="loading"]')).not.toBeNull()
     await flush()
+    flush()
     expect(root.querySelector("h1")?.textContent).toBe("Activity")
     expect(root.textContent).toContain("Organization · Northwind Labs")
     expect(root.querySelector("li h2")?.textContent).toBe("Organization updated")
@@ -131,13 +130,16 @@ test("Activity renders scope, readable records, safe disclosures and working cur
       [...root.querySelectorAll("button")].find((button) => button.textContent?.trim() === label)!
     button("Next").click()
     await flush()
+    flush()
     expect(calls).toEqual([undefined, "next"])
     button("Previous").click()
     await flush()
+    flush()
     expect(calls).toEqual([undefined, "next", undefined])
 
     const empty = mount({ ...adapter, organizationList: async () => createResult({ items: [] }) })
     await flush()
+    flush()
     expect(empty.textContent).toContain("No recent administrative activity")
     let attempts = 0
     const error = mount({
@@ -148,16 +150,19 @@ test("Activity renders scope, readable records, safe disclosures and working cur
       },
     })
     await flush()
+    flush()
     expect(error.querySelector('[data-content-state="error"]')).not.toBeNull()
     expect(error.textContent).not.toContain("private backend diagnostic")
     error.querySelector("button")?.click()
     await flush()
+    flush()
     expect(attempts).toBe(2)
     const denied = mount({
       ...adapter,
       organizationList: async () => ({ ...createResultError("activity", "denied"), statusCode: 403 }),
     })
     await flush()
+    flush()
     expect(denied.querySelector('[data-content-state="inaccessible"]')).not.toBeNull()
     expect(denied.querySelector("button")).toBeNull()
   } finally {

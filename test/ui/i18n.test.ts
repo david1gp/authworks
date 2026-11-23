@@ -4,7 +4,10 @@ import * as v from "valibot"
 // The Solid runtime is not resolvable under the test condition. The mock provides the same
 // primitive surface every other UI test relies on so module mocking stays order independent.
 mock.module("solid-js", () => ({
-  createEffect: (effect: (previous?: unknown) => unknown) => effect(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     const get = () => value
@@ -14,7 +17,7 @@ mock.module("solid-js", () => ({
     }
     return [get, set] as const
   },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [

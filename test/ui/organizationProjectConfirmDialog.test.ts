@@ -1,12 +1,15 @@
 import { describe, expect, mock, test } from "bun:test"
 
 mock.module("solid-js", () => ({
-  createEffect: (fn: () => void) => fn(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
-  on: (_deps: unknown, fn: () => void) => fn,
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const [

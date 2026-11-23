@@ -4,15 +4,17 @@ import { describe, expect, mock, test } from "bun:test"
 // captured and re-run manually to simulate screen and subject changes.
 let capturedEffect: (() => void) | undefined
 mock.module("solid-js", () => ({
-  createEffect: (effect: () => void) => {
-    capturedEffect = effect
-    effect()
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    capturedEffect = () => {
+      apply(compute())
+    }
+    if (!options?.defer) capturedEffect()
   },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
+  untrack: <T>(read: () => T) => read(),
 }))
 
 import type { MachineAdminAdapter } from "../../src/features/machineUsers/ui/machineAdminAdapter.js"

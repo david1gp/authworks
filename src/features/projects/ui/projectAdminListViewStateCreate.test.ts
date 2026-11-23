@@ -1,12 +1,15 @@
 import { describe, expect, mock, test } from "bun:test"
 
 mock.module("solid-js", () => ({
-  createEffect: (fn: () => unknown) => fn(),
+  createEffect: (compute: () => unknown, apply: (next: unknown) => unknown, options?: { defer?: boolean }) => {
+    const next = compute()
+    if (!options?.defer) apply(next)
+  },
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
-  on: (_dependencies: unknown, fn: () => unknown) => fn,
+  untrack: <T>(read: () => T) => read(),
 }))
 
 const { projectAdminListViewStateCreate } = await import("./projectAdminListViewStateCreate.js")

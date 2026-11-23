@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { accountEmailAddressViewStateCreate } from "./accountEmailAddressViewStateCreate.js"
@@ -23,15 +23,20 @@ test("email card summary follows the primary address and its verification state 
     expect(state.summaryValue()).toBe("Email not set")
     expect(state.summaryStatus()).toBeUndefined()
     expect(state.summaryTone()).toBe("neutral")
-    addresses.set([address("first", true, false), address("second", false, true)])
-    expect(state.summaryValue()).toBe("first@example.com")
-    expect(state.summaryStatus()).toBe("Verification pending")
-    addresses.set([address("first", false, false), address("second", true, true)])
-    expect(state.summaryValue()).toBe("second@example.com")
-    expect(state.summaryStatus()).toBeUndefined()
-    expect(state.summaryTone()).toBe("neutral")
-    dispose()
-  })
+    return () => {
+      flush()
+      addresses.set([address("first", true, false), address("second", false, true)])
+      flush()
+      expect(state.summaryValue()).toBe("first@example.com")
+      expect(state.summaryStatus()).toBe("Verification pending")
+      addresses.set([address("first", false, false), address("second", true, true)])
+      flush()
+      expect(state.summaryValue()).toBe("second@example.com")
+      expect(state.summaryStatus()).toBeUndefined()
+      expect(state.summaryTone()).toBe("neutral")
+      dispose()
+    }
+  })()
 })
 
 test("email row selection opens only its own dialog and closes when its address is removed", () => {
@@ -42,16 +47,24 @@ test("email row selection opens only its own dialog and closes when its address 
     ])
     const state = accountEmailAddressViewStateCreate(addresses.get)
 
-    state.dialogOpenChange("second", true)
-    expect(state.dialogOpen("first")).toBe(false)
-    expect(state.dialogOpen("second")).toBe(true)
-    state.dialogOpenChange("first", false)
-    expect(state.dialogOpen("second")).toBe(true)
-    addresses.set([address("first", true, true)])
-    expect(state.dialogOpen("second")).toBe(false)
-    state.dialogOpenChange("first", true)
-    state.dialogOpenChange("first", false)
-    expect(state.dialogOpen("first")).toBe(false)
-    dispose()
-  })
+    return () => {
+      flush()
+      state.dialogOpenChange("second", true)
+      flush()
+      expect(state.dialogOpen("first")).toBe(false)
+      expect(state.dialogOpen("second")).toBe(true)
+      state.dialogOpenChange("first", false)
+      flush()
+      expect(state.dialogOpen("second")).toBe(true)
+      addresses.set([address("first", true, true)])
+      flush()
+      expect(state.dialogOpen("second")).toBe(false)
+      state.dialogOpenChange("first", true)
+      flush()
+      state.dialogOpenChange("first", false)
+      flush()
+      expect(state.dialogOpen("first")).toBe(false)
+      dispose()
+    }
+  })()
 })

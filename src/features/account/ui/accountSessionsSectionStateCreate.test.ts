@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import { accountSessionsSectionStateCreate } from "./accountSessionsSectionStateCreate.js"
@@ -23,22 +23,31 @@ test("session detail dialogs select one visible session without changing session
 
     expect(state.summaryValue()).toBe("2 active sessions")
     expect(state.summaryStatus()).toBe("Current session")
-    state.dialogOpenChange("current", true)
-    expect(state.dialogOpen("current")).toBe(true)
-    state.dialogOpenChange("other", true)
-    expect(state.dialogOpen("current")).toBe(false)
-    expect(state.dialogOpen("other")).toBe(true)
-    sessions.set([session("current", true)])
-    expect(state.summaryValue()).toBe("1 active session")
-    expect(state.dialogOpen("other")).toBe(false)
-    state.dialogOpenChange("missing", true)
-    expect(state.dialogOpen("missing")).toBe(false)
-    state.dialogOpenChange("current", true)
-    state.dialogOpenChange("current", false)
-    expect(state.dialogOpen("current")).toBe(false)
-    expect(sessions.get()).toHaveLength(1)
-    dispose()
-  })
+    return () => {
+      flush()
+      state.dialogOpenChange("current", true)
+      flush()
+      expect(state.dialogOpen("current")).toBe(true)
+      state.dialogOpenChange("other", true)
+      flush()
+      expect(state.dialogOpen("current")).toBe(false)
+      expect(state.dialogOpen("other")).toBe(true)
+      sessions.set([session("current", true)])
+      flush()
+      expect(state.summaryValue()).toBe("1 active session")
+      expect(state.dialogOpen("other")).toBe(false)
+      state.dialogOpenChange("missing", true)
+      flush()
+      expect(state.dialogOpen("missing")).toBe(false)
+      state.dialogOpenChange("current", true)
+      flush()
+      state.dialogOpenChange("current", false)
+      flush()
+      expect(state.dialogOpen("current")).toBe(false)
+      expect(sessions.get()).toHaveLength(1)
+      dispose()
+    }
+  })()
 })
 
 test("revoke dispatch requires an open non-current session even when data changes", () => {
@@ -51,19 +60,26 @@ test("revoke dispatch requires an open non-current session even when data change
     }
 
     state.sessionRevoke("other", revoke)
-    state.dialogOpenChange("current", true)
-    state.sessionRevoke("current", revoke)
-    state.dialogOpenChange("other", true)
-    state.sessionRevoke("other", revoke)
-    sessions.set([session("current", true), session("other", true)])
-    state.sessionRevoke("other", revoke)
-    expect(revoked).toEqual(["other"])
-    dispose()
-  })
+    return () => {
+      flush()
+      state.dialogOpenChange("current", true)
+      state.sessionRevoke("current", revoke)
+      flush()
+      state.dialogOpenChange("other", true)
+      state.sessionRevoke("other", revoke)
+      flush()
+      sessions.set([session("current", true), session("other", true)])
+      state.sessionRevoke("other", revoke)
+      flush()
+      expect(revoked).toEqual(["other"])
+      dispose()
+    }
+  })()
 })
 
 test("session card keeps detail and revoke controls in a labelled dialog, never for the current session", async () => {
   const source = await Bun.file(new URL("./AccountSessionsSection.tsx", import.meta.url)).text()
+  flush()
   expect(source).toContain("<AccountDisclosure")
   expect(source).toContain("icon={mdiDevices}")
   expect(source).toContain("value={state.summaryValue()}")

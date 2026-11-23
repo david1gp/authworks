@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { flush, createRoot } from "solid-js"
 import { createResult } from "#result"
 import { adminActivityViewStateCreate } from "./adminActivityViewStateCreate.js"
 import { adminDemoEventFixtures } from "./adminDemoEventFixtures.js"
@@ -24,6 +24,7 @@ test("activity presentation humanizes event labels, abbreviates actors and redac
   }))
   await Promise.resolve()
   await Promise.resolve()
+  flush()
   expect(scope.state.scope()).toBe("Organization")
   expect(scope.state.contextLabel()).toBe("Northwind Labs")
   expect(scope.state.rows()[0]?.label).toBe("Organization member role changed")

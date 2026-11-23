@@ -1,3 +1,4 @@
+import { flush } from "solid-js"
 import { afterEach, describe, expect, mock, test } from "bun:test"
 import { Window } from "happy-dom"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -98,6 +99,7 @@ function profileUserCreate(withPicture: boolean) {
 function fixtureCreate() {
   const browserWindow = new Window({ url: "https://auth.example.com/account" })
   previousGlobals.set("document", globalValues.document)
+  flush()
   previousGlobals.set("window", globalValues.window)
   // Bun exposes the browser globals as read-only accessors, so they have to be redefined.
   Object.defineProperty(globalThis, "document", { configurable: true, value: browserWindow.document })
@@ -188,16 +190,19 @@ describe("workspace identity picture refresh", () => {
   test("refreshes the missing profile picture with the hosted import after successful identity link", async () => {
     const fixture = fixtureCreate()
     await fixture.profile.load(true)
+    flush()
     expect(fixture.profile.pictureUrl.get()).toBe("")
     const loadsBeforeLink = fixture.profileLoads()
 
     await fixture.security.identityLinkStart("github")
     linkConfirmationDispatch(fixture)
+    flush()
     expect(fixture.security.identityLinkConfirmation()).toBeDefined()
 
     // The backend imports the GitHub picture while completing the link.
     fixture.backendUserSet(profileUserCreate(true))
     await fixture.security.identityLinkConfirm()
+    flush()
     expect(fixture.linkedNotifications()).toBe(1)
     expect(await pictureWaitFor(() => fixture.profile.pictureUrl.get(), hostedPictureUrl)).toBe(hostedPictureUrl)
     expect(fixture.security.identityLinkConfirmation()).toBeUndefined()
@@ -208,13 +213,16 @@ describe("workspace identity picture refresh", () => {
   test("preserves the missing picture with no profile refresh on failed or cancelled identity link", async () => {
     const fixture = fixtureCreate()
     await fixture.profile.load(true)
+    flush()
     expect(fixture.profile.pictureUrl.get()).toBe("")
     const loadsBeforeLink = fixture.profileLoads()
 
     linkCompleteMode = "failure"
     await fixture.security.identityLinkStart("github")
     linkConfirmationDispatch(fixture)
+    flush()
     await fixture.security.identityLinkConfirm()
+    flush()
     expect(fixture.security.error()).toBeTruthy()
     expect(fixture.security.identityLinkConfirmation()).toBeDefined()
     expect(fixture.linkedNotifications()).toBe(0)
@@ -223,6 +231,7 @@ describe("workspace identity picture refresh", () => {
 
     // A cancelled link clears the pending confirmation without touching the profile.
     fixture.security.identityLinkCancel()
+    flush()
     expect(fixture.security.identityLinkConfirmation()).toBeUndefined()
     expect(fixture.linkedNotifications()).toBe(0)
     expect(fixture.profileLoads()).toBe(loadsBeforeLink)
@@ -232,5 +241,6 @@ describe("workspace identity picture refresh", () => {
 
 test("workspace wires profile reload to successful identity links", async () => {
   const source = await Bun.file(new URL("./accountWorkspaceProductionAdapterStateCreate.ts", import.meta.url)).text()
+  flush()
   expect(source).toMatch(/onIdentityLinked:\s*\(\)\s*=>\s*void profile\.load\(true\)/)
 })
