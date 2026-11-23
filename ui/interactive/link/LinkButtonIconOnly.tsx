@@ -1,5 +1,4 @@
-import { createLink } from "@tanstack/solid-router"
-import { splitProps } from "solid-js"
+import { omit } from "solid-js"
 import { buttonCvaIconOnly } from "#ui/interactive/button/buttonCva.js"
 import { buttonIconCva } from "#ui/interactive/button/buttonIconCva.js"
 import { classesButtonClickAnimation } from "#ui/interactive/button/classesButtonClickAnimation.js"
@@ -9,7 +8,8 @@ import { isLoading } from "#ui/utils/MayHaveIsLoading.js"
 
 /** Shared styled icon-only button-anchor; base for both link variants. */
 function ButtonIconOnlyAnchor(p: ButtonAnchorProps) {
-  const [s, rest] = splitProps(p, [
+  const rest = omit(
+    p,
     "class",
     "variant",
     "newTab",
@@ -20,30 +20,35 @@ function ButtonIconOnlyAnchor(p: ButtonAnchorProps) {
     "children",
     "target",
     "rel",
-  ])
+  )
   return (
     <a
-      class={buttonCvaIconOnly(
-        s.variant,
-        isLoading({ isLoading: s.isLoading }),
-        false,
-        classesButtonClickAnimation,
-        "break-all", // line breaks for long links
-        s.class,
-      )}
-      target={s.newTab ? "_blank" : s.target}
-      rel={s.newTab ? "noopener noreferrer" : s.rel}
+      class={[
+        buttonCvaIconOnly(
+          p.variant,
+          isLoading({ isLoading: p.isLoading }),
+          false,
+          classesButtonClickAnimation,
+          "break-all", // line breaks for long links
+          typeof p.class === "string" ? p.class : undefined,
+        ),
+        typeof p.class === "string" ? undefined : p.class,
+      ]}
+      target={p.newTab ? "_blank" : p.target}
+      rel={p.newTab ? "noopener noreferrer" : p.rel}
       {...rest}
     >
-      {s.icon && <Icon path={s.icon} class={buttonIconCva(s.variant, s.children && "mr-2", s.iconClass)} />}
-      {s.children}
-      {s.iconRight && <Icon path={s.iconRight} class={buttonIconCva(s.variant, s.children && "ml-2", s.iconClass)} />}
+      {p.icon && <Icon path={p.icon} class={buttonIconCva(p.variant, p.children && "mr-2", p.iconClass)} />}
+      {p.children}
+      {p.iconRight && <Icon path={p.iconRight} class={buttonIconCva(p.variant, p.children && "ml-2", p.iconClass)} />}
     </a>
   )
 }
 
 /** Internal icon-only button link — typed `to`, client-side nav + preload. Needs a RouterProvider. */
-export const LinkButtonIconOnlyInternal = createLink(ButtonIconOnlyAnchor)
+export function LinkButtonIconOnlyInternal(props: ButtonAnchorProps & { to: string }) {
+  return <ButtonIconOnlyAnchor {...omit(props, "to")} href={props.to} />
+}
 
 /** External icon-only button link — plain `<a>` for external/runtime URLs. */
 export function LinkButtonIconOnlyExternal(p: ButtonAnchorProps & { href: string }) {

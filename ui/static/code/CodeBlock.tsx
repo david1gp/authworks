@@ -1,6 +1,7 @@
-import type { Component, ComponentProps } from "solid-js"
-import { splitProps } from "solid-js"
+import type { Component } from "solid-js"
+import { omit } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type ComponentProps } from "@solidjs/web"
 
 export interface CodeBlockProps extends ComponentProps<"pre"> {
   data: string | object | unknown[]
@@ -8,16 +9,16 @@ export interface CodeBlockProps extends ComponentProps<"pre"> {
 
 /** Preformatted block rendering text or JSON data. */
 export const CodeBlock: Component<CodeBlockProps> = (p) => {
-  const [s, rest] = splitProps(p, ["class", "data"])
+  const rest = omit(p, "class", "data")
   return (
     <pre
       class={classMerge(
         "p-2 rounded-lg text-sm whitespace-pre-wrap wrap-anywhere bg-slate-100 dark:bg-slate-900",
-        s.class,
+        p.class,
       )}
       {...rest}
     >
-      {getCodeContent(s.data)}
+      {getCodeContent(p.data)}
     </pre>
   )
 }

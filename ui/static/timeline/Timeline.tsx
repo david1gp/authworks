@@ -1,6 +1,7 @@
-import type { ComponentProps, ParentComponent } from "solid-js"
-import { type Component, type JSXElement, mergeProps, Show, splitProps } from "solid-js"
+import type { ParentComponent } from "solid-js"
+import { type Component, type Element as JSXElement, merge, Show, omit } from "solid-js"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { type ComponentProps } from "@solidjs/web"
 
 export interface TimelinePropsItem
   extends Omit<TimelineItemProps, "isActive" | "isActiveBullet" | "bulletSize" | "lineSize"> {
@@ -21,7 +22,7 @@ export type TimelineProps = {
 */
 
 const Timeline: Component<TimelineProps> = (rawProps) => {
-  const p = mergeProps({ bulletSize: 16, lineSize: 2 }, rawProps)
+  const p = merge({ bulletSize: 16, lineSize: 2 }, rawProps)
 
   return (
     <ul
@@ -60,7 +61,8 @@ export type TimelineItemProps = {
 }
 
 const TimelineItem: Component<TimelineItemProps> = (p) => {
-  const [s, rest] = splitProps(p, [
+  const rest = omit(
+    p,
     "class",
     "bullet",
     "description",
@@ -70,26 +72,26 @@ const TimelineItem: Component<TimelineItemProps> = (p) => {
     "isActiveBullet",
     "bulletSize",
     "lineSize",
-  ])
+  )
   return (
     <li
       class={classMerge(
         "relative border-l pb-8 pl-8",
-        s.isLast && "border-l-transparent pb-0",
-        s.isActive && !s.isLast && "border-l-primary",
-        s.class,
+        p.isLast && "border-l-transparent pb-0",
+        p.isActive && !p.isLast && "border-l-primary",
+        p.class,
       )}
       style={{
-        "border-left-width": `${s.lineSize}px`,
+        "border-left-width": `${p.lineSize}px`,
       }}
       {...rest}
     >
-      <TimelineItemBullet lineSize={s.lineSize} bulletSize={s.bulletSize} isActive={s.isActiveBullet}>
-        {s.bullet}
+      <TimelineItemBullet lineSize={p.lineSize} bulletSize={p.bulletSize} isActive={p.isActiveBullet}>
+        {p.bullet}
       </TimelineItemBullet>
-      <TimelineItemTitle>{s.title}</TimelineItemTitle>
-      <Show when={s.description}>
-        <TimelineItemDescription>{s.description}</TimelineItemDescription>
+      <TimelineItemTitle>{p.title}</TimelineItemTitle>
+      <Show when={p.description}>
+        <TimelineItemDescription>{p.description}</TimelineItemDescription>
       </Show>
     </li>
   )
@@ -127,10 +129,10 @@ const TimelineItemTitle: ParentComponent = (p) => {
 }
 
 const TimelineItemDescription: Component<ComponentProps<"p">> = (p) => {
-  const [s, rest] = splitProps(p, ["class", "children"])
+  const rest = omit(p, "class", "children")
   return (
-    <p class={classMerge("text-muted-foreground text-sm", s.class)} {...rest}>
-      {s.children}
+    <p class={classMerge("text-muted-foreground text-sm", p.class)} {...rest}>
+      {p.children}
     </p>
   )
 }

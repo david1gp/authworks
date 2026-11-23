@@ -21,7 +21,7 @@ export function Img(p: ImgProps) {
       class={classArr(p.zoomIn && classesImgZoomInOnHover5, p.invertColorsInDarkMode && classInvertBlack, p.class)}
       loading="lazy"
       decoding="async"
-      draggable={false}
+      draggable="false"
       width={p.width}
       height={p.height}
     />

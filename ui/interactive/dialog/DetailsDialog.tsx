@@ -1,7 +1,7 @@
-import Dialog from "@corvu/dialog"
+import Dialog from "@corvu-next/dialog"
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
-import { createSignal, type JSXElement, onMount, Show } from "solid-js"
+import { createSignal, type Element as JSXElement, onSettled, Show } from "solid-js"
 import { buttonCvaIconOnly, buttonVariant } from "#ui/interactive/button/buttonCva.js"
 import { buttonIconCva } from "#ui/interactive/button/buttonIconCva.js"
 import type { CorcuDialogTexts } from "#ui/interactive/dialog/CorcuDialogTexts.js"
@@ -48,7 +48,7 @@ const summaryClasses = ["flex items-center justify-between gap-4", "p-6", "curso
 export function DetailsDialog(p: DetailsDialogProps) {
   const texts = p.texts ?? corvuDialogTextDefault
   const [enhanced, setEnhanced] = createSignal(false)
-  onMount(() => setEnhanced(true))
+  onSettled(() => setEnhanced(true))
 
   const face = () => (
     <>

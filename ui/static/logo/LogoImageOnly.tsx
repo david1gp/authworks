@@ -1,9 +1,9 @@
-import type { ComponentProps } from "solid-js"
 import { type ButtonVariant, buttonVariant } from "#ui/interactive/button/buttonCva.js"
 import { LinkButtonIconOnlyInternal } from "#ui/interactive/link/LinkButtonIconOnly.jsx"
 import { Img } from "#ui/static/img/Img.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import type { MayHaveClass } from "#ui/utils/MayHaveClass.js"
+import { type ComponentProps } from "@solidjs/web"
 
 export interface LogoImageOnlyProps extends MayHaveClass {
   /** Typed internal route to navigate to; defaults to `"/"`. */

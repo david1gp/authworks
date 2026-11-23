@@ -1,5 +1,5 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
-import { Key } from "@solid-primitives/keyed"
+import { For } from "solid-js"
 import { classesDisabledDirectly } from "#ui/classes/classesDisabledDirectly.js"
 import type { SelectSingleNativeTexts } from "#ui/input/select/SelectSingleNativeTexts.js"
 import { selectSingleNativeTextDefault } from "#ui/input/select/SelectSingleNativeTexts.js"
@@ -48,9 +48,9 @@ export function SelectSingleNative(p: SelectSingleNativeProps) {
         onChange={(e) => onChange(e, p)}
         disabled={p.disabled}
       >
-        <Key each={p.getOptions()} by={(item) => item} fallback={<NoItems texts={texts} />}>
+        <For each={p.getOptions()} keyed={(item) => item} fallback={<NoItems texts={texts} />}>
           {(getItem) => <SelectItem itemValue={getItem()} valueText={p.valueText} />}
-        </Key>
+        </For>
       </select>
       <Icon
         path={mdiChevronDown}

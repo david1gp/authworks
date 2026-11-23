@@ -1,5 +1,5 @@
 import { debounce } from "@solid-primitives/scheduled"
-import { type JSXElement, onMount, Show, splitProps } from "solid-js"
+import { type Element as JSXElement, onSettled, Show, omit, untrack } from "solid-js"
 import type { CorcuDialogTexts } from "#ui/interactive/dialog/CorcuDialogTexts.js"
 import { SidebarMobileDrawer } from "#ui/interactive/sidebar/SidebarMobileDrawer.jsx"
 import type { SidebarState } from "#ui/interactive/sidebar/SidebarState.jsx"
@@ -24,13 +24,13 @@ export interface SidebarProps extends MayHaveClass {
 
 /** Responsive sidebar switching between desktop and mobile drawer. */
 export function Sidebar(p: SidebarProps) {
-  const [s, rest] = splitProps(p, ["state", "defaultWidth", "debounceMs", "class", "desktopChildren", "mobileChildren"])
+  const rest = omit(p, "state", "defaultWidth", "debounceMs", "class", "desktopChildren", "mobileChildren")
 
-  onMount(() => {
-    const checkMobile = debounce(
-      () => s.state.isMobile.set(window.innerWidth < (s.defaultWidth ?? 768)),
-      s.debounceMs ?? 100,
-    )
+  const checkMobile = debounce(
+    () => p.state.isMobile.set(window.innerWidth < (p.defaultWidth ?? 768)),
+    untrack(() => p.debounceMs ?? 100),
+  )
+  onSettled(() => {
     checkMobile()
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
@@ -38,10 +38,10 @@ export function Sidebar(p: SidebarProps) {
 
   return (
     <>
-      <Show when={!s.state.isMobile.get() && s.state.openDesktop.get()}>{s.desktopChildren}</Show>
-      <Show when={s.state.isMobile.get()}>
-        <SidebarMobileDrawer {...rest} open={s.state.openMobile}>
-          {s.mobileChildren}
+      <Show when={!p.state.isMobile.get() && p.state.openDesktop.get()}>{p.desktopChildren}</Show>
+      <Show when={p.state.isMobile.get()}>
+        <SidebarMobileDrawer {...rest} open={p.state.openMobile}>
+          {p.mobileChildren}
         </SidebarMobileDrawer>
       </Show>
     </>

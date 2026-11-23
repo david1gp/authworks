@@ -1,7 +1,7 @@
-import Dialog from "@corvu/dialog"
+import Dialog from "@corvu-next/dialog"
 import { mdiCookie } from "@adaptive-ds/mdi/mdiCookie.js"
 import { mdiShieldCheckOutline } from "@adaptive-ds/mdi/mdiShieldCheckOutline.js"
-import { createSignal, For, onCleanup, onMount, Show } from "solid-js"
+import { createSignal, For, onCleanup, onSettled, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { buttonVariant } from "#ui/interactive/button/buttonCva.js"
 import { classesDialogOverlayMerge } from "#ui/interactive/dialog/classesDialogContent.js"
@@ -79,7 +79,7 @@ export function CookieBanner(p: CookieBannerProps) {
     p.onShowSettingsChange?.(v)
   }
 
-  onMount(() => {
+  onSettled(() => {
     initConsentMode()
 
     const stored = getStoredConsent(config())

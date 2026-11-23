@@ -6,9 +6,11 @@ export type SetPageTitleProps = {
 
 /** Sets the document title; renders nothing. */
 export function SetPageTitle(p: SetPageTitleProps) {
-  createEffect(() => {
-    if (!p.title) return
-    document.title = p.title
-  })
+  createEffect(
+    () => p.title,
+    (title) => {
+      if (title) document.title = title
+    },
+  )
   return null
 }

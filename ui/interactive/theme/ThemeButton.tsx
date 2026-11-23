@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from "solid-js"
+import { createSignal, onCleanup, onSettled } from "solid-js"
 import { ButtonIconOnly } from "#ui/interactive/button/ButtonIconOnly.jsx"
 import { buttonVariant } from "#ui/interactive/button/buttonCva.js"
 import type { ThemeButtonText } from "#ui/interactive/theme/ThemeButtonText.js"
@@ -24,11 +24,11 @@ export function ThemeButton(p: ThemeButtonProps) {
   // stored theme is applied before rendering the label.
   const [themeReady, setThemeReady] = createSignal(false)
 
-  onMount(() => {
+  onSettled(() => {
     themeInit()
     setThemeReady(true)
     window.addEventListener("keydown", handleGlobalKeyDown)
-    onCleanup(() => window.removeEventListener("keydown", handleGlobalKeyDown))
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown)
   })
 
   return (

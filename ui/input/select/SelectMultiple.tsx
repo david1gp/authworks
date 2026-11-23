@@ -1,8 +1,7 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
-import { Key } from "@solid-primitives/keyed"
-import { For, mergeProps } from "solid-js"
+import { For, merge } from "solid-js"
 import type { SelectMultipleTexts } from "#ui/input/select/SelectMultipleTexts.js"
 import { selectMultipleTextDefault } from "#ui/input/select/SelectMultipleTexts.js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
@@ -48,7 +47,7 @@ export function SelectMultiple(p: SelectMultipleProps) {
   const texts = p.texts ?? selectMultipleTextDefault
 
   const buttonClass = classMerge(p.addEntryClass, p.buttonProps.class)
-  const buttonProps = mergeProps(p.buttonProps, {
+  const buttonProps = merge(p.buttonProps, {
     icon: mdiPlus,
     children: p.textAddEntry ?? texts.addEntry,
     class: buttonClass,
@@ -95,11 +94,15 @@ interface SelectedValuesProps {
 function SelectedValues(p: SelectedValuesProps) {
   return (
     <ul class={"flex flex-wrap gap-1 m-0 p-0 list-none"}>
-      <Key each={p.valueSignal.get()} by={(item) => item} fallback={<NoItems class={p.noItemsClass} texts={p.texts} />}>
+      <For
+        each={p.valueSignal.get()}
+        keyed={(item) => item}
+        fallback={<NoItems class={p.noItemsClass} texts={p.texts} />}
+      >
         {(item) => (
           <SelectedValue option={item()} valueSignal={p.valueSignal} valueText={p.valueText} texts={p.texts} />
         )}
-      </Key>
+      </For>
     </ul>
   )
 }
@@ -186,7 +189,7 @@ function ListOption(p: ListOptionProps) {
     <ButtonIcon
       // id={`${p.id}-option-${p.index}`}
       role="option"
-      aria-selected={optionIsSelected(p)}
+      aria-selected={optionIsSelected(p) ? "true" : "false"}
       iconRight={optionIsSelected(p) ? mdiCheck : undefined}
       onClick={() => {
         toggleOption(p)

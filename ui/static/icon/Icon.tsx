@@ -12,7 +12,7 @@ export function Icon(p: IconProps) {
   return (
     <svg
       viewBox={"0 0 24 24"}
-      aria-hidden={!p.title}
+      aria-hidden={!p.title ? "true" : "false"}
       stroke-width={0.5}
       class={classMerge("size-6 shrink-0 align-middle fill-current", p.class)}
     >

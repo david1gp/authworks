@@ -1,12 +1,13 @@
 import { mdiCheckboxBlankOutline } from "@adaptive-ds/mdi/mdiCheckboxBlankOutline.js"
 import { mdiCheckboxMarked } from "@adaptive-ds/mdi/mdiCheckboxMarked.js"
-import { type ComponentProps, splitProps } from "solid-js"
+import { omit } from "solid-js"
 import { classesDisabledDirectly } from "#ui/classes/classesDisabledDirectly.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import type { MayHaveChildren } from "#ui/utils/MayHaveChildren.js"
 import type { MayHaveClass } from "#ui/utils/MayHaveClass.js"
 import type { MayHaveDisabled } from "#ui/utils/MayHaveDisabled.js"
+import { type ComponentProps } from "@solidjs/web"
 
 interface CheckboxProps extends MayHaveClass, MayHaveChildren, MayHaveDisabled, ComponentProps<"checkbox"> {
   id?: string
@@ -16,22 +17,22 @@ interface CheckboxProps extends MayHaveClass, MayHaveChildren, MayHaveDisabled, 
 
 /** Accessible labeled checkbox driven by a controlled `checked`/`onChange` pair. */
 export function Checkbox(p: CheckboxProps) {
-  const [s, rest] = splitProps(p, ["id", "checked", "onChange", "disabled", "class", "children"])
+  const rest = omit(p, "id", "checked", "onChange", "disabled", "class", "children")
   const handleToggle = () => {
-    if (s.disabled) return
-    s.onChange(!s.checked)
+    if (p.disabled) return
+    p.onChange(!p.checked)
   }
 
   return (
-    <div class={classMerge("flex items-start gap-1", s.class)}>
+    <div class={classMerge("flex items-start gap-1", p.class)}>
       <input
-        id={s.id}
+        id={p.id}
         type="checkbox"
-        checked={s.checked}
-        onChange={(e) => s.onChange(e.currentTarget.checked)}
+        checked={p.checked}
+        onChange={(e) => p.onChange(e.currentTarget.checked)}
         class="sr-only invisible"
-        disabled={s.disabled}
-        aria-describedby={s.id ? `${s.id}-error` : undefined}
+        disabled={p.disabled}
+        aria-describedby={p.id ? `${p.id}-error` : undefined}
         {...rest}
       />
       <div
@@ -40,11 +41,11 @@ export function Checkbox(p: CheckboxProps) {
           "size-6", // sizing + interaction
           "cursor-pointer", // cursor
           "flex items-center justify-center", // layout children
-          s.disabled && classesDisabledDirectly, // disabled state
+          p.disabled && classesDisabledDirectly, // disabled state
         )}
         role="checkbox"
-        aria-checked={s.checked}
-        aria-labelledby={s.id ? `${s.id}-label` : undefined}
+        aria-checked={p.checked ? "true" : "false"}
+        aria-labelledby={p.id ? `${p.id}-label` : undefined}
         tabindex={0}
         onKeyDown={(e) => {
           if (e.key === " " || e.key === "Enter") {
@@ -53,21 +54,21 @@ export function Checkbox(p: CheckboxProps) {
           }
         }}
       >
-        <Icon path={s.checked ? mdiCheckboxMarked : mdiCheckboxBlankOutline} class="size-6 text-current" />
+        <Icon path={p.checked ? mdiCheckboxMarked : mdiCheckboxBlankOutline} class="size-6 text-current" />
       </div>
       <label
-        id={s.id ? `${s.id}-label` : undefined}
-        for={s.id}
+        id={p.id ? `${p.id}-label` : undefined}
+        for={p.id}
         class={classMerge(
           "cursor-pointer", // interaction
-          s.disabled && classesDisabledDirectly, // disabled state
+          p.disabled && classesDisabledDirectly, // disabled state
         )}
         onClick={(e) => {
           e.preventDefault()
           handleToggle()
         }}
       >
-        {s.children}
+        {p.children}
       </label>
     </div>
   )

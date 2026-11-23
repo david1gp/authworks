@@ -1,5 +1,5 @@
-import { Key } from "@solid-primitives/keyed"
-import type { JSXElement } from "solid-js"
+import { For } from "solid-js"
+import type { Element as JSXElement } from "solid-js"
 import { createUniqueId } from "solid-js"
 import type { TabsTopText } from "#ui/interactive/tabs/TabsTopText.js"
 import { tabsTopTextDefault } from "#ui/interactive/tabs/TabsTopText.js"
@@ -46,7 +46,7 @@ export function TabsTop(p: TabsTopProps) {
           p.class,
         )}
       >
-        <Key each={p.getOptions()} by={(value) => value} fallback={<NoTabOptions class={p.class} texts={p.texts} />}>
+        <For each={p.getOptions()} keyed={(value) => value} fallback={<NoTabOptions class={p.class} texts={p.texts} />}>
           {(value) => (
             <TabOption
               baseId={baseId}
@@ -58,10 +58,10 @@ export function TabsTop(p: TabsTopProps) {
               valueChildren={p.valueChildren}
             />
           )}
-        </Key>
+        </For>
       </div>
       <div>
-        <Key each={p.getOptions()} by={(value) => value} fallback={<NoTabOptions class={p.class} texts={p.texts} />}>
+        <For each={p.getOptions()} keyed={(value) => value} fallback={<NoTabOptions class={p.class} texts={p.texts} />}>
           {(value) => (
             <TabContent
               baseId={baseId}
@@ -73,7 +73,7 @@ export function TabsTop(p: TabsTopProps) {
               valueChildren={p.valueChildren}
             />
           )}
-        </Key>
+        </For>
       </div>
     </>
   )
@@ -100,7 +100,7 @@ function TabOption(p: TabOptionProps): JSXElement {
     <button
       type="button"
       role="tab"
-      aria-selected={isSelected(p)}
+      aria-selected={isSelected(p) ? "true" : "false"}
       id={makeTriggerId(p.baseId, p.value)}
       aria-controls={makeContentId(p.baseId, p.value)}
       data-state={isSelected(p) ? "active" : "inactive"}
@@ -130,7 +130,7 @@ function TabContent(p: TabOptionProps): JSXElement {
       data-state={isSelected(p) ? "active" : "inactive"}
       aria-labelledby={makeTriggerId(p.baseId, p.value)}
       hidden={!isSelected(p)}
-      tabIndex={0}
+      tabindex={0}
       class={classArr("")}
     >
       {p.valueChildren(p.value)}
