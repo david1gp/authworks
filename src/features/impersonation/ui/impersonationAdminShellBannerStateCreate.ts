@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router"
-import { createEffect, createSignal } from "solid-js"
+import { createEffect, createSignal, untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionOrganizationBasePathGet } from "../../../ui/production/productionOrganizationBasePathGet.js"
@@ -23,7 +23,7 @@ export function impersonationAdminShellBannerStateCreate(options: {
     return typeof realm === "object" ? realm.realmId : ""
   }
   const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
-  const realmId = createSignalObject(fallbackRealmId())
+  const realmId = createSignalObject(untrack(fallbackRealmId))
   createEffect(fallbackRealmId, (fallback) => {
     void productionRealmIdResolve({
       baseUrl,
@@ -45,7 +45,7 @@ export function impersonationAdminShellBannerStateCreate(options: {
       return
     }
     let current = true
-    void adapter.activeGet().then((result) => {
+    void untrack(adapter.activeGet).then((result) => {
       // A failed probe simply means no banner; it must never block the surrounding page.
       if (current) active.set(result.success ? result.data : null)
     })

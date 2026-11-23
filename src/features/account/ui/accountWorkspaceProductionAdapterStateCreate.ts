@@ -6,7 +6,11 @@ import { accountWorkspaceAdministrationHrefGet } from "./accountWorkspaceAdminis
 
 export function accountWorkspaceProductionAdapterStateCreate(realmId: () => string) {
   const session = productionSessionContextGet()
-  const profile = accountProductionAdapterStateCreate(() => "overview", { realmId: realmId() })
+  const profile = accountProductionAdapterStateCreate(() => "overview", {
+    get realmId() {
+      return realmId()
+    },
+  })
   const security = accountSecurityProductionStateCreate({
     onIdentityLinked: () => void profile.load(true),
     realmId,

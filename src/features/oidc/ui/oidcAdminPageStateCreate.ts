@@ -163,17 +163,18 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
   createEffect(
     () =>
       `${options.screen()}:${options.clientId() ?? ""}:${options.consentUserId() ?? ""}:${options.consentUserSearch?.() ?? ""}:${pageTokens.get().length}:${userPageTokens.get().length}`,
-    () => {
-      const subject = subjectSignature()
-      if (appliedSubjectSignature.get() !== subject) {
-        appliedSubjectSignature.set(subject)
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
+    () =>
+      untrack(() => {
+        const subject = subjectSignature()
+        if (appliedSubjectSignature.get() !== subject) {
+          appliedSubjectSignature.set(subject)
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
         }
-      }
-      void untrack(load)
-    },
+        void untrack(load)
+      }),
   )
 
   return {

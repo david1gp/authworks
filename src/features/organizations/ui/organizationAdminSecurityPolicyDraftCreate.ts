@@ -1,4 +1,4 @@
-import { createEffect } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import type { MfaPolicyFactor } from "../../mfa/public/mfaPolicyFactorSchema.js"
 import type { OrganizationLoginPolicyAssurance } from "../public/organizationLoginPolicyAssuranceSchema.js"
@@ -16,7 +16,7 @@ export function organizationAdminSecurityPolicyDraftCreate(options: {
 }) {
   const draft = createSignalObject<OrganizationLoginPolicyOverride>({})
   const dirty = createSignalObject(false)
-  let loadedScope = options.scope()
+  let loadedScope = untrack(options.scope)
   const sourceLoad = () => {
     const loaded = options.scope() === "realm" ? options.effectivePolicy() : options.overrides()
     draft.set({
@@ -35,7 +35,7 @@ export function organizationAdminSecurityPolicyDraftCreate(options: {
     sourceLoad()
   }
 
-  createEffect(source, sourceRefresh)
+  createEffect(source, () => untrack(sourceRefresh))
 
   const effectiveValue = <Key extends SecurityPolicyKey>(key: Key): NonNullable<OrganizationLoginPolicyOverride[Key]> =>
     (draft.get()[key] ?? options.realmPolicy()[key]) as NonNullable<OrganizationLoginPolicyOverride[Key]>

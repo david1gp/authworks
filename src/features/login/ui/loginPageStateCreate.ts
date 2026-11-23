@@ -96,7 +96,8 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     untrack(() => options.initialProviderSubroute?.() ?? "ready"),
   )
   const passkeyStatus = createSignalObject<PasskeyAuthenticationStatus>(
-    options.initialPasskeyStatus?.() ?? (options.screen() === "mfa-passkey" ? "mfa-continuation" : "ready"),
+    untrack(() => options.initialPasskeyStatus?.()) ??
+      (selectedScreen === "mfa-passkey" ? "mfa-continuation" : "ready"),
   )
   const mfaEmailOtpChallengeId = createSignalObject("")
   const mfaEmailOtpResendAt = createSignalObject(0)
@@ -900,25 +901,9 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     void untrack(load)
   })
   createEffect(
-    () => {
-      const routeScreen = options.screen()
-      if (routeScreen !== "whatsapp-otp" && routeScreen !== "whatsapp-otp-code") return false
-      whatsappAvailabilityRefreshVersion.get()
-      if (whatsappAvailabilityRefreshing) return false
-      const found = discovery.get()
-      return (
-        found !== undefined &&
-        !(found.policy.allowWhatsappOtp === true && options.adapter.whatsappOtpAvailable?.() === true)
-      )
-    },
-    (unavailable) => {
-      if (unavailable && requestedScreen !== "chooser") go("chooser", false)
-    },
-  )
-  createEffect(
     () => options.screen() === "register" && discovery.get()?.policy.allowRegistration === false,
     (unavailable) => {
-      if (unavailable && requestedScreen !== "chooser") go("chooser", false)
+      if (unavailable && requestedScreen !== "chooser") untrack(() => go("chooser", false))
     },
   )
   createEffect(options.screen, (routeScreen) => {
@@ -938,6 +923,26 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       previousRouteScreen !== "whatsapp-otp-code"
     if (!routeWasRequested && enteredWhatsapp) untrack(whatsappAvailabilityRefresh)
   })
+  createEffect(
+    () => {
+      const routeScreen = options.screen()
+      if (routeScreen !== "whatsapp-otp" && routeScreen !== "whatsapp-otp-code") return undefined
+      const refreshVersion = whatsappAvailabilityRefreshVersion.get()
+      const found = discovery.get()
+      return {
+        refreshVersion,
+        unavailable:
+          found !== undefined &&
+          !(found.policy.allowWhatsappOtp === true && options.adapter.whatsappOtpAvailable?.() === true),
+      }
+    },
+    (availability) => {
+      // The route synchronization effect starts a fresh probe on history navigation.
+      // A pending probe must win over the policy calculated before this commit.
+      if (availability?.unavailable && !whatsappAvailabilityRefreshing && requestedScreen !== "chooser")
+        untrack(() => go("chooser", false))
+    },
+  )
   createEffect(
     () => {
       const currentScreen = activeScreen.get()

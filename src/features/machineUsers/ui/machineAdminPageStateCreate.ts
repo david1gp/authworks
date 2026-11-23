@@ -159,22 +159,24 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
   // first page, otherwise the new list starts mid-page and can come back empty.
   const subjectSignature = () => `${options.screen()}:${options.machineUserId() ?? ""}`
   const appliedSubjectSignature = createSignalObject<string | undefined>(undefined)
-  createEffect(reloadKey, () => {
-    const key = reloadKey()
-    if (key === loadedKey) return
-    loadedKey = key
-    const subject = subjectSignature()
-    if (appliedSubjectSignature.get() !== subject) {
-      appliedSubjectSignature.set(subject)
-      if (pageTokens.get().length > 0) {
-        pageTokens.set([])
-        return
+  createEffect(reloadKey, () =>
+    untrack(() => {
+      const key = reloadKey()
+      if (key === loadedKey) return
+      loadedKey = key
+      const subject = subjectSignature()
+      if (appliedSubjectSignature.get() !== subject) {
+        appliedSubjectSignature.set(subject)
+        if (pageTokens.get().length > 0) {
+          pageTokens.set([])
+          return
+        }
       }
-    }
-    secretAcknowledged.set(false)
-    issuedSecret.set(undefined)
-    void untrack(load)
-  })
+      secretAcknowledged.set(false)
+      issuedSecret.set(undefined)
+      void untrack(load)
+    }),
+  )
 
   return {
     apiKeyCreate: async (machineUserId: string, input: MachineCredentialIssueInput) => {

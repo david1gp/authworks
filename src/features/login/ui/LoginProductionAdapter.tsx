@@ -2,5 +2,6 @@ import { LoginScreenView } from "./LoginScreenView.js"
 import { loginProductionStateCreate } from "./loginProductionStateCreate.js"
 
 export function LoginProductionAdapter() {
-  return <LoginScreenView state={loginProductionStateCreate()} />
+  const state = loginProductionStateCreate()
+  return <LoginScreenView state={state} />
 }

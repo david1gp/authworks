@@ -14,22 +14,20 @@ export function authenticatedSelectStateCreate() {
   const container = createSignalObject<HTMLElement | undefined>(undefined)
   let rememberedId: string | undefined
 
-  const apply = () => {
-    rememberedId = authenticatedSelectAriaControlsApply({
-      open: open.get(),
-      rememberedId,
-      trigger: container.get()?.querySelector("button") ?? undefined,
-    })
-  }
-
-  createEffect(container.get, (element) => {
-    apply()
-    const trigger = element?.querySelector("button")
-    if (trigger === null || trigger === undefined) return
-    const observer = new MutationObserver(apply)
-    observer.observe(trigger, { attributeFilter: ["aria-controls"] })
-    return () => observer.disconnect()
-  })
+  createEffect(
+    () => [container.get(), open.get()] as const,
+    ([element, isOpen]) => {
+      const trigger = element?.querySelector("button")
+      if (trigger === null || trigger === undefined) return
+      const apply = () => {
+        rememberedId = authenticatedSelectAriaControlsApply({ open: isOpen, rememberedId, trigger })
+      }
+      apply()
+      const observer = new MutationObserver(apply)
+      observer.observe(trigger, { attributeFilter: ["aria-controls"] })
+      return () => observer.disconnect()
+    },
+  )
 
   return {
     containerSet: (element: HTMLElement) => container.set(element),

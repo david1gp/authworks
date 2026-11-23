@@ -1,4 +1,4 @@
-import { type Accessor, createEffect } from "solid-js"
+import { type Accessor, createEffect, untrack } from "solid-js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
@@ -106,9 +106,10 @@ export function accountProductionAdapterStateCreate(
   })
   createEffect(
     kind,
-    () => {
-      void page.load(true)
-    },
+    () =>
+      untrack(() => {
+        void page.load(true)
+      }),
     { defer: true },
   )
   return page

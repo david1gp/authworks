@@ -228,17 +228,18 @@ export function organizationAdminPageStateCreate(options: {
   createEffect(
     () =>
       `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}:${listSignature()}`,
-    () => {
-      if (options.screen() === "organizations" && appliedListSignature.get() !== listSignature()) {
-        appliedListSignature.set(listSignature())
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
+    () =>
+      untrack(() => {
+        if (options.screen() === "organizations" && appliedListSignature.get() !== listSignature()) {
+          appliedListSignature.set(listSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
         }
-      }
-      invitationToken.set(options.initialInvitationToken?.())
-      void untrack(load)
-    },
+        invitationToken.set(options.initialInvitationToken?.())
+        void untrack(load)
+      }),
   )
 
   return {

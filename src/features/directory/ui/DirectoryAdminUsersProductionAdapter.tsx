@@ -8,7 +8,9 @@ export function DirectoryAdminUsersProductionAdapter() {
   const screen = directoryAdminUsersProductionStateCreate()
   const dialogs = directoryAdminUsersDialogsStateCreate({ page: screen.page, teams: screen.teams })
   const state: DirectoryAdminUsersViewState = {
-    basePath: screen.basePath,
+    get basePath() {
+      return screen.basePath
+    },
     confirmState: screen.confirmState,
     dialogs,
     page: screen.page,

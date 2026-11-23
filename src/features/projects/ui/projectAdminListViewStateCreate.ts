@@ -1,3 +1,4 @@
+import { untrack } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -19,7 +20,7 @@ export function projectAdminListViewStateCreate(options: {
   readonly withActor: (href: string) => string
 }) {
   const name = createSignalObject("")
-  const organizationId = createSignalObject(options.organizationId() ?? "")
+  const organizationId = createSignalObject(untrack(options.organizationId) ?? "")
   const formError = createSignalObject<string | undefined>(undefined)
 
   // Projects arrive server-filtered by search and status; the view renders the loaded page as-is.
@@ -47,6 +48,7 @@ export function projectAdminListViewStateCreate(options: {
     activeOrganizationId: options.organizationId,
     createOpen: options.createOpen,
     createOpenSet: (open: boolean) => {
+      if (open) organizationId.set(options.organizationId() ?? "")
       formError.set(undefined)
       options.createOpenSet(open)
     },

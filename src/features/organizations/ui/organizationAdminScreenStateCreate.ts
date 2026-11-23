@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "@solidjs/router"
-import { createEffect } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedUrlSearchParamWrite } from "../../../ui/authenticated/authenticatedUrlSearchParamWrite.js"
@@ -103,21 +103,29 @@ export function organizationAdminScreenStateCreate(options: {
     scope: policyScope,
   })
 
-  createEffect(options.page.organization, (organization) => {
-    form.detailName.set(organization?.name ?? "")
-    form.detailSlug.set(organization?.slug ?? "")
-  })
-  createEffect(options.page.branding, (loaded) => {
-    if (options.page.status() !== "ready") return
-    const stored = form.brandingLocalGet(options.page.organizationId())
-    form.branding.set(stored ?? loaded)
-  })
-  createEffect(options.page.policy, (loaded) => {
-    if (options.page.status() === "ready") policyDraftSignal.set(loaded)
-  })
-  createEffect(options.page.passwordPolicy, (loaded) => {
-    if (options.page.status() === "ready") passwordPolicyDraftSignal.set(loaded)
-  })
+  createEffect(options.page.organization, (organization) =>
+    untrack(() => {
+      form.detailName.set(organization?.name ?? "")
+      form.detailSlug.set(organization?.slug ?? "")
+    }),
+  )
+  createEffect(options.page.branding, (loaded) =>
+    untrack(() => {
+      if (options.page.status() !== "ready") return
+      const stored = form.brandingLocalGet(options.page.organizationId())
+      form.branding.set(stored ?? loaded)
+    }),
+  )
+  createEffect(options.page.policy, (loaded) =>
+    untrack(() => {
+      if (options.page.status() === "ready") policyDraftSignal.set(loaded)
+    }),
+  )
+  createEffect(options.page.passwordPolicy, (loaded) =>
+    untrack(() => {
+      if (options.page.status() === "ready") passwordPolicyDraftSignal.set(loaded)
+    }),
+  )
 
   return {
     basePath,

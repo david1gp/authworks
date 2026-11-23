@@ -79,12 +79,16 @@ export function AuthenticatedUiKitDemo() {
   const columns: readonly AuthenticatedDataTableColumn<DemoUiKitTableRow>[] = [
     {
       key: "user",
-      header: messageTranslate("admin.organizations.memberships.user"),
+      get header() {
+        return messageTranslate("admin.organizations.memberships.user")
+      },
       cell: (row) => <AuthenticatedUiKitDemoTableUserCell row={row} />,
     },
     {
       key: "role",
-      header: messageTranslate("admin.organizations.memberships.roles"),
+      get header() {
+        return messageTranslate("admin.organizations.memberships.roles")
+      },
       sortKey: "role",
       cell: (row) => (
         <AuthenticatedChip
@@ -95,7 +99,9 @@ export function AuthenticatedUiKitDemo() {
     },
     {
       key: "lastSignIn",
-      header: messageTranslate("admin.users.sessions.lastUsed"),
+      get header() {
+        return messageTranslate("admin.users.sessions.lastUsed")
+      },
       sortKey: "lastSignInAt",
       cell: (row) => (
         <AuthenticatedRelativeTime fallback={messageTranslate("ui.authenticated.never")} value={row.lastSignInAt} />
@@ -103,7 +109,9 @@ export function AuthenticatedUiKitDemo() {
     },
     {
       key: "state",
-      header: messageTranslate("admin.users.state"),
+      get header() {
+        return messageTranslate("admin.users.state")
+      },
       cell: (row) => (
         <AuthenticatedStatus
           label={
@@ -117,7 +125,9 @@ export function AuthenticatedUiKitDemo() {
     },
     {
       key: "created",
-      header: messageTranslate("admin.users.createdAt"),
+      get header() {
+        return messageTranslate("admin.users.createdAt")
+      },
       sortKey: "createdAt",
       align: "end",
       cell: (row) => (

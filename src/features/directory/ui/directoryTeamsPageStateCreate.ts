@@ -1,4 +1,4 @@
-import { createEffect } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -186,39 +186,41 @@ export function directoryTeamsPageStateCreate(options: DirectoryTeamsPageStateCr
   }
 
   let lastEffectKey: string | undefined
-  let lastContextKey = `${options.realmId()}:${options.organizationId()}`
+  let lastContextKey = untrack(() => `${options.realmId()}:${options.organizationId()}`)
   let lastDefaultNotified: string | undefined
   const effectKeyGet = () =>
     `${activeTab()}:${selectedSlug() ?? ""}:${memberPageTokens.get().length}:${options.realmId()}:${options.organizationId()}:${options.reloadKey?.() ?? ""}`
 
-  createEffect(effectKeyGet, (effectKey) => {
-    if (effectKey === lastEffectKey) return
-    lastEffectKey = effectKey
-    const nextContextKey = `${options.realmId()}:${options.organizationId()}`
-    if (nextContextKey !== lastContextKey) {
-      lastContextKey = nextContextKey
-      lastDefaultNotified = undefined
-      teams.set([])
-      members.set([])
-      memberPageTokens.set([])
-      memberNextPageToken.set(undefined)
-      unassignedCount.set(0)
-      lastEffectKey = effectKeyGet()
-      void teamsLoad().then(() => void membersLoad())
-      return
-    }
-    if (activeTab() === "service-accounts") return
-    // Snapshot the slug: the default-selection callback rewrites the URL
-    // synchronously inside teamsLoad, so reading it live here would see the
-    // new slug and fire a stray membersLoad that invalidates the rerun's
-    // teamsLoad request guard, sticking the tab in loading.
-    const slugAtEffectStart = selectedSlug()
-    void teamsLoad().then(() => {
-      // The default-selection callback rewrites the URL, which reruns this effect.
-      if (slugAtEffectStart === undefined && isLeaderScope()) return
-      void membersLoad()
-    })
-  })
+  createEffect(effectKeyGet, (effectKey) =>
+    untrack(() => {
+      if (effectKey === lastEffectKey) return
+      lastEffectKey = effectKey
+      const nextContextKey = `${options.realmId()}:${options.organizationId()}`
+      if (nextContextKey !== lastContextKey) {
+        lastContextKey = nextContextKey
+        lastDefaultNotified = undefined
+        teams.set([])
+        members.set([])
+        memberPageTokens.set([])
+        memberNextPageToken.set(undefined)
+        unassignedCount.set(0)
+        lastEffectKey = effectKeyGet()
+        void teamsLoad().then(() => void membersLoad())
+        return
+      }
+      if (activeTab() === "service-accounts") return
+      // Snapshot the slug: the default-selection callback rewrites the URL
+      // synchronously inside teamsLoad, so reading it live here would see the
+      // new slug and fire a stray membersLoad that invalidates the rerun's
+      // teamsLoad request guard, sticking the tab in loading.
+      const slugAtEffectStart = selectedSlug()
+      void teamsLoad().then(() => {
+        // The default-selection callback rewrites the URL, which reruns this effect.
+        if (slugAtEffectStart === undefined && isLeaderScope()) return
+        void membersLoad()
+      })
+    }),
+  )
 
   return {
     activeTab,

@@ -203,16 +203,17 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   createEffect(
     () =>
       `${options.screen()}:${options.userId?.() ?? ""}:${pageTokens.get().length}:${eventFiltersKey()}:${sessionListSignature()}:${whatsappWindow()}:${options.reloadKey?.() ?? ""}`,
-    () => {
-      if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
-        appliedSessionListSignature.set(sessionListSignature())
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
+    () =>
+      untrack(() => {
+        if (options.screen() === "sessions" && appliedSessionListSignature.get() !== sessionListSignature()) {
+          appliedSessionListSignature.set(sessionListSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
         }
-      }
-      void untrack(load)
-    },
+        void untrack(load)
+      }),
   )
 
   return {

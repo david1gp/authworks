@@ -1,27 +1,33 @@
-import { createEffect, createUniqueId } from "solid-js"
+import { createEffect, createSignal, createUniqueId } from "solid-js"
 
 export function authenticatedDialogStateCreate(open: () => boolean) {
   const dialogId = createUniqueId()
-  let openPreviously = open()
-  let trigger: HTMLButtonElement | undefined
+  const [trigger, triggerRegister] = createSignal<HTMLButtonElement | undefined>(undefined)
+  const finalFocusEl = () => {
+    const element = trigger()
+    return element?.isConnected && !element.disabled && element.getClientRects().length > 0 ? element : undefined
+  }
 
-  createEffect(open, (openNow) => {
-    if (openNow) trigger?.setAttribute("aria-controls", dialogId)
-    else trigger?.removeAttribute("aria-controls")
-    if (openPreviously && !openNow) queueMicrotask(() => trigger?.focus())
-    openPreviously = openNow
-  })
+  createEffect(
+    () => ({ element: trigger(), openNow: open() }),
+    ({ element, openNow }, previous) => {
+      if (openNow) element?.setAttribute("aria-controls", dialogId)
+      else element?.removeAttribute("aria-controls")
+      if (previous?.openNow && !openNow) queueMicrotask(() => finalFocusEl()?.focus())
+    },
+  )
 
   return {
     dialogId,
     densityGet: () =>
-      (trigger ?? (typeof document === "undefined" ? undefined : document.activeElement))?.closest(
+      (trigger() ?? (typeof document === "undefined" ? undefined : document.activeElement))?.closest(
         '[data-density="compact"]',
       )
         ? "compact"
         : undefined,
+    finalFocusEl,
     triggerRegister: (element: HTMLButtonElement) => {
-      trigger = element
+      triggerRegister(element)
     },
   }
 }

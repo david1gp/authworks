@@ -146,16 +146,17 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
   createEffect(
     () =>
       `${options.screen()}:${options.projectId() ?? ""}:${options.organizationId() ?? ""}:${pageTokens.get().length}:${listSignature()}`,
-    () => {
-      if (options.screen() === "projects" && appliedListSignature.get() !== listSignature()) {
-        appliedListSignature.set(listSignature())
-        if (pageTokens.get().length > 0) {
-          pageTokens.set([])
-          return
+    () =>
+      untrack(() => {
+        if (options.screen() === "projects" && appliedListSignature.get() !== listSignature()) {
+          appliedListSignature.set(listSignature())
+          if (pageTokens.get().length > 0) {
+            pageTokens.set([])
+            return
+          }
         }
-      }
-      void untrack(load)
-    },
+        void untrack(load)
+      }),
   )
 
   return {

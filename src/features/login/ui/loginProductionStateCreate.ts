@@ -75,9 +75,10 @@ export function loginProductionStateCreate() {
     screen: () => loginPathResolve(location.pathname, loginBasePath)?.screen ?? "unsupported",
     verificationToken: () => search().get("token") ?? "",
   })
-  const seededChallengeToken = mfaChallengeToken()
+  const initialSearch = new URLSearchParams(window.location.search)
+  const seededChallengeToken = loginChallengeTokenSelect(initialSearch.get("mfa_challenge"))
   if (seededChallengeToken !== undefined) adapter.mfaChallengeTokenSet?.(seededChallengeToken)
-  if (search().get("mfa_challenge") !== null) {
+  if (initialSearch.has("mfa_challenge")) {
     // The challenge token is seeded into page state above, so drop it from the URL immediately.
     // Keeping a bearer MFA token in history, logs, or later navigations would only widen exposure.
     const next = new URL(window.location.href)

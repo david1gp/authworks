@@ -40,7 +40,9 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
           </span>
         </span>
       ),
-      header: messageTranslate("admin.projects.list.name"),
+      get header() {
+        return messageTranslate("admin.projects.list.name")
+      },
       key: "name",
     },
     {
@@ -54,19 +56,25 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
           tone={project.organizationId === state.activeOrganizationId() ? "accent" : "neutral"}
         />
       ),
-      header: messageTranslate("admin.projects.detail.organization"),
+      get header() {
+        return messageTranslate("admin.projects.detail.organization")
+      },
       key: "ownership",
     },
     {
       cell: (project) => <span class="tabular-nums">{project.roleCount ?? 0}</span>,
       align: "end",
-      header: messageTranslate("admin.projects.list.roles"),
+      get header() {
+        return messageTranslate("admin.projects.list.roles")
+      },
       key: "roles",
     },
     {
       cell: (project) => <span class="tabular-nums">{project.applicationCount ?? 0}</span>,
       align: "end",
-      header: messageTranslate("admin.projects.list.applications"),
+      get header() {
+        return messageTranslate("admin.projects.list.applications")
+      },
       key: "applications",
     },
     {
@@ -76,13 +84,17 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
           tone={projectAdminStatusTone(project.status)}
         />
       ),
-      header: messageTranslate("admin.projects.status"),
+      get header() {
+        return messageTranslate("admin.projects.status")
+      },
       key: "status",
     },
     {
       cell: (project) => <AuthenticatedRelativeTime value={project.createdAt} />,
       align: "end",
-      header: messageTranslate("admin.projects.detail.created"),
+      get header() {
+        return messageTranslate("admin.projects.detail.created")
+      },
       key: "created",
     },
   ]

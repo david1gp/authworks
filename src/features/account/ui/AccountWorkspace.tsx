@@ -1,4 +1,3 @@
-import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountSectionAnchorHeading } from "./AccountSectionAnchorHeading.js"
 import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
@@ -27,7 +26,7 @@ export function AccountWorkspace(props: {
             id={accountWorkspaceSectionIds.profile}
             title={messageTranslate("shell.nav.profile")}
           />
-          <Show when={props.profileActions}>{(actions) => actions()}</Show>
+          {props.profileActions}
         </div>
         {props.profile}
       </section>

@@ -1,4 +1,4 @@
-import { createEffect, onCleanup } from "solid-js"
+import { createEffect, onCleanup, untrack } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
@@ -485,13 +485,14 @@ export function accountSecurityProductionStateCreate(options: {
 
   createEffect(
     () => `${options.realmId()}:${options.screen()}`,
-    () => {
-      oneTimeCodes.set([])
-      totpFlowReset()
-      totpRemoveStepUpCancel()
-      identityStepUpCancel()
-      void load()
-    },
+    () =>
+      untrack(() => {
+        oneTimeCodes.set([])
+        totpFlowReset()
+        totpRemoveStepUpCancel()
+        identityStepUpCancel()
+        void load()
+      }),
   )
 
   return {

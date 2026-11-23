@@ -18,13 +18,15 @@ export function accountDemoAdapterStateCreate(
     kind: kind(),
     onPasswordChanged: options.onPasswordChanged,
   })
-  createEffect(fixtureState, (selectedState) => {
-    if (selectedState === "loading") {
-      page.status.set("loading")
-      return
-    }
-    void page.load(true)
-  })
+  createEffect(fixtureState, (selectedState) =>
+    untrack(() => {
+      if (selectedState === "loading") {
+        page.status.set("loading")
+        return
+      }
+      void page.load(true)
+    }),
+  )
   return {
     fixtureState,
     page,

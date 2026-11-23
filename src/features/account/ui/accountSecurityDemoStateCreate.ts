@@ -1,4 +1,5 @@
 import { useLocation } from "@solidjs/router"
+import { untrack } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -150,7 +151,7 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     },
   ])
   const refreshTokensPageSize = createSignalObject(1)
-  const passkeys = createSignalObject<PasskeyCredential[]>([
+  const fixturePasskeys: PasskeyCredential[] = [
     {
       aaguid: "00000000-0000-0000-0000-000000000001",
       backedUp: true,
@@ -173,10 +174,11 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       revokedAt: null,
       transports: ["usb", "nfc"],
     },
-  ])
+  ]
+  const passkeys = createSignalObject<PasskeyCredential[]>(fixturePasskeys)
   const methods = createSignalObject<UserAuthenticationMethods>({
     emailOtp: { available: true },
-    passkeys: { credentials: passkeys.get() },
+    passkeys: { credentials: fixturePasskeys },
     password: { available: true },
     recoveryCodes: { available: true, generatedAt: now - 86_400_000, remaining: 7 },
     totp: {
@@ -273,7 +275,6 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       accountDemoUserFixture.id,
       methods.get().recoveryCodes?.generatedAt,
     )
-  const oneTimeCodes = createSignalObject<string[]>([])
   const totpDialogOpen = createSignalObject(false)
   const totpError = createSignalObject<string | undefined>(undefined)
   const totpSetup = createSignalObject<
@@ -308,8 +309,13 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
   const visible = <T>(values: readonly T[]) => (selected() === "empty" ? [] : [...values])
   // The one-time state is reachable straight from a URL, so it seeds already-issued codes. Once
   // dismissed they must not reappear on reload, so acknowledgement is remembered for this session.
-  if (selected() === "one-time" && !accountRecoveryCodeAcknowledgementStore.acknowledged(acknowledgementMarker()))
-    oneTimeCodes.set([...demoRecoveryCodes])
+  const oneTimeCodes = createSignalObject<string[]>(
+    untrack(() =>
+      selected() === "one-time" && !accountRecoveryCodeAcknowledgementStore.acknowledged(acknowledgementMarker())
+        ? [...demoRecoveryCodes]
+        : [],
+    ),
+  )
 
   const totpFlowReset = () => {
     totpDialogOpen.set(false)

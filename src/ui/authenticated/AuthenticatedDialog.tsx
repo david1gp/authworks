@@ -39,6 +39,7 @@ export function AuthenticatedDialog(props: {
       dialogId={state.dialogId}
       closeOnEscapeKeyDown={!confirmDialogStack.active()}
       closeOnOutsidePointer={!confirmDialogStack.active()}
+      finalFocusEl={state.finalFocusEl()}
       onOpenChange={props.onOpenChange}
       open={props.open}
       restoreFocus={!confirmDialogStack.active()}
