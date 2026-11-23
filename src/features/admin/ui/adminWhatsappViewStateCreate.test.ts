@@ -281,7 +281,9 @@ describe("whatsapp usage window", () => {
 
   test("selecting a window refetches usage and holds it in the URL", async () => {
     const replaced: string[] = []
+    const events: string[] = []
     const windowStub = {
+      dispatchEvent: (event: Event) => events.push(event.type),
       location: new URL("http://localhost/demo/admin/whatsapp"),
       history: {
         replaceState: (_state: unknown, _unused: string, url: string) => {
@@ -308,6 +310,7 @@ describe("whatsapp usage window", () => {
       await new Promise((resolve) => setTimeout(resolve, 350))
       flush()
       expect(replaced.at(-1)).toContain("window=7d")
+      expect(events).toEqual(["authworks:url-search-replaced"])
       dispose()
     } finally {
       delete (globalThis as { window?: unknown }).window

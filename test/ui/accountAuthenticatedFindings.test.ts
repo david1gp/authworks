@@ -20,28 +20,28 @@ test("a controlled authenticated dialog restores focus after closing", async () 
     focus: () => {
       focusCalls += 1
     },
+    getClientRects: () => [{ width: 42, height: 20 }],
+    isConnected: true,
     removeAttribute: (name: string) => void attributes.delete(name),
     setAttribute: (name: string, value: string) => void attributes.set(name, value),
   } as unknown as HTMLButtonElement
   const [open, openSet] = createSignal(false)
   let dispose: (() => void) | undefined
 
-  createRoot((rootDispose) => {
+  const state = createRoot((rootDispose) => {
     dispose = rootDispose
-    const state = authenticatedDialogStateCreate(open)
-    state.triggerRegister(trigger)
+    return authenticatedDialogStateCreate(open)
   })
-  await Promise.resolve()
+  state.triggerRegister(trigger)
   flush()
   openSet(true)
   await Promise.resolve()
   flush()
   expect(attributes.has("aria-controls")).toBe(true)
   openSet(false)
-  await Promise.resolve()
+  flush()
   await Promise.resolve()
 
-  flush()
   expect(attributes.has("aria-controls")).toBe(false)
   expect(focusCalls).toBe(1)
   dispose?.()
