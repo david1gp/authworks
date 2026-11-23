@@ -9,9 +9,7 @@
       "@adaptive-ds/authworks/realms": ["./src/outputs/library/realms.ts"],
       "@adaptive-ds/authworks/users": ["./src/outputs/library/users.ts"],
       "@adaptive-ds/authworks/whatsappOtp": ["./src/outputs/library/whatsappOtp.ts"],
-      "#ui/*": ["./ui/*"],
-      "solid-js/jsx-runtime": ["./node_modules/solid-js/types/jsx.d.ts"],
-      "solid-js/*": ["./node_modules/solid-js/*"]
+      "#ui/*": ["./ui/*"]
     },
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
@@ -22,7 +20,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["bun"],
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    "jsxImportSource": "@solidjs/web",
     //
     // performance
     //

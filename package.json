@@ -218,17 +218,16 @@
   },
   "dependencies": {
     "@adaptive-ds/mdi": "^0.1.2",
-    "@adaptive-ds/solid-ui": "^0.19.2",
     "@adaptive-ds/utils": "^0.12.0",
     "@adaptive-ds/waha-client": "^0.3.0",
     "@adaptive-ds/zitadel-cli": "0.2.0",
-    "@corvu/dialog": "^0.2.4",
-    "@corvu/popover": "^0.2.0",
+    "@corvu-next/dialog": "^0.1.5",
+    "@corvu-next/popover": "^0.1.5",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@simplewebauthn/server": "^13.2.2",
-    "@solid-primitives/keyed": "^1.5.3",
-    "@solid-primitives/scheduled": "^1.5.2",
-    "@solidjs/router": "^1.0.0",
+    "@solid-primitives/scheduled": "^2.0.0",
+    "@solidjs/router": "2.0.0",
+    "@solidjs/web": "^2.0.1",
     "@stricli/core": "^1.3.0",
     "cn": "^0.2.4",
     "drizzle-orm": "^0.45.2",
@@ -236,19 +235,32 @@
     "imapflow": "^1.7.2",
     "nodemailer": "^9.0.5",
     "qrcode-generator": "^2.0.4",
-    "solid-js": "^1.9.12"
+    "solid-js": "^2.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.6.4",
     "@playwright/test": "^1.62.1",
+    "@solidjs/vite-plugin": "^3.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "^1.3.14",
     "@types/nodemailer": "^8.0.1",
     "happy-dom": "^20.11.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "vite": "^8.2.1",
-    "vite-plugin-solid": "^2.11.14"
+    "vite": "^8.2.1"
+  },
+  "overrides": {
+    "solid-js": "^2.0.1"
+  },
+  "patchedDependencies": {
+    "@corvu-next/dialog@0.1.4": "patches/@corvu-next%2Fdialog@0.1.4.patch",
+    "@corvu-next/dialog@0.1.5": "patches/@corvu-next%2Fdialog@0.1.5.patch",
+    "@corvu-next/focus-trap@0.1.4": "patches/@corvu-next%2Ffocus-trap@0.1.4.patch",
+    "@corvu-next/popover@0.1.5": "patches/@corvu-next%2Fpopover@0.1.5.patch",
+    "@corvu-next/dismissible@0.1.4": "patches/@corvu-next%2Fdismissible@0.1.4.patch",
+    "@corvu-next/presence@0.1.4": "patches/@corvu-next%2Fpresence@0.1.4.patch",
+    "@corvu-next/prevent-scroll@0.1.4": "patches/@corvu-next%2Fprevent-scroll@0.1.4.patch",
+    "@corvu-next/utils@0.1.4": "patches/@corvu-next%2Futils@0.1.4.patch"
   }
 }

@@ -1,0 +1,49 @@
+diff --git a/dist/index.jsx b/dist/index.jsx
+index dd48c8586224fc6850c7c5d339aa9b8d74c622a5..09f4c7303921daed466810f238300da353d775de 100644
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -297,8 +297,8 @@ var DialogRoot = (props) => {
+   );
+   const [open, setOpen] = createControllableSignal({
+     value: () => defaultedProps.open,
+-    initialValue: defaultedProps.initialOpen,
+-    onChange: defaultedProps.onOpenChange
++    initialValue: untrack(() => defaultedProps.initialOpen),
++    onChange: (value) => untrack(() => defaultedProps.onOpenChange)?.(value)
+   });
+   const [labelId, registerLabelId, unregisterLabelId] = createRegister({
+     value: () => defaultedProps.labelId ?? createUniqueId()
+@@ -337,8 +337,8 @@ var DialogRoot = (props) => {
+     initialFocusElement: () => defaultedProps.initialFocusEl ?? null,
+     restoreFocus: () => defaultedProps.restoreFocus,
+     finalFocusElement: () => defaultedProps.finalFocusEl ?? null,
+-    onFinalFocus: defaultedProps.onFinalFocus,
+-    onInitialFocus: defaultedProps.onInitialFocus
++    onFinalFocus: (event) => untrack(() => defaultedProps.onFinalFocus)?.(event),
++    onInitialFocus: (event) => untrack(() => defaultedProps.onInitialFocus)?.(event)
+   });
+   createPreventScroll({
+     element: contentRef,
+@@ -435,10 +435,9 @@ var DialogRoot = (props) => {
+     }
+     return children;
+   };
+-  const DialogContext2 = createDialogContext(defaultedProps.contextId);
+-  const InternalDialogContext2 = createInternalDialogContext(
+-    defaultedProps.contextId
+-  );
++  const contextId = untrack(() => defaultedProps.contextId);
++  const DialogContext2 = createDialogContext(contextId);
++  const InternalDialogContext2 = createInternalDialogContext(contextId);
+   return <DialogContext2
+     value={{
+       role: () => defaultedProps.role,
+@@ -531,7 +530,7 @@ var DialogTrigger = (props) => {
+     "ref",
+     "onClick"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const onClick = (e) => {
+     !callEventHandler2(props.onClick, e) && context.setOpen((open) => !open);
+   };

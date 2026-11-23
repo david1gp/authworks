@@ -1,0 +1,102 @@
+diff --git a/dist/index.jsx b/dist/index.jsx
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -71,7 +71,7 @@
+     "contextId",
+     "onClick"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const onClick = (event) => {
+     !callEventHandler(props.onClick, event) && context.setOpen(false);
+   };
+@@ -100,7 +100,7 @@
+     "ref",
+     "style"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const show = () => some(context.open, () => props.forceMount, context.contentPresent);
+   const enableDismissible = createMemo(
+     () => context.open() || context.contentPresent()
+@@ -154,7 +154,7 @@
+     props,
+     "contextId"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   createEffect(
+     () => context,
+     (_context) => {
+@@ -179,7 +179,7 @@
+     props,
+     "contextId"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   createEffect2(
+     () => context,
+     (_context) => {
+@@ -211,7 +211,7 @@
+     "ref",
+     "style"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const show = () => some2(context.open, () => props.forceMount, context.overlayPresent);
+   return <Show2 when={show()}>
+       <Dynamic4
+@@ -243,7 +243,7 @@
+     "forceMount",
+     "contextId"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const show = () => some3(
+     context.open,
+     () => props.forceMount,
+@@ -297,8 +297,8 @@
+   );
+   const [open, setOpen] = createControllableSignal({
+     value: () => defaultedProps.open,
+-    initialValue: defaultedProps.initialOpen,
+-    onChange: defaultedProps.onOpenChange
++    initialValue: untrack(() => defaultedProps.initialOpen),
++    onChange: (value) => untrack(() => defaultedProps.onOpenChange)?.(value)
+   });
+   const [labelId, registerLabelId, unregisterLabelId] = createRegister({
+     value: () => defaultedProps.labelId ?? createUniqueId()
+@@ -337,8 +337,8 @@
+     initialFocusElement: () => defaultedProps.initialFocusEl ?? null,
+     restoreFocus: () => defaultedProps.restoreFocus,
+     finalFocusElement: () => defaultedProps.finalFocusEl ?? null,
+-    onFinalFocus: defaultedProps.onFinalFocus,
+-    onInitialFocus: defaultedProps.onInitialFocus
++    onFinalFocus: (event) => untrack(() => defaultedProps.onFinalFocus)?.(event),
++    onInitialFocus: (event) => untrack(() => defaultedProps.onInitialFocus)?.(event)
+   });
+   createPreventScroll({
+     element: contentRef,
+@@ -435,10 +435,9 @@
+     }
+     return children;
+   };
+-  const DialogContext2 = createDialogContext(defaultedProps.contextId);
+-  const InternalDialogContext2 = createInternalDialogContext(
+-    defaultedProps.contextId
+-  );
++  const contextId = untrack(() => defaultedProps.contextId);
++  const DialogContext2 = createDialogContext(contextId);
++  const InternalDialogContext2 = createInternalDialogContext(contextId);
+   return <DialogContext2
+     value={{
+       role: () => defaultedProps.role,
+@@ -531,7 +530,7 @@
+     "ref",
+     "onClick"
+   );
+-  const context = useInternalDialogContext(props.contextId);
++  const context = useInternalDialogContext(untrack(() => props.contextId));
+   const onClick = (e) => {
+     !callEventHandler2(props.onClick, e) && context.setOpen((open) => !open);
+   };

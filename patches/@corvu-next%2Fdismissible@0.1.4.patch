@@ -1,0 +1,114 @@
+diff --git a/dist/index.js b/dist/index.js
+index 15d69bf..3af8f2f 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -188,3 +187,0 @@ var Dismissible = (props) => {
+-  const defaultedProps = merge({
+-    dismissibleId: createUniqueId()
+-  }, props);
+@@ -195 +192 @@ var Dismissible = (props) => {
+-  const [layers, setLayers] = createSignal([defaultedProps.dismissibleId], {
++  const [layers, setLayers] = createSignal([], {
+@@ -230,7 +227,11 @@ var DismissibleLayer = (props) => {
+-  createEffect(() => defaultedProps.enabled, (enabled) => {
+-    if (enabled) {
+-      context.onLayerShow(defaultedProps.dismissibleId);
+-      setActiveDismissibles((activeDismissibles2) => [...activeDismissibles2, defaultedProps.dismissibleId]);
+-    } else {
+-      context.onLayerDismiss(defaultedProps.dismissibleId);
+-      setActiveDismissibles((activeDismissibles2) => activeDismissibles2.filter((dismissibleId) => dismissibleId !== defaultedProps.dismissibleId));
++  createEffect(
++    () => defaultedProps.enabled,
++    (enabled) => {
++      if (!enabled) return;
++      const id = defaultedProps.dismissibleId;
++      context.onLayerShow(id);
++      setActiveDismissibles((active) => [...active, id]);
++      return () => {
++        context.onLayerDismiss(id);
++        setActiveDismissibles((active) => active.filter((layer) => layer !== id));
++      };
+@@ -238,8 +239,5 @@ var DismissibleLayer = (props) => {
+-    return () => {
+-      context.onLayerDismiss(defaultedProps.dismissibleId);
+-      setActiveDismissibles((activeDismissibles2) => activeDismissibles2.filter((dismissibleId) => dismissibleId !== defaultedProps.dismissibleId));
+-    };
+-  });
+-  const isLastLayer = () => {
+-    return context.layers()[context.layers().length - 1] === defaultedProps.dismissibleId;
+-  };
++  );
++  // A layer is registered exactly while enabled. Read only this source for
++  // dismissal listeners, rather than tracking enabled and its delayed relay.
++  const isLastLayer = () => context.layers().at(-1) === defaultedProps.dismissibleId;
++  const isRegistered = () => context.layers().includes(defaultedProps.dismissibleId);
+@@ -247,3 +245,3 @@ var DismissibleLayer = (props) => {
+-    dismissOnEscapeKeyDown: () => access(defaultedProps.dismissOnEscapeKeyDown) && isLastLayer() && defaultedProps.enabled,
+-    dismissOnOutsideFocus: () => access(defaultedProps.dismissOnOutsideFocus) && isLastLayer() && defaultedProps.enabled,
+-    dismissOnOutsidePointer: () => access(defaultedProps.dismissOnOutsidePointer) && isLastLayer() && defaultedProps.enabled,
++    dismissOnEscapeKeyDown: () => access(defaultedProps.dismissOnEscapeKeyDown) && isLastLayer(),
++    dismissOnOutsideFocus: () => access(defaultedProps.dismissOnOutsideFocus) && isLastLayer(),
++    dismissOnOutsidePointer: () => access(defaultedProps.dismissOnOutsidePointer) && isLastLayer(),
+@@ -252 +250 @@ var DismissibleLayer = (props) => {
+-    noOutsidePointerEvents: () => access(defaultedProps.noOutsidePointerEvents) && defaultedProps.enabled,
++    noOutsidePointerEvents: () => access(defaultedProps.noOutsidePointerEvents) && isRegistered(),
+diff --git a/dist/index.jsx b/dist/index.jsx
+index 476c35b..24009f6 100644
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -220,6 +219,0 @@ var Dismissible = (props) => {
+-  const defaultedProps = merge6(
+-    {
+-      dismissibleId: createUniqueId()
+-    },
+-    props
+-  );
+@@ -231 +225 @@ var Dismissible = (props) => {
+-    [defaultedProps.dismissibleId],
++    [],
+@@ -283,14 +277,4 @@ var DismissibleLayer = (props) => {
+-      if (enabled) {
+-        context.onLayerShow(defaultedProps.dismissibleId);
+-        setActiveDismissibles((activeDismissibles2) => [
+-          ...activeDismissibles2,
+-          defaultedProps.dismissibleId
+-        ]);
+-      } else {
+-        context.onLayerDismiss(defaultedProps.dismissibleId);
+-        setActiveDismissibles(
+-          (activeDismissibles2) => activeDismissibles2.filter(
+-            (dismissibleId) => dismissibleId !== defaultedProps.dismissibleId
+-          )
+-        );
+-      }
++      if (!enabled) return;
++      const id = defaultedProps.dismissibleId;
++      context.onLayerShow(id);
++      setActiveDismissibles((active) => [...active, id]);
+@@ -298,6 +282,2 @@ var DismissibleLayer = (props) => {
+-        context.onLayerDismiss(defaultedProps.dismissibleId);
+-        setActiveDismissibles(
+-          (activeDismissibles2) => activeDismissibles2.filter(
+-            (dismissibleId) => dismissibleId !== defaultedProps.dismissibleId
+-          )
+-        );
++        context.onLayerDismiss(id);
++        setActiveDismissibles((active) => active.filter((layer) => layer !== id));
+@@ -307,3 +287,4 @@ var DismissibleLayer = (props) => {
+-  const isLastLayer = () => {
+-    return context.layers()[context.layers().length - 1] === defaultedProps.dismissibleId;
+-  };
++  // A layer is registered exactly while enabled. Read only this source for
++  // dismissal listeners, rather than tracking enabled and its delayed relay.
++  const isLastLayer = () => context.layers().at(-1) === defaultedProps.dismissibleId;
++  const isRegistered = () => context.layers().includes(defaultedProps.dismissibleId);
+@@ -311,3 +292,3 @@ var DismissibleLayer = (props) => {
+-    dismissOnEscapeKeyDown: () => access6(defaultedProps.dismissOnEscapeKeyDown) && isLastLayer() && defaultedProps.enabled,
+-    dismissOnOutsideFocus: () => access6(defaultedProps.dismissOnOutsideFocus) && isLastLayer() && defaultedProps.enabled,
+-    dismissOnOutsidePointer: () => access6(defaultedProps.dismissOnOutsidePointer) && isLastLayer() && defaultedProps.enabled,
++    dismissOnEscapeKeyDown: () => access6(defaultedProps.dismissOnEscapeKeyDown) && isLastLayer(),
++    dismissOnOutsideFocus: () => access6(defaultedProps.dismissOnOutsideFocus) && isLastLayer(),
++    dismissOnOutsidePointer: () => access6(defaultedProps.dismissOnOutsidePointer) && isLastLayer(),
+@@ -316 +297 @@ var DismissibleLayer = (props) => {
+-    noOutsidePointerEvents: () => access6(defaultedProps.noOutsidePointerEvents) && defaultedProps.enabled,
++    noOutsidePointerEvents: () => access6(defaultedProps.noOutsidePointerEvents) && isRegistered(),

@@ -1,6 +1,6 @@
+import solid from "@solidjs/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig, loadEnv } from "vite"
-import solid from "vite-plugin-solid"
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "")
@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [solid(), tailwindcss()],
+    resolve: { dedupe: ["solid-js", "@solidjs/web"] },
     server: {
       forwardConsole,
       port: uiPort,

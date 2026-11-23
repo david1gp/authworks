@@ -1,0 +1,59 @@
+diff --git a/dist/index.jsx b/dist/index.jsx
+index b42ef51a8c0745e4ec9bd750ba1b3bf64fd6e875..328433f7de370c01de3587a8333b066828746b90 100644
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -189,6 +189,7 @@ import {
+   merge
+ } from "solid-js";
+ import Dialog6 from "@corvu-next/dialog";
++import { isServer } from "@solidjs/web";
+ import createFloating from "@corvu-next/utils/create/floating";
+ import createOnce from "@corvu-next/utils/create/once";
+ import { isFunction } from "@corvu-next/utils";
+@@ -235,7 +236,7 @@ var PopoverRoot = (props) => {
+   };
+   const memoizedChildren = createOnce(() => defaultedProps.children);
+   const resolveChildren = (dialogChildrenProps) => {
+-    setDialogContext(Dialog6.useContext(defaultedProps.contextId));
++    if (!isServer) setDialogContext(Dialog6.useContext(defaultedProps.contextId));
+     const children = memoizedChildren()();
+     if (isFunction(children)) {
+       const mergedProps = merge(dialogChildrenProps, childrenProps);
+@@ -266,7 +267,12 @@ var PopoverRoot = (props) => {
+       setArrowRef
+     }}
+   >
+-        <Dialog6 contextId={defaultedProps.contextId} {...props}>
++        <Dialog6
++    contextId={defaultedProps.contextId}
++    {...props}
++    modal={defaultedProps.modal}
++    closeOnOutsidePointer={defaultedProps.closeOnOutsidePointer}
++  >
+           {(dialogChildrenProps) => resolveChildren(dialogChildrenProps)}
+         </Dialog6>
+       </InternalPopoverContext2>
+@@ -275,7 +281,7 @@ var PopoverRoot = (props) => {
+ var Root_default = PopoverRoot;
+ 
+ // src/Trigger.tsx
+-import { omit as omit4 } from "solid-js";
++import { omit as omit4, untrack } from "solid-js";
+ import Dialog7 from "@corvu-next/dialog";
+ import { mergeRefs as mergeRefs3 } from "@corvu-next/utils/reactivity";
+ var PopoverTrigger = (props) => {
+@@ -284,10 +290,11 @@ var PopoverTrigger = (props) => {
+     "ref",
+     "contextId"
+   );
+-  const dialogContext = Dialog7.useContext(props.contextId);
+-  const context = useInternalPopoverContext(props.contextId);
++  const contextId = untrack(() => props.contextId);
++  const dialogContext = Dialog7.useContext(contextId);
++  const context = useInternalPopoverContext(contextId);
+   return <Dialog7.Trigger
+-    contextId={props.contextId}
++    contextId={contextId}
+     ref={mergeRefs3(context.setTriggerRef, props.ref)}
+     data-placement={dialogContext.open() ? context.floatingState().placement : void 0}
+     data-corvu-popover-trigger=""

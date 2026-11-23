@@ -1,0 +1,36 @@
+diff --git a/dist/index.js b/dist/index.js
+index acd78dd..eafea81 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -102,0 +103,2 @@ var createPreventScroll = (props) => {
++  // Registration already reflects `enabled`. Reading both would relay the
++  // same update through the stack and re-run this effect in a second flush.
+@@ -104,7 +106,3 @@ var createPreventScroll = (props) => {
+-    (prev) => {
+-      const active = isActive(preventScrollId);
+-      const enabled = access(props.enabled ?? true);
+-      return { active, enabled };
+-    },
+-    (next, prev) => {
+-      if (!next.active || !next.enabled) return;
++    () => isActive(preventScrollId),
++    (active) => {
++      if (!active) return;
+diff --git a/dist/index.jsx b/dist/index.jsx
+index 6197d56..1cd8d1b 100644
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -101,0 +102,2 @@ var createPreventScroll = (props) => {
++  // Registration already reflects `enabled`. Reading both would relay the
++  // same update through the stack and re-run this effect in a second flush.
+@@ -103,7 +105,3 @@ var createPreventScroll = (props) => {
+-    (prev) => {
+-      const active = isActive(preventScrollId);
+-      const enabled = access(props.enabled ?? true);
+-      return { active, enabled };
+-    },
+-    (next, prev) => {
+-      if (!next.active || !next.enabled) return;
++    () => isActive(preventScrollId),
++    (active) => {
++      if (!active) return;

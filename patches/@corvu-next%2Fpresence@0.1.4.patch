@@ -1,0 +1,234 @@
+diff --git a/dist/index.js b/dist/index.js
+index 532df5d..0d17326 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,2 +1,2 @@
+-import { access } from '@corvu-next/utils/reactivity';
+-import { createMemo, createSignal, untrack, createEffect } from 'solid-js';
++import { access } from "@corvu-next/utils/reactivity";
++import { createEffect, createSignal } from "solid-js";
+@@ -4 +3,0 @@ import { createMemo, createSignal, untrack, createEffect } from 'solid-js';
+-// src/presence.ts
+@@ -6,4 +5,5 @@ var createPresence = (props) => {
+-  const refStyles = createMemo(() => {
+-    const element = access(props.element);
+-    if (!element) return;
+-    return getComputedStyle(element);
++  // Derive presence in the same flush as `show`, not via an effect relay.
++  // A closing element stays mounted until its committed CSS can be measured.
++  const [state, setState] = createSignal((previous) => {
++    if (access(props.show)) return "present";
++    return previous === "present" || previous === "hiding" ? "hiding" : "hidden";
+@@ -11,11 +10,0 @@ var createPresence = (props) => {
+-  const getAnimationName = () => {
+-    return refStyles()?.animationName ?? "none";
+-  };
+-  const [presentState, setPresentStateInternal] = createSignal(untrack(() => access(props.show)) ? "present" : "hidden", {
+-    ownedWrite: true
+-  });
+-  const setPresentState = (state) => {
+-    setPresentStateInternal(state);
+-    props.onStateChange?.(state);
+-  };
+-  let animationName = "none";
+@@ -23,6 +12,3 @@ var createPresence = (props) => {
+-    (prevResult) => {
+-      const show = access(props.show);
+-      const prev = prevResult?.show ?? show;
+-      const currentAnimationName = getAnimationName();
+-      const display = refStyles()?.display;
+-      return { prev, show, currentAnimationName, display };
++    state,
++    (value) => {
++      if (value !== "hiding") props.onStateChange?.(value);
+@@ -30,16 +16 @@ var createPresence = (props) => {
+-    ({ prev, show, currentAnimationName, display }) => {
+-      if (prev === show) return;
+-      const prevAnimationName = animationName;
+-      if (show) {
+-        setPresentState("present");
+-      } else if (currentAnimationName === "none" || display === "none") {
+-        setPresentState("hidden");
+-      } else {
+-        const isAnimating = prevAnimationName !== currentAnimationName;
+-        if (prev === true && isAnimating) {
+-          setPresentState("hiding");
+-        } else {
+-          setPresentState("hidden");
+-        }
+-      }
+-    }
++    { defer: true }
+@@ -48,6 +19,18 @@ var createPresence = (props) => {
+-    () => access(props.element),
+-    (element) => {
+-      if (!element) return;
+-      const handleAnimationStart = (event) => {
+-        if (event.target === element) {
+-          animationName = getAnimationName();
++    () => [state(), access(props.element)],
++    ([value, element]) => {
++      if (value !== "hiding") return;
++      let cancelled = false;
++      const finish = () => {
++        if (!cancelled) setState("hidden");
++      };
++      queueMicrotask(() => {
++        if (cancelled) return;
++        const animations = element?.getAnimations?.().filter((animation) =>
++          "animationName" in animation &&
++          animation.playState !== "finished" &&
++          animation.playState !== "idle" &&
++          animation.effect?.getTiming().iterations !== Infinity
++        ) ?? [];
++        if (!animations.length) {
++          finish();
++          return;
+@@ -55,18 +38,4 @@ var createPresence = (props) => {
+-      };
+-      const handleAnimationEnd = (event) => {
+-        const currentAnimationName = getAnimationName();
+-        const isCurrentAnimation = currentAnimationName.includes(
+-          event.animationName
+-        );
+-        if (event.target === element && isCurrentAnimation && presentState() === "hiding") {
+-          setPresentState("hidden");
+-        }
+-      };
+-      element.addEventListener("animationstart", handleAnimationStart);
+-      element.addEventListener("animationcancel", handleAnimationEnd);
+-      element.addEventListener("animationend", handleAnimationEnd);
+-      return () => {
+-        element.removeEventListener("animationstart", handleAnimationStart);
+-        element.removeEventListener("animationcancel", handleAnimationEnd);
+-        element.removeEventListener("animationend", handleAnimationEnd);
+-      };
++        props.onStateChange?.("hiding");
++        void Promise.allSettled(animations.map((animation) => animation.finished)).then(finish);
++      });
++      return () => { cancelled = true; };
+@@ -75,4 +44 @@ var createPresence = (props) => {
+-  return {
+-    present: () => presentState() === "present" || presentState() === "hiding",
+-    state: presentState
+-  };
++  return { present: () => state() !== "hidden", state };
+diff --git a/dist/index.jsx b/dist/index.jsx
+index a0eccf3..59a8767 100644
+--- a/dist/index.jsx
++++ b/dist/index.jsx
+@@ -1 +0,0 @@
+-// src/presence.ts
+@@ -3,6 +2,2 @@ import { access } from "@corvu-next/utils/reactivity";
+-import {
+-  createEffect,
+-  createMemo,
+-  createSignal,
+-  untrack
+-} from "solid-js";
++import { createEffect, createSignal } from "solid-js";
++
+@@ -10,4 +5,5 @@ var createPresence = (props) => {
+-  const refStyles = createMemo(() => {
+-    const element = access(props.element);
+-    if (!element) return;
+-    return getComputedStyle(element);
++  // Derive presence in the same flush as `show`, not via an effect relay.
++  // A closing element stays mounted until its committed CSS can be measured.
++  const [state, setState] = createSignal((previous) => {
++    if (access(props.show)) return "present";
++    return previous === "present" || previous === "hiding" ? "hiding" : "hidden";
+@@ -15,11 +10,0 @@ var createPresence = (props) => {
+-  const getAnimationName = () => {
+-    return refStyles()?.animationName ?? "none";
+-  };
+-  const [presentState, setPresentStateInternal] = createSignal(untrack(() => access(props.show)) ? "present" : "hidden", {
+-    ownedWrite: true
+-  });
+-  const setPresentState = (state) => {
+-    setPresentStateInternal(state);
+-    props.onStateChange?.(state);
+-  };
+-  let animationName = "none";
+@@ -27,6 +12,3 @@ var createPresence = (props) => {
+-    (prevResult) => {
+-      const show = access(props.show);
+-      const prev = prevResult?.show ?? show;
+-      const currentAnimationName = getAnimationName();
+-      const display = refStyles()?.display;
+-      return { prev, show, currentAnimationName, display };
++    state,
++    (value) => {
++      if (value !== "hiding") props.onStateChange?.(value);
+@@ -34,16 +16 @@ var createPresence = (props) => {
+-    ({ prev, show, currentAnimationName, display }) => {
+-      if (prev === show) return;
+-      const prevAnimationName = animationName;
+-      if (show) {
+-        setPresentState("present");
+-      } else if (currentAnimationName === "none" || display === "none") {
+-        setPresentState("hidden");
+-      } else {
+-        const isAnimating = prevAnimationName !== currentAnimationName;
+-        if (prev === true && isAnimating) {
+-          setPresentState("hiding");
+-        } else {
+-          setPresentState("hidden");
+-        }
+-      }
+-    }
++    { defer: true }
+@@ -52,6 +19,18 @@ var createPresence = (props) => {
+-    () => access(props.element),
+-    (element) => {
+-      if (!element) return;
+-      const handleAnimationStart = (event) => {
+-        if (event.target === element) {
+-          animationName = getAnimationName();
++    () => [state(), access(props.element)],
++    ([value, element]) => {
++      if (value !== "hiding") return;
++      let cancelled = false;
++      const finish = () => {
++        if (!cancelled) setState("hidden");
++      };
++      queueMicrotask(() => {
++        if (cancelled) return;
++        const animations = element?.getAnimations?.().filter((animation) =>
++          "animationName" in animation &&
++          animation.playState !== "finished" &&
++          animation.playState !== "idle" &&
++          animation.effect?.getTiming().iterations !== Infinity
++        ) ?? [];
++        if (!animations.length) {
++          finish();
++          return;
+@@ -59,18 +38,4 @@ var createPresence = (props) => {
+-      };
+-      const handleAnimationEnd = (event) => {
+-        const currentAnimationName = getAnimationName();
+-        const isCurrentAnimation = currentAnimationName.includes(
+-          event.animationName
+-        );
+-        if (event.target === element && isCurrentAnimation && presentState() === "hiding") {
+-          setPresentState("hidden");
+-        }
+-      };
+-      element.addEventListener("animationstart", handleAnimationStart);
+-      element.addEventListener("animationcancel", handleAnimationEnd);
+-      element.addEventListener("animationend", handleAnimationEnd);
+-      return () => {
+-        element.removeEventListener("animationstart", handleAnimationStart);
+-        element.removeEventListener("animationcancel", handleAnimationEnd);
+-        element.removeEventListener("animationend", handleAnimationEnd);
+-      };
++        props.onStateChange?.("hiding");
++        void Promise.allSettled(animations.map((animation) => animation.finished)).then(finish);
++      });
++      return () => { cancelled = true; };
+@@ -79,4 +44 @@ var createPresence = (props) => {
+-  return {
+-    present: () => presentState() === "present" || presentState() === "hiding",
+-    state: presentState
+-  };
++  return { present: () => state() !== "hidden", state };

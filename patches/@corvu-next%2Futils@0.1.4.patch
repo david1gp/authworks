@@ -1,0 +1,93 @@
+diff --git a/dist/create/floating.js b/dist/create/floating.js
+index 640e77d4e4a2331ed7dac666f04488a15cfa2e55..17ffd2a5f605a12ba2260931706f396915cab0a0 100644
+--- a/dist/create/floating.js
++++ b/dist/create/floating.js
+@@ -1,6 +1,6 @@
+ import { access } from '../chunk/ZV6G25TT.js';
+ import { offset, shift, arrow, flip, size, autoPlacement, hide, inline, autoUpdate, computePosition } from '@floating-ui/dom';
+-import { merge, createSignal, createEffect } from 'solid-js';
++import { merge, createSignal, createEffect, untrack } from 'solid-js';
+ 
+ var createFloating = (props) => {
+   const defaultedProps = merge(
+@@ -13,7 +13,7 @@ var createFloating = (props) => {
+     props
+   );
+   const [floatingState, setFloatingState] = createSignal({
+-    placement: access(defaultedProps.placement),
++    placement: untrack(() => access(defaultedProps.placement)),
+     x: 0,
+     y: 0,
+     width: null,
+@@ -29,9 +29,11 @@ var createFloating = (props) => {
+       reference: access(defaultedProps.reference),
+       floating: access(defaultedProps.floating),
+       arrowElement: access(defaultedProps.arrow),
+-      options: access(defaultedProps.options)
++      options: access(defaultedProps.options),
++      placement: access(defaultedProps.placement),
++      strategy: access(defaultedProps.strategy)
+     }),
+-    ({ enabled, reference, floating, arrowElement, options }) => {
++    ({ enabled, reference, floating, arrowElement, options, placement, strategy }) => {
+       if (!enabled) return;
+       if (!reference || !floating) return;
+       const middleware = [];
+@@ -99,8 +101,8 @@ var createFloating = (props) => {
+       }
+       const cleanup = autoUpdate(reference, floating, () => {
+         computePosition(reference, floating, {
+-          placement: access(defaultedProps.placement),
+-          strategy: access(defaultedProps.strategy),
++          placement,
++          strategy,
+           middleware
+         }).then(({ placement, x, y, middlewareData }) => {
+           const newFloatingState = {
+diff --git a/dist/create/floating.jsx b/dist/create/floating.jsx
+index 9f45a53b03b5804b1da0e74a45c8e44197dd4bda..d4cc934735a604bd16c1a1ea5af0b1a6dcc9a905 100644
+--- a/dist/create/floating.jsx
++++ b/dist/create/floating.jsx
+@@ -15,7 +15,7 @@ import {
+   shift,
+   size
+ } from "@floating-ui/dom";
+-import { createEffect, createSignal, merge } from "solid-js";
++import { createEffect, createSignal, merge, untrack } from "solid-js";
+ var createFloating = (props) => {
+   const defaultedProps = merge(
+     {
+@@ -27,7 +27,7 @@ var createFloating = (props) => {
+     props
+   );
+   const [floatingState, setFloatingState] = createSignal({
+-    placement: access(defaultedProps.placement),
++    placement: untrack(() => access(defaultedProps.placement)),
+     x: 0,
+     y: 0,
+     width: null,
+@@ -43,9 +43,11 @@ var createFloating = (props) => {
+       reference: access(defaultedProps.reference),
+       floating: access(defaultedProps.floating),
+       arrowElement: access(defaultedProps.arrow),
+-      options: access(defaultedProps.options)
++      options: access(defaultedProps.options),
++      placement: access(defaultedProps.placement),
++      strategy: access(defaultedProps.strategy)
+     }),
+-    ({ enabled, reference, floating, arrowElement, options }) => {
++    ({ enabled, reference, floating, arrowElement, options, placement, strategy }) => {
+       if (!enabled) return;
+       if (!reference || !floating) return;
+       const middleware = [];
+@@ -113,8 +115,8 @@ var createFloating = (props) => {
+       }
+       const cleanup = autoUpdate(reference, floating, () => {
+         computePosition(reference, floating, {
+-          placement: access(defaultedProps.placement),
+-          strategy: access(defaultedProps.strategy),
++          placement,
++          strategy,
+           middleware
+         }).then(({ placement, x, y, middlewareData }) => {
+           const newFloatingState = {
