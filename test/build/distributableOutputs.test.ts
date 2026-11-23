@@ -145,6 +145,8 @@ test("built library, server, and CLI outputs are executable", async () => {
   const child = Bun.spawn(["bun", "dist/server/server.js"], {
     env: {
       ...process.env,
+      AUTHWORKS_EMAIL_DELIVERY_ENABLED: "false",
+      AUTHWORKS_HOST: "127.0.0.1",
       AUTHWORKS_PORT: String(address.port),
       AUTHWORKS_DATABASE_PATH: join(directory, "authworks.sqlite"),
       AUTHWORKS_PUBLIC_ORIGIN: `https://127.0.0.1:${address.port}`,
@@ -156,21 +158,26 @@ test("built library, server, and CLI outputs are executable", async () => {
   })
 
   try {
-    let ready = false
-    for (let attempt = 0; attempt < 40; attempt += 1) {
+    // Allow a cold Bun/SQLite start on a busy runner; bound each probe and never spin on a non-200.
+    const readyDeadline = performance.now() + 15_000
+    let readiness = "no response"
+    while (performance.now() < readyDeadline && child.exitCode === null) {
       try {
         const response = await fetch(`${serverUrl}/system/realms`, {
           headers: { authorization: "Bearer built-output-secret" },
+          signal: AbortSignal.timeout(500),
         })
-        if (response.status === 200) {
-          ready = true
-          break
-        }
-      } catch (_error) {
-        await new Promise((resolve) => setTimeout(resolve, 50))
+        readiness = `HTTP ${response.status}`
+        await response.body?.cancel()
+        if (response.ok) break
+      } catch (error) {
+        readiness = error instanceof Error ? error.message : "request failed"
       }
+      await new Promise((resolve) => setTimeout(resolve, 50))
     }
-    expect(ready).toBe(true)
+    if (child.exitCode !== null)
+      throw new Error(`Built server exited (${child.exitCode}): ${await new Response(child.stderr).text()}`)
+    expect(readiness).toBe("HTTP 200")
 
     const indexResponse = await fetch(`${serverUrl}/`, { redirect: "manual" })
     expect(indexResponse.status).toBe(302)
@@ -327,7 +334,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     await child.exited
     await rm(directory, { force: true, recursive: true })
   }
-}, 30_000)
+}, 120_000)
 
 async function processRun(args: readonly string[]): Promise<ProcessResult> {
   const child = Bun.spawn(Array.from(args), { stderr: "pipe", stdout: "pipe" })
