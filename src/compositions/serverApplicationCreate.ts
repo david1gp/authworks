@@ -10,6 +10,7 @@ import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpSer
 import { eventRealmTypeCount } from "../features/events/server/eventRealmTypeCount.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
+import { appleRelayMailDeliveryGuardCreate } from "../features/externalIdentities/server/appleRelayMailDeliveryGuardCreate.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { impersonationSecurityNotificationLogCreate } from "../features/impersonation/server/impersonationSecurityNotificationLogCreate.js"
 import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
@@ -144,12 +145,16 @@ export function serverApplicationCreate(
     () => console.error("The session geo backfill failed."),
   )
   const passkeyRpId = options.passkeyRpId ?? new URL(publicOrigin).hostname
+  const mailDelivery =
+    options.mailDelivery === undefined
+      ? undefined
+      : appleRelayMailDeliveryGuardCreate({ database: database.data, inner: options.mailDelivery })
   const emailDeliveryCallbacks =
-    options.emailGenerator === undefined || options.mailDelivery === undefined
+    options.emailGenerator === undefined || mailDelivery === undefined
       ? undefined
       : emailDeliveryCallbacksCreate({
           emailGenerator: options.emailGenerator,
-          mailDelivery: options.mailDelivery,
+          mailDelivery,
           publicOrigin,
         })
   const application = new Hono()

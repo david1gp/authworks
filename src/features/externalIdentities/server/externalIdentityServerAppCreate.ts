@@ -20,6 +20,7 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { externalIdentityAppleNotificationHandle } from "../actions/externalIdentityAppleNotificationHandle.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
 import { externalIdentityLinkStart } from "../actions/externalIdentityLinkStart.js"
@@ -460,6 +461,35 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       externalIdentityProviderDisable({
         context: realmSystemContextCreate(authorized.data.actorId),
         database: options.database,
+        realmId: context.req.param("realmId"),
+        providerId: context.req.param("providerId"),
+      }),
+    )
+  })
+
+  // Apple server-to-server notifications arrive as an unauthenticated
+  // application/x-www-form-urlencoded POST with a `payload` field holding the Apple-signed
+  // JWT; the signature (verified against Apple's JWKS) is the authentication. The tenant
+  // check keeps the notification scoped to the realm served at this host.
+  app.post("/realms/:realmId/external-identity-providers/:providerId/apple-notifications", async (context) => {
+    const tenant = externalIdentityTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("realmId"),
+    )
+    if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
+    const payload = await externalIdentityAppleNotificationPayloadRead(context)
+    if (payload === null)
+      return externalIdentityErrorResponseCreate(context, {
+        errorMessage: "The Apple notification payload is invalid.",
+        op: "externalIdentityAppleNotification",
+      })
+    return externalIdentityResultResponseCreate(
+      context,
+      await externalIdentityAppleNotificationHandle({
+        database: options.database,
+        payload,
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
       }),
@@ -1009,6 +1039,19 @@ type ExternalIdentityCallbackParams = {
   readonly code: string
   readonly error?: string
   readonly state: string
+}
+
+/** Reads an Apple S2S notification body (`payload` holds the Apple-signed JWT). */
+async function externalIdentityAppleNotificationPayloadRead(
+  context: ExternalIdentityRouteContext,
+): Promise<string | null> {
+  try {
+    const payload = (await context.req.parseBody()).payload
+    const candidate = Array.isArray(payload) ? payload[0] : payload
+    return typeof candidate === "string" && candidate.length > 0 ? candidate : null
+  } catch (_error) {
+    return null
+  }
 }
 
 /** Reads Apple's form_post callback body (`code`, `state`, optional `error`/`user`). */

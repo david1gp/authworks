@@ -1,3 +1,4 @@
+export * from "./externalIdentityAppleNotificationResponseSchema.js"
 export * from "./externalIdentityCallbackResponseSchema.js"
 export * from "./externalIdentityLinkCompleteRequestSchema.js"
 export * from "./externalIdentityLinkCompleteResponseSchema.js"

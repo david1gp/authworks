@@ -244,7 +244,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS team_memberships_team_id_idx ON team_memberships (team_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), last_sign_in_at INTEGER CHECK (last_sign_in_at IS NULL OR last_sign_in_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), apple_relay_email_disabled_at INTEGER CHECK (apple_relay_email_disabled_at IS NULL OR apple_relay_email_disabled_at >= 0), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), last_sign_in_at INTEGER CHECK (last_sign_in_at IS NULL OR last_sign_in_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run("CREATE UNIQUE INDEX IF NOT EXISTS users_realm_id_id_idx ON users (realm_id, id)")
     try {
@@ -279,6 +279,13 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       )
     } catch (error) {
       if (!storageSchemaDuplicateColumnIsExpected(error, "registration_verification_method")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE users ADD COLUMN apple_relay_email_disabled_at INTEGER CHECK (apple_relay_email_disabled_at IS NULL OR apple_relay_email_disabled_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "apple_relay_email_disabled_at")) throw error
     }
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS users_realm_verified_phone_idx ON users (realm_id, phone_number) WHERE phone_number IS NOT NULL AND phone_number_verified_at IS NOT NULL",

@@ -4,6 +4,7 @@ import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqli
 export const userTable = sqliteTable(
   "users",
   {
+    appleRelayEmailDisabledAt: integer("apple_relay_email_disabled_at"),
     createdAt: integer("created_at").notNull(),
     deletedAt: integer("deleted_at"),
     email: text("email").notNull(),

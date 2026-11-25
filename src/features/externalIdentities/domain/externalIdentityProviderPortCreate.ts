@@ -484,11 +484,12 @@ async function providerClaimsGet(
   }
 }
 
-async function providerJwtClaimsVerify(
+export async function providerJwtClaimsVerify(
   fetcher: typeof fetch,
   timeoutMs: number,
   jwksEndpoint: string,
   token: string,
+  options?: { readonly allowMissingExpiration?: boolean },
 ): Promise<ReturnType<typeof resultCreate<Record<string, unknown>>> | ReturnType<typeof resultErrorCreate>> {
   try {
     const parts = token.split(".")
@@ -502,7 +503,10 @@ async function providerJwtClaimsVerify(
     const claims = JSON.parse(new TextDecoder().decode(base64UrlDecode(parts[1]))) as unknown
     if (typeof claims !== "object" || claims === null || Array.isArray(claims)) throw new Error("invalid claims")
     const expiration = (claims as Record<string, unknown>).exp
-    if (typeof expiration !== "number" || !Number.isFinite(expiration) || expiration <= Math.floor(Date.now() / 1_000))
+    if (
+      !(expiration === undefined && options?.allowMissingExpiration === true) &&
+      (typeof expiration !== "number" || !Number.isFinite(expiration) || expiration <= Math.floor(Date.now() / 1_000))
+    )
       throw new Error("expired jwt")
     const keysResponse = await fetcher(jwksEndpoint, { signal: AbortSignal.timeout(timeoutMs) })
     const keys = (await keysResponse.json().catch(() => undefined)) as unknown
