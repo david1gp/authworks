@@ -52,7 +52,10 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
       "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
       "https://coachingcompany.wonder1.de/login/authworks/callback",
     ],
-    production: ["https://coachingcompany.contentoren.de/login/authworks/callback"],
+    production: [
+      "https://coachingcompany.contentoren.de/login/authworks/callback",
+      "https://coachingcompany.de/login/authworks/callback",
+    ],
   },
   crm: {
     development: ["http://127.0.0.1:5173/auth/authworks/callback"],
@@ -75,7 +78,10 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
       "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
       "https://preview.filmschauspielschule.wonder1.de/login/authworks/callback",
     ],
-    production: ["https://filmschauspielschule.contentoren.de/login/authworks/callback"],
+    production: [
+      "https://filmschauspielschule.contentoren.de/login/authworks/callback",
+      "https://filmschauspielschule.de/login/authworks/callback",
+    ],
   },
   multisub: {
     development: [
@@ -123,6 +129,14 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
 
 const expectedPostLogoutUris: Record<string, { development: string[]; production: string[] }> = {
   archive: { development: [], production: ["https://archive.contentoren.de"] },
+  coachingcompany: {
+    development: [],
+    production: ["https://coachingcompany.contentoren.de", "https://coachingcompany.de"],
+  },
+  filmschauspielschule: {
+    development: [],
+    production: ["https://filmschauspielschule.contentoren.de", "https://filmschauspielschule.de"],
+  },
   multisub: {
     development: ["https://multisub-dev.wonder1.de/", "https://multisub-dev.leonardomora.de/"],
     production: ["https://multisub.contentoren.de/"],

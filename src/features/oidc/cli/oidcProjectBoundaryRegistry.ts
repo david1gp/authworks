@@ -56,7 +56,11 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Coaching Company",
     productionName: "Coaching Company production",
     developmentName: "Coaching Company development",
-    productionRedirectUris: ["https://coachingcompany.contentoren.de/login/authworks/callback"],
+    productionRedirectUris: [
+      "https://coachingcompany.contentoren.de/login/authworks/callback",
+      "https://coachingcompany.de/login/authworks/callback",
+    ],
+    productionPostLogoutRedirectUris: ["https://coachingcompany.contentoren.de", "https://coachingcompany.de"],
     developmentRedirectUris: [
       "http://127.0.0.1:3134/login/authworks/callback",
       "https://coachingcompany.leonardomora.de/login/authworks/callback",
@@ -69,7 +73,14 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Filmschauspielschule",
     productionName: "Filmschauspielschule production",
     developmentName: "Filmschauspielschule development",
-    productionRedirectUris: ["https://filmschauspielschule.contentoren.de/login/authworks/callback"],
+    productionRedirectUris: [
+      "https://filmschauspielschule.contentoren.de/login/authworks/callback",
+      "https://filmschauspielschule.de/login/authworks/callback",
+    ],
+    productionPostLogoutRedirectUris: [
+      "https://filmschauspielschule.contentoren.de",
+      "https://filmschauspielschule.de",
+    ],
     developmentRedirectUris: [
       "http://127.0.0.1:3132/login/authworks/callback",
       "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
