@@ -358,6 +358,24 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    externalIdentityProviderGetById(providerId: string): Result<ExternalIdentityProviderRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(externalIdentityProviderTable)
+            .where(eq(externalIdentityProviderTable.id, providerId))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityProviderGetById",
+          "The external identity provider could not be read.",
+          "external-identities.read-failed",
+        )
+      }
+    },
+
     externalIdentityProviderGet(realmId: string, providerId: string): Result<ExternalIdentityProviderRow | null> {
       try {
         return resultCreate(

@@ -471,12 +471,12 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   // application/x-www-form-urlencoded POST with a `payload` field holding the Apple-signed
   // JWT; the signature (verified against Apple's JWKS) is the authentication. The tenant
   // check keeps the notification scoped to the realm served at this host.
-  app.post("/realms/:realmId/external-identity-providers/:providerId/apple-notifications", async (context) => {
+  const appleNotificationHandle = async (context: ExternalIdentityRouteContext, realmId: string) => {
     const tenant = externalIdentityTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("realmId"),
+      realmId,
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
     const payload = await externalIdentityAppleNotificationPayloadRead(context)
@@ -490,10 +490,22 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       await externalIdentityAppleNotificationHandle({
         database: options.database,
         payload,
-        realmId: context.req.param("realmId"),
+        realmId,
         providerId: context.req.param("providerId"),
       }),
     )
+  }
+
+  app.post("/realms/:realmId/external-identity-providers/:providerId/apple-notifications", (context) =>
+    appleNotificationHandle(context, context.req.param("realmId")),
+  )
+  app.post("/apple-notifications/:providerId", (context) => {
+    const provider = externalIdentityRepositoryCreate(options.database.db).externalIdentityProviderGetById(
+      context.req.param("providerId"),
+    )
+    if (!provider.success) return externalIdentityErrorResponseCreate(context, provider)
+    if (provider.data === null || provider.data.type !== "apple") return context.notFound()
+    return appleNotificationHandle(context, provider.data.realmId)
   })
 
   app.post("/realms/:realmId/external-identity/:providerId/start", async (context) => {

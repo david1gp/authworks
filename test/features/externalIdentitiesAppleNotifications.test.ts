@@ -4,6 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { and, eq } from "drizzle-orm"
+import { smtpMailDeliveryPortCreate } from "../../src/features/email/server/smtpMailDeliveryPortCreate.js"
 import { externalIdentityAppleNotificationHandle } from "../../src/features/externalIdentities/actions/externalIdentityAppleNotificationHandle.js"
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
 import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
@@ -11,16 +12,15 @@ import { externalIdentityProviderPortCreate } from "../../src/features/externalI
 import { externalIdentityRepositoryCreate } from "../../src/features/externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { appleRelayMailDeliveryGuardCreate } from "../../src/features/externalIdentities/server/appleRelayMailDeliveryGuardCreate.js"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
-import { smtpMailDeliveryPortCreate } from "../../src/features/email/server/smtpMailDeliveryPortCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { userTable } from "../../src/features/users/persistence/userTable.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
-import { userTable } from "../../src/features/users/persistence/userTable.js"
 
 async function withDatabase<T>(
   operation: (database: StorageDatabase, testkit: ReturnType<typeof platformTestkitCreate>) => Promise<T>,
@@ -512,6 +512,22 @@ test("Apple S2S route returns 200 for valid payloads and 400 for invalid ones", 
     linkIdentity(database, testkit, realm.id, provider.id, user.id, "apple-subject-route")
     const app = externalIdentityServerAppCreate({ database })
     const endpoint = `http://apple-s2s-route.example.com/realms/${realm.id}/external-identity-providers/${provider.id}/apple-notifications`
+    const alias = `http://apple-s2s-route.example.com/apple-notifications/${provider.id}`
+    const google = await externalIdentityProviderCreate({
+      allowDevelopmentFallback: true,
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "google",
+        clientSecret: "secret",
+        displayName: "Google",
+        redirectUri: "https://app.test/callback",
+        type: "google",
+      },
+      realmId: realm.id,
+    })
+    if (!google.success) throw new Error(google.errorMessage)
     const form = (payload?: string) => {
       const body = new URLSearchParams()
       if (payload !== undefined) body.set("payload", payload)
@@ -521,6 +537,34 @@ test("Apple S2S route returns 200 for valid payloads and 400 for invalid ones", 
     const headers = { "content-type": "application/x-www-form-urlencoded" }
     const missing = await app.request(endpoint, { body: form(), headers, method: "POST" })
     expect(missing.status).toBe(400)
+    expect((await app.request(alias, { body: form(), headers, method: "POST" })).status).toBe(400)
+    expect(
+      (
+        await app.request("http://apple-s2s-route.example.com/apple-notifications/unknown", {
+          body: form(),
+          headers,
+          method: "POST",
+        })
+      ).status,
+    ).toBe(404)
+    expect(
+      (
+        await app.request(`http://apple-s2s-route.example.com/apple-notifications/${google.data.provider.id}`, {
+          body: form(),
+          headers,
+          method: "POST",
+        })
+      ).status,
+    ).toBe(404)
+    expect(
+      (
+        await app.request(`http://wrong.example.com/apple-notifications/${provider.id}`, {
+          body: form(),
+          headers,
+          method: "POST",
+        })
+      ).status,
+    ).not.toBe(200)
 
     const garbage = await app.request(endpoint, {
       body: form("not-a-jwt"),
@@ -546,10 +590,24 @@ test("Apple S2S route returns 200 for valid payloads and 400 for invalid ones", 
       })
       expect(valid.status).toBe(200)
       expect(await valid.json()).toMatchObject({ received: true })
+      const aliasValid = await app.request(alias, {
+        body: form(
+          appleNotificationTokenCreate(
+            keys.privateKey,
+            keys.kid,
+            appleNotificationClaimsCreate("de.contentoren.test.signin", "apple-subject-route", "email-enabled"),
+          ),
+        ),
+        headers,
+        method: "POST",
+      })
+      expect(aliasValid.status).toBe(200)
+      expect(await aliasValid.json()).toMatchObject({ received: true })
+      expect(userRelayFlagGet(database, realm.id, user.id)).toBeNull()
     } finally {
       globalThis.fetch = originalFetch
     }
-    expect(userRelayFlagGet(database, realm.id, user.id)).not.toBeNull()
+    expect(userRelayFlagGet(database, realm.id, user.id)).toBeNull()
   })
 })
 
