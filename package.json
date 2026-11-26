@@ -219,7 +219,7 @@
   "dependencies": {
     "@adaptive-ds/mdi": "^0.1.2",
     "@adaptive-ds/utils": "^0.12.0",
-    "@adaptive-ds/waha-client": "^0.3.0",
+    "@adaptive-ds/waha-client": "^0.9.0",
     "@adaptive-ds/zitadel-cli": "0.2.0",
     "@corvu-next/dialog": "^0.1.5",
     "@corvu-next/popover": "^0.1.5",
