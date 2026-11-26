@@ -56,14 +56,10 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Coaching Company",
     productionName: "Coaching Company production",
     developmentName: "Coaching Company development",
-    productionRedirectUris: [
-      "https://coachingcompany.contentoren.de/login/authworks/callback",
-      "https://coachingcompany.de/login/authworks/callback",
-    ],
-    productionPostLogoutRedirectUris: ["https://coachingcompany.contentoren.de", "https://coachingcompany.de"],
+    productionRedirectUris: ["https://coachingcompany.de/login/authworks/callback"],
+    productionPostLogoutRedirectUris: ["https://coachingcompany.de"],
     developmentRedirectUris: [
       "http://127.0.0.1:3134/login/authworks/callback",
-      "https://coachingcompany.leonardomora.de/login/authworks/callback",
       "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
       "https://coachingcompany.wonder1.de/login/authworks/callback",
     ],
@@ -73,17 +69,10 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Filmschauspielschule",
     productionName: "Filmschauspielschule production",
     developmentName: "Filmschauspielschule development",
-    productionRedirectUris: [
-      "https://filmschauspielschule.contentoren.de/login/authworks/callback",
-      "https://filmschauspielschule.de/login/authworks/callback",
-    ],
-    productionPostLogoutRedirectUris: [
-      "https://filmschauspielschule.contentoren.de",
-      "https://filmschauspielschule.de",
-    ],
+    productionRedirectUris: ["https://filmschauspielschule.de/login/authworks/callback"],
+    productionPostLogoutRedirectUris: ["https://filmschauspielschule.de"],
     developmentRedirectUris: [
       "http://127.0.0.1:3132/login/authworks/callback",
-      "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
       "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
       "https://preview.filmschauspielschule.wonder1.de/login/authworks/callback",
     ],

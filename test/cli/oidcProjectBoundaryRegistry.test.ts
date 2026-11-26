@@ -48,14 +48,10 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
   coachingcompany: {
     development: [
       "http://127.0.0.1:3134/login/authworks/callback",
-      "https://coachingcompany.leonardomora.de/login/authworks/callback",
       "https://coachingcompany-v2.wonder1.de/login/authworks/callback",
       "https://coachingcompany.wonder1.de/login/authworks/callback",
     ],
-    production: [
-      "https://coachingcompany.contentoren.de/login/authworks/callback",
-      "https://coachingcompany.de/login/authworks/callback",
-    ],
+    production: ["https://coachingcompany.de/login/authworks/callback"],
   },
   crm: {
     development: ["http://127.0.0.1:5173/auth/authworks/callback"],
@@ -74,14 +70,10 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
   filmschauspielschule: {
     development: [
       "http://127.0.0.1:3132/login/authworks/callback",
-      "https://filmschauspielschule.leonardomora.de/login/authworks/callback",
       "https://preview.filmschauspielschule-v2.wonder1.de/login/authworks/callback",
       "https://preview.filmschauspielschule.wonder1.de/login/authworks/callback",
     ],
-    production: [
-      "https://filmschauspielschule.contentoren.de/login/authworks/callback",
-      "https://filmschauspielschule.de/login/authworks/callback",
-    ],
+    production: ["https://filmschauspielschule.de/login/authworks/callback"],
   },
   multisub: {
     development: [
@@ -131,11 +123,11 @@ const expectedPostLogoutUris: Record<string, { development: string[]; production
   archive: { development: [], production: ["https://archive.contentoren.de"] },
   coachingcompany: {
     development: [],
-    production: ["https://coachingcompany.contentoren.de", "https://coachingcompany.de"],
+    production: ["https://coachingcompany.de"],
   },
   filmschauspielschule: {
     development: [],
-    production: ["https://filmschauspielschule.contentoren.de", "https://filmschauspielschule.de"],
+    production: ["https://filmschauspielschule.de"],
   },
   multisub: {
     development: ["https://multisub-dev.wonder1.de/", "https://multisub-dev.leonardomora.de/"],
@@ -231,8 +223,9 @@ test("project production and development boundaries register the fixed confident
 test("migrated development callbacks keep their same-prefix wonder1.de alias", () => {
   // These live production callbacks intentionally run on the wonder1 host.
   const productionWonder1Exempt = new Set(["crm", "site-crawler", "work"])
-  // These live development callbacks intentionally have no same-prefix wonder1.de alias.
-  const legacyWithoutAlias = new Set(["https://filmschauspielschule.leonardomora.de/login/authworks/callback"])
+  // Retired hosts have no same-prefix wonder1.de alias expectation; every
+  // remaining legacy development callback must keep its alias.
+  const legacyWithoutAlias = new Set<string>([])
   const entries = Object.values(oidcProjectBoundaryRegistry)
   const migratedAliases = entries.flatMap((entry) =>
     entry.developmentRedirectUris
