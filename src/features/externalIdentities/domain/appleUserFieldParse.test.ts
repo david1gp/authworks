@@ -21,6 +21,27 @@ test("apple user field treats absent or blank input as no names", () => {
   if (emptyObject.success) expect(emptyObject.data).toBeNull()
 })
 
+test("apple user field treats empty and whitespace-only fields as absent", () => {
+  for (const raw of [
+    JSON.stringify({ email: "", name: { firstName: "", lastName: "" } }),
+    JSON.stringify({ email: "   ", name: { firstName: "  ", lastName: " " } }),
+    JSON.stringify({ name: { firstName: "", lastName: "" } }),
+  ]) {
+    const parsed = appleUserFieldParse(raw)
+    expect(parsed.success).toBe(true)
+    if (parsed.success) expect(parsed.data).toBeNull()
+  }
+})
+
+test("apple user field keeps only the non-empty fields", () => {
+  const nameOnly = appleUserFieldParse(JSON.stringify({ email: "", name: { firstName: "", lastName: "Lovelace" } }))
+  expect(nameOnly.success).toBe(true)
+  if (nameOnly.success) expect(nameOnly.data).toEqual({ name: { lastName: "Lovelace" } })
+  const trimmed = appleUserFieldParse(JSON.stringify({ email: "  ", name: { firstName: " Ada ", lastName: "" } }))
+  expect(trimmed.success).toBe(true)
+  if (trimmed.success) expect(trimmed.data).toEqual({ name: { firstName: "Ada" } })
+})
+
 test("apple user field rejects malformed payloads", () => {
   for (const raw of ["not-json", JSON.stringify({ name: "Ada" }), JSON.stringify({ name: { firstName: 42 } })]) {
     expect(appleUserFieldParse(raw).success).toBe(false)

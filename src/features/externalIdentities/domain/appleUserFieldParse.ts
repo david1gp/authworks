@@ -3,12 +3,14 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
+// Empty and whitespace-only values count as absent (Apple sends "" for
+// fields the user withheld); the trim below drops them. Non-strings still fail.
 const appleUserFieldSchema = v.strictObject({
-  email: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
+  email: v.optional(v.pipe(v.string(), v.maxLength(320))),
   name: v.optional(
     v.strictObject({
-      firstName: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
-      lastName: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
+      firstName: v.optional(v.pipe(v.string(), v.maxLength(128))),
+      lastName: v.optional(v.pipe(v.string(), v.maxLength(128))),
     }),
   ),
 })
