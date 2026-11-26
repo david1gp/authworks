@@ -1,5 +1,5 @@
 import { type WahaClientConfigInput, wahaClientConfig } from "@adaptive-ds/waha-client"
-import { sessionNameSchema } from "@adaptive-ds/waha-client/sessionSchemas.js"
+import { sessionNameSchema } from "@adaptive-ds/waha-client/sessions/sessionNameSchema.js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
