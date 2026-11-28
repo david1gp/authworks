@@ -8,7 +8,7 @@
         "@adaptive-ds/mdi": "^0.1.2",
         "@adaptive-ds/utils": "^0.12.0",
         "@adaptive-ds/waha-client": "^0.9.0",
-        "@adaptive-ds/zitadel-cli": "0.2.0",
+        "@adaptive-ds/zitadel-cli": "0.4.0",
         "@corvu-next/dialog": "^0.1.5",
         "@corvu-next/popover": "^0.1.5",
         "@modelcontextprotocol/sdk": "^1.32.2",
@@ -66,7 +66,7 @@
 
     "@adaptive-ds/waha-client": ["@adaptive-ds/waha-client@0.9.0", "", { "dependencies": { "@stricli/core": "^1.3.0" }, "peerDependencies": { "@adaptive-ds/result": "^0.6.0", "valibot": "^1.5.0" }, "bin": { "waha-client": "dist/cli.js" } }, "sha512-AQwtPHsaNsFJpSwjh9z/TA+1zDRI6HLkVHdcXY5CIMBCrPW7atrncba1x3yEi5G0nkAC2HmNzwx1nu7GMPkz/Q=="],
 
-    "@adaptive-ds/zitadel-cli": ["@adaptive-ds/zitadel-cli@0.2.0", "", { "dependencies": { "@bufbuild/protobuf": "^2.2.26", "@connectrpc/connect": "^2.0.2", "@connectrpc/connect-node": "^2.0.2", "@stricli/core": "^1.2.5", "oauth4webapi": "^3.8.7", "yaml": "^2.7.0" }, "peerDependencies": { "@adaptive-ds/result": ">=0.4.0", "valibot": "^1.2.0" }, "bin": { "zitadel-cli": "dist/cli.js" } }, "sha512-B8+RjuxLAWdR06ygjNRiJUUPLuH8lbTCcMChJ3Ijr0rzmi7oc5VMd5KuuCxGg0kbxmmng5+Lgu5g8oFEkFGbVw=="],
+    "@adaptive-ds/zitadel-cli": ["@adaptive-ds/zitadel-cli@0.4.0", "", { "dependencies": { "@bufbuild/protobuf": "^2.2.26", "@connectrpc/connect": "^2.0.2", "@connectrpc/connect-node": "^2.0.2", "@stricli/core": "^1.2.5", "oauth4webapi": "^3.8.7", "yaml": "^2.7.0" }, "peerDependencies": { "@adaptive-ds/result": ">=0.4.0", "valibot": "^1.2.0" }, "bin": { "zitadel-cli": "dist/cli.js" } }, "sha512-8TMM9yHncTRsPF/Gv2i2kVBWOpZ/BWGAsTOYKEFhJ/36+qAZIx4n+GE5Ug7HONF7E7R2JC+8ZIt5Mtu+nWdmJg=="],
 
     "@ampproject/remapping": ["@ampproject/remapping@2.3.0", "", { "dependencies": { "@jridgewell/gen-mapping": "^0.3.5", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw=="],
 
